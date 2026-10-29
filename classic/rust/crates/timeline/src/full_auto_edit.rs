@@ -76,11 +76,25 @@ pub struct FullAutoEditOptions {
     pub word_animation: bool,
     #[serde(default)]
     pub music: bool,
+    #[serde(default)]
+    pub sound_effects: bool,
 }
 #[export]
 pub fn full_auto_edit_stages(o: FullAutoEditOptions) -> Vec<String> {
-    if let Some(action)=o.action.as_deref().filter(|a|*a!="full-auto") {
-        if matches!(action,"center-subject"|"framing"|"zoom"|"transitions"|"word-animation"|"music"|"auto-texts") { return vec![action.into(),"save".into()]; }
+    if let Some(action) = o.action.as_deref().filter(|a| *a != "full-auto") {
+        if matches!(
+            action,
+            "center-subject"
+                | "framing"
+                | "zoom"
+                | "transitions"
+                | "word-animation"
+                | "sound-effects"
+                | "music"
+                | "auto-texts"
+        ) {
+            return vec![action.into(), "save".into()];
+        }
         return vec![];
     }
     let mut stages = vec!["preflight", "framing", "silence", "auto-texts", "finish"]
@@ -95,6 +109,9 @@ pub fn full_auto_edit_stages(o: FullAutoEditOptions) -> Vec<String> {
     }
     if o.word_animation {
         stages.push("word-animation".into());
+    }
+    if o.sound_effects {
+        stages.push("sound-effects".into());
     }
     if o.music {
         stages.push("music".into());
@@ -409,13 +426,14 @@ mod tests {
     }
     #[test]
     fn options_are_independent_and_base_order_is_fixed() {
-        for n in 0..16 {
+        for n in 0..32 {
             let s = full_auto_edit_stages(FullAutoEditOptions {
                 action: None,
                 zoom: n & 1 != 0,
                 transitions: n & 2 != 0,
                 word_animation: n & 4 != 0,
                 music: n & 8 != 0,
+                sound_effects: n & 16 != 0,
             });
             assert_eq!(
                 &s[..5],
@@ -425,6 +443,7 @@ mod tests {
             assert_eq!(s.contains(&"transitions".into()), n & 2 != 0);
             assert_eq!(s.contains(&"word-animation".into()), n & 4 != 0);
             assert_eq!(s.contains(&"music".into()), n & 8 != 0);
+            assert_eq!(s.contains(&"sound-effects".into()), n & 16 != 0);
             if n & 8 != 0 {
                 assert_eq!(s[s.len() - 2], "music");
             }

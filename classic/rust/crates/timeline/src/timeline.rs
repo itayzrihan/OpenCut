@@ -18,6 +18,8 @@ mod caption_scene;
 pub use caption_scene::*;
 mod audio_sync;
 pub use audio_sync::*;
+mod procedural_audio;
+pub use procedural_audio::*;
 mod automatic_zoom;
 pub use automatic_zoom::*;
 mod automatic_text_transitions;
@@ -900,3 +902,6 @@ pub use local_subject_framing::*;
 
 mod batch_edit;
 pub use batch_edit::*;
+
+mod automatic_sound_effects;
+pub use automatic_sound_effects::*;

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "02f1a4e520fda11cfefa953069d0e845caa8ef264151bfe408dd62168df945dd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:17:35.493Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/timeline-bc6f47689fb6a583.timeline.d6efdc5be4f7c28f-cgu.10.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/timeline-bc6f47689fb6a583.timeline.d6efdc5be4f7c28f-cgu.07.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/timeline-bc6f47689fb6a583.timeline.d6efdc5be4f7c28f-cgu.08.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/timeline-bc6f47689fb6a583.timeline.d6efdc5be4f7c28f-cgu.09.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/timeline-bc6f47689fb6a583.timeline.d6efdc5be4f7c28f-cgu.06.rcgu.o"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "fee1c371-0d7c-4a75-b6d6-208b0d31f8b7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:17:35.499Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

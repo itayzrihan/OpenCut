@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "14bf8468e30085be7b286386ed405f4b8deb2af6ede33b8c85967e5163f8a718",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:23.000Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/debug/deps/timeline-c2ce272b5eb10f27.d"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "f6cbb4e5-2ea2-48f5-a74a-08930ef68ec1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:23.002Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

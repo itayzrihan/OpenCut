@@ -24,6 +24,7 @@ const options = z
 		transitions: z.boolean(),
 		wordAnimation: z.boolean(),
 		music: z.boolean(),
+		soundEffects: z.boolean().default(false),
 		brandKitId: z
 			.string()
 			.min(1)

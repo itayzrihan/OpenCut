@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97c27f48c7db00ed6ea2591c945eb30e7c769dc3506b23b8af938e2f2ce68360",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:32:23.096Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/batch.lock",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000400.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000402.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000399.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000401.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000403.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000404.sst",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000405.meta",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000406.meta",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/00000407.meta",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/LOG",
+          "classic/apps/web/.next-earshot-turbo/dev/cache/turbopack/e07398321/CURRENT"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "9e654100-a1bd-4acb-8005-b3e91cc28eec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:32:23.105Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

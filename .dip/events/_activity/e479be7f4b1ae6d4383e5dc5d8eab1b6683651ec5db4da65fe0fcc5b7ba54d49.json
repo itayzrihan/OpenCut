@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e479be7f4b1ae6d4383e5dc5d8eab1b6683651ec5db4da65fe0fcc5b7ba54d49",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:28:35.383Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/projects/ad6dfa6f-baca-42ed-a82c-770446005401.lock",
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/projects/ad6dfa6f-baca-42ed-a82c-770446005401/project.json.renewal.json.49cd490d-d597-4c70-9fde-bdff3e21a418.tmp",
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/projects/ad6dfa6f-baca-42ed-a82c-770446005401/project.json.renewal.json",
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/batch.lock",
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/projects/ad6dfa6f-baca-42ed-a82c-770446005401/project.json.e598f263-f174-4b20-a609-e16bb1bc11ad.tmp",
+          ".local/classic-web-tests/1793251713621",
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/projects/ad6dfa6f-baca-42ed-a82c-770446005401/project.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "b9a2faeb-217a-40e7-8b0b-1cdbf55b3d28"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:28:35.385Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

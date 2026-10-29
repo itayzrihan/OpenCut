@@ -339,6 +339,8 @@ impl ClassicProject {
                         return Err(invalid("duplicate track or element id"));
                     }
                     string_at(element, "type")?;
+                    classic_timeline::validate_procedural_audio_element(element)
+                        .map_err(|message| invalid(&message))?;
 
                     for (key, min, max) in [
                         ("gainDb", -60.0, 30.0),

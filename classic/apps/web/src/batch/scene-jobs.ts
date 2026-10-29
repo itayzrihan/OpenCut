@@ -15,6 +15,7 @@ export const sceneActions = [
 	["zoom", "Automatic Zoom"],
 	["transitions", "Automatic Transition Edit"],
 	["word-animation", "Automatic Word Animation and Reveal"],
+	["sound-effects", "Automatic Sound Effects · Earshot"],
 	["music", "Automatic Music"],
 	["auto-texts", "Auto Texts"],
 ] as const;

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "256c28878ab649116679ee1abb5f4dd3bb1c987e70d2e33564c8294ad6eeb589",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:55.854Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-earshot-turbo/dev/logs/next-development.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "f9ad6e40-e6ab-4c7b-9121-027b6ddc5fc4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:55.857Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

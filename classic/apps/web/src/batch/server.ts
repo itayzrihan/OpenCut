@@ -210,6 +210,7 @@ export async function createProjectEdit({
 				"zoom",
 				"transitions",
 				"wordAnimation",
+				"soundEffects",
 				"music",
 			] as const)
 				if (options[key] !== previous.options[key])

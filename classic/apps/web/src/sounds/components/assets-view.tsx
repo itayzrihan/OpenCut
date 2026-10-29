@@ -40,6 +40,8 @@ import { useFileUpload } from "@/media/use-file-upload";
 import { useSoundSearch } from "@/sounds/use-sound-search";
 import { useSoundsStore } from "@/sounds/sounds-store";
 import { SpeechView } from "./speech-view";
+import { EarshotLibrary } from "@/earshot/components/library";
+import { EARSHOT_SOUNDS } from "@/earshot/catalog";
 import {
 	sharedLibraryService,
 	useSharedLibraryStore,
@@ -88,7 +90,23 @@ export function SoundsView() {
 					value="sound-effects"
 					className="mt-0 flex min-h-0 flex-1 flex-col p-5 pt-0"
 				>
-					<SharedAudioFolderView folder="sfx" />
+					<Tabs
+						defaultValue="files"
+						className="flex min-h-0 flex-1 flex-col gap-3"
+					>
+						<TabsList aria-label="Sound effect source">
+							<TabsTrigger value="files">Audio files</TabsTrigger>
+							<TabsTrigger value="code">
+								Code · Earshot {EARSHOT_SOUNDS.length}
+							</TabsTrigger>
+						</TabsList>
+						<TabsContent value="files" className="flex min-h-0 flex-1 flex-col">
+							<SharedAudioFolderView folder="sfx" />
+						</TabsContent>
+						<TabsContent value="code" className="min-h-0 flex-1">
+							<EarshotLibrary />
+						</TabsContent>
+					</Tabs>
 				</TabsContent>
 				<TabsContent
 					value="music"

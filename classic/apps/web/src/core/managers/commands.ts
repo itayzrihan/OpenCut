@@ -1901,6 +1901,29 @@ export class CommandManager {
 		});
 	}
 
+	setProceduralAudio(
+		updates: Array<{
+			trackId: string;
+			elementId: string;
+			procedural: import("@/earshot/types").EarshotSpec;
+		}>,
+	): void {
+		const sceneId = this.editor.scenes.getActiveSceneOrNull()?.id;
+		if (!this.canonical || !sceneId)
+			throw new Error("Open the canonical editor before editing code sounds");
+		this.executeTransaction({
+			execute: () => {
+				this.synchronizeCanonicalViews();
+				this.canonical!.invokeControl({
+					capabilityId: "timeline.classic.audio.procedural.set",
+					input: { sceneId, updates },
+				});
+				this.publishCanonical();
+				this.runReactors();
+			},
+		});
+	}
+
 	insertClassicTimelineElements(
 		clips: import("@/commands/timeline/element/insert-element").InsertElementParams[],
 	): Array<{ trackId: string; elementId: string }> {

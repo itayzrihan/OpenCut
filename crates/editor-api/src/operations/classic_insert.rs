@@ -33,6 +33,9 @@ struct Draft {
     trim_end: Option<i64>,
     #[serde(default)]
     params: Map<String, Value>,
+    /// Code-based audio stays in the document; no media asset is imported.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    procedural: Option<crate::ProceduralAudioSource>,
     /// Forward-compatible serialized clip fields; binary browser handles are excluded.
     #[serde(flatten)]
     extra: Map<String, Value>,
@@ -113,7 +116,7 @@ pub(super) fn register_classic_insert(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.catalog",
         "Read Classic clip creation definitions",
-        "Reads live registered graphic definition IDs and product parameter metadata for creating Classic clips, including an empty scene. Does not mutate state. Supply the active project and expectedRevision; pass catalogRevision to insertion when creating graphics. Default duration is five seconds in 120000 ticks per second. Video/image/upload audio reference existing project media; library audio and stickers keep their own identifiers. This catalog is host-published product metadata, not an agent-specific list.",
+        "Reads live registered graphic definition IDs and product parameter metadata for creating Classic clips, including an empty scene. Does not mutate state. Supply the active project and expectedRevision; pass catalogRevision to insertion when creating graphics. Default duration is five seconds in 120000 ticks per second. Video/image/upload audio reference existing project media; library audio and stickers keep their own identifiers. Procedural audio stores its bounded Earshot source directly without a media asset. This catalog is host-published product metadata, not an agent-specific list.",
         "timeline",
         AccessLevel::Read,
         true,
@@ -165,7 +168,7 @@ pub(super) fn register_classic_insert(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.insert",
         "Insert Classic clips",
-        "Atomically insert 1..1000 video, image, audio, text, sticker, graphic or effect drafts in one explicit Classic scene. Each clip supplies element and placement. Timing uses nonnegative exact integer ticks at 120000/second; omitted duration defaults to five seconds and trims to zero. Effect drafts may set fullScene=true to atomically cover zero through the current scene end (requires a non-empty scene). Runtime allocates fresh identities and preserves serialized extension fields; do not supply id or browser buffer/file handles. Explicit placement requires a compatible track and allows overlaps. Auto chooses the first non-overlapping compatible track in display order, otherwise creates one at the top (insertIndex only overrides new-track placement). Video/image go on video tracks, text on text, audio on audio, sticker/graphic on graphic, effect on effect. Main-track first/earliest inserts anchor at zero. Graphics require a current catalogRevision and registered definitionId from timeline.classic.elements.catalog. Media clips must reference existing compatible project media, including offline records; no media is uploaded/decoded/copied. The first visual media clip in an empty scene adopts known canvas dimensions/original dimensions and video FPS. Text ownership is reconciled with retained caption sources. Returns created track/clip references. Supports dry run, exact retries, revision checks, cancellation, transactional rollback and Undo/Redo for the whole batch.",
+        "Atomically insert 1..1000 video, image, audio, text, sticker, graphic or effect drafts in one explicit Classic scene. Each clip supplies element and placement. Timing uses nonnegative exact integer ticks at 120000/second; omitted duration defaults to five seconds (procedural audio derives the remaining source span after trims and rate) and trims to zero. Effect drafts may set fullScene=true to atomically cover zero through the current scene end (requires a non-empty scene). Runtime allocates fresh identities and preserves serialized extension fields; do not supply id or browser buffer/file handles. Explicit placement requires a compatible track and allows overlaps. Auto chooses the first non-overlapping compatible track in display order, otherwise creates one at the top (insertIndex only overrides new-track placement). Video/image go on video tracks, text on text, audio on audio, sticker/graphic on graphic, effect on effect. Main-track first/earliest inserts anchor at zero. Graphics require a current catalogRevision and registered definitionId from timeline.classic.elements.catalog. Media clips must reference existing compatible project media, including offline records; procedural audio uses sourceType procedural and a validated Earshot source; no media is uploaded/decoded/copied. The first visual media clip in an empty scene adopts known canvas dimensions/original dimensions and video FPS. Text ownership is reconciled with retained caption sources. Returns created track/clip references. Supports dry run, exact retries, revision checks, cancellation, transactional rollback and Undo/Redo for the whole batch.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -237,7 +240,20 @@ pub(super) fn register_classic_insert(
                                     .entry("intensity")
                                     .or_insert(json!(15));
                             }
-                            element["duration"] = json!(clip.element.duration.unwrap_or(600000));
+                            let source_duration = if element["sourceType"] == "procedural" {
+                                let source: crate::ProceduralAudioSource = serde_json::from_value(element["procedural"].clone())
+                                    .map_err(|e| invalid(&format!("Invalid procedural audio source: {e}")))?;
+                                source.validate().map_err(|message| invalid(&message))?;
+                                Some(source.source_ticks())
+                            } else { None };
+                            let default_duration = source_duration.map(|duration| {
+                                ((i128::from(duration) - i128::from(clip.element.trim_start.unwrap_or(0)) - i128::from(clip.element.trim_end.unwrap_or(0))).max(0) as f64
+                                    / classic_update::rate(&element)).round() as i64
+                            }).unwrap_or(600000);
+                            element["duration"] = json!(clip.element.duration.unwrap_or(default_duration));
+                            if let Some(duration) = source_duration {
+                                element.as_object_mut().unwrap().entry("sourceDuration").or_insert(json!(duration));
+                            }
                             element["trimStart"] = json!(clip.element.trim_start.unwrap_or(0));
                             element["trimEnd"] = json!(clip.element.trim_end.unwrap_or(0));
                             for key in ["startTime", "duration", "trimStart", "trimEnd"] {
@@ -409,6 +425,8 @@ pub(super) fn validate_draft(
     revision: Option<&str>,
     media: &[Map<String, Value>],
 ) -> Result<(), CapabilityError> {
+    classic_timeline::validate_procedural_audio_element(element)
+        .map_err(|message| invalid(&message))?;
     crate::classic_effects::validate_params(element["params"].as_object().unwrap())?;
     let kind = element["type"].as_str().unwrap();
     let nonempty = |key: &str| element[key].as_str().is_some_and(|v| !v.is_empty());
@@ -428,10 +446,11 @@ pub(super) fn validate_draft(
     }
     if kind == "audio"
         && !(element["sourceType"] == "upload"
+            || element["sourceType"] == "procedural"
             || (element["sourceType"] == "library"
                 && (nonempty("sourceUrl") || nonempty("libraryAssetId"))))
     {
-        return Err(invalid("Audio needs uploaded media or a library binding"));
+        return Err(invalid("Audio needs uploaded media, a library binding or a procedural source"));
     }
     if kind == "sticker" && !nonempty("stickerId") {
         return Err(invalid("Sticker requires stickerId"));

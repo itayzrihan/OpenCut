@@ -1,5 +1,7 @@
 "use client";
 
+import { useEarshotBuffer } from "@/earshot/use-buffer";
+import { earshotSourceKey } from "@/earshot/audio";
 import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
 
 import {
@@ -2241,8 +2243,15 @@ function AudioElementContent({
 			? sharedAudioSource
 			: null;
 
+	const codeBuffer = useEarshotBuffer(
+		element.sourceType === "procedural" ? element.procedural : undefined,
+	);
 	const audioBuffer =
-		element.sourceType === "library" ? element.buffer : undefined;
+		element.sourceType === "procedural"
+			? codeBuffer
+			: element.sourceType === "library"
+				? element.buffer
+				: undefined;
 	const audioUrl =
 		element.sourceType === "library"
 			? (currentSharedAudioSource?.url ?? element.sourceUrl)
@@ -2252,16 +2261,21 @@ function AudioElementContent({
 			? sourceMediaAsset?.file
 			: currentSharedAudioSource?.file;
 	const sourceKey =
-		element.sourceType === "upload"
-			? buildWaveformSourceKey({
-					kind: "media",
-					id: sourceMediaAsset?.id ?? element.mediaId,
-				})
-			: buildWaveformSourceKey({
-					kind: "library",
-					id: element.libraryAssetId ?? element.sourceUrl ?? element.id,
-				});
-	const mediaLabel = mediaAsset?.name ?? element.name;
+		element.sourceType === "procedural"
+			? earshotSourceKey(element.procedural)
+			: element.sourceType === "upload"
+				? buildWaveformSourceKey({
+						kind: "media",
+						id: sourceMediaAsset?.id ?? element.mediaId,
+					})
+				: buildWaveformSourceKey({
+						kind: "library",
+						id: element.libraryAssetId ?? element.sourceUrl ?? element.id,
+					});
+	const mediaLabel =
+		element.sourceType === "procedural"
+			? `</> ${element.name}`
+			: (mediaAsset?.name ?? element.name);
 	const gainSamples = useMemo(
 		() =>
 			buildCompactWaveformGainSamplesFromState({
@@ -2311,7 +2325,7 @@ function AudioElementContent({
 		<div className="group/audio relative size-full">
 			<div className="flex size-full items-center pl-2">
 				<span className="text-foreground/80 truncate text-xs">
-					{element.name}
+					{mediaLabel}
 				</span>
 			</div>
 			<AudioVolumeLine element={element} trackId={trackId} />

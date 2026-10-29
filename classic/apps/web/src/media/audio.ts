@@ -40,6 +40,7 @@ import { createMediaSource } from "@/media/source";
 import { createCachedAssetResolver } from "@/media/cached-asset-resolver";
 import { layoutTimedAudioChunks } from "@/media/audio-chunk-layout";
 import { resolveUnifiedAnglesAudioAsset } from "@/media/unified-angles";
+import { earshotSourceKey, resolveEarshotBuffer } from "@/earshot/audio";
 
 const MAX_AUDIO_CHANNELS = 2;
 const EXPORT_SAMPLE_RATE = 44100;
@@ -251,6 +252,12 @@ async function resolveAudioBufferForElement({
 	mediaMap: Map<string, MediaAsset>;
 	audioContext: AudioContext;
 }): Promise<AudioBuffer | null> {
+	// Surface code errors to export instead of silently dropping the sound.
+	if (element.sourceType === "procedural")
+		return resolveEarshotBuffer({
+			spec: element.procedural,
+			context: audioContext,
+		});
 	try {
 		if (element.sourceType === "upload") {
 			const referencedAsset = mediaMap.get(element.mediaId);
@@ -386,6 +393,7 @@ export async function resolveAudioBufferForAsset({
 
 interface AudioMixSource {
 	timelineElement: AudioCapableElement;
+	procedural?: import("@/earshot/types").EarshotSpec;
 	file?: File;
 	url?: string;
 	startTime: number;
@@ -432,6 +440,7 @@ function getLibraryAudioSourceKey({
 
 export interface AudioClipSource {
 	timelineElement: AudioCapableElement;
+	procedural?: import("@/earshot/types").EarshotSpec;
 	/** Original, untrimmed asset; never a buffer cut to the video edit. */
 	mediaAsset?: MediaAsset;
 	id: string;
@@ -445,6 +454,28 @@ export interface AudioClipSource {
 	volume: number;
 	muted: boolean;
 	retime?: RetimeConfig;
+}
+
+function collectProceduralAudioClip({
+	element,
+	volume,
+	muted,
+}: {
+	element: import("@/timeline").ProceduralAudioElement;
+	volume: number;
+	muted: boolean;
+}): AudioClipSource {
+	return {
+		timelineElement: element,
+		procedural: element.procedural,
+		id: element.id,
+		sourceKey: earshotSourceKey(element.procedural),
+		...getClipAudioTiming(element),
+		trimEnd: element.trimEnd / TICKS_PER_SECOND,
+		volume,
+		muted,
+		retime: element.retime,
+	};
 }
 
 async function fetchLibraryAudioSource({
@@ -584,7 +615,11 @@ export async function collectAudioMixSources({
 			});
 
 			if (element.type === "audio") {
-				if (element.sourceType === "upload") {
+				if (element.sourceType === "procedural") {
+					audioMixSources.push(
+						collectProceduralAudioClip({ element, volume, muted: false }),
+					);
+				} else if (element.sourceType === "upload") {
 					const referencedAsset = mediaMap.get(element.mediaId);
 					if (!referencedAsset) continue;
 					const mediaAsset = resolveUnifiedAnglesAudioAsset({
@@ -672,7 +707,9 @@ export async function collectAudioClips({
 			});
 
 			if (element.type === "audio") {
-				if (element.sourceType === "upload") {
+				if (element.sourceType === "procedural") {
+					clips.push(collectProceduralAudioClip({ element, volume, muted }));
+				} else if (element.sourceType === "upload") {
 					const referencedAsset = mediaMap.get(element.mediaId);
 					if (!referencedAsset) continue;
 					const mediaAsset = resolveUnifiedAnglesAudioAsset({

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c0eadf918f4f0e2b33120bb769ae5357a113b89bfa0462de277c791f039596af",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:56.363Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/debug/deps/rmeta6B1vx9",
+          ".local/earshot-cargo-target/debug/deps/rmeta6B1vx9/full.rmeta",
+          "classic/apps/web/src/core/managers/audio-manager.ts",
+          "analysis/earshot-integration-2026-10-29",
+          "docs/earshot-integration.md",
+          "analysis/earshot-integration-2026-10-29/architecture.md"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "3ab586e3-56ca-4265-847e-c6578d67cdb7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:56.368Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

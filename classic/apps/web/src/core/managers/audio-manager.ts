@@ -1,3 +1,4 @@
+import { resolveEarshotBuffer, sliceEarshotBuffer } from "@/earshot/audio";
 import {
 	noiseReductionAmount,
 	hasAudioProcessing,
@@ -373,7 +374,7 @@ export class AudioManager {
 			upcoming.map(async (clip) => {
 				if (signal.aborted) return;
 				if (this.shouldUsePreparedClipBuffer({ clip })) {
-					await this.getAudioSink({ clip });
+					if (!clip.procedural) await this.getAudioSink({ clip });
 					let nextTime = Math.max(currentTime, clip.startTime);
 					const until = Math.min(windowEnd, clip.startTime + clip.duration);
 					while (nextTime < until - 1e-9) {
@@ -834,7 +835,7 @@ export class AudioManager {
 		startTime: number;
 		sessionId: number;
 	}): Promise<boolean> {
-		await this.getAudioSink({ clip });
+		if (!clip.procedural) await this.getAudioSink({ clip });
 		let time = Math.max(startTime, clip.startTime);
 		let started = false;
 		while (time < clip.startTime + clip.duration - 1e-9) {
@@ -991,6 +992,7 @@ export class AudioManager {
 		// automation. Long clips stream from a warmed sink so Play never waits
 		// for an entire podcast/video soundtrack to decode.
 		return (
+			clip.procedural !== undefined ||
 			hasAudioProcessing(clip.timelineElement.params) ||
 			clip.duration <= 12 ||
 			(clip.retime?.maintainPitch === true &&
@@ -1224,6 +1226,19 @@ export class AudioManager {
 		}
 
 		try {
+			if (clip.procedural) {
+				const buffer = await resolveEarshotBuffer({
+					spec: clip.procedural,
+					context: audioContext,
+					signal: this.audioCollectionAbort.signal,
+				});
+				return sliceEarshotBuffer({
+					buffer,
+					context: audioContext,
+					start: sourceStart,
+					end: sourceEnd,
+				});
+			}
 			const sink = await this.getAudioSink({ clip });
 			if (!sink) return null;
 			const chunks: WrappedAudioBuffer[] = [];

@@ -880,11 +880,19 @@ function decodeElement(
 		}
 		if (value.sourceType === "upload") {
 			readNonEmptyString(value.mediaId, `${path}.mediaId`, diagnostics);
+		} else if (value.sourceType === "procedural") {
+			// The canonical Rust transaction validates the full bounded recipe.
+			if (!isRecord(value.procedural))
+				pushInvalidShape(
+					diagnostics,
+					`${path}.procedural`,
+					"procedural audio requires a recipe",
+				);
 		} else if (value.sourceType !== "library") {
 			pushInvalidType(
 				diagnostics,
 				`${path}.sourceType`,
-				'audio sourceType must be "upload" or "library"',
+				'audio sourceType must be "upload", "library" or "procedural"',
 			);
 		}
 	} else if (elementType === "graphic") {

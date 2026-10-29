@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0bf36470009d8369a1c648982fb354a89e56dd68b27f76cd4faca004d57223e8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:23.964Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/fancy_regex-62bcef081700a87d.fancy_regex.ec0cf621066f0eba-cgu.11.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/strum_macros-42bf958553da808e.strum_macros.4a67107b644dffd2-cgu.06.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/fancy_regex-62bcef081700a87d.fancy_regex.ec0cf621066f0eba-cgu.04.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/strum_macros-42bf958553da808e.strum_macros.4a67107b644dffd2-cgu.08.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/strum_macros-42bf958553da808e.strum_macros.4a67107b644dffd2-cgu.10.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/fancy_regex-62bcef081700a87d.fancy_regex.ec0cf621066f0eba-cgu.05.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/strum_macros-42bf958553da808e.strum_macros.4a67107b644dffd2-cgu.09.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/fancy_regex-62bcef081700a87d.fancy_regex.ec0cf621066f0eba-cgu.10.rcgu.o"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "f2b5c45d-6160-4072-92fe-0510789a7f29"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:23.969Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

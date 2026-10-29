@@ -60,8 +60,8 @@ export function AutomaticWordAnimationButton({
 				Automatic Word Animation and Reveal
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Rare semantic word accents, up to 10%; exceptional typing reveals with
-				sound.
+				Directed word animation, text placement and reveals with matched,
+				editable Earshot sounds.
 			</p>
 			{status && (
 				<p role="status" className="text-xs">

@@ -22,6 +22,7 @@ const stageNames: Record<string, string> = {
 	transitions: "Automatic Transitions",
 	"word-animation": "Word Animation & Reveal",
 	music: "Automatic Music",
+	"sound-effects": "Automatic Sound Effects · Earshot",
 	save: "Save for review",
 };
 const clamp = ({

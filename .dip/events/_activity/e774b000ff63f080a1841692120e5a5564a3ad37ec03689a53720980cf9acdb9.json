@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e774b000ff63f080a1841692120e5a5564a3ad37ec03689a53720980cf9acdb9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:21:51.319Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-earshot-turbo/dev/types/routes.d.ts",
+          "classic/apps/web/.next-earshot-turbo/dev/types/validator.ts",
+          "classic/apps/web/.next-earshot-turbo/dev/types/cache-life.d.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "52f87736-88a2-4310-a8a4-be9e7fb10f3f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:21:51.341Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

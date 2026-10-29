@@ -68,6 +68,7 @@ mod classic_export;
 mod render_queue;
 mod classic_image_inspection;
 mod classic_insert;
+mod classic_procedural;
 mod classic_keyframes;
 mod classic_masks;
 mod classic_media;
@@ -163,6 +164,7 @@ pub(crate) fn register_all(
     )?;
     classic_move::register_classic_move(registry, state.clone(), events.clone())?;
     classic_update::register_classic_update(registry, state.clone(), events.clone())?;
+    classic_procedural::register(registry, state.clone(), events.clone())?;
     classic_background_removal::register_classic_background_removal(
         registry,
         state.clone(),
@@ -359,6 +361,7 @@ where
         || id.starts_with("media.waveform.")
         || id.starts_with("caption.transcribe");
     descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
+    descriptor.cancellable |= id == "timeline.classic.audio.procedural.set";
     descriptor.cancellable |= matches!(
         id,
         "hyperframes.project.inspect"

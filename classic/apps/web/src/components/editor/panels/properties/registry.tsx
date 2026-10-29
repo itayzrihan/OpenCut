@@ -57,7 +57,8 @@ import {
 	ParallaxMotionLoopsPropertiesTab,
 	ParallaxStoryPropertiesTab,
 } from "@/parallax-story-teller/properties-tab";
-import { Camera, Repeat2 } from "lucide-react";
+import { Camera, Repeat2, Code2 } from "lucide-react";
+import { EarshotProperties } from "@/earshot/components/properties";
 
 const TRANSFORM_PARAM_KEYS = [
 	"transform.positionX",
@@ -528,6 +529,22 @@ function getAudioConfig({
 }: {
 	element: AudioElement;
 }): ElementPropertiesConfig {
+	if (element.sourceType === "procedural")
+		return {
+			defaultTab: "code-sound",
+			tabs: [
+				{
+					id: "code-sound",
+					label: "Code sound",
+					icon: <Code2 size={16} />,
+					content: ({ trackId }) => (
+						<EarshotProperties element={element} trackId={trackId} />
+					),
+				},
+				buildAudioTab({ element }),
+				buildSpeedTab({ element }),
+			],
+		};
 	return {
 		defaultTab: "audio",
 		tabs: [buildAudioTab({ element }), buildSpeedTab({ element })],

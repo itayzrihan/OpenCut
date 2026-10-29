@@ -1,3 +1,4 @@
+import { resolveEarshotBuffer } from "@/earshot/audio";
 /* eslint-disable opencut/prefer-object-params -- Internal bounded IO callbacks and the shared readSource(start, end) contract. */
 import { ALL_FORMATS, AudioBufferSink, Input } from "mediabunny";
 import { collectAudioClips, type AudioClipSource } from "@/media/audio";
@@ -175,6 +176,48 @@ export async function prepareExportAudio({
 			sources,
 			async (clip, index) => {
 				signal.throwIfAborted();
+				if (clip.procedural) {
+					const buffer = await resolveEarshotBuffer({
+						spec: clip.procedural,
+						context,
+						signal,
+					});
+					const intervals: Array<{
+						pcm: PcmFile;
+						origin: number;
+						end: number;
+					}> = [];
+					for (const [rangeIndex, range] of windows
+						.get(clip.sourceKey)!
+						.entries()) {
+						signal.throwIfAborted();
+						const name = `source-${index}-${rangeIndex}-code.pcm`;
+						temporary.add(name);
+						const origin = Math.floor(range.start * buffer.sampleRate);
+						const end = Math.min(
+							buffer.length,
+							Math.ceil(range.end * buffer.sampleRate),
+						);
+						const pcm = new PcmFile(
+							await scratch.file(name),
+							buffer.sampleRate,
+							buffer.numberOfChannels,
+						);
+						try {
+							await pcm.open();
+							if (end > origin)
+								await pcm.write(buffer, 0, origin, end - origin);
+							await pcm.seal();
+						} catch (error) {
+							await pcm.abort();
+							throw error;
+						}
+						intervals.push({ pcm, origin, end: range.end });
+					}
+					sourcePcm.set(clip.sourceKey, intervals);
+					sourceReport(index, 1, true);
+					return;
+				}
 				const input = new Input({
 					formats: ALL_FORMATS,
 					source: createMediaSource({

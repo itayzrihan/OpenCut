@@ -82,6 +82,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		transitions: false,
 		wordAnimation: false,
 		music: false,
+		soundEffects: false,
 	});
 	const [starting, setStarting] = useState(false);
 	const [workers, setWorkers] = useState<
@@ -273,6 +274,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 					transitions: options.transitions,
 					wordAnimation: options.wordAnimation,
 					music: options.music,
+					soundEffects: options.soundEffects ?? false,
 					...(options.brandKitId ? { brandKitId: options.brandKitId } : {}),
 				},
 			});
@@ -455,6 +457,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 									["zoom", "Automatic Zoom"],
 									["transitions", "Automatic Transition Edit"],
 									["wordAnimation", "Automatic Word Animation and Reveal"],
+									["soundEffects", "Automatic Sound Effects · Earshot"],
 									["music", "Automatic Music"],
 								] as const
 							).map(([key, label]) => (
@@ -522,6 +525,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 														transitions: "Transitions",
 														wordAnimation: "Word animation & reveal",
 														music: "Music",
+														soundEffects: "Earshot sound effects",
 													})[k],
 											)
 											.join(" · ") || "Basic Full Auto Edit"}

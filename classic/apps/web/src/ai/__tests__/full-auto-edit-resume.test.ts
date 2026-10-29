@@ -51,6 +51,12 @@ mock.module("@/ai/automatic-text-transitions", () => ({
 		calls.push("transitions");
 	},
 }));
+mock.module("@/ai/automatic-sound-effects", () => ({
+	runAutomaticSoundEffects: async () => {
+		calls.push("sound-effects");
+		return { soundCount: 1, summary: "One accent" };
+	},
+}));
 mock.module("@/ai/automatic-word-animation", () => ({
 	runAutomaticWordAnimation: async () => {
 		calls.push("word-animation");
@@ -140,5 +146,26 @@ test("a rejected stage checkpoint never reports completion or starts the next st
 		expect(completed).toEqual([5]);
 	} finally {
 		editor.save.flush = originalFlush;
+	}
+});
+
+test("optional sound-effects stage resumes and checkpoints before music and save", async () => {
+	calls.length = 0;
+	stages.splice(8, 0, "sound-effects");
+	try {
+		const completed: number[] = [];
+		const notes = await runFullAutoEdit({
+			editor,
+			options: { ...options, soundEffects: true },
+			signal: new AbortController().signal,
+			resumeFromStage: 8,
+			onProgress: () => {},
+			onStep: (p) => completed.push(p.completedStages),
+		});
+		expect(calls).toEqual(["sound-effects", "save", "music", "save", "save"]);
+		expect(notes).toContain("1 Earshot sounds. One accent");
+		expect(Math.max(...completed)).toBe(stages.length);
+	} finally {
+		stages.splice(8, 1);
 	}
 });

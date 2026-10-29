@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e9482ca98481baa676459759e1086ae3f40fc5329583c3c1299528c1955ec57a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:10:51.984Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.content-collections",
+          "classic/apps/web/.content-collections/cache",
+          "classic/apps/web/.content-collections/cache/content-collection-config.mjs",
+          "classic/apps/web/.content-collections/generated",
+          "classic/apps/web/.content-collections/cache/mapping.json",
+          "classic/apps/web/.content-collections/generated/allChangelogs.js",
+          "classic/apps/web/.content-collections/generated/index.d.ts",
+          "classic/apps/web/.content-collections/generated/index.js",
+          "classic/apps/web/.next-earshot-qa",
+          "classic/apps/web/.next-earshot-qa/dev",
+          "classic/apps/web/.next-earshot-qa/dev/lock",
+          "classic/apps/web/.next-earshot-qa/dev/cache",
+          "classic/apps/web/.next-earshot-qa/dev/cache/.rscinfo",
+          "classic/apps/web/.next-earshot-qa/dev/logs",
+          "classic/apps/web/.next-earshot-qa/dev/logs/next-development.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "36dadf58-66c1-4824-a677-400404cfd613"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:10:52.168Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

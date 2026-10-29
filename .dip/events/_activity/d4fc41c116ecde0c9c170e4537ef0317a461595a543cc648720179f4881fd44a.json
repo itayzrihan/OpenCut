@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d4fc41c116ecde0c9c170e4537ef0317a461595a543cc648720179f4881fd44a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:34.804Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-earshot-turbo/dev/logs/next-development.log",
+          "classic/apps/web/.next-earshot-turbo/dev/server/chunks/00c3_earshot-sound-effects_PoCut_classic_rust_wasm_pkg_opencut_wasm_bg_032if_e.wasm"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "2a4e3269-3a9f-418f-b8c4-6eb572c70e05"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:34.808Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

@@ -58,6 +58,7 @@ const nextConfig: NextConfig = {
 	},
 	output: "standalone",
 	outputFileTracingIncludes: {
+		"/api/earshot/repository": ["../../vendor/earshot/**/*"],
 		"/api/editor-agent/hyperframes-catalog-preview": [
 			"./.hyperframes-references/**/*",
 		],

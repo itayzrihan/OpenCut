@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a416d829b53c4a9d817084b162c262b4ae370c7e60e871360677ed28c6b30fa3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:16:16.835Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/package.json",
+          "classic/apps/web/src/ai/timeline-source.ts",
+          "classic/apps/web/src/earshot/components/properties.tsx",
+          "classic/apps/web/public/earshot/runtime/source-files.json",
+          "classic/apps/web/public/earshot/runtime/worker.js",
+          "classic/apps/web/public/earshot/runtime/renderer.py",
+          "classic/apps/web/public/earshot/runtime/kernels.js",
+          "classic/apps/web/public/earshot/runtime/manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "c0bc3e4c-f36b-4d5a-8e1b-c36e1dc71adb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:16:16.853Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

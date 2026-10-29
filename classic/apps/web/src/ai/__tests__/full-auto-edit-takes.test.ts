@@ -104,6 +104,12 @@ mock.module("@/ai/automatic-zoom", () => ({ runAutomaticZoom: () => {} }));
 mock.module("@/ai/automatic-text-transitions", () => ({
 	runAutomaticTextTransitions: () => {},
 }));
+mock.module("@/ai/automatic-sound-effects", () => ({
+	runAutomaticSoundEffects: async () => ({
+		soundCount: 0,
+		summary: "No accents",
+	}),
+}));
 mock.module("@/ai/automatic-word-animation", () => ({
 	runAutomaticWordAnimation: () => {},
 }));

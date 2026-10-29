@@ -43,6 +43,7 @@ interface SourceTrackLine {
 }
 
 interface SourceElementLine {
+	procedural?: import("@/earshot/types").EarshotSpec;
 	id: string;
 	track?: string;
 	type: string;
@@ -312,8 +313,10 @@ function serializeElementLine({
 	if (element.type === "audio") {
 		if (element.sourceType === "upload") {
 			line.media = element.mediaId;
-		} else {
+		} else if (element.sourceType === "library") {
 			line.src = element.sourceUrl;
+		} else {
+			line.procedural = element.procedural;
 		}
 	}
 	if (element.type === "sticker") {

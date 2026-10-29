@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "33523330ccb8b3e134be75a12d24ba4fad7e763cb3257b74682021366b974c06",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:07:51.704Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/regex_automata-b96f3f302c87d500.regex_automata.b6dc1f06a2a7f3e5-cgu.00.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/bridge-e317e836d27d0124.bridge.29ff0e32a537ea18-cgu.0.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/regex_automata-b96f3f302c87d500.regex_automata.b6dc1f06a2a7f3e5-cgu.15.rcgu.o",
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/phf-3d6ce20cb3ce9c0a.d",
+          ".local/earshot-cargo-target/debug/deps/rmeta3tIkAu",
+          ".local/earshot-cargo-target/debug/deps/rmeta3tIkAu/full.rmeta",
+          ".local/earshot-cargo-target/debug/deps/bridge-e317e836d27d0124.36ouh8nsf67hk5he5a1reqgu9.rcgu.o",
+          ".local/earshot-cargo-target/debug/deps/rustc6A45VN",
+          ".local/earshot-cargo-target/debug/deps/rustc6A45VN/list",
+          ".local/earshot-cargo-target/debug/deps/rustc6A45VN/symbols.o",
+          ".local/earshot-cargo-target/debug/deps/rustc6A45VN/rmeta.o",
+          ".local/earshot-cargo-target/debug/deps/yoke_derive-daa7f530b735ee11.yoke_derive.c4508236203e2ee0-cgu.08.rcgu.o"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "3ca9cbf4-58c7-414f-a184-272ec1860a70"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:07:51.711Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

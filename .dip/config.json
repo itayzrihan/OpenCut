@@ -367,6 +367,13 @@
         ".dip/tools/verify-smart-takes-integrity.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "earshot-code-audio": {
+      "command": [
+        "node",
+        "analysis/earshot-integration-2026-10-29/verify.mjs"
+      ],
+      "timeoutMs": 900000
     }
   },
   "mode": "coordinate"

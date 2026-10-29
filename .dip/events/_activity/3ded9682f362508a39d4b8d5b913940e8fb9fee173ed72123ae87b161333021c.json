@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ded9682f362508a39d4b8d5b913940e8fb9fee173ed72123ae87b161333021c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:03:26.635Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-cargo-target/wasm32-unknown-unknown/debug/deps/wasm_bindgen-65433f19de1fd3d1.d"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "25da714d-e8b5-4ed7-90a8-a21777c1257b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:03:26.638Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

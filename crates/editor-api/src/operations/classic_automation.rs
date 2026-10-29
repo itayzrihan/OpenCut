@@ -12,6 +12,7 @@ enum Action {
     Zoom,
     Transitions,
     WordAnimation,
+    SoundEffects,
     Music,
     AutoTexts,
 }
@@ -22,6 +23,8 @@ struct Recipe {
     transitions: bool,
     word_animation: bool,
     music: bool,
+    #[serde(default)]
+    sound_effects: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     brand_kit_id: Option<String>,
 }

@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9f74ba77c16a587142a8a44452366be7485f2a2fa30f5188cfdc6b4c1da0b42a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:01:46.354Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/source_document.rs",
+          "classic/rust/crates/timeline/src/timeline.rs",
+          "crates/editor-api/src/classic.rs",
+          "crates/editor-api/src/lib.rs",
+          "crates/editor-api/src/operations.rs",
+          "crates/editor-api/src/operations/classic_insert.rs",
+          "classic/rust/crates/timeline/src/procedural_audio.rs",
+          "crates/editor-api/src/classic_procedural.rs",
+          "crates/editor-api/src/operations/classic_procedural.rs",
+          "crates/editor-api/tests/classic_procedural_audio.rs",
+          "crates/editor-api/tests/fixtures/earshot-source-contract.json",
+          "classic/apps/web/src/ai/__tests__/full-auto-edit-resume.test.ts",
+          "classic/apps/web/src/ai/__tests__/full-auto-edit-routed.test.ts",
+          "classic/apps/web/src/ai/__tests__/full-auto-edit-takes.test.ts",
+          "classic/apps/web/src/ai/automatic-word-animation.ts",
+          "classic/apps/web/src/ai/components/ai-chat-view.tsx",
+          "classic/apps/web/src/ai/components/automatic-word-animation-button.tsx",
+          "classic/apps/web/src/ai/components/full-auto-edit-button.tsx",
+          "classic/apps/web/src/ai/full-auto-edit.ts",
+          "classic/apps/web/src/ai/skills/automatic-word-animation/SKILL.md",
+          "classic/apps/web/src/ai/skills/automatic-word-animation/runtime.generated.ts",
+          "classic/apps/web/src/app/api/batch-edit/route.ts",
+          "classic/apps/web/src/batch/automation-progress.tsx",
+          "classic/apps/web/src/batch/provider.tsx",
+          "classic/apps/web/src/batch/scene-jobs.ts",
+          "classic/apps/web/src/batch/server.ts",
+          "classic/rust/crates/timeline/src/automatic_word_animation.rs",
+          "classic/rust/crates/timeline/src/full_auto_edit.rs",
+          "crates/editor-api/src/operations/classic_automation.rs",
+          "classic/apps/web/src/ai/__tests__/automatic-sound-effects.test.ts",
+          "classic/apps/web/src/ai/__tests__/earshot-repository.test.ts",
+          "classic/apps/web/src/ai/automatic-sound-effects.ts",
+          "classic/apps/web/src/ai/components/automatic-sound-effects-button.tsx",
+          "classic/apps/web/src/ai/earshot-direction.ts",
+          "classic/apps/web/src/ai/earshot-repository.ts",
+          "classic/apps/web/src/app/api/earshot",
+          "classic/apps/web/src/app/api/earshot/repository",
+          "classic/apps/web/src/app/api/earshot/repository/route.ts",
+          "classic/rust/crates/timeline/src/automatic_sound_effects.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "0edbe665-a439-462d-9320-44062603632d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:01:46.358Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

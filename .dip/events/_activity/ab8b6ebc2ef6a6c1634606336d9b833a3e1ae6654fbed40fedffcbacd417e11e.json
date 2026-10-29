@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab8b6ebc2ef6a6c1634606336d9b833a3e1ae6654fbed40fedffcbacd417e11e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:30.166Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/export/audio-stream.ts",
+          "classic/apps/web/src/earshot/audio.ts",
+          "classic/apps/web/src/earshot/element.ts",
+          "classic/apps/web/src/earshot/use-buffer.ts",
+          "classic/apps/web/src/earshot/components/library.tsx",
+          "classic/apps/web/src/earshot/components/properties.tsx",
+          "classic/apps/web/src/earshot/__tests__/timeline-audio.test.ts",
+          "classic/apps/web/src/media/audio.ts",
+          "classic/apps/web/src/core/managers/audio-manager.ts",
+          "classic/apps/web/src/timeline/types.ts",
+          "classic/apps/web/src/components/editor/panels/properties/registry.tsx",
+          "classic/apps/web/src/sounds/components/assets-view.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "593a1426-c829-4a49-ab62-0b60fb01a2be"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:30.171Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

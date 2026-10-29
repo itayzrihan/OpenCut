@@ -44,6 +44,7 @@ async function openTimelineReader(input: TimelineInput) {
 	// The common unprocessed podcast avoids whole-episode mixing and disk staging.
 	if (
 		clips.length === 1 &&
+		!clip.procedural &&
 		(!clip.retime || clip.retime.rate === 1) &&
 		!hasAudioProcessing(clip.timelineElement.params) &&
 		!hasVariableAudioGain({ element: clip.timelineElement })

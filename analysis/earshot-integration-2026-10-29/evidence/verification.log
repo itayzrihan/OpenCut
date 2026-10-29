@@ -1,0 +1,76 @@
+Earshot runtime ready: 12 verified local resources; 277 source/document files.
+PASS: seven accelerated kernels match original Earshot equations (1e-10 tolerance).
+PASS: builtin/custom PCM lengths match JavaScript at half-sample boundaries.
+PASS: 3 sound fingerprints, deterministic custom code/echo, edit-wrapper PCM parity, bounded PCM, no ML/model imports.
+    Finished `test` profile [unoptimized] target(s) in 1.24s
+     Running tests/classic_procedural_audio.rs (.local/earshot-cargo-target/debug/deps/classic_procedural_audio-c12313cb940add2a)
+
+running 6 tests
+test timeline_source_codec_preserves_valid_code_and_rejects_invalid_procedural_data ... ok
+test shared_host_contract_boundary_cases ... ok
+test procedural_duration_respects_trims_rate_cancellation_and_atomic_targets ... ok
+test procedural_sources_roundtrip_without_files_and_edit_atomically_with_history ... ok
+test procedural_insert_derives_missing_duration_from_source_and_trims ... ok
+test procedural_validation_is_shared_by_insert_updates_attach_and_admin_patch ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+    Finished `test` profile [unoptimized] target(s) in 2.66s
+     Running unittests src/timeline.rs (/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target/debug/deps/timeline-c2ce272b5eb10f27)
+
+running 6 tests
+test automatic_sound_effects::tests::bounded_word_lead_and_tail_preserve_anchor_and_speech ... ok
+test automatic_sound_effects::tests::rerun_preserves_manual_audio ... ok
+test automatic_sound_effects::tests::general_pass_rejects_duplicate_word_reveal_accents ... ok
+test automatic_sound_effects::tests::unselected_words_cannot_receive_automatic_reveal_sounds ... ok
+test automatic_sound_effects::tests::wrong_word_and_past_end_reject_atomically ... ok
+test automatic_sound_effects::tests::word_sound_preserves_speech_and_is_idempotent ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 176 filtered out; finished in 0.05s
+
+    Finished `test` profile [unoptimized] target(s) in 1.14s
+     Running unittests src/timeline.rs (/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target/debug/deps/timeline-c2ce272b5eb10f27)
+
+running 9 tests
+test automatic_word_animation::tests::existing_manual_accents_consume_budget ... ok
+test automatic_word_animation::tests::sparse_word_scope_preserves_timing_and_other_words ... ok
+test automatic_word_animation::tests::typing_audio_matches_only_word_span ... ok
+test automatic_word_animation::tests::cap_counts_whole_caption_and_rejects_atomically ... ok
+test automatic_word_animation::tests::creative_reveal_moves_only_caption_and_defers_sound_to_earshot ... ok
+test automatic_word_animation::tests::rejects_unknown_and_untimed_words ... ok
+test automatic_word_animation::tests::typing_has_a_stricter_budget_and_manual_audio_survives_rerun ... ok
+test automatic_word_animation::tests::reveal_sound_ids_do_not_collide_between_scenes ... ok
+test automatic_word_animation::tests::rerun_restores_and_keeps_later_manual_changes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 173 filtered out; finished in 0.43s
+
+    Finished `test` profile [unoptimized] target(s) in 1.57s
+     Running unittests src/timeline.rs (/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target/debug/deps/timeline-c2ce272b5eb10f27)
+
+running 9 tests
+test full_auto_edit::tests::samples_follow_chosen_cuts_not_discarded_source_gaps ... ok
+test full_auto_edit::tests::untrusted_detections_fail_closed ... ok
+test full_auto_edit::tests::options_are_independent_and_base_order_is_fixed ... ok
+test full_auto_edit::tests::finishing_covers_final_duration_and_preserves_speech ... ok
+test full_auto_edit::tests::unattended_missing_faces_completes_vertical_cover_and_two_faces_center_midpoint ... ok
+test full_auto_edit::tests::framing_and_finish_preserve_reordered_cut_clocks ... ok
+test full_auto_edit::tests::finishing_ids_do_not_collide_between_scenes ... ok
+test full_auto_edit::tests::cover_centers_and_clamps_without_black_edges ... ok
+test full_auto_edit::tests::center_only_preserves_everything_except_horizontal_position ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 173 filtered out; finished in 0.02s
+
+PASS src/earshot/catalog.test.ts (4 passed, 0 skipped)
+PASS src/earshot/__tests__/timeline-audio.test.ts (5 passed, 0 skipped)
+PASS src/earshot/__tests__/export-browser.test.ts (1 passed, 0 skipped)
+PASS src/ai/__tests__/automatic-sound-effects.test.ts (8 passed, 0 skipped)
+PASS src/ai/__tests__/earshot-repository.test.ts (5 passed, 0 skipped)
+PASS src/ai/__tests__/full-auto-edit-resume.test.ts (4 passed, 0 skipped)
+PASS src/ai/__tests__/full-auto-edit-routed.test.ts (2 passed, 0 skipped)
+PASS src/ai/__tests__/full-auto-edit-takes.test.ts (14 passed, 0 skipped)
+PASS src/media/__tests__/playback-audio-cache.test.ts (2 passed, 0 skipped)
+PASS src/core/managers/__tests__/audio-preparation.test.ts (6 passed, 0 skipped)
+PASS src/export/__tests__/audio-source-windows.test.ts (2 passed, 0 skipped)
+11 suites: 0 failed; 53 tests passed, 0 failed, 0 skipped (17.3s)
+Report: /Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/classic-web-tests/1793251713621/summary.json
+Earshot canonical, synthesis, AI and timeline integration checks passed.

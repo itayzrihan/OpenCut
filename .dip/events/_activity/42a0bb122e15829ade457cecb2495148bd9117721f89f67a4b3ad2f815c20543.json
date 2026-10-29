@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "eventId": "42a0bb122e15829ade457cecb2495148bd9117721f89f67a4b3ad2f815c20543",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:23:56.280Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1793251435338",
+          ".local/classic-web-tests/1793251435338/src__earshot__catalog.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__earshot____tests____timeline-audio.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__ai____tests____automatic-sound-effects.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__ai____tests____earshot-repository.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__ai____tests____full-auto-edit-routed.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__ai____tests____full-auto-edit-takes.test.ts.log",
+          ".local/classic-web-tests/1793251435338/src__media____tests____playback-audio-cache.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "a9cb790f-f3b7-4ef5-9d53-47ee1b32982d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:23:56.284Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

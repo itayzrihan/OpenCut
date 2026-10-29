@@ -543,6 +543,9 @@ fn validate_document(document: &Value) -> Vec<TimelineSourceDiagnostic> {
 
         for (element_index, element_value) in elements.iter().enumerate() {
             let element_path = format!("{elements_path}[{element_index}]");
+            if let Err(message) = crate::validate_procedural_audio_element(element_value) {
+                diagnostics.push(diagnostic("invalid_procedural_audio", &element_path, &message));
+            }
             let Some(element) =
                 require_object(element_value, &element_path, "element", &mut diagnostics)
             else {

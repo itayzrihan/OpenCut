@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "eventId": "384950ce493ca8c3573ae2a8c6522d563e442daf563812ebfcfd39f599c49a1c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:12:40.937Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-earshot-qa/dev/server/app-paths-manifest.json",
+          "classic/apps/web/.next-earshot-qa/dev/server/vendor-chunks",
+          "classic/apps/web/.next-earshot-qa/dev/server/pages-manifest.json",
+          "classic/apps/web/.next-earshot-qa/dev/server/server-reference-manifest.js",
+          "classic/apps/web/.next-earshot-qa/dev/server/server-reference-manifest.json",
+          "classic/apps/web/.next-earshot-qa/dev/server/webpack-runtime.js",
+          "classic/apps/web/.next-earshot-qa/dev/server/_rsc_src_export_queue_worker-auth_ts.js",
+          "classic/apps/web/.next-earshot-qa/dev/types/package.json",
+          "classic/apps/web/.next-earshot-qa/dev/server/app",
+          "classic/apps/web/.next-earshot-qa/dev/server/vendor-chunks/bun.js",
+          "classic/apps/web/.next-earshot-qa/dev/types/app",
+          "classic/apps/web/.next-earshot-qa/dev/server/app/api",
+          "classic/apps/web/.next-earshot-qa/dev/types/app/api",
+          "classic/apps/web/.next-earshot-qa/dev/types/app/api/accounts",
+          "classic/apps/web/.next-earshot-qa/dev/server/app/api/accounts",
+          "classic/apps/web/.next-earshot-qa/dev/server/app/api/accounts/route.js",
+          "classic/apps/web/.next-earshot-qa/dev/types/app/api/accounts/route.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "f855203c-70ef-4ef6-93d9-b0d33b17fb05"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:12:42.657Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

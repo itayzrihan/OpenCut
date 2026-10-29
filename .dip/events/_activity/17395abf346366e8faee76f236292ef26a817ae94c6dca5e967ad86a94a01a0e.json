@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17395abf346366e8faee76f236292ef26a817ae94c6dca5e967ad86a94a01a0e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:58:33.639Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/earshot/__tests__",
+          "classic/apps/web/src/earshot/__tests__/timeline-audio.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "b9e54a7c-4db3-4740-8f3f-dff48f80ace7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:58:33.644Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

@@ -171,7 +171,16 @@ export interface LibraryAudioElement extends BaseAudioElement {
 	librarySourceType?: "remote" | "shared";
 }
 
-export type AudioElement = UploadAudioElement | LibraryAudioElement;
+/** Durable recipe only; PCM buffers are transient playback/export data. */
+export interface ProceduralAudioElement extends BaseAudioElement {
+	sourceType: "procedural";
+	procedural: import("@/earshot/types").EarshotSpec;
+}
+
+export type AudioElement =
+	| UploadAudioElement
+	| LibraryAudioElement
+	| ProceduralAudioElement;
 
 interface BaseTimelineElement {
 	/** Absent means enabled; false bypasses picture, effects and audio. */
@@ -414,9 +423,11 @@ export type VisualElement = Extract<
 
 export type CreateUploadAudioElement = Omit<UploadAudioElement, "id">;
 export type CreateLibraryAudioElement = Omit<LibraryAudioElement, "id">;
+export type CreateProceduralAudioElement = Omit<ProceduralAudioElement, "id">;
 export type CreateAudioElement =
 	| CreateUploadAudioElement
-	| CreateLibraryAudioElement;
+	| CreateLibraryAudioElement
+	| CreateProceduralAudioElement;
 export type CreateVideoElement = Omit<VideoElement, "id">;
 export type CreateImageElement = Omit<ImageElement, "id">;
 export type CreateTextElement = Omit<TextElement, "id">;

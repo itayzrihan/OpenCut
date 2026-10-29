@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e6b71df643c99eb602a6fbf21fa210b730ec4292c2ed56daf4ac0bfd56e21f57",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:31:48.883Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/earshot-qa-accounts/data/26c8b659-383e-444f-a6eb-1c07786ca8b3/batch.lock"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "14099e48-57e5-4772-b246-d4cb41730916"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:31:48.885Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

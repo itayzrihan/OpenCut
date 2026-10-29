@@ -10,6 +10,7 @@ import { updateSceneInArray } from "@/timeline/scenes";
 import { runLocalSubjectFraming } from "./subject-framing";
 import { runAutoTexts } from "@/subtitles/auto-texts";
 import { DEFAULT_CAPTION_LAYOUT } from "@/subtitles/caption-layout";
+import { runAutomaticSoundEffects } from "./automatic-sound-effects";
 import { runAutomaticMusic } from "./automatic-music";
 import { runAutomaticZoom } from "./automatic-zoom";
 import { runAutomaticTextTransitions } from "./automatic-text-transitions";
@@ -28,6 +29,7 @@ export interface FullAutoOptions {
 	transitions: boolean;
 	wordAnimation: boolean;
 	music: boolean;
+	soundEffects?: boolean;
 }
 
 export interface FullAutoStepProgress {
@@ -323,6 +325,16 @@ export async function runFullAutoEdit({
 						onProgress: progress,
 					});
 					break;
+				case "sound-effects": {
+					const result = await runAutomaticSoundEffects({
+						editor,
+						signal,
+						onProgress: progress,
+						brandContext,
+					});
+					notes.push(`${result.soundCount} Earshot sounds. ${result.summary}`);
+					break;
+				}
 				case "music": {
 					const result = await runAutomaticMusic({
 						preferredAssetIds: kit?.musicIds,

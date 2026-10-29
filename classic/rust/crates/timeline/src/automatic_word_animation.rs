@@ -23,6 +23,10 @@ pub struct CompileAutomaticWordAnimationOptions {
     pub source_json: String,
     pub plan_json: String,
     pub preset_ids_json: String,
+    #[serde(default)]
+    pub procedural_sounds: bool,
+    #[serde(default)]
+    pub creative_reveals: bool,
 }
 #[cfg_attr(feature = "wasm", derive(tsify_next::Tsify))]
 #[cfg_attr(feature = "wasm", tsify(into_wasm_abi))]
@@ -51,6 +55,16 @@ struct Event {
     animation_id: String,
     letter_by_letter: bool,
     reason: String,
+    #[serde(default)]
+    position: Option<Position>,
+    #[serde(default)]
+    reveal_mode: Option<String>,
+}
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Position {
+    x: f64,
+    y: f64,
 }
 fn union(mut spans: Vec<(i64, i64)>) -> i64 {
     spans.sort_unstable();
@@ -98,6 +112,12 @@ fn compile(
                 .into(),
         );
     }
+    let width = doc["projectSettings"]["canvasSize"]["width"]
+        .as_f64()
+        .unwrap_or(1080.0);
+    let height = doc["projectSettings"]["canvasSize"]["height"]
+        .as_f64()
+        .unwrap_or(1920.0);
     let tracks = doc["scene"]["tracks"]
         .as_array_mut()
         .ok_or("Missing tracks")?;
@@ -123,6 +143,19 @@ fn compile(
                     }
                 }
                 e.as_object_mut().unwrap().remove(META);
+                let placement = e["automaticWordPlacement"].clone();
+                if placement.is_object() {
+                    for key in ["transform.positionX", "transform.positionY"] {
+                        if e["params"][key] == placement["applied"][key] {
+                            if placement["before"][key].is_null() {
+                                e["params"].as_object_mut().unwrap().remove(key);
+                            } else {
+                                e["params"][key] = placement["before"][key].clone();
+                            }
+                        }
+                    }
+                    e.as_object_mut().unwrap().remove("automaticWordPlacement");
+                }
             }
         }
     }
@@ -197,7 +230,7 @@ fn compile(
             || event.reason.trim().is_empty()
             || event.reason.len() > 1000
             || !(event.animation_id == "none" && event.letter_by_letter
-                || CLASSICS.contains(&event.animation_id.as_str())
+                || (o.creative_reveals || CLASSICS.contains(&event.animation_id.as_str()))
                     && catalog.contains(&event.animation_id))
         {
             return Err(
@@ -262,11 +295,30 @@ fn compile(
         let before = json!({"wordAnimationId":w["wordAnimationId"],"revealMode":w["revealMode"],"glowerEnabled":w["glowerEnabled"]});
         w["wordAnimationId"] = json!(event.animation_id);
         // Keep other words visible. Only the chosen word can type itself in.
-        w["revealMode"] = json!(if event.letter_by_letter {
-            "letter-by-letter"
-        } else {
-            "row"
-        });
+        let reveal = event
+            .reveal_mode
+            .as_deref()
+            .unwrap_or(if event.letter_by_letter {
+                "letter-by-letter"
+            } else {
+                "row"
+            });
+        if ![
+            "row",
+            "letter-by-letter",
+            "growing-row",
+            "spoken-word",
+            "spoken-word-keep",
+            "emphasize-spoken",
+            "emphasize-spoken-keep",
+        ]
+        .contains(&reveal)
+            || (!o.creative_reveals && event.reveal_mode.is_some())
+            || (reveal == "letter-by-letter") != event.letter_by_letter
+        {
+            return Err("Choose a supported reveal and keep letterByLetter consistent".into());
+        }
+        w["revealMode"] = json!(reveal);
         if event.animation_id == "cinema-breath-6" {
             w["glowerEnabled"] = json!(true);
         }
@@ -277,6 +329,31 @@ fn compile(
         e[META].as_array_mut().unwrap().push(
             json!({"wordId":event.word_id,"before":before,"applied":applied,"reason":event.reason}),
         );
+        if let Some(position) = &event.position {
+            if !o.creative_reveals
+                || !position.x.is_finite()
+                || !position.y.is_finite()
+                || position.x.abs() > width * 0.4
+                || position.y.abs() > height * 0.4
+                || e.get("animations").is_some_and(|v| !v.is_null())
+            {
+                return Err("Caption position must remain in the safe canvas and preserve animated manual placement".into());
+            }
+            if let Some(previous) = e.get("automaticWordPlacement").filter(|v| v.is_object()) {
+                if previous["applied"]["transform.positionX"] != json!(position.x)
+                    || previous["applied"]["transform.positionY"] != json!(position.y)
+                {
+                    return Err("Words in the same caption must agree on its placement".into());
+                }
+            } else {
+                let before = json!({"transform.positionX":e["params"]["transform.positionX"],"transform.positionY":e["params"]["transform.positionY"]});
+                let applied =
+                    json!({"transform.positionX":position.x,"transform.positionY":position.y});
+                e["automaticWordPlacement"] = json!({"before":before,"applied":applied});
+                e["params"]["transform.positionX"] = json!(position.x);
+                e["params"]["transform.positionY"] = json!(position.y);
+            }
+        }
         accented.push((start, start + duration));
         if event.letter_by_letter {
             if b - a < 24000 || b - a > 360000 {
@@ -288,16 +365,24 @@ fn compile(
         }
     }
     let coverage = union(accented) as f64 / duration as f64 * 100.0;
-    if coverage > 10.0001 {
+    let max_coverage = if o.creative_reveals { 25.0 } else { 10.0 };
+    if coverage > max_coverage + 0.0001 {
         return Err(format!(
-            "Combined existing and planned caption coverage {coverage:.1}% exceeds 10%; select fewer captions"
+            "Combined existing and planned caption coverage {coverage:.1}% exceeds {max_coverage}%; select fewer captions"
         ));
     }
-    if reveal_texts.len() > 2 || union(reveal_spans.clone()) as f64 > duration as f64 * 0.02 {
-        return Err(
-            "Letter by Letter is exceptional: maximum two captions and 2% of video; prefer none"
-                .into(),
-        );
+    let (max_reveals, reveal_fraction) = if o.creative_reveals {
+        (8, 0.08)
+    } else {
+        (2, 0.02)
+    };
+    if reveal_texts.len() > max_reveals
+        || union(reveal_spans.clone()) as f64 > duration as f64 * reveal_fraction
+    {
+        return Err(format!(
+            "Letter by Letter is selective: maximum {max_reveals} captions and {}% of video",
+            reveal_fraction * 100.0
+        ));
     }
     // Merge adjacent typing words; never place a typing sound across unrelated speech.
     reveal_links.sort_unstable();
@@ -312,7 +397,11 @@ fn compile(
             merged.push((a, b, text_id));
         }
     }
-    for (i, (a, b, text_id)) in merged.into_iter().enumerate() {
+    for (i, (a, b, text_id)) in merged
+        .into_iter()
+        .enumerate()
+        .filter(|_| !o.procedural_sounds)
+    {
         sounds.push(json!({"id":format!("{OWNER}:{scene_id}:sfx:{i}"),"type":"audio","sourceType":"library","librarySourceType":"shared","libraryAssetId":"da73d7d4-9b71-4a24-84ad-f6c51034354c","name":"Word Reveal · Typing","startTime":a,"duration":b-a,"trimStart":0,"trimEnd":1872000-(b-a),"sourceDuration":1872000,"automaticWordAnimationOwner":OWNER,"params":{"volume":-5,"muted":false,"fadeInDuration":0,"fadeOutDuration":0.04,"opencut.typingRevealSfx.kind":"letter-by-letter-typing-sfx","opencut.typingRevealSfx.textElementId":text_id}}));
     }
     let sound_count = sounds.len();
@@ -357,6 +446,8 @@ mod tests {
             source_json: d.to_string(),
             plan_json: json!({"densityReason":"Rare emphasis","events":events}).to_string(),
             preset_ids_json: json!(CLASSICS).to_string(),
+            procedural_sounds: false,
+            creative_reveals: false,
         })
     }
     fn doc(r: &AutomaticWordAnimationResult) -> Value {
@@ -376,6 +467,39 @@ mod tests {
         assert_eq!(d["scene"]["tracks"][1], before["scene"]["tracks"][1]);
         assert_eq!(
             d["scene"]["tracks"][0]["elements"][5]["params"],
+            before["scene"]["tracks"][0]["elements"][5]["params"]
+        );
+    }
+    #[test]
+    fn creative_reveal_moves_only_caption_and_defers_sound_to_earshot() {
+        let before = source();
+        let mut chosen = event(5, true);
+        chosen["position"] = json!({"x":100,"y":400});
+        chosen["revealMode"] = json!("letter-by-letter");
+        let r = compile_automatic_word_animation(CompileAutomaticWordAnimationOptions {
+            source_json: before.to_string(),
+            plan_json: json!({"densityReason":"Directed reveal","events":[chosen]}).to_string(),
+            preset_ids_json: json!(CLASSICS).to_string(),
+            procedural_sounds: true,
+            creative_reveals: true,
+        });
+        let d = doc(&r);
+        assert_eq!(r.sound_count, 0);
+        assert_eq!(
+            d["scene"]["tracks"][0]["elements"][5]["params"]["transform.positionY"].as_f64(),
+            Some(400.0)
+        );
+        assert_eq!(
+            d["scene"]["tracks"][0]["elements"][5]["wordRuns"][0]["text"],
+            "key"
+        );
+        assert_eq!(
+            d["scene"]["tracks"][0]["elements"][5]["wordRuns"][0]["startTime"],
+            24000
+        );
+        let restored = doc(&run(d, vec![]));
+        assert_eq!(
+            restored["scene"]["tracks"][0]["elements"][5]["params"],
             before["scene"]["tracks"][0]["elements"][5]["params"]
         );
     }

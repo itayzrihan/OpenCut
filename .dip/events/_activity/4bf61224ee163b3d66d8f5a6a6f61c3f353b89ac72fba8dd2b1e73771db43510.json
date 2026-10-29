@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4bf61224ee163b3d66d8f5a6a6f61c3f353b89ac72fba8dd2b1e73771db43510",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:18:37.868Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-sound-effects",
+        "recordId": "c9c579af-296d-4efe-9125-137bde4eba5f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:18:37.877Z",
+  "parents": [],
+  "branch": "codex/earshot-sound-effects"
+}

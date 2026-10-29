@@ -62,6 +62,7 @@ export function FullAutoEditButton({
 		transitions: false,
 		wordAnimation: false,
 		music: false,
+		soundEffects: false,
 	});
 	const run = async (resume = false) => {
 		if (running) return;
@@ -153,6 +154,7 @@ export function FullAutoEditButton({
 									["zoom", "Automatic Zoom"],
 									["transitions", "Automatic Transition Edit"],
 									["wordAnimation", "Automatic Word Animation and Reveal"],
+									["soundEffects", "Automatic Sound Effects · Earshot"],
 									["music", "Automatic Music"],
 								] as const
 							).map(([key, label]) => (
