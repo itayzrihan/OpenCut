@@ -8,7 +8,11 @@ import { mediaTime } from "@/wasm";
 type DecodeOptions = Parameters<
 	typeof import("@/media/audio-window").openAudioWindowReader
 >[0];
-type ReadOptions = Parameters<Awaited<ReturnType<typeof import("@/media/audio-window").openAudioWindowReader>>["read"]>[0];
+type ReadOptions = Parameters<
+	Awaited<
+		ReturnType<typeof import("@/media/audio-window").openAudioWindowReader>
+	>["read"]
+>[0];
 type CutOptions = Parameters<
 	typeof import("../cut-silence").removeSilenceRangesFromTracks
 >[0];
@@ -28,6 +32,7 @@ type SelectedClip = {
 };
 type TestScene = {
 	id: string;
+	takeAssembly?: { id: string };
 	tracks: {
 		main: { id: string; type: string; elements: SelectedClip["element"][] };
 		audio: Array<{
@@ -44,6 +49,7 @@ type TestScene = {
 		}>;
 	};
 };
+let takeCleanup: unknown[] = [];
 let analysis: AnalyzeSmartAudioSilenceOptions[] = [];
 let decodeOptions: DecodeOptions[] = [];
 let readOptions: ReadOptions[] = [];
@@ -87,7 +93,9 @@ mock.module("@/media/audio-window", () => ({
 				onDecode();
 				return readWindow(range);
 			},
-			close: () => { closedReaders++; },
+			close: () => {
+				closedReaders++;
+			},
 		};
 	},
 }));
@@ -112,6 +120,9 @@ mock.module("@/timeline/cut-silence", () => ({
 const { removeSmartSilence } = await import("../smart-silence");
 const editor = {
 	command: {
+		cleanSmartTakeSilence: async (options: unknown) => {
+			takeCleanup.push(options);
+		},
 		enableCanonical: async () => {},
 		getStateRevision: () => revision,
 		executeSilenceTransaction: (options: {
@@ -130,6 +141,7 @@ const editor = {
 	media: { getAssets: () => [{ id: "media", url: "blob:source" }] },
 } as unknown as EditorCore;
 beforeEach(() => {
+	takeCleanup = [];
 	analysis = [];
 	decodeOptions = [];
 	readOptions = [];
@@ -139,7 +151,8 @@ beforeEach(() => {
 	onDecode = () => {};
 	revision = 0;
 	samples = new Float32Array(3000);
-	readWindow = (range) => samples.slice(Math.round(range.start * 1000), Math.ceil(range.end * 1000));
+	readWindow = (range) =>
+		samples.slice(Math.round(range.start * 1000), Math.ceil(range.end * 1000));
 	useRealAnalyzer = false;
 	plan = (tracks) => ({ ...tracks });
 	project = {
@@ -245,7 +258,9 @@ test("missing decoded timestamp regions reach Rust as invalid coverage rather th
 	useRealAnalyzer = true;
 	samples.fill(0.1);
 	samples.fill(Number.NaN, 1400, 1410);
-	await expect(removeSmartSilence({ editor })).rejects.toThrow("No cuts applied");
+	await expect(removeSmartSilence({ editor })).rejects.toThrow(
+		"No cuts applied",
+	);
 	const actual = wasm.analyzeSmartAudioSilence(analysis[0]);
 	expect(actual.diagnostics.safetyHoldReason).toBe("invalid-audio-features");
 	expect(actual.cutRanges).toHaveLength(0);
@@ -320,12 +335,21 @@ test("overlapping clips cannot delete another selected speaker's words", async (
 test("a late 65-second excerpt only reads its selected source in bounded windows", async () => {
 	selection[0].element.trimStart = 5000 * 120000;
 	selection[0].element.duration = 65 * 120000;
-	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
+	readWindow = ({ start, end }) =>
+		new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
 	await removeSmartSilence({ editor });
-	expect(readOptions.map(({ start, end }) => [start, end])).toEqual([[5000, 5030], [5030, 5060], [5060, 5065]]);
+	expect(readOptions.map(({ start, end }) => [start, end])).toEqual([
+		[5000, 5030],
+		[5030, 5060],
+		[5060, 5065],
+	]);
 	expect(analysis[0].frames[0].start).toBe(0);
 	expect(analysis[0].frames.at(-1)?.end).toBeCloseTo(65);
-	expect(analysis[0].frames.every((f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6)).toBe(true);
+	expect(
+		analysis[0].frames.every(
+			(f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6,
+		),
+	).toBe(true);
 	expect(closedReaders).toBe(3);
 });
 
@@ -334,23 +358,48 @@ test("window clocks remain contiguous under slow playback and sync advance", asy
 	selection[0].element.duration = 65 * 120000;
 	selection[0].element.retime = { rate: 0.5 };
 	selection[0].element.params.audioSyncOffset = -0.3;
-	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
+	readWindow = ({ start, end }) =>
+		new Float32Array(Math.ceil((end - start) * 1000)).fill(0.1);
 	await removeSmartSilence({ editor });
 	expect(readOptions).toHaveLength(2);
 	expect(readOptions[0].start).toBeCloseTo(5000.15);
 	expect(readOptions.at(-1)?.end).toBeCloseTo(5032.65);
 	expect(analysis[0].frames.at(-1)?.end).toBeCloseTo(65);
-	expect(analysis[0].frames.every((f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6)).toBe(true);
+	expect(
+		analysis[0].frames.every(
+			(f, i, a) => !i || Math.abs(f.start - a[i - 1].end) < 1e-6,
+		),
+	).toBe(true);
 	expect(closedReaders).toBe(2);
 });
 
 test("cancellation between windows releases the reader and publishes no edit", async () => {
 	selection[0].element.duration = 65 * 120000;
-	readWindow = ({ start, end }) => new Float32Array(Math.ceil((end - start) * 1000));
+	readWindow = ({ start, end }) =>
+		new Float32Array(Math.ceil((end - start) * 1000));
 	const controller = new AbortController();
-	onDecode = () => { if (readOptions.length === 2) controller.abort(); };
-	await expect(removeSmartSilence({ editor, signal: controller.signal })).rejects.toThrow();
+	onDecode = () => {
+		if (readOptions.length === 2) controller.abort();
+	};
+	await expect(
+		removeSmartSilence({ editor, signal: controller.signal }),
+	).rejects.toThrow();
 	expect(readOptions).toHaveLength(2);
 	expect(closedReaders).toBe(2);
 	expect(committed).toHaveLength(0);
+});
+
+test("assembled takes use their canonical archive instead of destructively cutting assembled clips", async () => {
+	scene.takeAssembly = { id: "assembly" };
+	const controller = new AbortController();
+	await removeSmartSilence({
+		editor,
+		signal: controller.signal,
+		minSilenceSeconds: 0.3,
+	});
+	expect(takeCleanup).toEqual([
+		{ signal: controller.signal, minSilenceSeconds: 0.3 },
+	]);
+	expect(decodeOptions).toHaveLength(0);
+	expect(applied).toHaveLength(0);
 });

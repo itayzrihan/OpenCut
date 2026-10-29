@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "141d79836615cacbf342426cd7bb7f3d83679a11cd1e92e22bf77ac7f0c1dea3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:06:00.414Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git push https://github.com/DanIrl7/dip.git HEAD:refs/heads/fix/preserve-detail-drafts",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-189668d0-fd3e-47c6-a69a-f2f7bf603556"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:06:01.308Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1fe763098e6e6e9846b6ea3d2783a09a7401a973facaea7a293a9b493dca6806",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:49:13.524Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/audio.f32"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "eae082e3-9196-4a44-ade3-b1ace966ad24"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:49:13.643Z",
+  "parents": [],
+  "branch": "main"
+}

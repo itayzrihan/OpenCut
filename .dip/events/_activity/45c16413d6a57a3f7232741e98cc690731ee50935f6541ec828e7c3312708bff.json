@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "45c16413d6a57a3f7232741e98cc690731ee50935f6541ec828e7c3312708bff",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:43:46.275Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/rust-tests2.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e75ec218-44e4-49b6-8627-b8fcf61d64d4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:43:46.276Z",
+  "parents": [],
+  "branch": "main"
+}

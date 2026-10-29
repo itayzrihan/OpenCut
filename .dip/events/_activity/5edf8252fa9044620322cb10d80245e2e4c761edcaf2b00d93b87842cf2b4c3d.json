@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5edf8252fa9044620322cb10d80245e2e4c761edcaf2b00d93b87842cf2b4c3d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:06:11.394Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/new-wasm-check/src__transcription__windows.test.ts.log",
+          ".local/smart-takes-2026-10-29/new-wasm-check/summary.json",
+          ".local/smart-takes-2026-10-29/new-wasm-check.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3540f7b8-e08b-4f85-be1a-465aeee42734"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:06:11.396Z",
+  "parents": [],
+  "branch": "main"
+}

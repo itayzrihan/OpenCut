@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "516b12cf975afece6c0b6a1a64f44a394eac7218014d2f73ce08498b3a2bc20e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:51:11.561Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/tests/classic_takes.rs",
+          "classic/apps/web/src/transcription/windows.test.ts",
+          ".local/smart-takes-2026-10-29/live-replay2.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "04b24f32-00da-4a36-8552-e5faf90fa1b9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:51:11.563Z",
+  "parents": [],
+  "branch": "main"
+}

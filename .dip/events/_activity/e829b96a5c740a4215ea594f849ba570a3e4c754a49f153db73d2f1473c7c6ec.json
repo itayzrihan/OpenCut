@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e829b96a5c740a4215ea594f849ba570a3e4c754a49f153db73d2f1473c7c6ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T01:53:55.443Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_08493205bfe528604bb86bb120d14fde7d0ac3780de7c590cef8c4d74e2f4bed",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh api 'repos/vxu-labs/dip/issues?state=all&sort=updated&direction=desc&per_page=30' --jq '.[] | {number,title,state,user:.user.login,created_at,updated_at,html_url,body,pull_request}'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-a95838d5-90ac-4916-8b3f-0d340bcd5abf"
+      },
+      {
+        "at": "2026-10-29T01:53:55.446Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_08493205bfe528604bb86bb120d14fde7d0ac3780de7c590cef8c4d74e2f4bed",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh api 'repos/vxu-labs/dip/issues/comments?sort=updated&direction=desc&per_page=30' --jq '.[] | {user:.user.login,created_at,updated_at,html_url,issue_url,body}'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c3d1d230-9909-4bbc-a1f4-75223537feee"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T01:53:55.496Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "979e913c308c0217a9cb674b99eda0916990924cfe3404387eaf3b8bb55325f2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:04:17.916Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/timeline/__tests__/smart-silence.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5a764695-090c-4538-9e7e-30b6bea84b8b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:04:17.918Z",
+  "parents": [],
+  "branch": "main"
+}

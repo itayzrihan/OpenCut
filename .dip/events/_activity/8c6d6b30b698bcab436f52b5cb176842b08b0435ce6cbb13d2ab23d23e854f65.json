@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8c6d6b30b698bcab436f52b5cb176842b08b0435ce6cbb13d2ab23d23e854f65",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:58:28.831Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/smart_silence.rs",
+          ".local/smart-takes-2026-10-29/probe.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "cf43d54d-0209-4bde-a6f6-5bc7f5bebee9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:58:28.833Z",
+  "parents": [],
+  "branch": "main"
+}

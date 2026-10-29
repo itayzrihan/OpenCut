@@ -2,6 +2,8 @@ import { readFile } from "node:fs/promises";
 
 const requiredExports = [
 	"resolveTextDirection",
+	"transcriptRecoveryWindows",
+	"mergeRecoveredTranscript",
 	"buildCaptionCuePlan",
 	"allocateCaptionLayers",
 	"normalizeCaptionLayoutSettings",

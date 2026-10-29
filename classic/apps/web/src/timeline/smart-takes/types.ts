@@ -65,6 +65,7 @@ export interface PreparedTakes {
 	words: SmartTakeWord[];
 }
 export interface TakeAssembly {
+	trimSilence?: boolean;
 	selectionOnly?: boolean;
 	version: 1 | 2 | 3;
 	/** Canonical hard reference intervals for edited-timeline podcast archives. */
@@ -112,5 +113,11 @@ export type TakeChange =
 			mode?: SmartTakeMode;
 			runMetrics?: TakeRunMetrics;
 			audioEvidence?: TakeAudioEvidence[];
+	  }
+	| {
+			type: "cleanSilence";
+			audioEvidence: TakeAudioEvidence[];
+			groupIndexes?: number[];
+			minSilenceSeconds?: number;
 	  }
 	| { type: "select"; groupIndex: number; alternativeIndex: number };

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b73ea9939c064eb021b1ceb19cd302bd5215ac803dff546f126173ddac2aeea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:46:18.383Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "crates/editor-api/src/operations/classic_takes.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e74a930c-5ea5-4a65-9f07-26d258291294"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:46:18.396Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "155c7fa8d50925c5d8d620f3db5d5adf8cb57ed1d9fa0878b6ede62cbae0d8a5",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:14:13.221Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nfor name in ('package.json','package-lock.json'):\n p=Path(name);d=json.loads(p.read_text());d['version']='0.3.13-automatic.2'\n if name=='package-lock.json':d['packages']['']['version']=d['version']\n p.write_text(json.dumps(d,indent=2)+'\\n')\np=Path('docs/automatic-workflow.md');s=p.read_text().replace('# Automatic workflow (pilot)','# Automatic workflow (opt-in)')\ns=s.replace('It is opt-in; `reviewed` remains the default until the acceptance gate passes.','It is opt-in; `reviewed` remains the default. Explicit machine or project configuration enables `automatic`.')\ns=s.replace('The machine remains on reviewed 0.3.12.','On 2026-10-29 the owner authorized merging this progress while deferring the remaining payload target. This merge authorization does not turn the failed measurement into a pass. The combined candidate is 0.3.13-automatic.2 and includes the separately reviewed dashboard PR #5; no further model comparison has been run.')\ns=s.replace('# Only after the gate: install/upgrade managed machine integrations','# Explicitly authorized activation: install/upgrade managed machine integrations')\ns=s.replace('Global rollout requires correctness and requirement recovery without regression, >=70% fewer routine management calls, >=60% less injected management data, and the target >=20% lower median comparison time, plus an isolated pilot and one real workflow.','The original rollout criteria are correctness and requirement recovery without regression, >=70% fewer routine management calls, >=60% less injected management data, and the target >=20% lower median comparison time, plus an isolated pilot and one real workflow.')\ns=s.replace('Missing native-hook evidence or a failed gate prevents global rollout.','The 2026-10-28 comparison did not satisfy that complete gate. The owner subsequently authorized merging the progress while deferring the payload target; any machine activation must be explicitly authorized and pres",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-f7c09d3b-d77a-4e7c-a499-f14215532c57"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:14:13.602Z",
+  "parents": [],
+  "branch": "main"
+}

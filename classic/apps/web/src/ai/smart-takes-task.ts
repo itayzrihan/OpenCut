@@ -259,7 +259,7 @@ export class SmartTakesTask {
 				await this.prepareTranscript({
 					editor: this.editor,
 					signal: controller.signal,
-					onProgress: onStage,
+					onProgress: (stage) => this.update({ stage }),
 					resumeTranscript: true,
 				});
 				assertScope();

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70408e0a2cca54bdfb52591aff314c20485778a1700c79cbfc2b828df951632d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T01:58:40.381Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip task claim --id task_528c9380-4e7b-4d6a-971f-d7e6c9b37cb7 --actor codex:01a12f05-0e65-7b01-b39e-565b96811fb4 > /tmp/dip-pr5-lease.json",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-491d063b-aa6e-4727-bf13-c6aafd9adbf1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T01:58:40.528Z",
+  "parents": [],
+  "branch": "main"
+}

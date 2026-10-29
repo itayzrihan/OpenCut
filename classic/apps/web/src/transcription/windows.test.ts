@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 /* eslint-disable opencut/prefer-object-params -- Platform test doubles. */
 import { expect, mock, test } from "bun:test";
 import type { TranscriptionResult } from "./types";
@@ -53,7 +54,7 @@ test("three-hour input is decoded in at most 70-second windows with ordered abso
 			result.words![i - 1].end,
 		);
 	expect(progress.at(-1)).toBe(100);
-});
+}, 30000);
 
 test("a late failure resumes completed sections without decoding or inferring them again", async () => {
 	calls = 0;
@@ -309,4 +310,49 @@ test("prefetch decodes ahead while inference waits; failure aborts siblings with
 	await expect(pending).rejects.toThrow("provider failed");
 	expect(loads).toBeLessThanOrEqual(4);
 	expect(siblingAborted).toBe(true);
+});
+
+test("acoustic coverage retries a missing repeated hook before checkpointing", async () => {
+	const loads: { start: number; end: number }[] = [];
+	let inferences = 0;
+	const checkpoints: import("./types").TranscriptionWord[][] = [];
+	const result = await transcribeAudioWindows({
+		prefetch: false,
+		duration: 24,
+		language: "he",
+		signal: new AbortController().signal,
+		load: async ({ start, end }) => {
+			loads.push({ start, end });
+			return Float32Array.from(
+				{ length: Math.ceil((end - start) * 16000) },
+				(_, i) => {
+					const t = start + i / 16000;
+					return (t >= 2 && t < 6) || (t >= 9 && t < 14) || (t >= 21 && t < 23)
+						? 0.1
+						: 0;
+				},
+			);
+		},
+		externalTranscribe: async ({ load }) => {
+			await load();
+			const words =
+				++inferences === 1
+					? [
+							{ text: "אותו הוק", start: 2, end: 6 },
+							{ text: "המשך", start: 21, end: 23 },
+						]
+					: [{ text: "אותו הוק", start: 3, end: 8 }];
+			return { text: "", words, segments: words, language: "he" };
+		},
+		onChunk: async ({ words }) => {
+			checkpoints.push(words);
+		},
+	});
+	expect(loads).toEqual([
+		{ start: 0, end: 24 },
+		{ start: 6, end: 21 },
+	]);
+	expect(result.words?.map((w) => w.start)).toEqual([2, 9, 21]);
+	expect(result.words?.filter((w) => w.text === "אותו הוק")).toHaveLength(2);
+	expect(checkpoints).toEqual([result.words!]);
 });

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c32270f4825ad4b8a91ebe103ebdef3ecb6c39ab58acd7a8c09e38c32bf22b6d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:39:22.592Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/presentation.rs",
+          "crates/editor-api/src/operations/classic_takes/quality.rs",
+          ".local/smart-takes-2026-10-29/diff-test.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b4266c1d-c17c-421c-a118-a68df7102a89"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:39:22.596Z",
+  "parents": [],
+  "branch": "main"
+}

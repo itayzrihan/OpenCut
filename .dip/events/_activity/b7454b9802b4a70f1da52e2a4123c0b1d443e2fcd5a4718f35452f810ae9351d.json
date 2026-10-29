@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b7454b9802b4a70f1da52e2a4123c0b1d443e2fcd5a4718f35452f810ae9351d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:04:35.604Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs src/ai/__tests__/smart-takes-task.test.ts src/ai/__tests__/smart-takes-plan.test.ts src/core/__tests__/canonical-smart-takes.test.ts src/timeline/__tests__/smart-silence.test.ts src/timeline/__tests__/cut-silence.test.ts src/timeline/smart-takes/audio-evidence.test.ts src/timeline/components/__tests__/cut-silence-toolbar-options.test.ts src/transcription/windows.test.ts --report=../.local/smart-takes-2026-10-29/web-final > ../.local/smart-takes-2026-10-29/web-final.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-984e236c-32b5-4eea-9bb9-d07ae7e01176"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:04:35.952Z",
+  "parents": [],
+  "branch": "main"
+}

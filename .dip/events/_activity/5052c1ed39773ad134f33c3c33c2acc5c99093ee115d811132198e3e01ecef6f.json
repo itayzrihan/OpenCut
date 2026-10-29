@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5052c1ed39773ad134f33c3c33c2acc5c99093ee115d811132198e3e01ecef6f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:40:40.956Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/rust/crates/timeline/src/transcription_recovery.rs <<'EOF'\n//! Bounded acoustic coverage audit. A retry is evidence gathering, never deletion.\nuse crate::{AudioAnalysisFrame, AudioAnalysisRange, TranscriptWordTiming};\nuse bridge::export;\nuse serde::{Deserialize, Serialize};\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi))]\n#[derive(Deserialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct TranscriptRecoveryOptions {\n    pub frames: Vec<AudioAnalysisFrame>,\n    pub words: Vec<TranscriptWordTiming>,\n    pub duration: f64,\n}\n#[export]\npub fn transcript_recovery_windows(options: TranscriptRecoveryOptions) -> Vec<AudioAnalysisRange> {\n    let mut words = options.words;\n    words.sort_by(|a,b| a.start.total_cmp(&b.start));\n    let max_rms = options.frames.iter().filter(|f| f.rms.is_finite()).map(|f| f.rms).fold(0.0, f64::max);\n    if max_rms <= 0.00001 || !options.duration.is_finite() { return vec![]; }\n    let mut cursor: f64 = 0.0;\n    let mut windows = vec![];\n    for word in words.iter().chain(std::iter::once(&TranscriptWordTiming { word_index: 0, start: options.duration, end: options.duration })) {\n        let end = word.start.min(options.duration);\n        if end - cursor >= 1.2 {\n            // A repeated performance may have been omitted by ASR. Recheck only\n            // uncovered audio with sustained activity, using a bounded context.\n            let activity: f64 = options.frames.iter().filter(|f| f.rms > max_rms * 0.04)\n                .map(|f| (f.end.min(end - 0.1) - f.start.max(cursor + 0.1)).max(0.0)).sum();\n            if activity >= 0.35 {\n                let mut from = cursor;\n                while from < end && windows.len() < 8 {\n                    let to = (from + 20.0).min(end);\n                    windows.push(AudioAnalysisRange { start: from, end: to });\n                    from = to;\n                }\n            }\n        }\n        cursor = cursor.max(word.end);\n    }\n  ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-52588da9-753b-40b3-bb7f-c06cf1aa201b"
+      },
+      {
+        "at": "2026-10-29T03:40:41.299Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/rust/crates/timeline/src/transcription_recovery.rs <<'EOF'\n//! Bounded acoustic coverage audit. A retry is evidence gathering, never deletion.\nuse crate::{AudioAnalysisFrame, AudioAnalysisRange, TranscriptWordTiming};\nuse bridge::export;\nuse serde::{Deserialize, Serialize};\n#[cfg_attr(feature = \"wasm\", derive(tsify_next::Tsify))]\n#[cfg_attr(feature = \"wasm\", tsify(from_wasm_abi))]\n#[derive(Deserialize)]\n#[serde(rename_all = \"camelCase\")]\npub struct TranscriptRecoveryOptions {\n    pub frames: Vec<AudioAnalysisFrame>,\n    pub words: Vec<TranscriptWordTiming>,\n    pub duration: f64,\n}\n#[export]\npub fn transcript_recovery_windows(options: TranscriptRecoveryOptions) -> Vec<AudioAnalysisRange> {\n    let mut words = options.words;\n    words.sort_by(|a,b| a.start.total_cmp(&b.start));\n    let max_rms = options.frames.iter().filter(|f| f.rms.is_finite()).map(|f| f.rms).fold(0.0, f64::max);\n    if max_rms <= 0.00001 || !options.duration.is_finite() { return vec![]; }\n    let mut cursor: f64 = 0.0;\n    let mut windows = vec![];\n    for word in words.iter().chain(std::iter::once(&TranscriptWordTiming { word_index: 0, start: options.duration, end: options.duration })) {\n        let end = word.start.min(options.duration);\n        if end - cursor >= 1.2 {\n            // A repeated performance may have been omitted by ASR. Recheck only\n            // uncovered audio with sustained activity, using a bounded context.\n            let activity: f64 = options.frames.iter().filter(|f| f.rms > max_rms * 0.04)\n                .map(|f| (f.end.min(end - 0.1) - f.start.max(cursor + 0.1)).max(0.0)).sum();\n            if activity >= 0.35 {\n                let mut from = cursor;\n                while from < end && windows.len() < 8 {\n                    let to = (from + 20.0).min(end);\n                    windows.push(AudioAnalysisRange { start: from, end: to });\n                    from = to;\n                }\n            }\n        }\n        cursor = cursor.max(word.end);\n    }\n  ",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-52588da9-753b-40b3-bb7f-c06cf1aa201b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:40:41.360Z",
+  "parents": [],
+  "branch": "main"
+}

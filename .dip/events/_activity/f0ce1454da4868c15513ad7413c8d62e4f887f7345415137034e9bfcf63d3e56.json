@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f0ce1454da4868c15513ad7413c8d62e4f887f7345415137034e9bfcf63d3e56",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:00:34.221Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -30 .local/smart-takes-2026-10-29/noise-tests.log; tail -8 .local/smart-takes-2026-10-29/probe-audio.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d0993ce1-6d7d-4b4b-a543-baf7ed93a659"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:00:35.026Z",
+  "parents": [],
+  "branch": "main"
+}

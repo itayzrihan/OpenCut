@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "71ece344e28577dfd698fb067617b72f4d888344be3b2e3be1b9b6c367c32d3d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:37:00.808Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > crates/editor-api/src/operations/classic_takes/presentation.rs <<'EOF'\n//! Rebase presentation-only edits when choosing another archived performance.\n//! Timing, dialogue, media, audio sync and authored overlays remain conflict guards.\nuse super::*;\ntype Patches = HashMap<(String, Option<u64>), serde_json::Map<String, Value>>;\nfn visual(key: &str) -> bool {\n    key.starts_with(\"transform.\") || matches!(key, \"opacity\" | \"blendMode\")\n}\nfn normalized(value: &Value) -> Value {\n    fn walk(v: &mut Value, ids: &HashMap<String, String>) {\n        match v {\n            Value::String(s) => { if let Some(id) = ids.get(s) { *s = id.clone(); } }\n            Value::Array(a) => a.iter_mut().for_each(|v| walk(v, ids)),\n            Value::Object(o) => o.values_mut().for_each(|v| walk(v, ids)),\n            Value::Number(n) => if let Some(f) = n.as_f64() {\n                if f.fract() == 0.0 && f.abs() <= crate::classic::MAX_SAFE_INTEGER as f64 { *n = serde_json::Number::from(f as i64); }\n            },\n            _ => {}\n        }\n    }\n    let mut v = value.clone();\n    let mut ids = HashMap::new();\n    for t in all(&v) {\n        for e in arr(&t[\"elements\"]) {\n            if let Some(id) = e[\"id\"].as_str() { ids.insert(id.into(), format!(\"element-{}\", ids.len())); }\n        }\n    }\n    walk(&mut v, &ids);\n    v\n}\nfn conflict() -> CapabilityError {\n    CapabilityError::Conflict(\"Take timing or content changed after assembly. Undo those structural edits before switching takes; framing and caption position edits are preserved.\".into())\n}\npub(super) fn capture(a: &Assembly, scene: &Value, canvas: &Value, context: &InvocationContext) -> Result<Patches, CapabilityError> {\n    let (words, start, end) = assembly_inventory(a)?;\n    let mut next = 0;\n    let (baseline, bookmarks) = render(a, &words, start, end, canvas, &mut || { next += 1; format!(\"comparison-{next}\") }, context)?;\n    if digest(&json!({}), &bookmarks) != digest(&json!({}), &scene[\"bookmarks\"]) { return Err(conflict()",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-20f39f99-94c9-4908-879a-7c7404bcbc4f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:37:01.170Z",
+  "parents": [],
+  "branch": "main"
+}

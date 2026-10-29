@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e76eadc46661e334ccb91578f89b695f933e9a9d1c408e2599f19ee0d15cf138",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:10:57.028Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/activate.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "60959094-3858-4a1d-8e52-f905372949e0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:10:57.030Z",
+  "parents": [],
+  "branch": "main"
+}

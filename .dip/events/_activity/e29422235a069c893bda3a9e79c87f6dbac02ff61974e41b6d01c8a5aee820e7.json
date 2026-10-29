@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e29422235a069c893bda3a9e79c87f6dbac02ff61974e41b6d01c8a5aee820e7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:31:04.017Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p .local/smart-takes-2026-10-29 && python3 - <<'PY'\nfrom pathlib import Path\np=Path('.local/seven-smart-2026-10-20/mcp-client.mjs').read_text().replace(\".local/seven-smart-2026-10-20\",\".local/smart-takes-2026-10-29\")\nPath('.local/smart-takes-2026-10-29/mcp-client.mjs').write_text(p)\nPY\nnode .local/smart-takes-2026-10-29/mcp-client.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-57351320-d365-4ffa-ba81-d9a4755bbfc2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:31:04.107Z",
+  "parents": [],
+  "branch": "main"
+}

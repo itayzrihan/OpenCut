@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99f8beec1d2c3474d47272d1c7ae5c83ea110a80506615e1680d84dffa4cc872",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:00:34.021Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/transcription/windows.test.ts",
+          "classic/rust/crates/timeline/src/smart_silence.rs",
+          ".local/smart-takes-2026-10-29/format.log",
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/tests/classic_takes.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "66ccf5f2-e8a3-4c76-a8de-1181bae84587"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:00:34.028Z",
+  "parents": [],
+  "branch": "main"
+}

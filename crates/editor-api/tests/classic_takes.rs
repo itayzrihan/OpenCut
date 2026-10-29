@@ -1,5 +1,5 @@
 use opencut_editor_api::{InvocationContext, OpenCutRuntime};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 const EDIT: &str = "timeline.classic.takes.edit";
 const PREPARE: &str = "timeline.classic.takes.prepare";
 async fn call(r: &OpenCutRuntime, id: &str, input: Value) -> Value {
@@ -39,11 +39,12 @@ async fn setup_with_word_times(times: &[(usize, f64, f64)]) -> OpenCutRuntime {
         "restart", "Hello", "world", "oops", "Useful", "ending", "again", "Welcome", "mistake",
         "dear", "world", "cut", "tail", "end",
     ];
-    scene["tracks"]["overlay"][0]["captionSource"]["words"] = json!(text
-        .iter()
-        .enumerate()
-        .map(|(i, text)| json!({"text":text,"start":i as f64+0.1,"end":i as f64+0.85}))
-        .collect::<Vec<_>>());
+    scene["tracks"]["overlay"][0]["captionSource"]["words"] = json!(
+        text.iter()
+            .enumerate()
+            .map(|(i, text)| json!({"text":text,"start":i as f64+0.1,"end":i as f64+0.85}))
+            .collect::<Vec<_>>()
+    );
     for &(index, start, end) in times {
         let word = &mut scene["tracks"]["overlay"][0]["captionSource"]["words"][index];
         word["start"] = json!(start);
@@ -145,7 +146,9 @@ async fn point_word_timings_survive_assembly_alternatives_reload_and_undo() {
     .await;
     assert_eq!(
         transcript(scene(&read(&reopened).await)),
-        ["Welcome", "dear", "world", "Useful", "ending", "tail", "end"]
+        [
+            "Welcome", "dear", "world", "Useful", "ending", "tail", "end"
+        ]
     );
     call(&r, "history.undo", json!({})).await;
     assert_eq!(read(&r).await["project"], original["project"]);
@@ -257,7 +260,9 @@ async fn assembly_composites_retime_ripple_transcript_undo_and_reload() {
     let s = scene(&selected);
     assert_eq!(
         transcript(s),
-        ["Welcome", "dear", "world", "Useful", "ending", "tail", "end"]
+        [
+            "Welcome", "dear", "world", "Useful", "ending", "tail", "end"
+        ]
     );
     assert_eq!(s["tracks"]["main"]["elements"].as_array().unwrap().len(), 4);
     assert_eq!(s["tracks"]["main"]["elements"][3]["startTime"], 576600);
@@ -319,11 +324,12 @@ async fn malformed_stale_cancelled_and_partial_selection_never_modify_state() {
     skipped["change"]["elementIds"] = json!(["item-2", "tail"]);
     requests.push(skipped);
     for request in requests {
-        assert!(r
-            .registry()
-            .invoke(EDIT, InvocationContext::default(), request)
-            .await
-            .is_err());
+        assert!(
+            r.registry()
+                .invoke(EDIT, InvocationContext::default(), request)
+                .await
+                .is_err()
+        );
         assert_eq!(read(&r).await, before);
     }
     let context = InvocationContext::default();
@@ -339,18 +345,19 @@ async fn timeline_edits_are_not_overwritten_by_alternative_selection() {
     let assembled = read(&r).await;
     call(&r,"timeline.classic.bookmarks.edit",json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":assembled["revision"],"change":{"type":"replace","bookmarks":[]}})).await;
     let changed = read(&r).await;
-    assert!(r
-        .registry()
-        .invoke(
-            EDIT,
-            InvocationContext::default(),
-            input(
-                &changed,
-                json!({"type":"select","groupIndex":0,"alternativeIndex":1})
+    assert!(
+        r.registry()
+            .invoke(
+                EDIT,
+                InvocationContext::default(),
+                input(
+                    &changed,
+                    json!({"type":"select","groupIndex":0,"alternativeIndex":1})
+                )
             )
-        )
-        .await
-        .is_err());
+            .await
+            .is_err()
+    );
     assert_eq!(read(&r).await, changed);
 }
 
@@ -364,18 +371,20 @@ async fn archived_alternatives_protect_media_even_when_cascade_is_requested() {
     assert_eq!(read(&r).await, assembled);
     // The document validator also protects restore/admin patch, beyond the feature action.
     let mut corrupt = assembled["project"]["classic"].clone();
-    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceTracks"]["main"]["elements"][0]
-        ["trimStart"] = json!(-1);
+    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceTracks"]["main"]["elements"][0]["trimStart"] =
+        json!(-1);
     let other = OpenCutRuntime::default();
-    assert!(other
-        .registry()
-        .invoke(
-            "project.classic.session.attach",
-            InvocationContext::default(),
-            json!({"projectId":"classic-project","expectedRevision":0,"classic":corrupt})
-        )
-        .await
-        .is_err());
+    assert!(
+        other
+            .registry()
+            .invoke(
+                "project.classic.session.attach",
+                InvocationContext::default(),
+                json!({"projectId":"classic-project","expectedRevision":0,"classic":corrupt})
+            )
+            .await
+            .is_err()
+    );
 }
 
 #[tokio::test]
@@ -589,7 +598,13 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
     call(&r, EDIT, request).await;
     let after = read(&r).await;
     let s = scene(&after);
-    let clip = &s["tracks"]["main"]["elements"][0];
+    let clip = s["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|e| e["takeGroup"]["groupIndex"] == 0)
+        .last()
+        .unwrap();
     let diagnostics = &s["takeAssembly"]["quality"]["audioDiagnostics"][0];
     assert_eq!(diagnostics["framesAnalyzed"], 600);
     assert_eq!(diagnostics["safetyHoldReason"], Value::Null);
@@ -604,10 +619,12 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
         source_end < 3.1 * 120000.0,
         "Do not include the next discarded word"
     );
-    assert!(!s["takeAssembly"]["audioGaps"][0]["ranges"]
-        .as_array()
-        .unwrap()
-        .is_empty());
+    assert!(
+        !s["takeAssembly"]["audioGaps"][0]["ranges"]
+            .as_array()
+            .unwrap()
+            .is_empty()
+    );
     let reopened = OpenCutRuntime::default();
     call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
     let state = read(&reopened).await;
@@ -621,7 +638,13 @@ async fn audio_boundaries_include_syllable_tails_and_survive_reopen_and_manual_s
     )
     .await;
     assert_eq!(
-        scene(&read(&reopened).await)["tracks"]["main"]["elements"][0]["duration"],
+        scene(&read(&reopened).await)["tracks"]["main"]["elements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|e| e["takeGroup"]["groupIndex"] == 0)
+            .last()
+            .unwrap()["duration"],
         clip["duration"]
     );
     call(&r, "history.undo", json!({})).await;
@@ -777,31 +800,34 @@ async fn experimental_review_rejects_invalid_patches_and_stale_or_incomplete_evi
     clean["selections"] = json!([{"groupIndex":0,"alternativeIndex":1}]);
     variants.push(clean);
     for v in variants {
-        assert!(r
-            .registry()
-            .invoke(
-                "timeline.classic.takes.review",
-                InvocationContext::default(),
-                v
-            )
-            .await
-            .is_err());
+        assert!(
+            r.registry()
+                .invoke(
+                    "timeline.classic.takes.review",
+                    InvocationContext::default(),
+                    v
+                )
+                .await
+                .is_err()
+        );
         assert_eq!(read(&r).await, before);
     }
     let cancelled = InvocationContext::default();
     cancelled.cancellation.cancel();
-    assert!(r
-        .registry()
-        .invoke("timeline.classic.takes.review", cancelled, base)
-        .await
-        .is_err());
+    assert!(
+        r.registry()
+            .invoke("timeline.classic.takes.review", cancelled, base)
+            .await
+            .is_err()
+    );
     let mut invalid_mode = assemble(&before);
     invalid_mode["change"]["mode"] = json!("turbo");
-    assert!(r
-        .registry()
-        .invoke(EDIT, InvocationContext::default(), invalid_mode)
-        .await
-        .is_err());
+    assert!(
+        r.registry()
+            .invoke(EDIT, InvocationContext::default(), invalid_mode)
+            .await
+            .is_err()
+    );
 }
 
 const AUTO_EDIT: &str = "timeline.classic.takes.prepare_auto_edit";
@@ -961,21 +987,200 @@ async fn auto_edit_preparation_fails_atomically_for_unsupported_scene() {
 
 #[tokio::test]
 async fn cached_assembly_validation_rechecks_changed_evidence_and_media_membership() {
-    let runtime=setup().await;
+    let runtime = setup().await;
     call(&runtime, EDIT, assemble(&read(&runtime).await)).await;
-    let state=read(&runtime).await;
-    let valid=state["project"]["classic"].clone();
+    let state = read(&runtime).await;
+    let valid = state["project"]["classic"].clone();
     // The assembly is already cached by the successful canonical transaction.
-    let mut corrupt=valid.clone();
-    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceWords"][0]["text"]=json!("forged evidence");
-    let mut missing=valid.clone();
-    missing["mediaAssets"]=json!([]);
-    for classic in [corrupt,missing] {
-        let empty=OpenCutRuntime::default();
-        assert!(empty.registry().invoke("project.classic.session.attach",InvocationContext::default(),json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})).await.is_err());
-        assert_eq!(empty.snapshot().unwrap().revision,0);
+    let mut corrupt = valid.clone();
+    corrupt["document"]["scenes"][0]["takeAssembly"]["sourceWords"][0]["text"] =
+        json!("forged evidence");
+    let mut missing = valid.clone();
+    missing["mediaAssets"] = json!([]);
+    for classic in [corrupt, missing] {
+        let empty = OpenCutRuntime::default();
+        assert!(
+            empty
+                .registry()
+                .invoke(
+                    "project.classic.session.attach",
+                    InvocationContext::default(),
+                    json!({"projectId":"classic-project","expectedRevision":0,"classic":classic})
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(empty.snapshot().unwrap().revision, 0);
     }
-    let reopened=OpenCutRuntime::default();
-    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":valid})).await;
+    let reopened = OpenCutRuntime::default();
+    call(
+        &reopened,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":valid}),
+    )
+    .await;
     assert_eq!(read(&reopened).await["project"]["classic"], valid);
+}
+
+#[tokio::test]
+async fn framing_and_caption_position_survive_alternative_switches() {
+    let r = setup().await;
+    call(&r, EDIT, assemble(&read(&r).await)).await;
+    let mut classic = read(&r).await["project"]["classic"].clone();
+    let s = &mut classic["document"]["scenes"][0];
+    for e in s["tracks"]["main"]["elements"].as_array_mut().unwrap() {
+        e["params"]["transform.scaleX"] = json!(1.27);
+        e["params"]["transform.scaleY"] = json!(1.27);
+    }
+    for t in s["tracks"]["overlay"].as_array_mut().unwrap() {
+        for e in t["elements"].as_array_mut().unwrap() {
+            e["params"]["transform.positionY"] = json!(768);
+        }
+    }
+    let reopened = OpenCutRuntime::default();
+    call(
+        &reopened,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    for selected in [1, 0, 1] {
+        let before = read(&reopened).await;
+        call(
+            &reopened,
+            EDIT,
+            input(
+                &before,
+                json!({"type":"select","groupIndex":0,"alternativeIndex":selected}),
+            ),
+        )
+        .await;
+        let after = read(&reopened).await;
+        for e in scene(&after)["tracks"]["main"]["elements"]
+            .as_array()
+            .unwrap()
+        {
+            assert_eq!(e["params"]["transform.scaleX"], 1.27);
+        }
+        for t in scene(&after)["tracks"]["overlay"].as_array().unwrap() {
+            for e in t["elements"].as_array().unwrap() {
+                assert_eq!(e["params"]["transform.positionY"], 768);
+            }
+        }
+        call(&reopened, "history.undo", json!({})).await;
+        assert_eq!(read(&reopened).await["project"], before["project"]);
+        call(&reopened, "history.redo", json!({})).await;
+    }
+}
+#[tokio::test]
+async fn partial_synchronized_audio_cleans_internal_pauses_without_losing_words_or_alternatives() {
+    let r = setup_with_word_times(&[(1, 1.1, 1.4), (2, 3.1, 3.5)]).await;
+    let original = read(&r).await;
+    let frames:Vec<_>=(50..570).map(|i|{ let t=i as f64/100.0;
+        let energy=if (1.0..1.55).contains(&t)||(3.0..3.65).contains(&t)||(4.0..5.7).contains(&t) {0.15} else {0.001};
+        json!({"start":t,"end":(i+1) as f64/100.0,"rms":energy,"peak":energy*1.4,"zeroCrossingRate":0.1}) }).collect();
+    let mut request = assemble(&original);
+    request["change"]["audioEvidence"] = json!([{"clipId":"item-2","frames":frames}]);
+    call(&r, EDIT, request).await;
+    let after = read(&r).await;
+    assert_eq!(
+        transcript(scene(&after)),
+        ["Hello", "world", "Useful", "ending", "tail", "end"]
+    );
+    assert!(
+        scene(&after)["takeAssembly"]["audioGaps"][0]["ranges"]
+            .as_array()
+            .unwrap()
+            .len()
+            > 0
+    );
+    let clips = scene(&after)["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap();
+    let first: Vec<_> = clips
+        .iter()
+        .filter(|e| e["takeGroup"]["groupIndex"] == 0)
+        .collect();
+    assert_eq!(first.len(), 2);
+    assert!(
+        first
+            .iter()
+            .map(|e| e["duration"].as_i64().unwrap())
+            .sum::<i64>()
+            < 2 * 120000
+    );
+    let source = scene(&after)["takeAssembly"]["sourceTracks"].clone();
+    call(
+        &r,
+        EDIT,
+        input(
+            &after,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    assert_eq!(
+        scene(&read(&r).await)["takeAssembly"]["sourceTracks"],
+        source
+    );
+}
+
+// Optional private replay is never embedded in the repository or sent to CI.
+#[tokio::test]
+async fn local_take_fixture_replays_presentation_and_selection() {
+    let Ok(path) = std::env::var("OPENCUT_TAKE_FIXTURE") else {
+        return;
+    };
+    let bundle: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let classic = &bundle["archive"]["classic"];
+    let project = classic["document"]["metadata"]["id"].clone();
+    let scene_id = classic["document"]["scenes"][0]["id"].clone();
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":project,"expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    call(&r,EDIT,json!({"projectId":project,"sceneId":scene_id,"expectedRevision":read(&r).await["revision"],"change":{"type":"select","groupIndex":3,"alternativeIndex":1}})).await;
+    if let Ok(path) = std::env::var("OPENCUT_TAKE_AUDIO") {
+        let before = read(&r).await;
+        let evidence: Value =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+        call(&r, EDIT, json!({"projectId":project,"sceneId":scene_id,"expectedRevision":before["revision"],"change":{"type":"cleanSilence","audioEvidence":evidence}})).await;
+        let after = read(&r).await;
+        assert_eq!(transcript(scene(&after)), transcript(scene(&before)));
+        assert_eq!(
+            scene(&after)["takeAssembly"]["sourceTracks"],
+            scene(&before)["takeAssembly"]["sourceTracks"]
+        );
+        let duration = |s: &Value| {
+            s["tracks"]["main"]["elements"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|e| e["startTime"].as_i64().unwrap() + e["duration"].as_i64().unwrap())
+                .max()
+                .unwrap()
+        };
+        eprintln!(
+            "Audio diagnostics: {}",
+            scene(&after)["takeAssembly"]["quality"]
+        );
+        assert!(duration(scene(&after)) < duration(scene(&before)));
+        eprintln!(
+            "Private audio replay: {}s -> {}s; caption words unchanged",
+            duration(scene(&before)) as f64 / 120000.0,
+            duration(scene(&after)) as f64 / 120000.0
+        );
+    }
+    let after = read(&r).await;
+    assert_eq!(
+        scene(&after)["takeAssembly"]["plan"]["groups"][3]["selected"],
+        1
+    );
+    assert_eq!(
+        scene(&after)["tracks"]["main"]["elements"][0]["params"]["transform.scaleX"],
+        1.27
+    );
 }

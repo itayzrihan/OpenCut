@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b7ae5ac15caf07cfa19bb451622f7fc999408da2b6b47e258c2ea34a23527c2f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:34:14.036Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,copy,hashlib\np=Path('.local/smart-takes-2026-10-29');b=json.loads((p/'session-bundle.json').read_text())['archive'];c=copy.deepcopy(b['classic'])\ndef apply(o,ops):\n for op in ops:\n  ks=[s.replace('~1','/').replace('~0','~') for s in op['path'].split('/')[1:]]; x=o\n  for k in ks[:-1]:x=x[int(k)] if isinstance(x,list) else x[k]\n  k=int(ks[-1]) if isinstance(x,list) else ks[-1]\n  if op['op']=='remove':del x[k]\n  elif op['op']=='add' and isinstance(x,list):x.insert(k,op['value'])\n  else:x[k]=op['value']\ndef norm(v):\n if isinstance(v,float) and v.is_integer():return int(v)\n if isinstance(v,list):return [norm(x) for x in v]\n if isinstance(v,dict):return {k:norm(x) for k,x in v.items()}\n return v\nfor i in range(len(b['undoStack']),-1,-1):\n s=c['document']['scenes'][0];a=s.get('takeAssembly')\n if a:\n  h=hashlib.sha256(json.dumps(norm([s['tracks'],s['bookmarks']]),sort_keys=True,ensure_ascii=False,separators=(',',':')).encode()).hexdigest();print(i,'match',h==a['appliedDigest'],'clips',len(s['tracks']['main']['elements']))\n  (p/f'history-{i}.json').write_text(json.dumps(s))\n if i:\n  prev=b['undoStack'][i-1]['classic']\n  if 'delta' in prev:apply(c,prev['delta'])\n  else:c=copy.deepcopy(prev)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-e9a0a4c3-8d6e-4a7d-aa0d-a451215733b2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:34:14.204Z",
+  "parents": [],
+  "branch": "main"
+}

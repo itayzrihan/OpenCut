@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4cea6c30cc38d03e1b29eac5cc7c048413bc77ad77093955ebffbd56e44cc912",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:10:43.448Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/lint-baseline.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bc76de76-d148-4807-9fa9-52225e2fafcd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:10:43.449Z",
+  "parents": [],
+  "branch": "main"
+}

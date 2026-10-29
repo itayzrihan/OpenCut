@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6fb007fb668fa32b5f0126166b3ae31bd96a621e9f51b56eed59cfb700d16a23",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:07:14.656Z",
+        "kind": "files.changed",
+        "files": [
+          "analysis/smart-takes-2026-10-29",
+          "analysis/smart-takes-2026-10-29/README.md"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "75e247e5-1dc2-441b-965b-94f6b403c5f4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:07:14.667Z",
+  "parents": [],
+  "branch": "main"
+}

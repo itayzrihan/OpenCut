@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5608f41c7914728779fbfed08e392186ff2c54abe65b07c97207cfdda0b53214",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:05:16.214Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport {execFileSync} from 'node:child_process';\nconst run=args=>execFileSync('git',args,{encoding:'utf8'});\nrun(['add','public/app.js','scripts/browser-smoke.mjs','scripts/detail-drafts-smoke.mjs','docs/reviews/2026-10-29-pr5.json','.dip/events/task_528c9380-4e7b-4d6a-971f-d7e6c9b37cb7']);\nconsole.log(run(['diff','--cached','--stat']));\nconsole.log(run(['commit','-s','-m','fix: preserve new dialog drafts when earlier saves settle']));\nconsole.log(run(['show','--stat','--oneline','HEAD']));\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-1504f3a9-7365-46f3-846a-ba6ca0419885"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:05:16.281Z",
+  "parents": [],
+  "branch": "main"
+}

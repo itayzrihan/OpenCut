@@ -153,7 +153,10 @@ pub fn analyze_smart_audio_silence(
     }
     // The mean is a ceiling, never a raised gate that can erase softer speech.
     // Only the stable bottom of a well-separated distribution may be removed.
+    let background = background_frames(&frames);
+    let background_limit = weighted_quantile(&background, 0.99, |frame| frame.rms);
     let silence_threshold = (noise_floor * 1.2)
+        .max(background_limit * 1.1)
         .min(average_rms * 0.12)
         .min(upper_energy * 0.04);
     result.diagnostics.silence_threshold = silence_threshold;
@@ -169,7 +172,7 @@ pub fn analyze_smart_audio_silence(
     if quiet_frames.is_empty() {
         return hold(result, "no-confident-silence");
     }
-    let noise_peak = weighted_quantile(&quiet_frames, 0.5, |frame| frame.peak);
+    let noise_peak = weighted_quantile(&background, 0.99, |frame| frame.peak);
     let noise_zcr = weighted_quantile(&quiet_frames, 0.5, |frame| frame.zero_crossing_rate);
     let noise_zcr_spread = weighted_quantile(&quiet_frames, 0.9, |frame| frame.zero_crossing_rate)
         - weighted_quantile(&quiet_frames, 0.1, |frame| frame.zero_crossing_rate);
@@ -193,6 +196,11 @@ pub fn analyze_smart_audio_silence(
         &frames,
         &mut active,
         (noise_zcr_spread * 1.5).clamp(0.06, 0.14),
+        (1.0 + (weighted_quantile(&background, 0.9, |f| f.rms)
+            / weighted_quantile(&background, 0.1, |f| f.rms).max(f64::MIN_POSITIVE)
+            - 1.0)
+            * 1.5)
+            .max(1.15),
     );
 
     let settings = sanitize_settings(settings);
@@ -355,10 +363,40 @@ fn weighted_quantile(
     distribution.last().map_or(0.0, |item| item.0)
 }
 
+// Learn microphone noise from sustained low-energy windows. A short quiet
+// frame alone is not a noise model: random room-tone fluctuations otherwise
+// split every pause into apparent syllables. The quietest 10% of 300 ms blocks
+// calibrate only noise variability; whole-recording energy still caps the gate.
+fn background_frames(frames: &[AudioAnalysisFrame]) -> Vec<AudioAnalysisFrame> {
+    let mut blocks = Vec::new();
+    let mut start = 0;
+    while start < frames.len() {
+        let end = frames.partition_point(|f| f.start < frames[start].start + 0.3);
+        let end = end.max(start + 1);
+        let block = &frames[start..end];
+        let duration = block.last().unwrap().end - block[0].start;
+        if duration >= 0.29 {
+            let mean = block.iter().map(|f| f.rms * (f.end - f.start)).sum::<f64>() / duration;
+            blocks.push((mean, start, end));
+        }
+        start = end;
+    }
+    blocks.sort_by(|a, b| a.0.total_cmp(&b.0));
+    if blocks.is_empty() {
+        return frames.to_vec();
+    }
+    blocks
+        .iter()
+        .take((blocks.len() / 10).max(1))
+        .flat_map(|(_, start, end)| frames[*start..*end].iter().copied())
+        .collect()
+}
+
 fn protect_variable_quiet_runs(
     frames: &[AudioAnalysisFrame],
     active: &mut [bool],
     max_zcr_spread: f64,
+    max_energy_spread: f64,
 ) {
     let mut start = 0;
     while start < frames.len() {
@@ -374,7 +412,7 @@ fn protect_variable_quiet_runs(
         let upper = weighted_quantile(run, 0.9, |frame| frame.rms);
         let lower_zcr = weighted_quantile(run, 0.1, |frame| frame.zero_crossing_rate);
         let upper_zcr = weighted_quantile(run, 0.9, |frame| frame.zero_crossing_rate);
-        if upper > lower * 1.15 || upper_zcr - lower_zcr > max_zcr_spread {
+        if upper > lower * max_energy_spread || upper_zcr - lower_zcr > max_zcr_spread {
             active[start..end].fill(true);
         }
         start = end;
@@ -681,6 +719,40 @@ mod tests {
             assert!(result.cut_ranges.is_empty());
             assert!(result.diagnostics.safety_hold_reason.is_some());
         }
+    }
+
+    #[test]
+    fn fluctuating_room_tone_is_cut_without_touching_untranscribed_quiet_speech() {
+        let mut random = 42_u64;
+        let mut audio = frames(&vec![0.0; 1200]);
+        for (index, frame) in audio.iter_mut().enumerate() {
+            random = random.wrapping_mul(6364136223846793005).wrapping_add(1);
+            let noise = 0.00004 + (random >> 32) as f64 / u32::MAX as f64 * 0.00016;
+            let energy = if index < 100 || index > 1000 {
+                0.05
+            } else if (500..570).contains(&index) {
+                0.0008
+            } else {
+                noise
+            };
+            frame.rms = energy;
+            frame.peak = energy * 2.0;
+        }
+        let result = analyze_smart_audio_silence(AnalyzeSmartAudioSilenceOptions {
+            frames: audio,
+            duration_seconds: 12.0,
+            transcript_words: vec![],
+            settings: SmartAudioSilenceSettings::default(),
+        });
+        assert_preserved(&result, 5.0, 5.7);
+        assert!(
+            result
+                .cut_ranges
+                .iter()
+                .map(|r| r.end - r.start)
+                .sum::<f64>()
+                > 4.0
+        );
     }
 
     #[test]

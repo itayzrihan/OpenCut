@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "600452fb42c2b294509158fc3b38a254b7c607887460a405956e160b4a158847",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:17:15.237Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\njson.dump({'method':'tools/call','params':{'name':'opencut.classic.session.read','arguments':{}}},open('.local/smart-takes-2026-10-29/mcp-requests/session-verified.json','w'))\np='/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/d8b39feb-8c0a-4e2d-9bec-cef191099aa8/project.json';b=json.load(open('.local/smart-takes-2026-10-29/project-before.json'));a=json.load(open(p));s=a['scenes'][0];bs=b['scenes'][0]\nassert s['takeAssembly']['sourceTracks']==bs['takeAssembly']['sourceTracks'];assert s['takeAssembly']['sourceWords']==bs['takeAssembly']['sourceWords'];assert s['takeAssembly']['plan']==bs['takeAssembly']['plan'];words=lambda v:[w['text'] for t in v['tracks']['overlay'] for w in t.get('captionSource',{}).get('words',[])];assert words(s)==words(bs);assert all(e['params']['transform.scaleX']==1.27 and e['params']['transform.scaleY']==1.27 for e in s['tracks']['main']['elements']);print('Saved verification:',len(words(s)),'caption words; original plan, alternatives, archive and framing preserved');json.dump(a,open('.local/smart-takes-2026-10-29/project-after.json','w'))\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-0f7943cd-5b4f-4ece-b884-65c3f098ab98"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:17:15.911Z",
+  "parents": [],
+  "branch": "main"
+}

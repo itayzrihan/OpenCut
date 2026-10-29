@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d4814b53a271474d3515750b598744820df78933dcfbd0de87ecee3ea92e5c3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:21:08.676Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip context > /tmp/dip-global-context.json\npython3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path('/tmp/dip-global-context.json');d=json.loads(p.read_text());print(json.dumps({'workflow':d.get('workflow'),'jsonBytes':len(json.dumps(d,separators=(',',':'),ensure_ascii=False).encode()),'truncated':d.get('truncated'),'error':d.get('error')}))\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a502c331-d731-4413-bc04-08f5f29e2b49"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:21:09.111Z",
+  "parents": [],
+  "branch": "main"
+}

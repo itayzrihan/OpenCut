@@ -1249,7 +1249,7 @@ export class TimelineManager {
 		minSilenceSeconds?: number;
 		signal?: AbortSignal;
 	} = {}): Promise<void> {
-		if (mode === "smart")
+		if (["smart", "audio"].includes(mode))
 			return removeSmartSilence({
 				editor: this.editor,
 				minSilenceSeconds,

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9ade714bbb69b14fd56a8ee0a1c413dbb968a2e7763c917d9e5cb28c528a60cc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:42:42.227Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> classic/apps/web/src/ai/__tests__/smart-takes-task.test.ts <<'EOF'\n\ntest(\"hundreds of transcript progress events do not overflow native run metrics\", async () => {\n\tconst { editor, apply, scene } = setup();\n\tscene.tracks.overlay.length = 0;\n\tconst task = new SmartTakesTask({ editor, prepareTranscript: async ({ onProgress }) => {\n\t\tfor (let i = 0; i < 400; i++) onProgress(`Section ${i} · transcribing and correcting`);\n\t} });\n\ttask.start({ elementIds: [\"clip\"], requestId: \"many-progress\", mode: \"standard\" });\n\tawait finished(task);\n\texpect(task.read().status).toBe(\"succeeded\");\n\tconst request = (apply.mock.calls as unknown as [{ execution: { runMetrics: { stages: unknown[] } } }][])[0][0];\n\texpect(request.execution.runMetrics.stages.length).toBeLessThanOrEqual(20);\n});\nEOF\ncat >> crates/editor-api/tests/classic_takes.rs <<'EOF'\n\n#[tokio::test]\nasync fn framing_and_caption_position_survive_alternative_switches() {\n    let r = setup().await;\n    call(&r, EDIT, assemble(&read(&r).await)).await;\n    let mut classic = read(&r).await[\"project\"][\"classic\"].clone();\n    let s = &mut classic[\"document\"][\"scenes\"][0];\n    for e in s[\"tracks\"][\"main\"][\"elements\"].as_array_mut().unwrap() {\n        e[\"params\"][\"transform.scaleX\"] = json!(1.27);\n        e[\"params\"][\"transform.scaleY\"] = json!(1.27);\n    }\n    for t in s[\"tracks\"][\"overlay\"].as_array_mut().unwrap() {\n        for e in t[\"elements\"].as_array_mut().unwrap() { e[\"params\"][\"transform.positionY\"] = json!(768); }\n    }\n    let reopened = OpenCutRuntime::default();\n    call(&reopened,\"project.classic.session.attach\",json!({\"projectId\":\"classic-project\",\"expectedRevision\":0,\"classic\":classic})).await;\n    for selected in [1,0,1] {\n        let before = read(&reopened).await;\n        call(&reopened,EDIT,input(&before,json!({\"type\":\"select\",\"groupIndex\":0,\"alternativeIndex\":selected}))).await;\n        let after=read(&reopened).await;\n        for e in scene(&after)[\"tracks\"][\"main\"][\"elements\"].as_array().unwrap() { asser",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ce710be8-9f9c-4ed6-b885-a55bbb774a77"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:42:43.142Z",
+  "parents": [],
+  "branch": "main"
+}

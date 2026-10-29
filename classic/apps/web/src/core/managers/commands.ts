@@ -1192,6 +1192,68 @@ export class CommandManager {
 		};
 	}
 
+	async cleanSmartTakeSilence({
+		signal,
+		minSilenceSeconds,
+	}: {
+		signal?: AbortSignal;
+		minSilenceSeconds?: number;
+	}): Promise<void> {
+		await this.enableCanonical();
+		const session = this.canonical;
+		const scene = this.editor.scenes.getActiveScene();
+		const assembly = scene.takeAssembly;
+		if (!session || !assembly) throw new Error("No take assembly to clean");
+		this.synchronizeCanonicalViews();
+		const revision = session.status().revision;
+		const selectedIds = new Set(
+			this.editor.selection.getSelectedElements().map((e) => e.elementId),
+		);
+		const groupIndexes = [
+			...new Set(
+				scene.tracks.main.elements
+					.filter((e) => selectedIds.has(e.id))
+					.flatMap((e) => (e.takeGroup ? [e.takeGroup.groupIndex] : [])),
+			),
+		];
+		if (groupIndexes.length === 0) return;
+		const account = this.agentAccountId();
+		const audioEvidence = await collectTakeAudioEvidence({
+			editor: this.editor,
+			elementIds: assembly.elementIds,
+			sourceClips: assembly.sourceTracks.main.elements.filter(
+				(e) => e.type === "video",
+			),
+			signal: signal ?? new AbortController().signal,
+			boundedFrames: true,
+		});
+		signal?.throwIfAborted();
+		if (
+			this.canonical !== session ||
+			this.agentAccountId() !== account ||
+			this.editor.scenes.getActiveSceneOrNull()?.id !== scene.id ||
+			session.status().revision !== revision
+		)
+			throw new Error(
+				"The timeline changed during silence analysis. No cuts applied.",
+			);
+		this.executeTransaction({
+			execute: () => {
+				session.editTakes({
+					sceneId: scene.id,
+					expectedRevision: revision,
+					change: {
+						type: "cleanSilence",
+						audioEvidence,
+						groupIndexes,
+						minSilenceSeconds,
+					},
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	selectSmartTake({
 		groupIndex,
 		alternativeIndex,

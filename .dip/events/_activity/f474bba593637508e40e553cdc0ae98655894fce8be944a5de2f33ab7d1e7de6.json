@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f474bba593637508e40e553cdc0ae98655894fce8be944a5de2f33ab7d1e7de6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:04:48.847Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\np=Path('docs/reviews');p.mkdir(exist_ok=True)\ndef results(name):\n s=Path('/tmp/'+name).read_text(); return json.loads(s[s.index('[\\n'):s.rindex(']\\n')+1])\noriginal=results('dip-pr5-edge-original-finalcases.log'); final=results('dip-pr5-final-browser.log')\nreport={'pullRequest':'https://github.com/vxu-labs/dip/pull/5','reviewDate':'2026-10-29','base':'3f2aebc9611bf98ee76ecadb1f8697baca02bd77','contributorHead':'38e84998cd7fad768342b951d8acc0e432e3089a','scope':'Entire contributor diff and maintainer follow-up; no repository-wide security certification.','securityReview':{'findings':[],'observations':['Contributor changed only public/app.js and scripts/browser-smoke.mjs; ordinary text files, no binaries or symlinks.','No new dependencies, lifecycle scripts, installer changes, credential access, shell execution, external URLs, telemetry, authentication changes or backdoor behavior in the contributor diff.','Restored drafts are assigned to DOM value properties, not interpreted as HTML; literal markup regression passes.','Maintainer changes remain client-side form preservation plus synthetic isolated browser tests.'],'limitations':['Manual scoped review and local tests cannot guarantee absence of every vulnerability.','Firefox, Safari and screen readers were not tested.']},'maintainerCorrections':['Preserve selected finish outcome with its summary across background refreshes.','Clear submitted values only if the same task/project/dialog lifetime and unchanged submitted form are still active when the request settles.','Preserve selection direction as well as caret range.'],'validation':{'environment':'macOS, Node.js 24.5.0, locally installed Google Chrome through Playwright','contributorUnitSuite':{'total':150,'passed':148,'skipped':2,'failed':0},'originalBrowserSmoke':'passed independently before changes','finalCombinedBrowserSmoke':'passed; includes original smoke and 14 additional focused cases','syntax':'pa",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-23baa601-2f99-4035-b601-c0d273b66069"
+      },
+      {
+        "at": "2026-10-29T02:04:49.152Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\np=Path('docs/reviews');p.mkdir(exist_ok=True)\ndef results(name):\n s=Path('/tmp/'+name).read_text(); return json.loads(s[s.index('[\\n'):s.rindex(']\\n')+1])\noriginal=results('dip-pr5-edge-original-finalcases.log'); final=results('dip-pr5-final-browser.log')\nreport={'pullRequest':'https://github.com/vxu-labs/dip/pull/5','reviewDate':'2026-10-29','base':'3f2aebc9611bf98ee76ecadb1f8697baca02bd77','contributorHead':'38e84998cd7fad768342b951d8acc0e432e3089a','scope':'Entire contributor diff and maintainer follow-up; no repository-wide security certification.','securityReview':{'findings':[],'observations':['Contributor changed only public/app.js and scripts/browser-smoke.mjs; ordinary text files, no binaries or symlinks.','No new dependencies, lifecycle scripts, installer changes, credential access, shell execution, external URLs, telemetry, authentication changes or backdoor behavior in the contributor diff.','Restored drafts are assigned to DOM value properties, not interpreted as HTML; literal markup regression passes.','Maintainer changes remain client-side form preservation plus synthetic isolated browser tests.'],'limitations':['Manual scoped review and local tests cannot guarantee absence of every vulnerability.','Firefox, Safari and screen readers were not tested.']},'maintainerCorrections':['Preserve selected finish outcome with its summary across background refreshes.','Clear submitted values only if the same task/project/dialog lifetime and unchanged submitted form are still active when the request settles.','Preserve selection direction as well as caret range.'],'validation':{'environment':'macOS, Node.js 24.5.0, locally installed Google Chrome through Playwright','contributorUnitSuite':{'total':150,'passed':148,'skipped':2,'failed':0},'originalBrowserSmoke':'passed independently before changes','finalCombinedBrowserSmoke':'passed; includes original smoke and 14 additional focused cases','syntax':'pa",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-23baa601-2f99-4035-b601-c0d273b66069"
+      },
+      {
+        "at": "2026-10-29T02:04:49.176Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --check",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-cd028598-3639-4e7c-a388-db47f7baf5da"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:04:49.256Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -360,6 +360,13 @@
         "analysis/render-queue-recovery-2026-10-28/verify.py"
       ],
       "timeoutMs": 600000
+    },
+    "smart-takes-integrity": {
+      "command": [
+        "node",
+        ".dip/tools/verify-smart-takes-integrity.mjs"
+      ],
+      "timeoutMs": 600000
     }
   },
   "mode": "coordinate"

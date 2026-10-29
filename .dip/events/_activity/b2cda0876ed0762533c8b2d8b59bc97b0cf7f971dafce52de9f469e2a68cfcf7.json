@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2cda0876ed0762533c8b2d8b59bc97b0cf7f971dafce52de9f469e2a68cfcf7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:31:32.189Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/project-before.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f6551388-5840-43df-bad0-6bc4d651ea84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:31:32.212Z",
+  "parents": [],
+  "branch": "main"
+}

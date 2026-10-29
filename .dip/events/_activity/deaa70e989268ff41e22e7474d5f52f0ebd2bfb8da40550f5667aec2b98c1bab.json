@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "deaa70e989268ff41e22e7474d5f52f0ebd2bfb8da40550f5667aec2b98c1bab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:17:36.262Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np='.local/smart-takes-2026-10-29/'\nb=json.load(open(p+'project-before.json'))['scenes'][0];a=json.load(open(p+'project-after.json'))['scenes'][0]\nfor x,y in zip(b['tracks']['overlay'],a['tracks']['overlay']):\n print(x['id'],'cues',len(x['elements']),len(y['elements']),'params equal',[e['params'] for e in x['elements']]==[e['params'] for e in y['elements']])\nr=json.load(open(p+'mcp-responses/session-verified.json'))['result']['structuredContent']['result']['data']['session'];print('MCP:',r['projectId'],r['revision'],'dirty',r['dirty'])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d0fcc35b-8536-43e2-a108-b7f1e6115385"
+      },
+      {
+        "at": "2026-10-29T04:17:36.577Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\np='.local/smart-takes-2026-10-29/'\nb=json.load(open(p+'project-before.json'))['scenes'][0];a=json.load(open(p+'project-after.json'))['scenes'][0]\nfor x,y in zip(b['tracks']['overlay'],a['tracks']['overlay']):\n print(x['id'],'cues',len(x['elements']),len(y['elements']),'params equal',[e['params'] for e in x['elements']]==[e['params'] for e in y['elements']])\nr=json.load(open(p+'mcp-responses/session-verified.json'))['result']['structuredContent']['result']['data']['session'];print('MCP:',r['projectId'],r['revision'],'dirty',r['dirty'])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d0fcc35b-8536-43e2-a108-b7f1e6115385"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:17:37.048Z",
+  "parents": [],
+  "branch": "main"
+}

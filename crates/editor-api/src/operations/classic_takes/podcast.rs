@@ -702,6 +702,10 @@ pub(super) fn register_podcast(
                                 return Err(invalid("Podcast extraction cancelled"));
                             }
                             let mut a = Assembly {
+                                trim_silence: false,
+                                silence_groups: None,
+                                min_silence_seconds: default_pause(),
+                                silence_minimums: Default::default(),
                                 version: 3,
                                 selection_only: true,
                                 reference_regions: reference_regions.clone(),

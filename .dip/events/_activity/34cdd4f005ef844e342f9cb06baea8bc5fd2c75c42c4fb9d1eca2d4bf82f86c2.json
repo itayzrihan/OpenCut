@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34cdd4f005ef844e342f9cb06baea8bc5fd2c75c42c4fb9d1eca2d4bf82f86c2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:42:43.140Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/smart-takes-task.test.ts",
+          "crates/editor-api/tests/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/presentation.rs",
+          "crates/editor-api/src/operations/classic_takes/quality.rs",
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "classic/rust/crates/timeline/src/transcription_recovery.rs",
+          ".local/smart-takes-2026-10-29/rust-tests2.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4baf0a01-22aa-4c5c-a961-b4d702d85462"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:42:43.143Z",
+  "parents": [],
+  "branch": "main"
+}

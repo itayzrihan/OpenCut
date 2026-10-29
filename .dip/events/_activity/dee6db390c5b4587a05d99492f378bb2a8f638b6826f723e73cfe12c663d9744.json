@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "dee6db390c5b4587a05d99492f378bb2a8f638b6826f723e73cfe12c663d9744",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:00:32.475Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,260p' scripts/detail-drafts-smoke.mjs",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-4a06cf91-9ecb-4e18-81e6-de03257ce5ac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:00:32.684Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -2,7 +2,10 @@
 import { analyzeSmartAudioSilence } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import { TracksSnapshotCommand } from "@/commands/timeline/tracks-snapshot";
-import { openAudioWindowReader, SPEECH_SAMPLE_RATE } from "@/media/audio-window";
+import {
+	openAudioWindowReader,
+	SPEECH_SAMPLE_RATE,
+} from "@/media/audio-window";
 import { getClipAudioTiming } from "@/media/audio-sync";
 import { resolveUnifiedAnglesAudioAsset } from "@/media/unified-angles";
 import { doesElementHaveEnabledAudio } from "./audio-separation";
@@ -33,6 +36,11 @@ export async function removeSmartSilence({
 	signal?.throwIfAborted();
 	const project = editor.project.getActive();
 	const scene = editor.scenes.getActiveScene();
+	if (scene.takeAssembly) {
+		// Rebuild the archived performances through the same native assembly:
+		// source clocks and alternate takes survive pause removal and Undo.
+		return editor.command.cleanSmartTakeSilence({ signal, minSilenceSeconds });
+	}
 	const before = scene.tracks;
 	const revision = editor.command.getStateRevision();
 	const selected = editor.timeline
@@ -117,17 +125,31 @@ export async function removeSmartSilence({
 		// audible interval, in frame-aligned windows, rather than retain the whole
 		// recording's PCM. Unknown coverage reaches Rust unchanged as NaN.
 		const frameDurationSeconds = 0.01 * Math.min(1, playbackRate);
-		const frameSize = Math.max(1, Math.round(SPEECH_SAMPLE_RATE * frameDurationSeconds));
-		const windowSeconds = Math.max(1, Math.floor(30 * SPEECH_SAMPLE_RATE / frameSize)) * frameSize / SPEECH_SAMPLE_RATE;
+		const frameSize = Math.max(
+			1,
+			Math.round(SPEECH_SAMPLE_RATE * frameDurationSeconds),
+		);
+		const windowSeconds =
+			(Math.max(1, Math.floor((30 * SPEECH_SAMPLE_RATE) / frameSize)) *
+				frameSize) /
+			SPEECH_SAMPLE_RATE;
 		const sourceEnd = sourceStart + durationSeconds * playbackRate;
 		const frames: Awaited<ReturnType<typeof extractCompactAudioFeatures>> = [];
 		for (let start = sourceStart; start < sourceEnd; start += windowSeconds) {
 			signal?.throwIfAborted();
 			const end = Math.min(sourceEnd, start + windowSeconds);
-			const reader = await openAudioWindowReader({ asset, signal: decodeSignal });
+			const reader = await openAudioWindowReader({
+				asset,
+				signal: decodeSignal,
+			});
 			let samples: Float32Array;
 			try {
-				samples = await reader.read({ start, end, missing: "unknown", channelMix: "max-magnitude" });
+				samples = await reader.read({
+					start,
+					end,
+					missing: "unknown",
+					channelMix: "max-magnitude",
+				});
 			} finally {
 				reader.close();
 			}
@@ -144,7 +166,12 @@ export async function removeSmartSilence({
 				},
 			});
 			const offset = (start - sourceStart) / playbackRate;
-			for (const frame of windowFrames) frames.push({ ...frame, start: frame.start + offset, end: frame.end + offset });
+			for (const frame of windowFrames)
+				frames.push({
+					...frame,
+					start: frame.start + offset,
+					end: frame.end + offset,
+				});
 		}
 		signal?.throwIfAborted();
 		const result = analyzeSmartAudioSilence({

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "11dbf4bc1c6ddee492d478003cfbe6d9ca225af3534fd60ce109a6bcbaf24e7c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:58:04.139Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,100p' Cargo.toml; sed -n '1,160p' classic/AGENTS.md; sed -n '1,180p' .local/rtl-2020-2026-10-24/activate.mjs; sed -n '1,160p' classic/apps/web/src/transcription/windows.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-10199c02-f030-48b7-ad7b-e6389a056504"
+      },
+      {
+        "at": "2026-10-29T03:58:04.263Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,100p' Cargo.toml; sed -n '1,160p' classic/AGENTS.md; sed -n '1,180p' .local/rtl-2020-2026-10-24/activate.mjs; sed -n '1,160p' classic/apps/web/src/transcription/windows.test.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-10199c02-f030-48b7-ad7b-e6389a056504"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:58:04.802Z",
+  "parents": [],
+  "branch": "main"
+}

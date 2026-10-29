@@ -1,4 +1,9 @@
 /* eslint-disable opencut/prefer-object-params -- Worker session callbacks receive separate transcribe and abort arguments. */
+import {
+	transcriptRecoveryWindows,
+	mergeRecoveredTranscript,
+} from "opencut-wasm";
+import { extractCompactAudioFeatures } from "@/timeline/audio-silence-analysis";
 import { transcriptionService } from "@/services/transcription/service";
 import type {
 	TranscriptionLanguage,
@@ -115,6 +120,14 @@ export async function transcribeAudioWindows({
 				let result: TranscriptionResult;
 				let saved = true;
 				if (input instanceof Float32Array) {
+					const frames = await extractCompactAudioFeatures({
+						samples: input,
+						sampleRate: 16000,
+						sourceStartSeconds: 0,
+						sourceEndSeconds: input.length / 16000,
+						playbackRate: 1,
+						frameDurationSeconds: 0.02,
+					});
 					let firstLoad = true;
 					result = await (externalTranscribe ?? transcribe)({
 						...(externalTranscribe ? { signal: activeSignal } : {}),
@@ -135,6 +148,44 @@ export async function transcribeAudioWindows({
 							}),
 					});
 					activeSignal.throwIfAborted();
+					const recoveryWindows = transcriptRecoveryWindows({
+						frames,
+						words: (result.words ?? []).map((w, wordIndex) => ({
+							...w,
+							wordIndex,
+						})),
+						duration: range(index).end - range(index).start,
+					});
+					for (const gap of recoveryWindows) {
+						activeSignal.throwIfAborted();
+						onProgress?.({
+							status: "transcribing",
+							progress: (index / count) * 100,
+							message: `Section ${index + 1}/${count} · Checking missed speech`,
+						});
+						const recovered = await (externalTranscribe ?? transcribe)({
+							...(externalTranscribe ? { signal: activeSignal } : {}),
+							language,
+							load: () =>
+								load({
+									start: range(index).start + gap.start,
+									end: range(index).start + gap.end,
+									signal: activeSignal,
+								}),
+						});
+						const words = mergeRecoveredTranscript({
+							words: result.words ?? [],
+							recovered: recovered.words ?? [],
+							start: gap.start,
+							end: gap.end,
+						});
+						result = {
+							...result,
+							words,
+							segments: words,
+							text: words.map((w) => w.text).join(" "),
+						};
+					}
 					saved = (await cache?.write(index, result)) === true;
 				} else result = input;
 				const start = range(index).start;

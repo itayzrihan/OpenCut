@@ -26,6 +26,8 @@ mod edit_provenance;
 mod restore_silence;
 mod silence_analysis;
 mod smart_silence;
+mod transcription_recovery;
+pub use transcription_recovery::*;
 pub use restore_silence::*;
 mod restore_silence_captions;
 pub use restore_silence_captions::*;

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "eventId": "990a3c5c88236e8f6ce6ac1c1ea3756acec43827f5587552b84ee4b41f9c2d70",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:12:42.866Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/render-worker/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/transcription-check/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/blog/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/blog/[slug]/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/contributors/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/roadmap/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/changelog/[version]/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/sponsors/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/terms/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/privacy/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/changelog/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/batch-worker/page_client-reference-manifest.js",
+          "classic/apps/web/.next-local-production/server/app/render-queue/page_client-reference-manifest.js"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "d812f6a6-4f9c-49f9-bdfd-0c0a365d8c2f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:12:42.868Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "210287d369b72dc8da76b12014235af40b508f684767e23afdfda07f6ccef1bb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:19:21.845Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/configured-web/src__transcription__windows.test.ts.log",
+          ".local/smart-takes-2026-10-29/configured-web/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b453e5d6-1bec-498b-b1c6-6a62c94b562d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:19:21.847Z",
+  "parents": [],
+  "branch": "main"
+}

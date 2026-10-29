@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "87bc9e4061cb78f53ef2a5c4e09d17d0bcb27c88dd69791c093550cc4f2f04c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1830f-b3a8-7873-af6b-35cd49cc7fe4",
+    "records": [
+      {
+        "at": "2026-10-28T15:10:31.804Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1830f-b3a8-7873-af6b-35cd49cc7fe4",
+        "taskId": "task_bbbc7fd8f37737f5600429d49d15f796e53af895197d34beeb6334ab4c8fe64e",
+        "tool": "mcp__codex_apps__github__get_users_recent_prs_in_repo",
+        "branch": "main",
+        "recordId": "codex:01a1830f-b3a8-7873-af6b-35cd49cc7fe4:PostToolUse:exec-b163e2e9-0fd3-46b0-83e2-7eecdf3ee4c9"
+      },
+      {
+        "at": "2026-10-28T15:10:31.813Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1830f-b3a8-7873-af6b-35cd49cc7fe4",
+        "taskId": "task_bbbc7fd8f37737f5600429d49d15f796e53af895197d34beeb6334ab4c8fe64e",
+        "tool": "mcp__dip__project_reconcile",
+        "branch": "main",
+        "recordId": "codex:01a1830f-b3a8-7873-af6b-35cd49cc7fe4:PreToolUse:exec-2c1b5b2b-2d6e-4d79-84a7-fd4fa1fd28b6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T15:10:32.735Z",
+  "parents": [],
+  "branch": "main"
+}

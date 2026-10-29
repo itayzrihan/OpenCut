@@ -213,65 +213,101 @@ pub(super) fn analyze_audio(
         let start = start as f64 / TPS;
         let covered_start = e.frames.first().map(|f| f.start);
         let covered_end = e.frames.last().map(|f| f.end);
-        let analysis = classic_timeline::analyze_smart_audio_silence(
-            classic_timeline::AnalyzeSmartAudioSilenceOptions {
-                frames: e
-                    .frames
-                    .into_iter()
-                    .map(|f| classic_timeline::AudioAnalysisFrame {
-                        start: f.start,
-                        end: f.end,
-                        rms: f.rms,
-                        peak: f.peak,
-                        zero_crossing_rate: f.zero_crossing_rate,
-                    })
-                    .collect(),
-                duration_seconds: duration,
-                transcript_words: words
-                    .iter()
-                    .enumerate()
-                    .filter_map(|(i, w)| {
-                        let s = w["start"].as_f64()?;
-                        let end = w["end"].as_f64()?;
-                        (end > start && s < start + duration).then_some(
-                            classic_timeline::TranscriptWordTiming {
-                                word_index: i,
-                                start: (s - start).max(0.0),
-                                end: (end - start)
-                                    .min(duration)
-                                    .max((s - start).max(0.0) + 0.001),
-                            },
-                        )
-                    })
-                    .collect(),
-                settings: classic_timeline::SmartAudioSilenceSettings {
-                    min_silence_seconds: 0.04,
-                    speech_padding_seconds: 0.06,
-                    bridge_gap_seconds: 0.04,
+        // Missing source before/after a synchronized microphone is unknown, not
+        // silence. Analyze each contiguous observed island, leaving holes intact.
+        let mut islands: Vec<Vec<classic_timeline::AudioAnalysisFrame>> = vec![];
+        for f in e.frames {
+            if ![f.start, f.end, f.rms, f.peak, f.zero_crossing_rate]
+                .iter()
+                .all(|n| n.is_finite())
+                || f.start < 0.0
+                || f.end <= f.start
+                || f.end > duration + 0.00001
+            {
+                return Err(invalid("Invalid take audio frame"));
+            }
+            let frame = classic_timeline::AudioAnalysisFrame {
+                start: f.start,
+                end: f.end,
+                rms: f.rms,
+                peak: f.peak,
+                zero_crossing_rate: f.zero_crossing_rate,
+            };
+            if let Some(last) = islands.last_mut() {
+                let end = last.last().unwrap().end;
+                if frame.start < end - 0.00001 {
+                    return Err(invalid("Overlapping take audio frames"));
+                }
+                if frame.start <= end + 0.00001 {
+                    last.push(frame);
+                    continue;
+                }
+            }
+            islands.push(vec![frame]);
+        }
+        let frames_analyzed = islands.iter().map(Vec::len).sum();
+        let mut ranges = vec![];
+        let mut safety_hold_reason = if islands.is_empty() {
+            Some("missing-audio-frames".into())
+        } else {
+            None
+        };
+        for island in islands {
+            let offset = island[0].start;
+            let span = island.last().unwrap().end - offset;
+            let analysis = classic_timeline::analyze_smart_audio_silence(
+                classic_timeline::AnalyzeSmartAudioSilenceOptions {
+                    frames: island
+                        .into_iter()
+                        .map(|mut f| {
+                            f.start -= offset;
+                            f.end -= offset;
+                            f
+                        })
+                        .collect(),
+                    duration_seconds: span,
+                    transcript_words: words
+                        .iter()
+                        .enumerate()
+                        .filter_map(|(i, w)| {
+                            let s = w["start"].as_f64()? - start - offset;
+                            let e = w["end"].as_f64()? - start - offset;
+                            (e > 0.0 && s < span).then_some(
+                                classic_timeline::TranscriptWordTiming {
+                                    word_index: i,
+                                    start: s.max(0.0),
+                                    end: e.min(span).max(s.max(0.0) + 0.000001),
+                                },
+                            )
+                        })
+                        .collect(),
+                    settings: classic_timeline::SmartAudioSilenceSettings {
+                        min_silence_seconds: 0.01,
+                        speech_padding_seconds: 0.08,
+                        bridge_gap_seconds: 0.12,
+                    },
                 },
-            },
-        );
+            );
+            safety_hold_reason = safety_hold_reason.or(analysis.diagnostics.safety_hold_reason);
+            ranges.extend(analysis.cut_ranges.iter().map(|r| {
+                (
+                    ((start + offset + r.start) * TPS).round() as i64,
+                    ((start + offset + r.end) * TPS).round() as i64,
+                )
+            }));
+        }
         result.push(AudioGaps {
             diagnostics: Some(AudioDiagnostics {
                 clip_id: e.clip_id.clone(),
-                frames_analyzed: analysis.diagnostics.frames_analyzed,
+                frames_analyzed,
                 covered_start,
                 covered_end,
                 duration,
-                quiet_ranges: analysis.cut_ranges.len(),
-                safety_hold_reason: analysis.diagnostics.safety_hold_reason,
+                quiet_ranges: ranges.len(),
+                safety_hold_reason,
             }),
             clip_id: e.clip_id,
-            ranges: analysis
-                .cut_ranges
-                .iter()
-                .map(|r| {
-                    (
-                        ((start + r.start) * TPS).round() as i64,
-                        ((start + r.end) * TPS).round() as i64,
-                    )
-                })
-                .collect(),
+            ranges,
         });
     }
     Ok(result)
@@ -538,4 +574,42 @@ pub(super) fn validate_audio(
         }
     }
     Ok(())
+}
+
+/// Split a fluent performance at verified pauses without changing its semantic
+/// part or alternatives. No transcript interval may intersect a removed span.
+pub(super) fn speech_spans(
+    from: i64,
+    to: i64,
+    part: &Part,
+    words: &[Word],
+    gaps: &[AudioGaps],
+    min_silence_seconds: f64,
+) -> Vec<(i64, i64)> {
+    let mut cursor = from;
+    let mut spans = vec![];
+    if let Some(audio) = gaps
+        .iter()
+        .find(|g| g.clip_id == words[part.first_word].clip_id)
+    {
+        for &(a, b) in &audio.ranges {
+            let a = a.max(from);
+            let b = b.min(to);
+            if b - a < (min_silence_seconds * TPS) as i64
+                || a < cursor
+                || (part.first_word..=part.last_word)
+                    .any(|i| words[i].start < b && words[i].end > a)
+            {
+                continue;
+            }
+            if a > cursor {
+                spans.push((cursor, a));
+            }
+            cursor = b;
+        }
+    }
+    if cursor < to {
+        spans.push((cursor, to));
+    }
+    spans
 }

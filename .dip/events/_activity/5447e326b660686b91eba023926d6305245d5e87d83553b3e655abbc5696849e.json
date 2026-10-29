@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5447e326b660686b91eba023926d6305245d5e87d83553b3e655abbc5696849e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:02:10.201Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/examples",
+          "classic/rust/crates/timeline/examples/noise_probe.rs",
+          ".local/smart-takes-2026-10-29/noise-probe.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "11a0c181-d958-4153-9f84-4d0d8df61856"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:02:10.202Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "81864df31ad5a4e9fe5786e0b469d130f7fc89db0e3548658f0d2c6dabb9dc2c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:23:37.247Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nPath('/tmp/dip-automatic-pr.md').write_text('''DIP currently asks the coding agent to manage intent repeatedly while recording ordinary activity. This adds an opt-in `automatic` workflow: capture requests in an inbox, promote and claim before supported writes, capture native plans, and finish development with one call. `paused` preserves remaining work without asserting completion. Explicit requirement adoption and material scope changes remain explicit.\n\nStartup context is bounded to4KB and routine mutation receipts to1KB. Known reads bypass coordination conservatively; routine hooks avoid integration repair and duplicate task reduction. Durable event/outbox history, coordination modes, exact verification and user-edited integration files remain protected. `reviewed` stays available and remains the package default.\n\nIncludes the already merged dashboard PR#5 and its maintainer fixes. Version: `0.3.13-automatic.2`.\n\nValidation of the combined candidate:\n-170 tests:168 passed,2 platform skips,0 failed.\n-JavaScript syntax checks, browser smoke including14 focused draft cases, and clean-package install/discovery/portable/uninstall smoke passed.\n-Fresh global MCP transport loads26 tools including paused finish and request inbox; installed source matches the validated candidate. Recorder running; live PoCut context3146 bytes. Existing Codex hook definitions and unrelated settings unchanged.\n\nTwo previously authorized12-turn model comparisons are preserved, including all failures. Corrected .1 round2 completed12/12: routine mutations42→8 (81% fewer), median wall time86.395→68.687s (20.5% lower),74/74 functional and36/36 memory checks, correct original-task completion. Administrative payload fell only33.9%, below60%. Small exploratory sample; no general speedup claim. .2 was integration-tested but not given another model comparison.\n\nThe owner explicitly authorized merging this progress and activating automatic globally while defer",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-ad0908fd-d846-46ef-9809-5f46bbcdf51a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:23:37.617Z",
+  "parents": [],
+  "branch": "main"
+}

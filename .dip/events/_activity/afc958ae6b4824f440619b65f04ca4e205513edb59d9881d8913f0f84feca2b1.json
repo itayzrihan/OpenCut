@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "afc958ae6b4824f440619b65f04ca4e205513edb59d9881d8913f0f84feca2b1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T01:53:49.676Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_08493205bfe528604bb86bb120d14fde7d0ac3780de7c590cef8c4d74e2f4bed",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git remote -v",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-ca465188-084a-4744-baa4-dc337470db6d"
+      },
+      {
+        "at": "2026-10-29T01:53:49.953Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_08493205bfe528604bb86bb120d14fde7d0ac3780de7c590cef8c4d74e2f4bed",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git remote -v",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-ca465188-084a-4744-baa4-dc337470db6d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T01:53:50.526Z",
+  "parents": [],
+  "branch": "main"
+}

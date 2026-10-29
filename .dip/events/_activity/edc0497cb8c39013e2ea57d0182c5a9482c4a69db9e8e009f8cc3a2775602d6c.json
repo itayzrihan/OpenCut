@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "edc0497cb8c39013e2ea57d0182c5a9482c4a69db9e8e009f8cc3a2775602d6c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:57:06.876Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,statistics,math\nf=json.load(open('.local/smart-takes-2026-10-29/audio-evidence.json'))[0]['frames']\ndef q(a,p): return sorted(a)[int((len(a)-1)*p)]\nr=[x['rms'] for x in f]; print('rms quantiles',[(p,q(r,p)) for p in [.01,.1,.2,.3,.5,.8,.95]])\nfor n in [1,5,10,20]:\n b=[sum(r[i:i+n])/len(r[i:i+n]) for i in range(0,len(r),n)]\n threshold=q(b,.1)*1.2\n spans=[]; start=None\n for i,v in enumerate(b+[math.inf]):\n  if v<=threshold:\n   if start is None:start=i*n*.01\n  elif start is not None:\n   if i*n*.01-start>.3:spans.append((round(start,2),round(i*n*.01,2)))\n   start=None\n print(n,'floor',q(b,.1),'quiet span count',len(spans),'duration',sum(e-s for s,e in spans),'first',spans[:8])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-d3dd6061-134f-4741-bbb3-2c5bf404ae72"
+      },
+      {
+        "at": "2026-10-29T03:57:07.166Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,statistics,math\nf=json.load(open('.local/smart-takes-2026-10-29/audio-evidence.json'))[0]['frames']\ndef q(a,p): return sorted(a)[int((len(a)-1)*p)]\nr=[x['rms'] for x in f]; print('rms quantiles',[(p,q(r,p)) for p in [.01,.1,.2,.3,.5,.8,.95]])\nfor n in [1,5,10,20]:\n b=[sum(r[i:i+n])/len(r[i:i+n]) for i in range(0,len(r),n)]\n threshold=q(b,.1)*1.2\n spans=[]; start=None\n for i,v in enumerate(b+[math.inf]):\n  if v<=threshold:\n   if start is None:start=i*n*.01\n  elif start is not None:\n   if i*n*.01-start>.3:spans.append((round(start,2),round(i*n*.01,2)))\n   start=None\n print(n,'floor',q(b,.1),'quiet span count',len(spans),'duration',sum(e-s for s,e in spans),'first',spans[:8])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-d3dd6061-134f-4741-bbb3-2c5bf404ae72"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:57:07.478Z",
+  "parents": [],
+  "branch": "main"
+}

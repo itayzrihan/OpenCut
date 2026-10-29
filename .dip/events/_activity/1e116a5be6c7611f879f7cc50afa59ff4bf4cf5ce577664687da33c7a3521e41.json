@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1e116a5be6c7611f879f7cc50afa59ff4bf4cf5ce577664687da33c7a3521e41",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:16:53.739Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node bin/dip.js install --help; sed -n '1,200p' src/workflow.js; rg -n 'function install|export .*install|workflow|preserved|existing|repair|roots' src/automation.js | head -70; cat .dip-local/rollback-20261028/manifest.json",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c680a177-c609-41ac-b4e5-45ec5f740a44"
+      },
+      {
+        "at": "2026-10-29T02:16:53.739Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\np=Path.home()/'.dip/install.json';d=json.loads(p.read_text());print(json.dumps({k:v for k,v in d.items() if k not in ['token','secret','auth']},indent=2))\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-e034d5bf-61b9-4cdf-861d-26917fbf0e3f"
+      },
+      {
+        "at": "2026-10-29T02:16:53.742Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' scripts/package-smoke.mjs; rg -n 'workflow|install' bin/dip.js | head -40",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-80fc9d8c-528d-4fd5-ab41-f0fdfc7ab8b4"
+      },
+      {
+        "at": "2026-10-29T02:16:54.060Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' scripts/package-smoke.mjs; rg -n 'workflow|install' bin/dip.js | head -40",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-80fc9d8c-528d-4fd5-ab41-f0fdfc7ab8b4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:16:54.104Z",
+  "parents": [],
+  "branch": "main"
+}

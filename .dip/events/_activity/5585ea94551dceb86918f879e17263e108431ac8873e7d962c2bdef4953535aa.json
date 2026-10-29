@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5585ea94551dceb86918f879e17263e108431ac8873e7d962c2bdef4953535aa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:14:54.349Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/mcp-client-pids.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "bfef52d3-2506-4c50-8bca-a4a59ddc9c76"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:14:54.355Z",
+  "parents": [],
+  "branch": "main"
+}

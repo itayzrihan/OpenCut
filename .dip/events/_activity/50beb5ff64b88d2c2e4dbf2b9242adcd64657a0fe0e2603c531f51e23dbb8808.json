@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "50beb5ff64b88d2c2e4dbf2b9242adcd64657a0fe0e2603c531f51e23dbb8808",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:50:26.443Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/integration-tests/src__core____tests____canonical-smart-takes.test.ts.log",
+          ".local/smart-takes-2026-10-29/live-replay.log",
+          ".local/smart-takes-2026-10-29/integration-tests/src__timeline____tests____cut-silence.test.ts.log",
+          ".local/smart-takes-2026-10-29/integration-tests/src__timeline__components____tests____cut-silence-toolbar-options.test.ts.log",
+          ".local/smart-takes-2026-10-29/integration-tests/src__transcription__windows.test.ts.log",
+          ".local/smart-takes-2026-10-29/integration-tests/summary.json",
+          ".local/smart-takes-2026-10-29/integration-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "88da5fa1-c015-4178-bbce-d307ea08427b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:50:26.446Z",
+  "parents": [],
+  "branch": "main"
+}

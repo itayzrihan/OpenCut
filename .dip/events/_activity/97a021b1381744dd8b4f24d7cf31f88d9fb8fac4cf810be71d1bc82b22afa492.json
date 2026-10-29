@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97a021b1381744dd8b4f24d7cf31f88d9fb8fac4cf810be71d1bc82b22afa492",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:19:57.463Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\np=Path('/tmp/dip-global-install-20261029.json')\nif p.exists() and p.stat().st_size:\n d=json.loads(p.read_text());print(json.dumps({**{k:v for k,v in d.items() if k not in ('initialized','preservedInstructions')},'initializedCount':len(d.get('initialized',[])),'preservedInstructions':d.get('preservedInstructions',[])},indent=2))\nelse: print('Installer has not returned yet.')\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-00b4721d-a8ca-4068-87b2-8e5014ea6283"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:19:58.316Z",
+  "parents": [],
+  "branch": "main"
+}

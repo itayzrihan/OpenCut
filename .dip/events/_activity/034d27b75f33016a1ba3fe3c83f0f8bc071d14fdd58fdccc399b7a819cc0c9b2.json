@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "034d27b75f33016a1ba3fe3c83f0f8bc071d14fdd58fdccc399b7a819cc0c9b2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:44:46.346Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/__tests__/smart-takes-task.test.ts",
+          "classic/apps/web/src/core/managers/commands.ts",
+          "classic/apps/web/src/timeline/smart-silence.ts",
+          "classic/apps/web/src/timeline/smart-takes/types.ts",
+          "classic/apps/web/src/transcription/windows.ts",
+          ".local/smart-takes-2026-10-29/format.log",
+          ".local/smart-takes-2026-10-29/wasm.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "65bc0599-6a96-4282-848f-c71c5e454455"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:44:46.349Z",
+  "parents": [],
+  "branch": "main"
+}

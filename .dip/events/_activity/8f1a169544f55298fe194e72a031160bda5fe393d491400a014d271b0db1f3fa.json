@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8f1a169544f55298fe194e72a031160bda5fe393d491400a014d271b0db1f3fa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:00:32.957Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/transcription/windows.test.ts';s=open(p).read();s+='''\n\ntest(\"acoustic coverage retries a missing repeated hook before checkpointing\", async () => {\n  const loads: { start: number; end: number }[] = [];\n  let inferences = 0;\n  const checkpoints: import(\"./types\").TranscriptionWord[][] = [];\n  const result = await transcribeAudioWindows({\n    prefetch: false,\n    duration: 24,\n    language: \"he\",\n    signal: new AbortController().signal,\n    load: async ({ start, end }) => {\n      loads.push({ start, end });\n      return Float32Array.from({ length: Math.ceil((end - start) * 16000) }, (_, i) => {\n        const t = start + i / 16000;\n        return (t >= 2 && t < 6) || (t >= 9 && t < 14) || (t >= 21 && t < 23) ? 0.1 : 0;\n      });\n    },\n    externalTranscribe: async ({ load }) => {\n      await load();\n      const words = ++inferences === 1\n        ? [{ text: \"אותו הוק\", start: 2, end: 6 }, { text: \"המשך\", start: 21, end: 23 }]\n        : [{ text: \"אותו הוק\", start: 3, end: 8 }];\n      return { text: \"\", words, segments: words, language: \"he\" };\n    },\n    onChunk: async ({ words }) => { checkpoints.push(words); },\n  });\n  expect(loads).toEqual([{ start: 0, end: 24 }, { start: 6, end: 21 }]);\n  expect(result.words?.map(w => w.start)).toEqual([2, 9, 21]);\n  expect(result.words?.filter(w => w.text === \"אותו הוק\")).toHaveLength(2);\n  expect(checkpoints).toEqual([result.words!]);\n});\n''';open(p,'w').write(s)\np='classic/rust/crates/timeline/src/smart_silence.rs';s=open(p).read();pos=s.index('    #[test]\\n    fn malformed_word_timing');s=s[:pos]+'''    #[test]\n    fn fluctuating_room_tone_is_cut_without_touching_untranscribed_quiet_speech() {\n        let mut random = 42_u64;\n        let mut audio = frames(&vec![0.0; 1200]);\n        for (index, frame) in audio.iter_mut().enumerate() {\n            random = random.wrapping_mul(6364136223846793005).wrapping_add(1);\n            let noise = 0.00004 + (random >> 32) as f64 / u32::MAX as f64 *",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-ce9c01b9-dffe-415b-bcd8-3d0e76503f38"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:00:33.019Z",
+  "parents": [],
+  "branch": "main"
+}

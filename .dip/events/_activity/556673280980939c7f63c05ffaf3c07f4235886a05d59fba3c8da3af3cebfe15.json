@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "556673280980939c7f63c05ffaf3c07f4235886a05d59fba3c8da3af3cebfe15",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:02:09.212Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p classic/rust/crates/timeline/examples\ncat > classic/rust/crates/timeline/examples/noise_probe.rs <<'RS'\nuse timeline::*;\nfn main() {\n let evidence:serde_json::Value=serde_json::from_str(&std::fs::read_to_string(\".local/smart-takes-2026-10-29/audio-evidence.json\").unwrap()).unwrap();\n let mut frames:Vec<AudioAnalysisFrame>=serde_json::from_value(evidence[0][\"frames\"].clone()).unwrap();\n let offset=frames[0].start;\n for f in &mut frames {f.start-=offset;f.end-=offset;}\n let bundle:serde_json::Value=serde_json::from_str(&std::fs::read_to_string(\".local/smart-takes-2026-10-29/session-bundle.json\").unwrap()).unwrap();\n let words=bundle[\"archive\"][\"classic\"][\"document\"][\"scenes\"][0][\"takeAssembly\"][\"sourceWords\"].as_array().unwrap().iter().enumerate().map(|(i,w)| TranscriptWordTiming {word_index:i as u32,start:w[\"start\"].as_f64().unwrap()/120000.0-offset,end:w[\"end\"].as_f64().unwrap()/120000.0-offset}).collect();\n let duration=frames.last().unwrap().end;\n let out=analyze_smart_audio_silence(AnalyzeSmartAudioSilenceOptions {frames,duration_seconds:duration,transcript_words:words,settings:SmartAudioSilenceSettings{min_silence_seconds:0.01,speech_padding_seconds:0.08,bridge_gap_seconds:0.12}});\n println!(\"{}\",serde_json::to_string(&out).unwrap());\n}\nRS\ncargo run -q --manifest-path classic/Cargo.toml -p timeline --example noise_probe > .local/smart-takes-2026-10-29/noise-probe.json",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-3ee71a26-d3c7-4fd9-9b21-3f3851563e42"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:02:10.201Z",
+  "parents": [],
+  "branch": "main"
+}

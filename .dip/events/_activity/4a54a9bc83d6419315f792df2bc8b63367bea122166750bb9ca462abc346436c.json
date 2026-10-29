@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4a54a9bc83d6419315f792df2bc8b63367bea122166750bb9ca462abc346436c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:31:31.908Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,hashlib\nroot=Path('.local/smart-takes-2026-10-29')\np=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/d8b39feb-8c0a-4e2d-9bec-cef191099aa8/project.json')\nb=p.read_bytes(); (root/'project-before.json').write_bytes(b); d=json.loads(b)\nprint('root keys',list(d));print('scenes',[(s['id'],s['name'],list(s)) for s in d['scenes']])\ns=d['scenes'][0];a=s.get('takeAssembly',{}); print('assembly', {k:v for k,v in a.items() if k not in ['sourceTracks','sourceWords','plan']})\nprint('main clips', [{k:v for k,v in e.items() if k in ['id','mediaId','startTime','duration','trimStart','trimEnd','audioOffset','takeGroup','retime','audioEnabled','enabled']} for e in s['tracks']['main']['elements']][:4])\nprint('groups',json.dumps(a.get('plan'),ensure_ascii=False)[:16000])\nPY\nsed -n '1,245p' classic/apps/web/src/timeline/smart-takes/audio-evidence.ts\nsed -n '1,120p' classic/apps/web/src/media/audio-sync.ts",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-6f094557-44a2-471e-aa3e-6837345e6a71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:31:32.195Z",
+  "parents": [],
+  "branch": "main"
+}

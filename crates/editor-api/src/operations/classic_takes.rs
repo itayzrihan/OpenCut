@@ -7,6 +7,7 @@ use std::collections::HashMap;
 
 mod auto_edit;
 mod podcast;
+mod presentation;
 mod quality;
 mod review;
 pub(super) use podcast::reference::Region as PodcastReferenceRegion;
@@ -24,6 +25,9 @@ pub(super) fn podcast_reference_tracks(
     podcast::reference::mask_tracks(tracks, regions)
 }
 const TPS: f64 = 120_000.0;
+fn default_pause() -> f64 {
+    0.3
+}
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub(crate) struct Part {
@@ -85,6 +89,14 @@ struct Word {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Assembly {
+    #[serde(default)]
+    trim_silence: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    silence_groups: Option<Vec<usize>>,
+    #[serde(default = "default_pause")]
+    min_silence_seconds: f64,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    silence_minimums: std::collections::BTreeMap<usize, f64>,
     version: u32,
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     selection_only: bool,
@@ -134,6 +146,14 @@ enum Change {
         #[serde(default, rename = "runMetrics")]
         run_metrics: Option<review::RunMetrics>,
         #[serde(default, rename = "audioEvidence")]
+        audio_evidence: Vec<AudioEvidence>,
+    },
+    CleanSilence {
+        #[serde(default, rename = "groupIndexes")]
+        group_indexes: Option<Vec<usize>>,
+        #[serde(default = "default_pause", rename = "minSilenceSeconds")]
+        min_silence_seconds: f64,
+        #[serde(rename = "audioEvidence")]
         audio_evidence: Vec<AudioEvidence>,
     },
     Select {
@@ -516,6 +536,21 @@ fn validate_assembly(value: &Value, asset_ids: &HashSet<&str>) -> Result<(), Str
     if !matches!(a.version, 1 | 2 | 3) || !label(&a.id) || a.applied_digest.len() != 64 {
         return Err("Invalid take assembly version/identity".into());
     }
+    if a.silence_minimums.len() > a.plan.groups.len()
+        || a.silence_minimums
+            .iter()
+            .any(|(i, v)| *i >= a.plan.groups.len() || !v.is_finite() || !(0.01..=60.0).contains(v))
+    {
+        return Err("Invalid per-take silence settings".into());
+    }
+    if !a.min_silence_seconds.is_finite()
+        || !(0.01..=60.0).contains(&a.min_silence_seconds)
+        || a.silence_groups.as_ref().is_some_and(|ids| {
+            ids.len() > a.plan.groups.len() || ids.iter().any(|i| *i >= a.plan.groups.len())
+        })
+    {
+        return Err("Invalid take silence settings".into());
+    }
     if let Some(metrics) = &a.run_metrics {
         metrics.validate()?;
     }
@@ -640,7 +675,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.edit",
         "Assemble or select smart takes",
-        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection rejects subsequent timeline/bookmark edits rather than overwriting them. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
+        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection preserves uniform framing and caption-position edits, rejecting structural timeline/bookmark changes. cleanSilence analyzes archived source audio, trims only verified pauses in scoped take groups and retains every alternative. New assemblies clean verified internal pauses automatically; legacy assemblies retain their timing until explicit cleanup. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -663,6 +698,15 @@ pub(super) fn register_classic_takes(
                             .find(|s| s["id"] == input.scene_id)
                             .ok_or_else(|| invalid("Scene not found"))?
                             .clone();
+                        let canvas = classic.document["settings"]["canvasSize"].clone();
+                        let presentation = if scene["takeAssembly"].is_object() {
+                            let old: Assembly =
+                                serde_json::from_value(scene["takeAssembly"].clone())
+                                    .map_err(|_| invalid("Invalid take assembly"))?;
+                            Some(presentation::capture(&old, &scene, &canvas, &context)?)
+                        } else {
+                            None
+                        };
                         let mut assembly = match input.change {
                             Change::Assemble {
                                 element_ids,
@@ -695,6 +739,10 @@ pub(super) fn register_classic_takes(
                                     )?,
                                     quality: QualityReport::default(),
                                     version: 2,
+                                    trim_silence: true,
+                                    silence_groups: None,
+                                    min_silence_seconds: default_pause(),
+                                    silence_minimums: Default::default(),
                                     selection_only: false,
                                     reference_regions: vec![],
                                     id: format!("takes-{}", document.revision),
@@ -705,6 +753,49 @@ pub(super) fn register_classic_takes(
                                     applied_digest: String::new(),
                                 }
                             }
+                            Change::CleanSilence {
+                                audio_evidence,
+                                group_indexes,
+                                min_silence_seconds,
+                            } => {
+                                let mut a: Assembly =
+                                    serde_json::from_value(scene["takeAssembly"].clone())
+                                        .map_err(|_| invalid("No take assembly in this scene"))?;
+                                a.audio_gaps = quality::analyze_audio(
+                                    &a.source_tracks,
+                                    &a.element_ids,
+                                    audio_evidence,
+                                )?;
+                                if !min_silence_seconds.is_finite()
+                                    || !(0.01..=60.0).contains(&min_silence_seconds)
+                                    || group_indexes.as_ref().is_some_and(|ids| {
+                                        ids.is_empty()
+                                            || ids.iter().any(|i| *i >= a.plan.groups.len())
+                                    })
+                                {
+                                    return Err(invalid("Invalid silence cleanup scope"));
+                                }
+                                if let Some(ids) = &group_indexes {
+                                    for id in ids {
+                                        a.silence_minimums.insert(*id, min_silence_seconds);
+                                    }
+                                } else {
+                                    a.silence_minimums.clear();
+                                    a.min_silence_seconds = min_silence_seconds;
+                                }
+                                a.silence_groups = if a.trim_silence && a.silence_groups.is_none() {
+                                    None
+                                } else {
+                                    group_indexes.map(|mut ids| {
+                                        ids.extend(a.silence_groups.clone().unwrap_or_default());
+                                        ids.sort_unstable();
+                                        ids.dedup();
+                                        ids
+                                    })
+                                };
+                                a.trim_silence = true;
+                                a
+                            }
                             Change::Select {
                                 group_index,
                                 alternative_index,
@@ -712,10 +803,6 @@ pub(super) fn register_classic_takes(
                                 let mut a: Assembly =
                                     serde_json::from_value(scene["takeAssembly"].clone())
                                         .map_err(|_| invalid("No take assembly in this scene"))?;
-                                if a.applied_digest != digest(&scene["tracks"], &scene["bookmarks"])
-                                {
-                                    return Err(CapabilityError::Conflict("Timeline changed after the assembly. Undo those edits before switching takes".into()));
-                                }
                                 let g = a
                                     .plan
                                     .groups
@@ -761,8 +848,11 @@ pub(super) fn register_classic_takes(
                         );
                         let mut fresh =
                             || classic_duplicate::fresh(document, &mut occupied, "take");
-                        let (tracks, bookmarks) =
+                        let (mut tracks, bookmarks) =
                             render(&assembly, &words, start, end, &canvas, &mut fresh, &context)?;
+                        if let Some(patches) = presentation {
+                            presentation::apply(&mut tracks, patches);
+                        }
                         assembly.applied_digest = digest(&tracks, &bookmarks);
                         let classic = classic_scenes::classic_target(document, &input.project_id)?;
                         let target = classic
@@ -876,18 +966,40 @@ fn render(
             } else {
                 (words[part.first_word].start, words[part.last_word].end)
             };
-            spans.push(Span {
-                from,
-                to,
-                dest: cursor,
-                group: Some(gi),
-                word_indices: Some(
-                    (part.first_word..=part.last_word)
-                        .map(|i| words[i].source_index)
-                        .collect(),
-                ),
-            });
-            cursor += to - from;
+            let speech_spans = if a.trim_silence
+                && a.silence_groups
+                    .as_ref()
+                    .is_none_or(|ids| ids.contains(&gi))
+            {
+                quality::speech_spans(
+                    from,
+                    to,
+                    part,
+                    words,
+                    &a.audio_gaps,
+                    a.silence_minimums
+                        .get(&gi)
+                        .copied()
+                        .unwrap_or(a.min_silence_seconds),
+                )
+            } else {
+                vec![(from, to)]
+            };
+            for (from, to) in speech_spans {
+                spans.push(Span {
+                    from,
+                    to,
+                    dest: cursor,
+                    group: Some(gi),
+                    word_indices: Some(
+                        (part.first_word..=part.last_word)
+                            .filter(|i| words[*i].start < to && words[*i].end > from)
+                            .map(|i| words[i].source_index)
+                            .collect(),
+                    ),
+                });
+                cursor += to - from;
+            }
         }
     }
     let mut max_end = all(&a.source_tracks)

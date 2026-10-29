@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "95b0512792434a246c0a86d087d495e6ec34a99be8c3fdfa46d197fc50b05bb1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:05:22.473Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess\npaths=subprocess.check_output(['git','diff-tree','--no-commit-id','--name-only','-r','HEAD'],text=True).splitlines()\nfor p in paths:\n if p.startswith('.dip/'):\n  d=json.load(open(p));print(p); print(json.dumps(d,ensure_ascii=False)[:2600])\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-a5ddda49-0dc8-4343-a45e-fa6517f4b415"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:05:23.282Z",
+  "parents": [],
+  "branch": "main"
+}

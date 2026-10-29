@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "731c945a7653fb3a2bee787a4528887ad69d37317ef5a7bcc197332abb7f81a3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:07:14.455Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/smart-takes-2026-10-29\ncat > analysis/smart-takes-2026-10-29/README.md <<'EOF'\n# Smart Takes integrity and speech coverage\n\nCapability status: classic-only, bridged through `project.classic.scene.takes.edit` in the canonical `OpenCutRuntime`. No independent editor store or duplicate MCP endpoint was added.\n\n## Findings and changes\n\n- The first Smart Takes attempt could exceed the native 20-stage metrics limit because every transcription progress update was recorded as a separate stage. Progress text now updates the UI without generating a new stage. A 400-update regression exercises the original failure; retries still reuse transcript and planning checkpoints.\n- The assembly conflict digest included presentation parameters. Uniform framing/opacity/blend edits within a take group and caption position changes now rebase onto an alternative performance. Timing, source, caption text, audio synchronization and structural changes remain guarded. Repeated switches, reopening and Undo retain the visual edits.\n- Default audio silence removal used the legacy path, including video source time for synchronized external audio. Audio and Smart modes now use the shared speech-protecting analyzer and canonical audio timing. Assemblies are cleaned from their archived source clock through the take capability, retaining alternatives, selection scope, captions, framing and undo history.\n- Incomplete microphone coverage previously held an entire recording. Analysis now processes contiguous observed islands and retains unknown gaps. Noise calibration learns the distribution in sustained quiet windows; microphone noise fluctuation no longer implies continuous speech. Transcript word intervals, peaks and ambiguous quiet phrases retain protection.\n- Smart Takes previously used audio evidence only to position the outer cut boundaries. New assemblies also split verified internal pauses. Existing assemblies retain their old timing until the user explicitly requests silence cl",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-147f9fa9-46bc-4e86-a782-605f1cde452a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:07:14.657Z",
+  "parents": [],
+  "branch": "main"
+}

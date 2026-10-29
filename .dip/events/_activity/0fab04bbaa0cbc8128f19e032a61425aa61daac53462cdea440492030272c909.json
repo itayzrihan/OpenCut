@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0fab04bbaa0cbc8128f19e032a61425aa61daac53462cdea440492030272c909",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:16:05.384Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/project-after-cleanup.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "72e12b53-d202-4599-b657-d97c0995da80"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:16:05.386Z",
+  "parents": [],
+  "branch": "main"
+}

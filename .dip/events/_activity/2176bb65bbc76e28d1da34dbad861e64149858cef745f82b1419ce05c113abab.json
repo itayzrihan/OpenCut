@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2176bb65bbc76e28d1da34dbad861e64149858cef745f82b1419ce05c113abab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T04:01:51.181Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/noise-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c2dd268e-81f8-4a89-926e-208d2c21a487"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:01:51.183Z",
+  "parents": [],
+  "branch": "main"
+}

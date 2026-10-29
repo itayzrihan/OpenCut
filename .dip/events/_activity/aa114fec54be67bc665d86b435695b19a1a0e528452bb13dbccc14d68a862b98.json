@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aa114fec54be67bc665d86b435695b19a1a0e528452bb13dbccc14d68a862b98",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:06:17.213Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git push https://github.com/DanIrl7/dip.git HEAD:refs/heads/fix/preserve-detail-drafts",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-189668d0-fd3e-47c6-a69a-f2f7bf603556"
+      },
+      {
+        "at": "2026-10-29T02:06:17.239Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh pr view 5 --repo vxu-labs/dip --json headRefOid,baseRefOid,state,mergeable,mergeStateStatus",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-1b812ffb-4498-4309-ba95-354344b7ffb1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:06:17.279Z",
+  "parents": [],
+  "branch": "main"
+}

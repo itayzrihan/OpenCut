@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "98cc3323f36cb3b1035d6dda24b79c05ef37ae969819bc0d1a4b3fbd121b49a2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-28T13:10:46.992Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git add -- analysis/render-queue-recovery-2026-10-28 .dip/config.json\ngit commit --only -m 'verify: deliver seven recovered event exports and background queue proof' -- analysis/render-queue-recovery-2026-10-28 .dip/config.json > .local/render-queue-recovery-2026-10-28/delivery-commit.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-1fdcc5f2-fa99-4900-b1cc-41eb283fa6a1"
+      },
+      {
+        "at": "2026-10-28T13:10:47.009Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 .local/render-queue-recovery-2026-10-28/delivery-commit.log; git diff --name-only -- classic crates; git status --short -- analysis/render-queue-recovery-2026-10-28 .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bb62e9f3-b010-4815-af6d-5a033c4b3df3"
+      },
+      {
+        "at": "2026-10-28T13:10:47.140Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_7d7c21bc4b9b82c82f0b92579f4cd0fd98310d598443f9f1f86ba8cde89058f4",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "head -2 .local/render-queue-recovery-2026-10-28/delivery-commit.log; git diff --name-only -- classic crates; git status --short -- analysis/render-queue-recovery-2026-10-28 .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-bb62e9f3-b010-4815-af6d-5a033c4b3df3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-28T13:10:47.150Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20bd299aad2d0b595c883b598df70690c8a388cfab2a732c4a584e1fc33bbbbd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:00:02.820Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/rust/crates/timeline/src/smart_silence.rs';s=open(p).read();a=s.index('    // Estimate the room tone');b=s.index('    let average_rms = frames',a);s=s[:a]+s[b:];s=s.replace('let silence_threshold = (noise_floor * 1.2)','let background = background_frames(&frames);\\n    let background_limit = weighted_quantile(&background, 0.99, |frame| frame.rms);\\n    let silence_threshold = (noise_floor * 1.2).max(background_limit * 1.1)');s=s.replace('weighted_quantile(&quiet_frames, 0.95, |frame| frame.peak)','weighted_quantile(&background, 0.99, |frame| frame.peak)');s=s.replace('        (noise_zcr_spread * 1.5).clamp(0.06, 0.14),\\n    );','        (noise_zcr_spread * 1.5).clamp(0.06, 0.14),\\n        (weighted_quantile(&background, 0.9, |f| f.rms)\\n            / weighted_quantile(&background, 0.1, |f| f.rms).max(f64::MIN_POSITIVE))\\n            .max(1.15),\\n    );',1);s=s.replace('    max_zcr_spread: f64,\\n) {','    max_zcr_spread: f64,\\n    max_energy_spread: f64,\\n) {');s=s.replace('upper > lower * 1.15','upper > lower * max_energy_spread')\npos=s.index('fn protect_variable_quiet_runs(')\ns=s[:pos]+'''// Learn microphone noise from sustained low-energy windows. A short quiet\n// frame alone is not a noise model: random room-tone fluctuations otherwise\n// split every pause into apparent syllables. The quietest 10% of 300 ms blocks\n// calibrate only noise variability; whole-recording energy still caps the gate.\nfn background_frames(frames: &[AudioAnalysisFrame]) -> Vec<AudioAnalysisFrame> {\n    let mut blocks = Vec::new();\n    let mut start = 0;\n    while start < frames.len() {\n        let end = frames.partition_point(|f| f.start < frames[start].start + 0.3);\n        let end = end.max(start + 1);\n        let block = &frames[start..end];\n        let duration = block.last().unwrap().end - block[0].start;\n        if duration >= 0.29 {\n            let mean = block.iter().map(|f| f.rms * (f.end - f.start)).sum::<f64>() / duration;\n            blocks.push((me",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-2f9971dd-4cb0-4d61-9149-bd8b28869854"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:00:02.967Z",
+  "parents": [],
+  "branch": "main"
+}

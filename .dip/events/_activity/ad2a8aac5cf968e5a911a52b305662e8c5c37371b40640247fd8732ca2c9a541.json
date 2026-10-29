@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ad2a8aac5cf968e5a911a52b305662e8c5c37371b40640247fd8732ca2c9a541",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:06:45.848Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nreview='''Reviewed the complete contributor diff and the additive maintainer follow-up at 4a6c09ec82e458c265837d7c5e50b5b9752848c4.\n\nThe original draft/focus fix is useful and appropriately scoped. I independently reproduced the original browser smoke and unit results: 148 passed, 2 platform skips, no failures. Scope review found no new dependencies, credential access, external network destinations, installer changes, or executable payloads in the contribution. This is a scoped review, not a repository-wide security certification.\n\nI added a signed-off follow-up for two edge cases found during review: preserve the selected outcome with its summary, and prevent an earlier save response from clearing newly edited/reopened/other-task/other-project drafts. It also retains selection direction. The original contributor commit is preserved.\n\nThe final combined browser smoke passes, including 14 additional cases covering draft text, focus/caret/scroll, literal markup, delayed successful saves, failed saves and task/project/dialog isolation. Syntax and formatting checks pass. Replaying these cases against the original contributor UI reproduces the failures; the final UI passes. Evidence is in docs/reviews/2026-10-29-pr5.json. Firefox, Safari and screen readers were not tested.\n\nApproved for merge. Finding 2 remains a separate follow-up as agreed. Thank you for the careful audit and contribution!'''\nPath('/tmp/dip-pr5-approval.json').write_text(json.dumps({'commit_id':'4a6c09ec82e458c265837d7c5e50b5b9752848c4','event':'APPROVE','body':review}))\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-04683c3a-e61b-4422-98f7-c0952c058b96"
+      },
+      {
+        "at": "2026-10-29T02:06:46.174Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nreview='''Reviewed the complete contributor diff and the additive maintainer follow-up at 4a6c09ec82e458c265837d7c5e50b5b9752848c4.\n\nThe original draft/focus fix is useful and appropriately scoped. I independently reproduced the original browser smoke and unit results: 148 passed, 2 platform skips, no failures. Scope review found no new dependencies, credential access, external network destinations, installer changes, or executable payloads in the contribution. This is a scoped review, not a repository-wide security certification.\n\nI added a signed-off follow-up for two edge cases found during review: preserve the selected outcome with its summary, and prevent an earlier save response from clearing newly edited/reopened/other-task/other-project drafts. It also retains selection direction. The original contributor commit is preserved.\n\nThe final combined browser smoke passes, including 14 additional cases covering draft text, focus/caret/scroll, literal markup, delayed successful saves, failed saves and task/project/dialog isolation. Syntax and formatting checks pass. Replaying these cases against the original contributor UI reproduces the failures; the final UI passes. Evidence is in docs/reviews/2026-10-29-pr5.json. Firefox, Safari and screen readers were not tested.\n\nApproved for merge. Finding 2 remains a separate follow-up as agreed. Thank you for the careful audit and contribution!'''\nPath('/tmp/dip-pr5-approval.json').write_text(json.dumps({'commit_id':'4a6c09ec82e458c265837d7c5e50b5b9752848c4','event':'APPROVE','body':review}))\nPY",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-04683c3a-e61b-4422-98f7-c0952c058b96"
+      },
+      {
+        "at": "2026-10-29T02:06:46.211Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_a3338afe45afdb1e886dedd6094bfd105bd6ac305f8eb832fc49a12068da0d2b",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh api --method POST repos/vxu-labs/dip/pulls/5/reviews --input /tmp/dip-pr5-approval.json --jq '{id,state,commit_id,html_url}'",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-9d3fa721-d8ab-4360-9aa3-db631f0082b3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:06:46.616Z",
+  "parents": [],
+  "branch": "main"
+}

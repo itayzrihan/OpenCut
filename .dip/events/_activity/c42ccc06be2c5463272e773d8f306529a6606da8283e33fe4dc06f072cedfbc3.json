@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c42ccc06be2c5463272e773d8f306529a6606da8283e33fe4dc06f072cedfbc3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:40:41.357Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/crates/timeline/src/transcription_recovery.rs",
+          "classic/rust/crates/timeline/src/timeline.rs",
+          "classic/apps/web/src/transcription/windows.ts",
+          "classic/apps/web/src/transcription/windows.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "3f69d270-d23f-47c4-8c8c-82183398395d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:40:41.363Z",
+  "parents": [],
+  "branch": "main"
+}

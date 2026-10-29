@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a959a9a96397226fb8819ad0d83e882aa14eb1de562dd184eb20c0fb12aaa3ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:35:52.813Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/ai/smart-takes-task.ts",
+          "classic/apps/web/src/core/managers/timeline-manager.ts",
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "7800d85a-e65c-41e9-95ca-ab28b9c7639f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:35:52.817Z",
+  "parents": [],
+  "branch": "main"
+}

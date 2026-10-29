@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b3ec300edd51d58cfed17e0affa1f07738961ad3fd2b607715f56ae905502a82",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+    "records": [
+      {
+        "at": "2026-10-29T02:20:35.397Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip --version; dip doctor > /tmp/dip-global-doctor.json",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-c4533fb5-3423-43fa-9154-b5086787bb71"
+      },
+      {
+        "at": "2026-10-29T02:20:35.400Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {parse} from 'smol-toml';import {createHash} from 'node:crypto';\nconst backup='.dip-local/rollback-20261029';const m=JSON.parse(fs.readFileSync(path.join(backup,'manifest.json')));\nconst saved=p=>fs.readFileSync(path.join(backup,m.settings.find(s=>s.source===p).backup),'utf8');\nconst c='/Users/itayzrihan/.codex/config.toml';const before=parse(saved(c)),after=parse(fs.readFileSync(c,'utf8'));\nconst originalDip=before.mcp_servers.dip;const currentDip=after.mcp_servers.dip;delete before.mcp_servers.dip;delete after.mcp_servers.dip;\nassert.deepEqual(after,before,'Unrelated Codex configuration changed');\nconst h='/Users/itayzrihan/.codex/hooks.json';const hooksSame=saved(h)===fs.readFileSync(h,'utf8');\nassert.deepEqual(JSON.parse(saved(h)),JSON.parse(fs.readFileSync(h,'utf8')),'Hook definitions changed');\nconst install=JSON.parse(fs.readFileSync('/Users/itayzrihan/.dip/install.json'));assert.equal(install.workflow,'automatic');\nconsole.log(JSON.stringify({workflow:install.workflow,codexOtherSettingsPreserved:true,codexHooksByteIdentical:hooksSame,mcpDefinitionUnchanged:JSON.stringify(originalDip)===JSON.stringify(currentDip)}));\nfor(const f of ['src/automatic.js','src/actions.js','src/core.js','src/automation.js','public/app.js'])assert.equal(createHash('sha256').update(fs.readFileSync(f)).digest('hex'),createHash('sha256').update(fs.readFileSync(path.join('/opt/homebrew/lib/node_modules/@vxu-labs/dip',f))).digest('hex'));\nconsole.log('Installed product files match validated candidate.');\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-df8cacee-1a47-41fc-9840-597d334b44f9"
+      },
+      {
+        "at": "2026-10-29T02:20:35.400Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short -uno; ls -l /Users/itayzrihan/Documents/Dev/NextFrame/AGENTS.md",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PreToolUse:exec-5181075d-a52a-4d9e-a181-0bc334cc00d7"
+      },
+      {
+        "at": "2026-10-29T02:20:35.809Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --short -uno; ls -l /Users/itayzrihan/Documents/Dev/NextFrame/AGENTS.md",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-5181075d-a52a-4d9e-a181-0bc334cc00d7"
+      },
+      {
+        "at": "2026-10-29T02:20:35.857Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a12f05-0e65-7b01-b39e-565b96811fb4",
+        "taskId": "task_dfe5ff69fa43f14c53a3ca4a62a36c347765cc9c8b77f9979810a1d1d55a5407",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node --input-type=module <<'JS'\nimport fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {parse} from 'smol-toml';import {createHash} from 'node:crypto';\nconst backup='.dip-local/rollback-20261029';const m=JSON.parse(fs.readFileSync(path.join(backup,'manifest.json')));\nconst saved=p=>fs.readFileSync(path.join(backup,m.settings.find(s=>s.source===p).backup),'utf8');\nconst c='/Users/itayzrihan/.codex/config.toml';const before=parse(saved(c)),after=parse(fs.readFileSync(c,'utf8'));\nconst originalDip=before.mcp_servers.dip;const currentDip=after.mcp_servers.dip;delete before.mcp_servers.dip;delete after.mcp_servers.dip;\nassert.deepEqual(after,before,'Unrelated Codex configuration changed');\nconst h='/Users/itayzrihan/.codex/hooks.json';const hooksSame=saved(h)===fs.readFileSync(h,'utf8');\nassert.deepEqual(JSON.parse(saved(h)),JSON.parse(fs.readFileSync(h,'utf8')),'Hook definitions changed');\nconst install=JSON.parse(fs.readFileSync('/Users/itayzrihan/.dip/install.json'));assert.equal(install.workflow,'automatic');\nconsole.log(JSON.stringify({workflow:install.workflow,codexOtherSettingsPreserved:true,codexHooksByteIdentical:hooksSame,mcpDefinitionUnchanged:JSON.stringify(originalDip)===JSON.stringify(currentDip)}));\nfor(const f of ['src/automatic.js','src/actions.js','src/core.js','src/automation.js','public/app.js'])assert.equal(createHash('sha256').update(fs.readFileSync(f)).digest('hex'),createHash('sha256').update(fs.readFileSync(path.join('/opt/homebrew/lib/node_modules/@vxu-labs/dip',f))).digest('hex'));\nconsole.log('Installed product files match validated candidate.');\nJS",
+        "recordId": "codex:01a12f05-0e65-7b01-b39e-565b96811fb4:PostToolUse:exec-df8cacee-1a47-41fc-9840-597d334b44f9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T02:20:36.367Z",
+  "parents": [],
+  "branch": "main"
+}

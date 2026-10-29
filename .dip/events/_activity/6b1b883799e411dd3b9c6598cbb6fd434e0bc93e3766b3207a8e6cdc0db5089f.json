@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6b1b883799e411dd3b9c6598cbb6fd434e0bc93e3766b3207a8e6cdc0db5089f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:58:43.866Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/probe-audio.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "16cd5b28-c49a-41dd-850e-1562d52de51c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:58:43.871Z",
+  "parents": [],
+  "branch": "main"
+}

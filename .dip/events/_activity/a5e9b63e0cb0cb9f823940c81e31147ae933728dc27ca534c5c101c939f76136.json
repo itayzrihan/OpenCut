@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a5e9b63e0cb0cb9f823940c81e31147ae933728dc27ca534c5c101c939f76136",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:02:22.474Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/smart-takes-2026-10-29/noise-tests.log; python3 - <<'PY'\nimport json,os\np='.local/smart-takes-2026-10-29/noise-probe.json'\nif os.path.getsize(p):\n x=json.load(open(p));print(x['diagnostics']);off=1.68861760649\n for a,b in [(24.68,29.7),(221.8,232.7),(346.9,350.06)]:\n  print(a,b,[(round(r['start']+off,3),round(r['end']+off,3)) for r in x['cutRanges'] if a<r['start']+off<b])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-79750be4-e2db-493e-bb53-cde4fa73f07c"
+      },
+      {
+        "at": "2026-10-29T04:02:22.586Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat .local/smart-takes-2026-10-29/noise-tests.log; python3 - <<'PY'\nimport json,os\np='.local/smart-takes-2026-10-29/noise-probe.json'\nif os.path.getsize(p):\n x=json.load(open(p));print(x['diagnostics']);off=1.68861760649\n for a,b in [(24.68,29.7),(221.8,232.7),(346.9,350.06)]:\n  print(a,b,[(round(r['start']+off,3),round(r['end']+off,3)) for r in x['cutRanges'] if a<r['start']+off<b])\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-79750be4-e2db-493e-bb53-cde4fa73f07c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:02:23.209Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a701e5afc4e7a9a421773a3c5704d9f31757f03a3d4e25a074655130745224bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:37:57.234Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/opening.json",
+          ".local/smart-takes-2026-10-29/whisper.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e8058a41-77bc-4cef-8ce4-aab53556a9e1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:37:57.238Z",
+  "parents": [],
+  "branch": "main"
+}

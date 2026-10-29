@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ef2b498d7c0adba19fe0b9c4d8c2eebd4030647dbb2d80d90d8159d28744add8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:59:13.908Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -35 .local/smart-takes-2026-10-29/noise-tests.log; tail -5 .local/smart-takes-2026-10-29/probe-audio.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-25cb570c-e215-469c-a2b3-1a1be6c576ea"
+      },
+      {
+        "at": "2026-10-29T03:59:14.021Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -35 .local/smart-takes-2026-10-29/noise-tests.log; tail -5 .local/smart-takes-2026-10-29/probe-audio.log",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-25cb570c-e215-469c-a2b3-1a1be6c576ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:59:14.564Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2421a12c8fd70e10ba0b20e63e7d305a0f202353ac9ecb08e148b86eb4589000",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T03:49:30.009Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('crates/editor-api/tests/classic_takes.rs');s=p.read_text();needle='    let after = read(&r).await;\\n    assert_eq!(\\n        scene(&after)[\"takeAssembly\"][\"plan\"][\"groups\"][3][\"selected\"],';idx=s.index(needle,s.index('async fn local_take_fixture'))\ns=s[:idx]+'''    if let Ok(path) = std::env::var(\"OPENCUT_TAKE_AUDIO\") {\n        let before = read(&r).await;\n        let evidence: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();\n        call(&r, EDIT, json!({\"projectId\":project,\"sceneId\":scene_id,\"expectedRevision\":before[\"revision\"],\"change\":{\"type\":\"cleanSilence\",\"audioEvidence\":evidence}})).await;\n        let after=read(&r).await;\n        assert_eq!(transcript(scene(&after)),transcript(scene(&before)));\n        assert_eq!(scene(&after)[\"takeAssembly\"][\"sourceTracks\"],scene(&before)[\"takeAssembly\"][\"sourceTracks\"]);\n        let duration = |s: &Value| s[\"tracks\"][\"main\"][\"elements\"].as_array().unwrap().iter().map(|e|e[\"startTime\"].as_i64().unwrap()+e[\"duration\"].as_i64().unwrap()).max().unwrap();\n        assert!(duration(scene(&after)) < duration(scene(&before)));\n        eprintln!(\"Private audio replay: {}s -> {}s; caption words unchanged\",duration(scene(&before)) as f64 / 120000.0,duration(scene(&after)) as f64 / 120000.0);\n    }\n''' +s[idx:];p.write_text(s)\nPY\nOPENCUT_TAKE_FIXTURE=/Users/itayzrihan/Documents/PoCut/.local/smart-takes-2026-10-29/session-bundle.json OPENCUT_TAKE_AUDIO=/Users/itayzrihan/Documents/PoCut/.local/smart-takes-2026-10-29/audio-evidence.json cargo test -q -p opencut-editor-api --test classic_takes local_take_fixture -- --nocapture > .local/smart-takes-2026-10-29/live-replay.log 2>&1",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7ed7cef3-5013-4a3c-87e9-e02592c2ae06"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:49:30.592Z",
+  "parents": [],
+  "branch": "main"
+}

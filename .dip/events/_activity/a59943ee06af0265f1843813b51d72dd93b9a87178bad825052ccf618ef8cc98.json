@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a59943ee06af0265f1843813b51d72dd93b9a87178bad825052ccf618ef8cc98",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:50:19.480Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/podcast.rs",
+          ".local/smart-takes-2026-10-29/integration-tests.log",
+          ".local/smart-takes-2026-10-29/integration-tests"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f5d73ab1-9671-403a-8499-87411ba7b99a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:50:19.486Z",
+  "parents": [],
+  "branch": "main"
+}

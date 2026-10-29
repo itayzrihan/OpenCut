@@ -429,3 +429,28 @@ test("switching account during preparation never analyzes or applies the previou
 	expect(requests()).toBe(0);
 	expect(apply).not.toHaveBeenCalled();
 });
+
+test("hundreds of transcript progress events do not overflow native run metrics", async () => {
+	const { editor, apply, scene } = setup();
+	scene.tracks.overlay.length = 0;
+	const task = new SmartTakesTask({
+		editor,
+		prepareTranscript: async ({ onProgress }) => {
+			for (let i = 0; i < 400; i++)
+				onProgress(`Section ${i} · transcribing and correcting`);
+		},
+	});
+	task.start({
+		elementIds: ["clip"],
+		requestId: "many-progress",
+		mode: "standard",
+	});
+	await finished(task);
+	expect(task.read().status).toBe("succeeded");
+	const request = (
+		apply.mock.calls as unknown as [
+			{ execution: { runMetrics: { stages: unknown[] } } },
+		][]
+	)[0][0];
+	expect(request.execution.runMetrics.stages.length).toBeLessThanOrEqual(20);
+});

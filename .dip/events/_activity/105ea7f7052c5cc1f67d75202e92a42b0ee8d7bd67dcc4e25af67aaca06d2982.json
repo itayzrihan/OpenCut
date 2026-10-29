@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "105ea7f7052c5cc1f67d75202e92a42b0ee8d7bd67dcc4e25af67aaca06d2982",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T03:47:42.498Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/smart-takes-2026-10-29/recovery-tests.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "15465884-7588-4442-94ac-bda18c72e40c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T03:47:42.499Z",
+  "parents": [],
+  "branch": "main"
+}
