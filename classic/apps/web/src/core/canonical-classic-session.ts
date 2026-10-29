@@ -718,6 +718,13 @@ export class CanonicalClassicSession {
 		this.runtime.beginTransaction(this.projectId, this.status().revision);
 	}
 
+	agentPolicy(): import("./agent-protocol").EditingAgentPolicy {
+		return this.call<{ value: import("./agent-protocol").EditingAgentPolicy }>({
+			capability: "app.state.read",
+			input: { projectId: this.projectId, pointer: "/agentPolicy" },
+		}).value;
+	}
+
 	invokeControl(
 		action: import("./canonical-control").CanonicalControlAction,
 	): unknown {

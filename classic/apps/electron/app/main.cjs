@@ -168,6 +168,11 @@ function createWindow(appUrl) {
 	window.webContents.setUserAgent(
 		getElectronUserAgent(window.webContents.getUserAgent(), app.getVersion()),
 	);
+	window.webContents.on("did-start-navigation", (_event, _url, _inPlace, isMainFrame) => {
+		if (isMainFrame) computerService.revoke();
+	});
+	window.webContents.on("render-process-gone", () => computerService.revoke());
+	window.webContents.on("destroyed", () => computerService.revoke());
 	window.on("closed", () => {
 		if (mainWindow === window) mainWindow = null;
 	});
@@ -230,6 +235,71 @@ function createWindow(appUrl) {
 	void window.loadURL(appUrl);
 	mainWindow = window;
 }
+
+const { createComputerService } = require("./agent-computer.cjs");
+const computerService = createComputerService({
+	confirm: async ({ title, message, detail }) => {
+		const result = await dialog.showMessageBox(mainWindow, {
+			type: "warning",
+			title,
+			message,
+			detail: detail.slice(0, 200000),
+			buttons: [
+				"Cancel",
+				title === "Enable computer access?" ? "Enable access" : "Allow once",
+			],
+			defaultId: 0,
+			cancelId: 0,
+			noLink: true,
+		});
+		return result.response === 1;
+	},
+	assertScope: async (scope) => {
+		if (!mainWindow || mainWindow.isDestroyed())
+			throw Error("Editor window closed");
+		const current = await mainWindow.webContents.executeJavaScript(
+			`({accountId:window.__opencutAccountId??"local",projectId:document.querySelector("[data-opencut-editor-project]")?.getAttribute("data-opencut-editor-project"),route:decodeURIComponent(location.pathname.split("/")[2]??"")})`,
+		);
+		if (
+			current.accountId !== scope.accountId ||
+			current.projectId !== scope.projectId ||
+			current.route !== scope.projectId
+		) {
+			computerService.revoke();
+			throw Error("Computer operation account or project changed");
+		}
+	},
+});
+function authorizeComputer(event) {
+	require("./editor-screenshot.cjs").authorizeEditorScreenshot(
+		event,
+		mainWindow,
+		mainAppUrl,
+	);
+}
+ipcMain.handle("opencut:agent-computer-permissions", async (event, scope) => {
+	authorizeComputer(event);
+	return computerService.setAccess(scope);
+});
+ipcMain.handle("opencut:agent-computer-execute", async (event, request) => {
+	authorizeComputer(event);
+	try {
+		return { type: "success", data: await computerService.execute(request) };
+	} catch (error) {
+		return {
+			type: error.computerEffectStarted ? "uncertain" : "rejected",
+			message: String(error.message || error),
+		};
+	}
+});
+ipcMain.handle("opencut:agent-computer-cancel", async (event) => {
+	authorizeComputer(event);
+	computerService.cancel();
+});
+ipcMain.handle("opencut:agent-computer-revoke", async (event) => {
+	authorizeComputer(event);
+	computerService.revoke();
+});
 
 ipcMain.handle("opencut:editor-screenshot", async (event, request) => {
 	const { captureOwnedEditor, authorizeEditorScreenshot } = require("./editor-screenshot.cjs");

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c9c75a0d08e271ebb1f8675cc0a2d4f527b420be640d6432624d84b809c52aab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:31.791Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "a6683de5-4de4-44f9-9e96-4208062a7472"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:31.858Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

@@ -10,6 +10,10 @@ use crate::{AgentError, AgentScope, LoadedContracts, PreparedInvocation, Receipt
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct AgentRun {
+    #[serde(default)]
+    pub(crate) pending_approval: Option<PendingApproval>,
+    #[serde(skip)]
+    pub(crate) approved: Option<PendingApproval>,
     scope: AgentScope,
     kind: DocumentKind,
     request: String,
@@ -26,6 +30,16 @@ pub struct AgentRun {
     max_access: AccessLevel,
     allow_open_world: bool,
     final_message: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct PendingApproval {
+    pub approval_id: String,
+    pub capability_id: String,
+    pub input: Value,
+    pub revision: u64,
+    pub generation: u64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
@@ -101,6 +115,8 @@ impl AgentRun {
         max_access: AccessLevel,
         allow_host: bool,
     ) -> Result<(), AgentError> {
+        self.pending_approval = None;
+        self.approved = None;
         scope.validate()?;
         if &self.scope != scope {
             return Err(AgentError::Denied(
@@ -159,6 +175,8 @@ impl AgentRun {
         scope.validate()?;
         validate_text(&request, 100_000, "request")?;
         Ok(Self {
+            pending_approval: None,
+            approved: None,
             scope,
             kind,
             request,
@@ -479,6 +497,15 @@ impl AgentRun {
             self.verified_revision = None;
             self.phase = RunPhase::NeedsVerification;
         }
+        Ok(())
+    }
+
+    pub(crate) fn finish_plan(&mut self, epoch: u64, message: String) -> Result<(), AgentError> {
+        self.check_ready(epoch)?;
+        validate_text(&message, 100_000, "proposed plan")?;
+        self.final_message = Some(message);
+        self.phase = RunPhase::Completed;
+        self.epoch += 1;
         Ok(())
     }
 

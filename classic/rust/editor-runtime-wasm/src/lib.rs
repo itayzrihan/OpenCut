@@ -55,7 +55,8 @@ impl CanonicalEditorRuntime {
             return Err(js_error("Install desktop UI before starting an editor run"));
         }
         opencut_editor_api::register_editor_screenshot_capability(&self.runtime, &self.host)
-            .map_err(js_error)
+            .map_err(js_error)?;
+        opencut_editor_api::register_computer_capabilities(&self.runtime, &self.host).map_err(js_error)
     }
 
     /// Invokes the live registry, including validation, revisions and history.

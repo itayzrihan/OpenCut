@@ -116,3 +116,65 @@ test("owned media transport carries the current fence and rejects late foreign-s
 		else Reflect.deleteProperty(globalThis, "window");
 	}
 });
+
+test("computer transport preserves uncertain results and cancels IO on stop", async () => {
+	const previous = Object.getOwnPropertyDescriptor(globalThis, "window");
+	const controller = new AbortController();
+	let cancelled = false;
+	let reply: unknown = { type: "success", data: { text: "ok" } };
+	Object.defineProperty(globalThis, "window", {
+		configurable: true,
+		value: {
+			__opencutAccountId: "alice",
+			opencutElectron: {
+				executeComputerOperation: async (request: Record<string, unknown>) => {
+					expect(request.accountId).toBe("alice");
+					return reply;
+				},
+				cancelComputerOperations: async () => {
+					cancelled = true;
+				},
+			},
+		},
+	});
+	const input = {
+		effect: {
+			id: 1,
+			adapter: "computer",
+			projectId: "project",
+			request: {
+				projectId: "project",
+				operationId: "once",
+				generation: 1,
+				mode: "askDestructive",
+				operation: { type: "list", path: "/tmp" },
+			},
+		},
+		accountId: "alice",
+		signal: controller.signal,
+		activeProjectId: () => "project",
+	};
+	try {
+		expect(await performHostEffect(input)).toEqual({
+			type: "success",
+			data: { text: "ok" },
+		});
+		reply = { type: "rejected", message: "User denied" };
+		expect(await performHostEffect(input)).toEqual(reply);
+		reply = { type: "uncertain", message: "Response lost" };
+		await expect(performHostEffect(input)).rejects.toThrow("uncertain");
+		let settle!: (value: unknown) => void;
+		window.opencutElectron!.executeComputerOperation = () =>
+			new Promise((resolve) => {
+				settle = resolve as typeof settle;
+			});
+		const pending = performHostEffect(input);
+		controller.abort();
+		settle({ type: "success", data: { text: "committed before stop" } });
+		expect((await pending).type).toBe("success");
+		expect(cancelled).toBe(true);
+	} finally {
+		if (previous) Object.defineProperty(globalThis, "window", previous);
+		else Reflect.deleteProperty(globalThis, "window");
+	}
+});

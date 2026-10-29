@@ -2257,6 +2257,40 @@ export class CommandManager {
 		return this.canonical.startAgent({ accountId, runId, request });
 	}
 
+	getEditingAgentPolicy(): import("@/core/agent-protocol").EditingAgentPolicy {
+		return (
+			this.canonical?.agentPolicy() ?? {
+				mode: "askDestructive",
+				computerAccess: false,
+				generation: 0,
+			}
+		);
+	}
+	async setEditingAgentPolicy(input: {
+		mode: import("@/core/agent-protocol").EditingAgentPolicy["mode"];
+		computerAccess: boolean;
+	}): Promise<void> {
+		await this.enableCanonical();
+		const projectId = this.editor.project.getActiveOrNull()?.metadata.id;
+		if (!projectId) throw new Error("Open a project first");
+		if (input.computerAccess && !window.opencutElectron?.setComputerAccess)
+			throw new Error("Computer access requires Electron");
+		const snapshot = this.getEditingAgentSnapshot();
+		if (snapshot && !["completed", "failed"].includes(snapshot.phase))
+			this.executeEditingAgentCommand({ type: "pause" });
+		this.invokeCanonicalControl({
+			accountId: this.agentAccountId(),
+			projectId,
+			capabilityId: "agent.policy.set",
+			input,
+		});
+		if (snapshot && !["completed", "failed"].includes(snapshot.phase))
+			this.executeEditingAgentCommand({
+				type: "steer",
+				text: "The user changed agent permissions in the editor. Previous pending approvals are cancelled. Inspect the current policy before continuing.",
+			});
+	}
+
 	getEditingAgentSnapshot(): EditingAgentSnapshot | null {
 		const state = this.canonical?.agentSnapshot() ?? null;
 		if (

@@ -91,7 +91,7 @@ impl CanonicalEditorRuntime {
     pub fn agent_restore_checkpoint(&self,account_id:String,checkpoint:String)->Result<JsValue,JsValue>{
         if self.transaction.borrow().is_some() || self.agent.borrow().is_some(){return Err(js_error("Restore into a fresh editor session"));}
         let project_id=self.runtime.snapshot().map_err(js_error)?.project.ok_or_else(||js_error("Restore the canonical project first"))?.id;
-        let agent=RuntimeAgent::restore_checkpoint(self.runtime.clone(),&account_id,&project_id,AccessLevel::Write,Some(self.host.clone()),&checkpoint).map_err(js_error)?;
+        let agent=RuntimeAgent::restore_checkpoint(self.runtime.clone(),&account_id,&project_id,AccessLevel::Destructive,Some(self.host.clone()),&checkpoint).map_err(js_error)?;
         let view=to_js(agent.run())?;
         *self.agent.borrow_mut()=Some(agent);
         Ok(view)
@@ -212,7 +212,7 @@ impl CanonicalEditorRuntime {
                 run_id,
             },
             request,
-            AccessLevel::Write,
+            AccessLevel::Destructive,
         )
         .map_err(js_error)?.with_host_bridge(self.host.clone());
         if let Some(archive) = self.conversation.borrow().as_ref() {

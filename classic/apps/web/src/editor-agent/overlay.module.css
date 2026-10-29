@@ -476,3 +476,78 @@
 		max-height: calc(100dvh - 16px);
 	}
 }
+
+.permissions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 12px;
+	padding: 8px 0;
+	font-size: 11px;
+	color: var(--muted-foreground);
+}
+.permissions label {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+.permissions select {
+	max-width: 220px;
+	background: var(--background);
+	color: var(--foreground);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 5px 6px;
+	font: inherit;
+}
+.permissions p {
+	width: 100%;
+	margin: 0;
+	line-height: 1.5;
+}
+.computerToggle input {
+	accent-color: var(--primary);
+}
+.approval {
+	margin: 8px 12px;
+	padding: 12px;
+	border: 1px solid var(--border);
+	border-radius: 8px;
+	background: var(--muted);
+	font-size: 12px;
+}
+.approval p {
+	overflow-wrap: anywhere;
+	margin: 6px 0;
+}
+.approval pre {
+	max-height: 180px;
+	overflow: auto;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	font-size: 11px;
+}
+.approval > div {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.computerOperation {
+	display: grid;
+	gap: 6px;
+	margin: 8px 0;
+	padding: 8px;
+	border: 1px solid var(--border);
+	border-radius: 6px;
+}
+.computerOperation code {
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}
+.computerOperation pre {
+	max-height: 200px;
+	overflow: auto;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+}

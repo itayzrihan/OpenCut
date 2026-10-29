@@ -374,6 +374,13 @@
         ".dip/tools/verify-deepseek-harness.mjs"
       ],
       "timeoutMs": 480000
+    },
+    "agent-computer-permissions": {
+      "command": [
+        "node",
+        ".dip/tools/verify-agent-computer.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

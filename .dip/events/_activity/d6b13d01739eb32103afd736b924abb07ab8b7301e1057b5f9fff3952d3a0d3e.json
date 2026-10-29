@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d6b13d01739eb32103afd736b924abb07ab8b7301e1057b5f9fff3952d3a0d3e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:08:37.803Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/lib.rs",
+          "classic/rust/editor-runtime-wasm/src/lib.rs",
+          "crates/editor-agent/src/harness.rs",
+          "targethfT1Dm/CACHEDIR.TAG",
+          "targethfT1Dm"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "e8e268bc-e686-4fe9-9e43-c3dede6c5491"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:08:37.806Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

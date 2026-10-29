@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "57c0efbcb7c151e4400239559deb98c97988a62bd0fb2747edb4f7fd31d388c6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:13:45.578Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/electron/test/agent-computer.test.js"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/deepseek-video-agent",
+        "recordId": "57bc8a2a-040a-4ea0-ad68-817eae0ea640"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:13:45.583Z",
+  "parents": [],
+  "branch": "codex/deepseek-video-agent"
+}

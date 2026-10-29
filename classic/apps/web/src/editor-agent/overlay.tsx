@@ -121,6 +121,34 @@ function AgentPanel({
 	const [snapshot, setSnapshot] = useState<EditingAgentSnapshot | null>(() =>
 		editor.command.getEditingAgentSnapshot(),
 	);
+	const [policy, setPolicy] = useState(() =>
+		editor.command.getEditingAgentPolicy(),
+	);
+	const [computerGranted, setComputerGranted] = useState(false);
+	const [changingPolicy, setChangingPolicy] = useState(false);
+	const desktop =
+		typeof window !== "undefined" &&
+		!!window.opencutElectron?.setComputerAccess;
+	const policyScope = {
+		accountId:
+			typeof window !== "undefined"
+				? (window.__opencutAccountId ?? "local")
+				: "local",
+		projectId: editor.project.getActiveOrNull()?.metadata.id ?? "",
+	};
+	useEffect(() => {
+		queueMicrotask(() => {
+			setComputerGranted(false);
+			setPolicy(editor.command.getEditingAgentPolicy());
+		});
+		const unsubscribe = editor.command.subscribeHistory(() =>
+			setPolicy(editor.command.getEditingAgentPolicy()),
+		);
+		return () => {
+			unsubscribe();
+			void window.opencutElectron?.revokeComputerAccess().catch(() => {});
+		};
+	}, [editor, policyScope.accountId, policyScope.projectId]);
 	const [draft, setDraft] = useState("");
 	const [attachments, setAttachments] = useState<
 		import("@/core/agent-protocol").EditingInputAttachment[]
@@ -288,6 +316,7 @@ function AgentPanel({
 			}
 			if (event.type === "snapshot") {
 				setSnapshot(event.snapshot);
+				setPolicy(editor.command.getEditingAgentPolicy());
 				return;
 			}
 			const archive = editor.command.getEditingConversation();
@@ -368,6 +397,7 @@ function AgentPanel({
 			statusAbort.current?.abort();
 			client.current?.dispose();
 			client.current = null;
+			void window.opencutElectron?.revokeComputerAccess().catch(() => {});
 			window.removeEventListener("pagehide", pause);
 		};
 	}, [editor, receive, refresh]);
@@ -453,6 +483,7 @@ function AgentPanel({
 		const text = resume ? undefined : draft.trim();
 		if (
 			(!text && !resume) ||
+			changingPolicy ||
 			!client.current ||
 			!model ||
 			attachmentInFlight.current
@@ -478,7 +509,64 @@ function AgentPanel({
 	const stop = () => {
 		generation.current += 1;
 		client.current?.pause();
+		void window.opencutElectron?.cancelComputerOperations().catch(() => {});
 		setBusy(false);
+	};
+	const changePolicy = async ({
+		mode,
+		computerAccess,
+	}: {
+		mode: typeof policy.mode;
+		computerAccess: boolean;
+	}) => {
+		stop();
+		setChangingPolicy(true);
+		setError("");
+		try {
+			await window.opencutElectron?.revokeComputerAccess();
+			setComputerGranted(false);
+			await editor.command.setEditingAgentPolicy({ mode, computerAccess });
+			let next = editor.command.getEditingAgentPolicy();
+			if (computerAccess) {
+				const result = await window.opencutElectron!.setComputerAccess({
+					...policyScope,
+					mode: next.mode,
+					generation: next.generation,
+					enabled: true,
+				});
+				if (!result.enabled) {
+					await editor.command.setEditingAgentPolicy({
+						mode,
+						computerAccess: false,
+					});
+					next = editor.command.getEditingAgentPolicy();
+				}
+				setComputerGranted(result.enabled);
+			}
+			setPolicy(next);
+			setSnapshot(editor.command.getEditingAgentSnapshot());
+		} catch (cause) {
+			setPolicy(editor.command.getEditingAgentPolicy());
+			setError(
+				cause instanceof Error ? cause.message : "Could not change permissions",
+			);
+		} finally {
+			setChangingPolicy(false);
+		}
+	};
+	const approve = async (allow: boolean) => {
+		if (!snapshot?.pendingApproval) return;
+		try {
+			editor.command.executeEditingAgentCommand({
+				type: "approve",
+				approvalId: snapshot.pendingApproval.approvalId,
+				allow,
+			});
+			setSnapshot(editor.command.getEditingAgentSnapshot());
+			await send(true);
+		} catch (cause) {
+			setError(cause instanceof Error ? cause.message : "Approval expired");
+		}
 	};
 	const moveStart = (event: PointerEvent<HTMLElement>) => {
 		if (
@@ -729,6 +817,59 @@ function AgentPanel({
 						</Button>
 					</div>
 				)}
+				{snapshot?.pendingApproval && (
+					<section className={styles.approval} aria-label="Operation approval">
+						<strong>Approval required</strong>
+						<p>{snapshot.pendingApproval.capabilityId}</p>
+						<details>
+							<summary>Review exact operation</summary>
+							<pre>
+								{JSON.stringify(snapshot.pendingApproval.input, null, 2)}
+							</pre>
+						</details>
+						<div>
+							<Button
+								type="button"
+								size="sm"
+								onClick={() => void approve(true)}
+								disabled={busy}
+							>
+								Allow once
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => void approve(false)}
+								disabled={busy}
+							>
+								Deny
+							</Button>
+						</div>
+					</section>
+				)}
+				{policy.mode === "plan" && snapshot?.phase === "completed" && (
+					<section className={styles.approval} aria-label="Proposed plan">
+						<strong>Plan ready for review</strong>
+						<p>
+							No edits were executed in Plan mode. Choose an execution mode,
+							then send your instructions to carry out this plan.
+						</p>
+						<Button
+							type="button"
+							size="sm"
+							onClick={() =>
+								void changePolicy({
+									mode: "askDestructive",
+									computerAccess: computerGranted,
+								})
+							}
+							disabled={changingPolicy}
+						>
+							Use plan · confirm destructive actions
+						</Button>
+					</section>
+				)}
 				<form
 					hidden={knowledgeOpen}
 					className={`${styles.composer} ${dropActive ? styles.dropActive : ""}`}
@@ -756,6 +897,57 @@ function AgentPanel({
 						void send();
 					}}
 				>
+					<div className={styles.permissions} aria-label="Agent permissions">
+						<label>
+							Mode{" "}
+							<select
+								aria-label="Agent permission mode"
+								value={policy.mode}
+								disabled={changingPolicy}
+								onChange={(event) =>
+									void changePolicy({
+										mode: z
+											.enum(["plan", "askDestructive", "fullAccess"])
+											.parse(event.target.value),
+										computerAccess: computerGranted,
+									})
+								}
+							>
+								<option value="plan">Plan · inspect only</option>
+								<option value="askDestructive">
+									Confirm destructive actions
+								</option>
+								<option value="fullAccess">Full access</option>
+							</select>
+						</label>
+						{desktop ? (
+							<label className={styles.computerToggle}>
+								<input
+									type="checkbox"
+									checked={computerGranted}
+									disabled={changingPolicy}
+									onChange={(event) =>
+										void changePolicy({
+											mode: policy.mode,
+											computerAccess: event.target.checked,
+										})
+									}
+								/>{" "}
+								Computer access {computerGranted ? "on" : "off"}
+							</label>
+						) : (
+							<span>Editor projects only</span>
+						)}
+						<p>
+							{computerGranted
+								? policy.mode === "fullAccess"
+									? "Computer files and terminal · no individual approvals"
+									: policy.mode === "plan"
+										? "Computer files · inspection only"
+										: "Computer files and terminal · confirm changes"
+								: "Editor projects · computer access off"}
+						</p>
+					</div>
 					<Textarea
 						ref={composerInput}
 						dir={messageDirection(draft)}
@@ -885,18 +1077,97 @@ function AgentPanel({
 						</span>
 						<span role="status">
 							{busy
-								? "Working in this project"
+								? computerGranted
+									? "Working with computer access"
+									: policy.mode === "plan"
+										? "Planning · inspection only"
+										: "Working in this project"
 								: snapshot?.phase === "paused"
 									? "Paused · changes retained"
 									: snapshot?.phase === "failed"
 										? "Task failed · changes retained"
-									: "Edits can be undone in the timeline"}
+										: computerGranted
+											? "Computer changes are outside editor undo"
+											: "Edits can be undone in the timeline"}
 						</span>
 						{mode === "floating" && <GripHorizontal size={12} aria-hidden />}
 					</div>
 				</form>
 			</aside>
 		</>
+	);
+}
+
+/** Presentation of the live capability payload; no tool execution or policy here. */
+function ComputerOperationView({
+	input,
+	output,
+}: {
+	input: unknown;
+	output: unknown;
+}) {
+	const action = z
+		.object({
+			action: z.literal("invoke"),
+			id: z.string().startsWith("computer."),
+			input: z
+				.object({
+					operation: z
+						.object({
+							type: z.string(),
+							path: z.string().optional(),
+							command: z.string().optional(),
+							cwd: z.string().optional(),
+							content: z.string().optional(),
+						})
+						.passthrough(),
+				})
+				.passthrough(),
+		})
+		.safeParse(input);
+	if (!action.success) return null;
+	const operation = action.data.input.operation;
+	const data = z
+		.object({
+			result: z.object({
+				result: z.object({ data: z.object({ text: z.string() }) }),
+			}),
+		})
+		.safeParse(output);
+	let display = "";
+	if (data.success) {
+		try {
+			const result: unknown = JSON.parse(data.data.result.result.data.text);
+			const text = z
+				.object({ output: z.string().optional(), text: z.string().optional() })
+				.safeParse(result);
+			display = text.success
+				? (text.data.output ??
+					text.data.text ??
+					JSON.stringify(result, null, 2))
+				: JSON.stringify(result, null, 2);
+		} catch {
+			display = data.data.result.result.data.text;
+		}
+	}
+	return (
+		<section
+			className={styles.computerOperation}
+			aria-label="Computer operation"
+		>
+			<strong>
+				{operation.type === "shell" ? "Terminal" : `Files · ${operation.type}`}
+			</strong>
+			<code dir="ltr">{operation.command ?? operation.path}</code>
+			{operation.cwd && <p dir="ltr">{operation.cwd}</p>}
+			{operation.content && (
+				<details>
+					<summary>File content</summary>
+					<pre dir="auto">{operation.content}</pre>
+				</details>
+			)}
+			{display && <pre dir="auto">{display}</pre>}
+		</section>
 	);
 }
 
@@ -1005,6 +1276,10 @@ function EntryView({ entry }: { entry: Entry }) {
 										</span>
 									)}
 								</summary>
+								<ComputerOperationView
+									input={activity.input}
+									output={activity.output}
+								/>
 								<details>
 									<summary>Input</summary>
 									<pre>{JSON.stringify(activity.input, null, 2)}</pre>

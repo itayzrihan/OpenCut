@@ -126,6 +126,7 @@ pub(crate) fn register_all(
     classic_multicam::register_multicam(registry, state.clone(), events.clone())?;
     classic_transcription::register_transcription(registry, state.clone(), events.clone())?;
     classic_podcast_finish::register_podcast_finish(registry, state.clone(), events.clone())?;
+    register_agent_policy(registry, state.clone(), events.clone())?;
     register_manifest(registry)?;
     register_state_read(registry, state.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;
@@ -326,7 +327,7 @@ where
     descriptor.transactional = (access <= AccessLevel::Write
         || matches!(
             id,
-            "account.storage.configure" | "account.brand_kits.remove"
+            "account.storage.configure" | "account.brand_kits.remove" | "agent.policy.set"
         ))
         && (!open_world || id == "media.relink")
         && !id.starts_with("history.")
@@ -446,6 +447,65 @@ fn register_manifest(registry: &CapabilityRegistry) -> Result<(), RegistryError>
                     revision: snapshot.revision,
                     capabilities: snapshot.capabilities,
                 }))
+            }
+        },
+    )
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct AgentPolicyInput {
+    project_id: String,
+    expected_revision: u64,
+    mode: crate::AgentMode,
+    computer_access: bool,
+}
+fn register_agent_policy(
+    registry: &CapabilityRegistry,
+    state: Arc<RwLock<EditorStore>>,
+    events: broadcast::Sender<u64>,
+) -> Result<(), RegistryError> {
+    register::<AgentPolicyInput, MutationOutput, _, _>(
+        registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
+        "agent.policy.set",
+        "Set agent permissions",
+        "Host-only policy selection. Plan blocks mutations; askDestructive requires one-use approval for destructive project actions. Computer access additionally requires an ephemeral Electron grant; this field alone never grants machine access.",
+        "agent",
+        AccessLevel::Admin,
+        false,
+        false,
+        &["agent", "permissions", "plan", "approval"],
+        move |context, input| {
+            let state = state.clone();
+            let events = events.clone();
+            async move {
+                let output = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Change agent permissions",
+                    Some(input.expected_revision),
+                    |document| {
+                        ensure_project_target(document, &input.project_id)?;
+                        document.agent_policy = crate::AgentPolicy {
+                            mode: input.mode,
+                            computer_access: input.computer_access,
+                            generation: document
+                                .agent_policy
+                                .generation
+                                .checked_add(1)
+                                .ok_or_else(|| {
+                                    CapabilityError::InvalidInput(
+                                        "Permission generation exhausted".into(),
+                                    )
+                                })?,
+                        };
+                        Ok(vec![])
+                    },
+                )?;
+                Ok(OperationSuccess::new(output).changed([STATE_RESOURCE]))
             }
         },
     )
@@ -6177,7 +6237,9 @@ fn register_history_operations(
                     host_context: entry.host_context.clone(),
                 };
                 store.redo.push(current);
+                let policy = store.document.agent_policy.clone();
                 store.document = entry.document.materialize();
+                store.document.agent_policy = policy;
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,
@@ -6238,7 +6300,9 @@ fn register_history_operations(
                     host_context: entry.host_context.clone(),
                 };
                 store.undo.push(current);
+                let policy = store.document.agent_policy.clone();
                 store.document = entry.document.materialize();
+                store.document.agent_policy = policy;
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,
