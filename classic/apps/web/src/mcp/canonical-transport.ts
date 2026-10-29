@@ -67,6 +67,18 @@ export const canonicalReceiptSchema = z.object({
 export function canonicalMcpDescriptor(
 	source: CanonicalDescriptor,
 ): CanonicalDescriptor {
+	// The external editor transport does not grant machine access or let a
+	// caller change the internal agent's user-controlled permission policy.
+	if (
+		source.id.startsWith("computer.") ||
+		source.id.startsWith("agent.policy.")
+	)
+		return {
+			...source,
+			available: false,
+			unavailableReason:
+				"Computer operations and agent permissions are only available through the internal editor's user-controlled agent session",
+		};
 	const shellOnly = [
 		"project.create",
 		"project.open",

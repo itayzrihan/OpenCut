@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f8ca781b5b89dcfa41120a5ad4a9fc0500a9bee162fbe028b611b0b79b540f3b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:47:31.449Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/mcp/src/classic_bridge.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "cc2776a5-ec4f-4eaf-ba00-5d14810eb0b5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:47:31.450Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

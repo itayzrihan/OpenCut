@@ -418,6 +418,13 @@
         ".dip/tools/verify-take-silence-current.mjs"
       ],
       "timeoutMs": 480000
+    },
+    "earshot-deepseek-integration": {
+      "command": [
+        "node",
+        "classic/scripts/verify-earshot-deepseek.mjs"
+      ],
+      "timeoutMs": 1200000
     }
   },
   "mode": "coordinate"

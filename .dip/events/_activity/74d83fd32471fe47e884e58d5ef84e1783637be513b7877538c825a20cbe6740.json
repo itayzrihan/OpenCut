@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "74d83fd32471fe47e884e58d5ef84e1783637be513b7877538c825a20cbe6740",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:49:01.572Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1793260120555/src__editor-agent____tests____deepseek-earshot.test.ts.log",
+          ".local/classic-web-tests/1793260120555/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "391a851a-af3d-4a4b-a90d-e0fd9b14c403"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:49:01.575Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

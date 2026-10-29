@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9dc329112f59bf850c534aa46dbc687f9ede0f2fc23587874deaa452cba35bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:57:04.765Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/tsconfig.build.tsbuildinfo",
+          ".local/earshot-deepseek-integration-check.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "7b1035ac-7665-47e7-afcb-305de5b13243"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:57:04.767Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

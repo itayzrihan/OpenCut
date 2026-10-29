@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89ffdc1befe85228967268c0bb9d8e48e88ee28b43da8cce92be8e327942bc36",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:48:40.543Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/editor-runtime-wasm/pkg/package.json"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "7ad89d17-4d75-4840-81ec-e02e2272ef8c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:48:40.544Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

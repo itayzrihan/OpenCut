@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "eventId": "271820342cd59ec912c7faff393b877b3a575372ba832dcdb26fe6b7ad877181",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:55:50.705Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1793260467329/src__earshot____tests____export-browser.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____automatic-sound-effects.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____automatic-word-animation-earshot.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____earshot-repository.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____full-auto-edit-resume.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____full-auto-edit-routed.test.ts.log",
+          ".local/classic-web-tests/1793260467329/src__ai____tests____full-auto-edit-takes.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "7448c6eb-4c43-45f9-b764-455dc9fc91fb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:55:50.707Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

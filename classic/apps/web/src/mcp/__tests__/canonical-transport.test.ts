@@ -3,9 +3,72 @@ import { readFileSync } from "node:fs";
 import { createCanonicalTestRuntime } from "@/core/__tests__/canonical-runtime-fixture";
 import {
 	advertiseCanonicalRegistry,
+	canonicalMcpDescriptor,
 	canonicalReceiptSchema,
 	encodeArtifactBytes,
+	type CanonicalDescriptor,
 } from "../canonical-transport";
+
+function availableDescriptor(id: string): CanonicalDescriptor {
+	return {
+		id,
+		title: id,
+		description: "Internal editor capability",
+		version: "1.0.0",
+		inputSchema: { type: "object" },
+		outputSchema: { type: "object" },
+		access: "admin",
+		idempotent: false,
+		openWorld: true,
+		transactional: false,
+		supportsDryRun: false,
+		cancellable: true,
+		available: true,
+		unavailableReason: null,
+		category: "agent",
+		tags: [],
+		documentSupport: "both",
+		execution: "host",
+	};
+}
+
+test.each([
+	"computer.observe",
+	"computer.execute",
+	"computer.future.operation",
+	"agent.policy.set",
+	"agent.policy.future",
+])("external MCP discovery and execution reject internal capability %s", (id) => {
+	const source = availableDescriptor(id);
+	const advertised = advertiseCanonicalRegistry({
+		revision: 1,
+		capabilities: [source],
+	});
+	expect(advertised[0]?.canonical.available).toBe(false);
+	expect(advertised[0]?.canonical.unavailableReason).toContain(
+		"internal editor",
+	);
+	// CommandManager reuses this transform immediately before invocation,
+	// instead of trusting the availability from an earlier discovery snapshot.
+	const atExecution = canonicalMcpDescriptor(source);
+	expect(atExecution.available).toBe(false);
+	expect(atExecution).toEqual(advertised[0]?.canonical);
+	// The live internal runtime still owns permission-driven harness access.
+	expect(source.available).toBe(true);
+	expect(source.unavailableReason).toBeNull();
+});
+
+test("external MCP continues to expose editor automation and Earshot capabilities", () => {
+	for (const id of [
+		"audio.earshot.preview",
+		"project.classic.automation.start",
+		"timeline.classic.audio.procedural.set",
+		"app.state.read",
+	]) {
+		const source = availableDescriptor(id);
+		expect(canonicalMcpDescriptor(source)).toBe(source);
+	}
+});
 
 async function setup() {
 	const runtime = await createCanonicalTestRuntime();

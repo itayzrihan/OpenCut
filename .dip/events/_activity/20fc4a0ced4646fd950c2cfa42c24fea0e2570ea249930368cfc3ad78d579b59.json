@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "eventId": "20fc4a0ced4646fd950c2cfa42c24fea0e2570ea249930368cfc3ad78d579b59",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:45:45.236Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm",
+          "classic/rust/wasm/pkg/opencut_wasm.d.ts",
+          "classic/rust/wasm/pkg/README.md",
+          "classic/rust/wasm/pkg/.gitignore",
+          "classic/rust/wasm/pkg/package.json",
+          "classic/rust/wasm/pkg/opencut_wasm.js",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.js",
+          "classic/rust/wasm/pkg/opencut_wasm_bg.wasm.d.ts",
+          "classic/rust/wasm/pkg",
+          "classic/apps/web/public/earshot/runtime",
+          "classic/apps/web/public/earshot/runtime/libopenblas-0.3.26.zip",
+          "classic/apps/web/public/earshot/runtime/pyodide.asm.js",
+          "classic/apps/web/public/earshot/runtime/renderer.py",
+          "classic/apps/web/public/earshot/runtime/pyodide-lock.json",
+          "classic/apps/web/public/earshot/runtime/worker.js",
+          "classic/apps/web/public/earshot/runtime/pyodide.asm.wasm",
+          "classic/apps/web/public/earshot/runtime/python_stdlib.zip",
+          "classic/apps/web/public/earshot/runtime/source-files.json",
+          "classic/apps/web/public/earshot/runtime/pyodide.js",
+          "classic/apps/web/public/earshot/runtime/manifest.json",
+          "classic/apps/web/public/earshot/runtime/numpy-2.2.5-cp313-cp313-pyodide_2025_0_wasm32.whl",
+          "classic/apps/web/public/earshot/runtime/scipy-1.14.1-cp313-cp313-pyodide_2025_0_wasm32.whl",
+          "classic/apps/web/public/earshot/runtime/kernels.js"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "4e08f9b1-91cd-4597-b7d7-3b3a41bcfde5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:45:45.237Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

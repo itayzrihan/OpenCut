@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3a39c9ec3ca09ff3a4949fa30cf22a382268cc2b1cb0e1df67f9d403ab2c8b53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:46:50.437Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/editor-agent/__tests__/deepseek-earshot.test.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "codex/earshot-deepseek-integration",
+        "recordId": "f7f51479-5cd5-48fa-92ca-48d966a55c60"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:46:50.443Z",
+  "parents": [],
+  "branch": "codex/earshot-deepseek-integration"
+}

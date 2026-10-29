@@ -35,6 +35,15 @@ const SESSION_STALE_AFTER_MS: u64 = 10_000;
 const SESSION_COMMAND_STALE_AFTER_MS: u64 = 120_000;
 const STATIC_CAPABILITY_IDS: [&str; 2] = ["classic.session.read", "classic.tool.invoke"];
 
+/// Browser registry projection must not turn the editor MCP endpoint into a
+/// machine-control endpoint or grant its caller the internal agent's policy.
+fn internal_agent_tool_reason(tool_name: &str) -> Option<&'static str> {
+    let id = tool_name.strip_prefix("canonical.")?;
+    (id.starts_with("computer.") || id.starts_with("agent.policy.")).then_some(
+        "Computer operations and agent permissions are only available through the internal editor's user-controlled agent session",
+    )
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassicToolDescriptor {
@@ -337,6 +346,16 @@ impl ClassicBridge {
             || snapshot.project_name.trim().is_empty()
         {
             return Err("sessionId, projectId, and projectName are required".into());
+        }
+        // Do not trust a browser's availability claim for internal-only tools.
+        // Keep the same restriction visible in session discovery and schemas.
+        for tool in &mut snapshot.tools {
+            if let Some(reason) = internal_agent_tool_reason(&tool.name)
+                && let Some(canonical) = &mut tool.canonical
+            {
+                canonical.available = false;
+                canonical.unavailable_reason = Some(reason.into());
+            }
         }
         snapshot.updated_at_ms = now_ms();
         let tools = snapshot.tools.clone();
@@ -704,6 +723,10 @@ impl ClassicBridge {
         descriptor.idempotent = tool.canonical.as_ref().map_or(tool.idempotent, |d| d.idempotent);
         descriptor.open_world = tool.canonical.as_ref().map_or(tool.open_world, |d| d.open_world);
         descriptor.cancellable = tool.canonical.as_ref().map_or(true, |d| d.cancellable);
+        if let Some(reason) = internal_agent_tool_reason(&tool.name) {
+            descriptor.available = false;
+            descriptor.unavailable_reason = Some(reason.into());
+        }
         // Cross-process invocation cannot participate in a native transaction.
         descriptor.transactional = false;
         descriptor.tags = {
@@ -752,6 +775,11 @@ impl ClassicBridge {
         auto_apply: bool,
         browser_session_id: Option<String>,
     ) -> Result<CapabilityResult, CapabilityError> {
+        // Recheck the name at execution, including classic.tool.invoke. This
+        // remains authoritative if discovery is stale or metadata is missing.
+        if let Some(reason) = internal_agent_tool_reason(&tool_name) {
+            return Err(CapabilityError::Unavailable(reason.into()));
+        }
         let targeted_project_id = arguments.get("projectId").and_then(Value::as_str).or_else(|| context
             .metadata.get("opencut/projectId").and_then(Value::as_str));
         let snapshot = self
@@ -1855,6 +1883,62 @@ mod canonical_transport_tests {
         assert!(result.is_err()); assert!(bridge.take_commands("live-tab").is_empty());
         let status=bridge_status(State(BridgeHttpState {bridge,expected_token:Arc::from("test-token")})).await.0;
         assert_eq!(serde_json::to_value(status).unwrap()["supportsCanonicalInvocation"],true);
+    }
+
+    #[tokio::test]
+    async fn internal_agent_capabilities_are_unavailable_to_external_discovery_and_execution() {
+        let (native, browser, _host, bridge) = setup().await;
+        let ids = [
+            "computer.observe",
+            "computer.execute",
+            "computer.future.operation",
+            "agent.policy.set",
+            "agent.policy.future",
+        ];
+        let mut snapshot = bridge.select_session(None, Some("live-tab")).unwrap();
+        for id in ids {
+            let descriptor = CapabilityDescriptor::read(
+                id, id, "Internal editor capability", "agent",
+                json!({"type":"object"}), json!({"type":"object"}),
+            );
+            assert!(descriptor.available);
+            let name = format!("canonical.{id}");
+            snapshot.tools.retain(|candidate| candidate.name != name);
+            snapshot.tools.push(tool(descriptor));
+        }
+        // Simulate an older browser advertising internal capabilities as usable.
+        bridge.update_session(snapshot).unwrap();
+        let discovered = native.registry().snapshot().unwrap().capabilities;
+        let session = bridge.select_session(None, Some("live-tab")).unwrap();
+        let browser_before = serde_json::to_value(browser.snapshot().unwrap()).unwrap();
+        for id in ids {
+            let tool_name = format!("canonical.{id}");
+            let native_id = format!("classic.{tool_name}");
+            let descriptor = discovered.iter().find(|item| item.id == native_id).unwrap();
+            assert!(!descriptor.available);
+            assert!(descriptor.unavailable_reason.as_deref().unwrap().contains("internal editor"));
+            let advertised = session.tools.iter().find(|item| item.name == tool_name).unwrap();
+            assert!(!advertised.canonical.as_ref().unwrap().available);
+            let direct = native.registry().invoke(
+                &native_id, InvocationContext::default(), json!({"browserSessionId":"live-tab"}),
+            ).await;
+            assert!(direct.unwrap_err().to_string().contains("internal editor"));
+
+            // Late-bound invocation must reject by name, even without canonical
+            // metadata; unavailable discovery alone is not an execution guard.
+            bridge.inner.sessions.write().unwrap().get_mut("live-tab").unwrap()
+                .tools.iter_mut().find(|item| item.name == tool_name).unwrap().canonical = None;
+            let late_bound = tokio::time::timeout(Duration::from_secs(1), native.registry().invoke(
+                "classic.tool.invoke", InvocationContext::default(),
+                json!({"toolName":tool_name,"browserSessionId":"live-tab","arguments":{}}),
+            )).await.expect("blocked tools must never await a browser command");
+            assert!(late_bound.unwrap_err().to_string().contains("internal editor"));
+            assert!(bridge.take_commands("live-tab").is_empty());
+        }
+        assert_eq!(serde_json::to_value(browser.snapshot().unwrap()).unwrap(), browser_before);
+        assert!(native.registry().snapshot().unwrap().capabilities.iter().any(|descriptor|
+            descriptor.id == "classic.canonical.audio.earshot.preview" && descriptor.available
+        ));
     }
 
     #[tokio::test]
