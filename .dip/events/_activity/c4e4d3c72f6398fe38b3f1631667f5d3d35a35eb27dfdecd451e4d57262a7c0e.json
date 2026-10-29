@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c4e4d3c72f6398fe38b3f1631667f5d3d35a35eb27dfdecd451e4d57262a7c0e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:52:26.328Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/.codex/worktrees/deepseek-video-agent/PoCut/classic/apps/web/src/editor-agent/__tests__/deepseek-harness.test.ts"
+        ],
+        "changeHash": "f73d62c0876dbbfd4103975d02a937f8007607d4bc78f4caa8b6d6452bf074c0",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-33415afa-551b-46ee-a8ac-c0721b89cc0f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:52:26.429Z",
+  "parents": [],
+  "branch": "main"
+}

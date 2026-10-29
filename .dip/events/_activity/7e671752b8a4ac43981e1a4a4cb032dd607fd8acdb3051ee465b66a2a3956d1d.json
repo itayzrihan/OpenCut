@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7e671752b8a4ac43981e1a4a4cb032dd607fd8acdb3051ee465b66a2a3956d1d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:25:50.458Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,180p' classic/apps/web/src/earshot/types.ts\nsed -n '1,60p' classic/apps/web/src/earshot/catalog.ts\nsed -n '1,75p' classic/apps/web/src/earshot/runtime.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-df71bb82-e1d4-4f54-b23f-f8d1938d7c84"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:25:51.112Z",
+  "parents": [],
+  "branch": "main"
+}

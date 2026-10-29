@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c68f2a18488e2acbebc3f28de8175a0d093b98fb1b35fc67bb223be8127d0492",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:11:35.300Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test src/ai/__tests__/automatic-sound-effects.test.ts src/ai/__tests__/earshot-repository.test.ts src/ai/__tests__/full-auto-edit-resume.test.ts src/ai/__tests__/full-auto-edit-routed.test.ts src/ai/__tests__/full-auto-edit-takes.test.ts > /tmp/earshot-ai-root-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-2e81c154-85d6-4a71-b5b4-79ccfcd59287"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:11:35.636Z",
+  "parents": [],
+  "branch": "main"
+}

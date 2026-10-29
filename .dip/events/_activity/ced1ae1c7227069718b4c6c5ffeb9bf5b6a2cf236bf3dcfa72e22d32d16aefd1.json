@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ced1ae1c7227069718b4c6c5ffeb9bf5b6a2cf236bf3dcfa72e22d32d16aefd1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:39.392Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git worktree list\nrg --files -g 'AGENTS.md' -g '*mcp*' -g '*bridge*' -g '*host*' crates apps classic/apps/web/src | head -180",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-6c808947-4391-4366-bf06-51c846256f82"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:40.281Z",
+  "parents": [],
+  "branch": "main"
+}

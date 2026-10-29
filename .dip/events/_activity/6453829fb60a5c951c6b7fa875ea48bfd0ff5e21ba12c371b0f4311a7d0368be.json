@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6453829fb60a5c951c6b7fa875ea48bfd0ff5e21ba12c371b0f4311a7d0368be",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:46:28.272Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '240,320p' classic/apps/web/src/media/audio.ts; sed -n '510,745p' classic/apps/web/src/media/audio.ts; sed -n '150,285p' classic/apps/web/src/export/audio-stream.ts; sed -n '1,170p' classic/apps/web/src/core/managers/audio-manager.ts; rg -n \"AudioClipSource|sourceKey|resolve.*Buffer|resolveBuffer|read\" classic/apps/web/src/core/managers/audio-manager.ts | head -70",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-162efa5a-48cf-4a5a-88f1-60862f1e9526"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:46:29.245Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "62bd84cd396b907455a24f1662107bad018b5d0f04bbf408ea462eec5df6bcd4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:39.083Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ls classic/apps/web/src/earshot\nls classic/rust/wasm/pkg\ncat classic/apps/web/test-support/wasm.ts | head -45",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-b165462d-8800-4a8e-a28e-a471d5344a1f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:39.358Z",
+  "parents": [],
+  "branch": "main"
+}

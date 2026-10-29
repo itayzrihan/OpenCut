@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cfdf9c1fcb2817894871740c966122acddc4176cb77d947c6141bf1857a06489",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:56:37.498Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'earshot|procedural|sound.effects|SoundEffects|reference.*(read|search)|catalog.*list' crates/editor-api/src crates/editor-api/tests apps/mcp/src classic/apps/web/src/core/bridge -g '*.rs' -g '*.ts' | head -180\nrg --files crates/editor-api/src | rg '(reference|catalog|artifact|classic)'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-e7919433-ad90-4be7-9426-7ae2b8232ad9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:56:37.732Z",
+  "parents": [],
+  "branch": "main"
+}

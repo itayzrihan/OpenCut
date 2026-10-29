@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "aed0b9f8164cc606eda6dfa501cef262a7feaba16671824928c62dd6e896329b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:57:34.554Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nc=json.load(open('.local/take-replacement-2026-10-29/context.json'));p=json.load(open(c['projectPath']));s=next(s for s in p['scenes'] if s['id']==p['currentSceneId']);g=s['takeAssembly']['plan']['groups'][13]\nprint({'scene':s['name'],'clipCount':len(s['tracks']['main']['elements']),'group':g['label'],'selected':g['selected'],'alternatives':[a['label'] for a in g['alternatives']]})\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-e861d3a3-3e24-45fd-9776-1fb48a305fec"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:57:35.717Z",
+  "parents": [],
+  "branch": "main"
+}

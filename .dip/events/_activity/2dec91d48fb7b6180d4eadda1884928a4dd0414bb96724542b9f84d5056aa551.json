@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2dec91d48fb7b6180d4eadda1884928a4dd0414bb96724542b9f84d5056aa551",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:21.471Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git log -1 --oneline\nls classic/apps/web/src/earshot",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-921acf93-bc08-4b88-8ceb-c7e311500852"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:22.523Z",
+  "parents": [],
+  "branch": "main"
+}

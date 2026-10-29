@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70d18395-494c-46e8-8098-f91a28fee98b",
+  "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+  "type": "task.update",
+  "payload": {
+    "title": "Expose complete Earshot workflow through canonical MCP capabilities",
+    "description": "Verify and fill MCP coverage for the separate Earshot feature branch: catalog and exact source, pinned full repository docs/source access, insertion and editing, bounded preview/preflight artifacts, automatic sound effects and related workflows. Keep production runtime unchanged.",
+    "acceptance": [
+      "Catalog and pinned full repository discoverable and readable/searchable through canonical registry MCP projection.",
+      "Procedural audio insertion, full source editing, preview/preflight and AI launch available through canonical capabilities or established host bridge, with state/revision/cancellation invariants.",
+      "Meaningful registry and host tests pass; commit remains on codex/earshot-sound-effects; production untouched."
+    ],
+    "scope": [
+      "crates/editor-api",
+      "classic/apps/web/src/earshot",
+      "classic/apps/web/src/editor-runtime",
+      "classic/apps/web/src/ai"
+    ]
+  },
+  "actor": "codex:01a1739b-f88b-7a70-ba24-09875f764e15",
+  "createdAt": "2026-10-29T06:00:26.573Z",
+  "parents": [
+    "1cf1cdda-c6ad-4b3e-bdaf-ccb87e356098"
+  ],
+  "branch": "main"
+}

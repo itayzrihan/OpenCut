@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a6e3d5c833903322b4ab2b6ac2e966f6b1fabab81060e9b8e21b113f2e02f18c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:50:19.995Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "PYTHONPATH=classic/vendor/earshot/upstream /tmp/opencut-earshot-research-venv/bin/python - <<'PY'\nfrom earshot.forge import bank\nimport time,sys,json,pathlib\nprint('count',len(bank.ids()))\nrows=[]\nfor row in bank.list_sounds():\n e=bank.get(row['id']); row['name']=row['id'].replace('/',' · ').replace('_',' '); row['duration']=row.pop('dur_s'); row['onset']=row.pop('onset_s');row['peak']=row.pop('peak_s');row['parameters']={k:v for k,v in e.get('params',{}).items() if isinstance(v,(int,float)) and not isinstance(v,bool)}; row['sourcePath']='earshot/forge/recipes/'+e['recipe']+'.py' if e['type']=='forge' else 'earshot/forge/fit/auto.py';rows.append(row)\npathlib.Path('classic/apps/web/src/earshot/catalog-data.json').write_text(json.dumps(rows,separators=(',',':'))+'\\n')\nfor sid in ['ui_pop/soft','fit/click/floss_lid','whoosh_fast/crisp']:\n t=time.time(); y,m=bank.render(sid,checks=False);print(sid,y.shape,round(time.time()-t,3))\nprint('torch loaded', 'torch' in sys.modules)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-bf75567e-0d08-4bee-945e-bbc50696bce2"
+      },
+      {
+        "at": "2026-10-29T04:50:19.996Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p /tmp/earshot-pyodide-download\npython3 - <<'PY'\nfrom pathlib import Path\nimport json,urllib.request,concurrent.futures,hashlib\nlock=json.load(open('/tmp/earshot-pyodide-lock.json')); names=['pyodide.js','pyodide.asm.js','pyodide.asm.wasm','python_stdlib.zip','pyodide-lock.json']+[lock['packages'][k]['file_name'] for k in ['numpy','scipy','libopenblas']]\ndef get(name):\n p=Path('/tmp/earshot-pyodide-download')/name\n if not p.exists():urllib.request.urlretrieve('https://cdn.jsdelivr.net/pyodide/v0.28.3/full/'+name,p)\n return {'file':name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'size':p.stat().st_size}\nwith concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:rows=list(ex.map(get,names))\nPath('classic/vendor/earshot/pyodide-assets.json').write_text(json.dumps({'version':'0.28.3','baseURL':'https://cdn.jsdelivr.net/pyodide/v0.28.3/full/','assets':rows},indent=2)+'\\n')\nprint(rows)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-7f5d2dad-cb22-488b-8a3f-39cf9a1e4207"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:50:20.454Z",
+  "parents": [],
+  "branch": "main"
+}

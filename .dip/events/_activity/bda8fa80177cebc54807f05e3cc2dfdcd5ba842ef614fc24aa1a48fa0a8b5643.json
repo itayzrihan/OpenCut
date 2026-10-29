@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bda8fa80177cebc54807f05e3cc2dfdcd5ba842ef614fc24aa1a48fa0a8b5643",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:06:15.767Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,270p' classic/apps/web/src/transcription/timeline-stream.ts\nrg -n 'fn|sourcePath|recipe' classic/scripts/prepare-earshot* classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/catalog.generated.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-e3ca6a80-5b2e-417f-8a00-eecb9167d5e5"
+      },
+      {
+        "at": "2026-10-29T05:06:15.962Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg --files classic | rg '(earshot.*(py|mjs|json)$|catalog.*earshot)' | head -55",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-815111a3-c1c1-450c-80a5-9c0f2436bf6d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:06:16.609Z",
+  "parents": [],
+  "branch": "main"
+}

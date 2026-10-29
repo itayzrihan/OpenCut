@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "121b711ca048038c285e978d5414c4c016609556f179a49bfccfa79d56884a8c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:32:29.112Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes/replacement.rs",
+          ".local/take-replacement-2026-10-29/rust-test-3.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2d84754d-5be8-47f6-9f18-b463a6fddd5f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:32:29.144Z",
+  "parents": [],
+  "branch": "main"
+}

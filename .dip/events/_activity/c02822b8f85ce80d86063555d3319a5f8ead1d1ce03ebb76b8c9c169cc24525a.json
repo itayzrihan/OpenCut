@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c02822b8f85ce80d86063555d3319a5f8ead1d1ce03ebb76b8c9c169cc24525a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:04:17.410Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add '/classic/rust/editor-runtime-wasm/' '/classic/apps/web/src/accounts/' '/classic/apps/web/src/app/api/mcp-bridge/' '/classic/apps/web/src/editor-agent/'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-2b0f9d4f-c9a8-483a-ad49-3cfecb19bb9b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:04:18.110Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be1a7b91cd93abbf70cac1711c91c770d7b8281081688f7f5cf1ada421ce40df",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:12.057Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/earshot/types.ts';s=open(p).read().replace('length > 128','length > 64').replace('if (s.echo && (!number(s.echo.delay','if (s.echo !== undefined && (!s.echo || typeof s.echo !== \"object\" || Array.isArray(s.echo) || !number(s.echo.delay');open(p,'w').write(s)\nPY\nbun build classic/apps/web/src/earshot/render.ts --outdir /tmp/earshot-browser-harness --target browser",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-ea58be82-8b2a-4518-a4d6-0d15b24f871e"
+      },
+      {
+        "at": "2026-10-29T04:56:12.425Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/earshot/types.ts';s=open(p).read().replace('length > 128','length > 64').replace('if (s.echo && (!number(s.echo.delay','if (s.echo !== undefined && (!s.echo || typeof s.echo !== \"object\" || Array.isArray(s.echo) || !number(s.echo.delay');open(p,'w').write(s)\nPY\nbun build classic/apps/web/src/earshot/render.ts --outdir /tmp/earshot-browser-harness --target browser",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-ea58be82-8b2a-4518-a4d6-0d15b24f871e"
+      },
+      {
+        "at": "2026-10-29T04:56:12.427Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/scripts/test-earshot-runtime.mjs <<'EOF'\n#!/usr/bin/env node\n// Real WASM integration: no Python installed on the machine is used.\nimport assert from 'node:assert/strict';\nimport fs from 'node:fs/promises';\nimport path from 'node:path';\nimport { createRequire } from 'node:module';\nimport { fileURLToPath } from 'node:url';\nconst classic = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');\nconst root = path.join(classic, 'apps/web/public/earshot/runtime');\nconst require = createRequire(import.meta.url);\nconst { loadPyodide } = require(path.join(root, 'pyodide.js'));\nconst p = await loadPyodide({ indexURL: root + '/', stdout:()=>{}, stderr:()=>{} });\nawait p.loadPackage(['numpy', 'scipy']);\nconst sources = JSON.parse(await fs.readFile(path.join(root, 'source-files.json'), 'utf8'));\nfor (const [f, s] of Object.entries(sources)) {\n  const dest = '/earshot-project/' + f;\n  p.FS.mkdirTree(path.dirname(dest)); p.FS.writeFile(dest, s);\n}\np.runPython(\"import sys; sys.path.insert(0, '/earshot-project')\");\np.runPython(`from earshot.forge import dsp, fx\n_original = {name: getattr(dsp if name in ('_svf','_osc') else fx, name) for name in ('_svf','_osc','_allpass','_fdn','_follow','_rise','_release')}\n`);\nrequire(path.join(root, 'kernels.js'));\np.globals.set('_earshot_kernels', globalThis.earshotKernels);\np.runPython(await fs.readFile(path.join(root, 'renderer.py'), 'utf8'));\np.runPython(`\nr = np.random.default_rng(5)\nx = r.normal(size=2048)\nfor name, args in [('_svf',(x,np.linspace(200,4000,len(x)),np.ones(len(x))*.71,1)),('_osc',(np.linspace(200,4000,2048),2,.3)),('_allpass',(x,13,.4)),('_follow',(x,.1,.8)),('_rise',(x,.4)),('_release',(x,.9))]:\n    actual = getattr(dsp if name in ('_svf','_osc') else fx,name)(*args)\n    expected = _original[name](*args)\n    assert np.allclose(actual,expected,rtol=1e-10,atol=1e-10),name\nN=4\nargs=(x[:,None],np.ones((1,N)),r.normal(size=(N,2)),np.array([41.,59.,79.,101.]),np.ones(N)*.2,np.ones(N)*.3,np.zeros(N),np.ones",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-7c1dfad5-f65e-466b-b087-bea8d98b2593"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:12.952Z",
+  "parents": [],
+  "branch": "main"
+}

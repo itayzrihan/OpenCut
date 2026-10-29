@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b4d9a25410c70e303f6b93413eb3356c3618afabeef5b22aecfb4e70df42819a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:25.202Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs apps/web/src/editor-agent/__tests__/deepseek-harness.test.ts apps/web/src/editor-agent/__tests__/deepseek-canonical.test.ts apps/web/src/editor-agent/__tests__/connection.test.ts apps/web/src/editor-agent/__tests__/stream.test.ts apps/web/src/editor-agent/__tests__/transport.test.ts apps/web/src/editor-agent/__tests__/host-effects.test.ts apps/web/src/editor-agent/__tests__/checkpoint.test.ts apps/web/src/editor-agent/__tests__/session-policy.test.ts --test-timeout=60000 --timeout=120000 --jobs=2 --report=.local/deepseek-harness-tests",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-c3001c25-5427-4c48-ae98-6044f299f359"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:26.055Z",
+  "parents": [],
+  "branch": "main"
+}

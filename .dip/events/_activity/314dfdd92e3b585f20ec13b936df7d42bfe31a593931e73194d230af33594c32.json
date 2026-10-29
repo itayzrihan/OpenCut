@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "314dfdd92e3b585f20ec13b936df7d42bfe31a593931e73194d230af33594c32",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:57.194Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout set --no-cone '/AGENTS.md' '/Cargo.toml' '/Cargo.lock' '/crates/' '/classic/apps/web/src/mcp/' '/classic/apps/web/src/core/' '/classic/apps/web/src/editor-agent/' '/classic/apps/web/src/app/api/mcp/' '/classic/apps/web/src/types/' '/classic/apps/web/src/wasm/' '/classic/apps/web/src/ai/types.ts' '/classic/AGENTS.md' '/classic/eslint/' '/classic/eslint.config.mjs' '/classic/apps/web/tsconfig.json' '/classic/tsconfig.json' '/classic/apps/web/next-env.d.ts' '/.dip/events/_activity/'\ngit checkout",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-4d793584-70b5-4d46-8ce1-e9f4cd4c9c82"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:58.185Z",
+  "parents": [],
+  "branch": "main"
+}

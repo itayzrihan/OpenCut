@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a41fc8e5f63ef2a5bd8e5873326a8e7c39889fe0aa8b65a53a90b719c03cd315",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T04:53:19.778Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/word-earshot-ai.py <<'PY'\nfrom pathlib import Path\nR=Path('/tmp/opencut-earshot-ai')\np=R/'classic/rust/crates/timeline/src/automatic_word_animation.rs';s=p.read_text();s=s.replace('    pub preset_ids_json: String,','    pub preset_ids_json: String,\\n    #[serde(default)]\\n    pub procedural_sounds: bool,\\n    #[serde(default)]\\n    pub creative_reveals: bool,');s=s.replace('    reason: String,\\n}','    reason: String,\\n    #[serde(default)]\\n    position: Option<Position>,\\n    #[serde(default)]\\n    reveal_mode: Option<String>,\\n}\\n#[derive(Deserialize)]\\n#[serde(deny_unknown_fields)]\\nstruct Position { x: f64, y: f64 }',1)\ns=s.replace('    let tracks = doc[\"scene\"][\"tracks\"]','    let width = doc[\"projectSettings\"][\"canvasSize\"][\"width\"].as_f64().unwrap_or(1080.0);\\n    let height = doc[\"projectSettings\"][\"canvasSize\"][\"height\"].as_f64().unwrap_or(1920.0);\\n    let tracks = doc[\"scene\"][\"tracks\"]',1)\ns=s.replace('                e.as_object_mut().unwrap().remove(META);','''                e.as_object_mut().unwrap().remove(META);\n                let placement = e[\"automaticWordPlacement\"].clone();\n                if placement.is_object() {\n                    for key in [\"transform.positionX\", \"transform.positionY\"] {\n                        if e[\"params\"][key] == placement[\"applied\"][key] {\n                            if placement[\"before\"][key].is_null() { e[\"params\"].as_object_mut().unwrap().remove(key); }\n                            else { e[\"params\"][key] = placement[\"before\"][key].clone(); }\n                        }\n                    }\n                    e.as_object_mut().unwrap().remove(\"automaticWordPlacement\");\n                }''')\ns=s.replace('|| CLASSICS.contains(&event.animation_id.as_str())','|| (o.creative_reveals || CLASSICS.contains(&event.animation_id.as_str()))')\ns=s.replace('        w[\"revealMode\"] = json!(if event.letter_by_letter {\\n            \"letter-by-letter\"\\n        } else {\\n            \"row\"\\n        });','''        let ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-83ce6f12-1848-47bd-8b97-51f6195f1293"
+      },
+      {
+        "at": "2026-10-29T04:53:19.977Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > /tmp/word-earshot-ai.py <<'PY'\nfrom pathlib import Path\nR=Path('/tmp/opencut-earshot-ai')\np=R/'classic/rust/crates/timeline/src/automatic_word_animation.rs';s=p.read_text();s=s.replace('    pub preset_ids_json: String,','    pub preset_ids_json: String,\\n    #[serde(default)]\\n    pub procedural_sounds: bool,\\n    #[serde(default)]\\n    pub creative_reveals: bool,');s=s.replace('    reason: String,\\n}','    reason: String,\\n    #[serde(default)]\\n    position: Option<Position>,\\n    #[serde(default)]\\n    reveal_mode: Option<String>,\\n}\\n#[derive(Deserialize)]\\n#[serde(deny_unknown_fields)]\\nstruct Position { x: f64, y: f64 }',1)\ns=s.replace('    let tracks = doc[\"scene\"][\"tracks\"]','    let width = doc[\"projectSettings\"][\"canvasSize\"][\"width\"].as_f64().unwrap_or(1080.0);\\n    let height = doc[\"projectSettings\"][\"canvasSize\"][\"height\"].as_f64().unwrap_or(1920.0);\\n    let tracks = doc[\"scene\"][\"tracks\"]',1)\ns=s.replace('                e.as_object_mut().unwrap().remove(META);','''                e.as_object_mut().unwrap().remove(META);\n                let placement = e[\"automaticWordPlacement\"].clone();\n                if placement.is_object() {\n                    for key in [\"transform.positionX\", \"transform.positionY\"] {\n                        if e[\"params\"][key] == placement[\"applied\"][key] {\n                            if placement[\"before\"][key].is_null() { e[\"params\"].as_object_mut().unwrap().remove(key); }\n                            else { e[\"params\"][key] = placement[\"before\"][key].clone(); }\n                        }\n                    }\n                    e.as_object_mut().unwrap().remove(\"automaticWordPlacement\");\n                }''')\ns=s.replace('|| CLASSICS.contains(&event.animation_id.as_str())','|| (o.creative_reveals || CLASSICS.contains(&event.animation_id.as_str()))')\ns=s.replace('        w[\"revealMode\"] = json!(if event.letter_by_letter {\\n            \"letter-by-letter\"\\n        } else {\\n            \"row\"\\n        });','''        let ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PostToolUse:exec-83ce6f12-1848-47bd-8b97-51f6195f1293"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:53:20.276Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "70d4450a70a486c8e9310aee9535e51af6763206367fa2a9b256735bfd283de4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:29:36.202Z",
+        "kind": "files.changed",
+        "files": [
+          "crates/editor-api/src/operations/classic_takes.rs",
+          "crates/editor-api/src/operations/classic_takes/replacement.rs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "46462e10-27b7-48d6-a89e-f5acec96001c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:29:36.218Z",
+  "parents": [],
+  "branch": "main"
+}

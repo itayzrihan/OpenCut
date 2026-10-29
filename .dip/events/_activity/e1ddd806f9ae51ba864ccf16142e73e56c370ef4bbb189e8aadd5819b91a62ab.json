@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e1ddd806f9ae51ba864ccf16142e73e56c370ef4bbb189e8aadd5819b91a62ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:49.192Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add apps/mcp apps/desktop resources/hyperframes && git status --short -- crates classic/vendor/earshot",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-0711569e-cbd0-4743-81f0-cd5f6a5f473f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:50.162Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "48b7f8689259e5984d48995f72252ae98dff2cfef894d55d87d05ffa57f47a55",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:11:40.350Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-browser.test.ts"
+        ],
+        "changeHash": "4fe1df37f615a3e8521da3275c5080b8f0a21edcda612859b0a2c21e09ce2f0f",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-9e6bbfd1-d8aa-4bbe-b6c0-7489af71d2ba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:11:40.468Z",
+  "parents": [],
+  "branch": "main"
+}

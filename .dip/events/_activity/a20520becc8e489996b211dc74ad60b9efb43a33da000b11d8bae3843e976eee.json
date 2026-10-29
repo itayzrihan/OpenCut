@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a20520becc8e489996b211dc74ad60b9efb43a33da000b11d8bae3843e976eee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:57:34.630Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/_tree.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/_full.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/brand-kits.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/_index.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/_head.segment.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/brand-kits",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.html",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.meta",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.rsc",
+          "classic/apps/web/.next-local-production/server/app/brand-kits.segments/brand-kits/__PAGE__.segment.rsc"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "c203c1fa-c614-4374-9083-8b131cf7825c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:57:34.638Z",
+  "parents": [],
+  "branch": "main"
+}

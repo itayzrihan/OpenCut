@@ -345,20 +345,23 @@ async fn timeline_edits_are_not_overwritten_by_alternative_selection() {
     let assembled = read(&r).await;
     call(&r,"timeline.classic.bookmarks.edit",json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":assembled["revision"],"change":{"type":"replace","bookmarks":[]}})).await;
     let changed = read(&r).await;
-    assert!(
-        r.registry()
-            .invoke(
-                EDIT,
-                InvocationContext::default(),
-                input(
-                    &changed,
-                    json!({"type":"select","groupIndex":0,"alternativeIndex":1})
-                )
-            )
-            .await
-            .is_err()
+    call(
+        &r,
+        EDIT,
+        input(
+            &changed,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    let after = read(&r).await;
+    assert_eq!(scene(&after)["bookmarks"], json!([]));
+    assert_eq!(
+        scene(&after)["takeAssembly"]["plan"]["groups"][0]["selected"],
+        1
     );
-    assert_eq!(read(&r).await, changed);
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], changed["project"]);
 }
 
 #[tokio::test]
@@ -1183,4 +1186,238 @@ async fn local_take_fixture_replays_presentation_and_selection() {
         scene(&after)["tracks"]["main"]["elements"][0]["params"]["transform.scaleX"],
         1.27
     );
+}
+
+fn without_start(mut clip: Value) -> Value {
+    clip.as_object_mut().unwrap().remove("startTime");
+    clip
+}
+fn assert_other_takes_preserved(before: &Value, after: &Value, group: usize) {
+    let before = before["tracks"]["main"]["elements"].as_array().unwrap();
+    let after = after["tracks"]["main"]["elements"].as_array().unwrap();
+    let retained = |items: &Vec<Value>| {
+        items
+            .iter()
+            .filter(|c| c["takeGroup"]["groupIndex"].as_u64() != Some(group as u64))
+            .map(|c| without_start(c.clone()))
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        retained(before),
+        retained(after),
+        "Unrelated clips, cuts, trims, IDs and order must survive"
+    );
+}
+
+#[tokio::test]
+async fn edited_timeline_can_switch_trimmed_split_takes_without_restoring_deleted_groups() {
+    let r = setup().await;
+    call(&r, EDIT, assemble(&read(&r).await)).await;
+    let assembled = read(&r).await;
+    // Use the public split capability to trim the active take, just as the editor does.
+    let clip = &scene(&assembled)["tracks"]["main"]["elements"][0];
+    let from = clip["startTime"].as_i64().unwrap();
+    let duration = clip["duration"].as_i64().unwrap();
+    call(&r, "timeline.classic.elements.split", json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":assembled["revision"],"elements":[{"trackId":"video-track","elementId":clip["id"]}],"splitTime":from+duration/2,"retainSide":"right"})).await;
+    let edited = read(&r).await;
+    let mut classic = edited["project"]["classic"].clone();
+    let s = &mut classic["document"]["scenes"][0];
+    s["tracks"]["main"]["elements"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|c| c["takeGroup"]["groupIndex"] != 1);
+    s["bookmarks"] = json!([{"time":0,"note":"Authored after cutting"}]);
+    s["tracks"]["main"]["elements"][0]["params"]["transform.scaleX"] = json!(1.37);
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    call(
+        &r,
+        EDIT,
+        input(
+            &before,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    let after = read(&r).await;
+    assert_other_takes_preserved(scene(&before), scene(&after), 0);
+    assert_eq!(
+        scene(&after)["takeAssembly"]["sourceTracks"],
+        scene(&before)["takeAssembly"]["sourceTracks"]
+    );
+    let selected = scene(&after)["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|c| c["takeGroup"]["groupIndex"] == 0)
+        .collect::<Vec<_>>();
+    assert!(!selected.is_empty());
+    assert!(
+        selected
+            .iter()
+            .all(|c| c["params"]["transform.scaleX"] == 1.37)
+    );
+    assert_eq!(
+        selected[0]["startTime"],
+        scene(&before)["tracks"]["main"]["elements"][0]["startTime"]
+    );
+    assert_eq!(
+        scene(&after)["bookmarks"][0]["note"],
+        "Authored after cutting"
+    );
+    assert!(
+        !transcript(scene(&after)).contains(&"Welcome".into()),
+        "Trimmed beginning must not reappear"
+    );
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+    call(&r, "history.redo", json!({})).await;
+    assert_eq!(read(&r).await["project"], after["project"]);
+    let reopened = OpenCutRuntime::default();
+    call(&reopened,"project.classic.session.attach",json!({"projectId":"classic-project","expectedRevision":0,"classic":after["project"]["classic"]})).await;
+    call(
+        &reopened,
+        EDIT,
+        input(
+            &read(&reopened).await,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":0}),
+        ),
+    )
+    .await;
+    let back = read(&reopened).await;
+    assert_other_takes_preserved(scene(&after), scene(&back), 0);
+    assert!(
+        scene(&back)["tracks"]["main"]["elements"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .all(|c| c["takeGroup"]["groupIndex"] != 1)
+    );
+    let missing = reopened
+        .registry()
+        .invoke(
+            EDIT,
+            InvocationContext::default(),
+            input(
+                &back,
+                json!({"type":"select","groupIndex":1,"alternativeIndex":0}),
+            ),
+        )
+        .await;
+    assert!(missing.is_err());
+    assert_eq!(read(&reopened).await, back);
+}
+
+#[tokio::test]
+async fn private_edited_project_switches_surviving_partial_groups() {
+    let Ok(path) = std::env::var("OPENCUT_EDITED_TAKE_FIXTURE") else {
+        return;
+    };
+    let project: Value = serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+    let session: Value =
+        serde_json::from_str(project["__opencutEditorSession"].as_str().unwrap()).unwrap();
+    let classic = &session["saved"]["bundle"]["archive"]["classic"];
+    let project_id = &classic["document"]["metadata"]["id"];
+    let scene_id = &classic["document"]["currentSceneId"];
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":project_id,"expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    for group in [2, 13, 13, 2, 0, 17] {
+        let before = read(&r).await;
+        let s = scene(&before);
+        let previous = s["takeAssembly"]["plan"]["groups"][group]["selected"]
+            .as_u64()
+            .unwrap();
+        let next = if previous == 0 { 1 } else { 0 };
+        call(&r,EDIT,json!({"projectId":project_id,"sceneId":scene_id,"expectedRevision":before["revision"],"change":{"type":"select","groupIndex":group,"alternativeIndex":next}})).await;
+        let after = read(&r).await;
+        assert_other_takes_preserved(s, scene(&after), group);
+        assert_eq!(
+            s["takeAssembly"]["sourceTracks"],
+            scene(&after)["takeAssembly"]["sourceTracks"]
+        );
+        assert_eq!(
+            scene(&after)["takeAssembly"]["plan"]["groups"][group]["selected"],
+            next
+        );
+    }
+    let after = read(&r).await;
+    if let Ok(path) = std::env::var("OPENCUT_EDITED_TAKE_RESULT") {
+        std::fs::write(path, serde_json::to_string_pretty(&after).unwrap()).unwrap();
+    }
+}
+
+#[tokio::test]
+async fn silence_cleanup_after_manual_deletion_preserves_edit_and_all_speech() {
+    let r = setup_with_word_times(&[(1, 1.1, 1.4), (2, 3.1, 3.5)]).await;
+    call(&r, EDIT, assemble(&read(&r).await)).await;
+    let assembled = read(&r).await;
+    let mut classic = assembled["project"]["classic"].clone();
+    let s = &mut classic["document"]["scenes"][0];
+    s["tracks"]["main"]["elements"]
+        .as_array_mut()
+        .unwrap()
+        .retain(|c| c["takeGroup"]["groupIndex"] != 1);
+    s["bookmarks"] = json!([]);
+    let r = OpenCutRuntime::default();
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    let frames:Vec<_>=(50..570).map(|i|{ let t=i as f64/100.0;
+        let energy=if (1.0..1.55).contains(&t)||(3.0..3.65).contains(&t)||(4.0..5.7).contains(&t) {0.15} else {0.001};
+        json!({"start":t,"end":(i+1) as f64/100.0,"rms":energy,"peak":energy*1.4,"zeroCrossingRate":0.1}) }).collect();
+    call(
+        &r,
+        EDIT,
+        input(
+            &before,
+            json!({"type":"cleanSilence","audioEvidence":[{"clipId":"item-2","frames":frames}]}),
+        ),
+    )
+    .await;
+    let after = read(&r).await;
+    assert_other_takes_preserved(scene(&before), scene(&after), 0);
+    assert_eq!(transcript(scene(&before)), transcript(scene(&after)));
+    assert_eq!(scene(&after)["bookmarks"], json!([]));
+    let clips = scene(&after)["tracks"]["main"]["elements"]
+        .as_array()
+        .unwrap();
+    assert_eq!(
+        clips
+            .iter()
+            .filter(|c| c["takeGroup"]["groupIndex"] == 0)
+            .count(),
+        2
+    );
+    let cleaned_duration: i64 = clips
+        .iter()
+        .filter(|c| c["takeGroup"]["groupIndex"] == 0)
+        .map(|c| c["duration"].as_i64().unwrap())
+        .sum();
+    assert!(cleaned_duration < 240000);
+    call(
+        &r,
+        EDIT,
+        input(
+            &after,
+            json!({"type":"select","groupIndex":0,"alternativeIndex":1}),
+        ),
+    )
+    .await;
+    let switched = read(&r).await;
+    assert_other_takes_preserved(scene(&after), scene(&switched), 0);
 }

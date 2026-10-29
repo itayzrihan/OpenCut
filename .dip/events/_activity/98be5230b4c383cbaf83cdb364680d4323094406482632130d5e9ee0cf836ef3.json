@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "98be5230b4c383cbaf83cdb364680d4323094406482632130d5e9ee0cf836ef3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:51:20.698Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/src/earshot/types.ts <<'EOF'\n/** Canonical serializable recipe. PCM is ephemeral; no audio asset is created. */\nexport interface EarshotSpec {\n  version: 1;\n  engine: \"earshot\";\n  bankRevision: string;\n  presetId: string;\n  seed: number;\n  duration: number;\n  apex?: number;\n  pitch?: number | string;\n  parameters?: Record<string, number>;\n  sourceCode?: string;\n  echo?: { delay: number; feedback: number; mix: number };\n}\nexport interface EarshotSound {\n  id: string; name: string; category: string; duration: number;\n  onset: number; peak: number; kinds: string[]; notes: string;\n  pitchable: boolean; parameters: Record<string, number>; sourcePath: string;\n  knobs: { dur: string; apex: boolean; pitch: Record<string, unknown> | null; why?: string };\n  source?: { id: string; title: string; author: string; license: string; url: string };\n}\nexport const EARSHOT_REVISION = \"591fa3e028032e6dce56620a20e932e35667e8d8\";\nexport const EARSHOT_MAX_SECONDS = 30;\nexport function validateEarshotSpec(value: unknown): EarshotSpec {\n  if (!value || typeof value !== \"object\" || Array.isArray(value)) throw new Error(\"Invalid Earshot recipe.\");\n  const s = value as EarshotSpec;\n  const number = (v: unknown, lo: number, hi: number) => typeof v === \"number\" && Number.isFinite(v) && v >= lo && v <= hi;\n  if (s.version !== 1 || s.engine !== \"earshot\" || s.bankRevision !== EARSHOT_REVISION) throw new Error(\"Unsupported Earshot recipe version.\");\n  if (typeof s.presetId !== \"string\" || !/^[a-z0-9_.-]+(?:\\/[a-z0-9_.-]+){1,2}$/.test(s.presetId)) throw new Error(\"Invalid Earshot preset.\");\n  if (!number(s.seed, 0, 4294967295) || !Number.isInteger(s.seed)) throw new Error(\"Invalid Earshot seed.\");\n  if (!number(s.duration, 0.02, EARSHOT_MAX_SECONDS)) throw new Error(\"Sound duration must be between 0.02 and 30 seconds.\");\n  if (s.apex !== undefined && !number(s.apex, 0, s.duration)) throw new Error(\"The sound peak must be inside the clip.\");\n  if (s.pitch !== undefined && !(num",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-d1c9d266-0183-4e6f-b969-73738627ad15"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:51:21.266Z",
+  "parents": [],
+  "branch": "main"
+}

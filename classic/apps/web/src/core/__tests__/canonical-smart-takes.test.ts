@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- fixture JSON is validated by the real canonical runtime. */
 import { expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
+import { mediaTime } from "@/wasm/media-time";
 import type { SmartTakePlan } from "@/timeline/smart-takes/types";
 import {
 	CanonicalClassicSession,
@@ -136,6 +137,52 @@ for (const mode of ["standard", "experimental"] as const) {
 		).toBe(1);
 		reopened.undo();
 		expect(reopened.read()).toEqual(assembled);
+
+		// An archived session with manual cuts must replace the surviving range,
+		// without restoring the deleted ending or resetting editor presentation.
+		const cut = structuredClone(assembled);
+		const cutScene = cut.document.scenes[0];
+		cutScene.tracks.main.elements = cutScene.tracks.main.elements.filter(
+			(clip) => clip.takeGroup?.groupIndex !== 1,
+		);
+		const retained = cutScene.tracks.main.elements[0];
+		retained.startTime = mediaTime({ ticks: retained.startTime + 30000 });
+		retained.trimStart = mediaTime({ ticks: retained.trimStart + 30000 });
+		retained.duration = mediaTime({ ticks: retained.duration - 30000 });
+		retained.params["transform.scaleX"] = 1.42;
+		cutScene.bookmarks = [];
+		const editedSession = new CanonicalClassicSession({
+			runtime: await createCanonicalTestRuntime(),
+			projectId: "classic-project",
+		});
+		editedSession.attach({ classic: cut });
+		editedSession.begin();
+		editedSession.editTakes({
+			sceneId: "main-scene",
+			change: {
+				type: "select",
+				groupIndex: 0,
+				alternativeIndex:
+					cutScene.takeAssembly?.plan.groups[0].selected === 0 ? 1 : 0,
+			},
+		});
+		editedSession.commit({ label: "Replace edited take", hostContext: {} });
+		const switched = editedSession.read().document.scenes[0];
+		expect(
+			switched.tracks.main.elements.some(
+				(clip) => clip.takeGroup?.groupIndex === 1,
+			),
+		).toBe(false);
+		expect(switched.tracks.main.elements[0].startTime).toBe(retained.startTime);
+		expect(switched.tracks.main.elements[0].params["transform.scaleX"]).toBe(
+			1.42,
+		);
+		expect(switched.takeAssembly?.sourceTracks).toEqual(
+			cutScene.takeAssembly?.sourceTracks,
+		);
+		expect(switched.bookmarks).toEqual([]);
+		editedSession.undo();
+		expect(editedSession.read()).toEqual(cut);
 
 		session.begin();
 		session.prepareTakesForAutoEdit({ sceneId: "main-scene" });

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b172a203fc729db5e3c8f5f881e7552c3739c5bf8f19a0222c7c953497206e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:19:07.192Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test ./src/editor-agent/__tests__/checkpoint.test.ts",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-0a370b4a-fa65-4c30-898e-a7495a062f4e"
+      },
+      {
+        "at": "2026-10-29T05:19:08.728Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts');s=p.read_text();needle='import { createCanonicalTestRuntime } from \"@/core/__tests__/canonical-runtime-fixture\";';s=s.replace(needle,needle+'\\n\\n// Match the real-WASM manager integration budget. These cases create multiple\\n// runtimes; the deadline bounds a stalled suite, not application performance.\\nconst INTEGRATION_TIMEOUT = 60_000;');s=s.replace('}, 30_000);','}, INTEGRATION_TIMEOUT);');p.write_text(s)\np=Path('classic/scripts/verify-deepseek-harness.mjs');s=p.read_text().replace('\"--timeout=120000\",','\"--timeout=240000\",');p.write_text(s)\nPY\ngit diff --check -- classic; git add classic/scripts/verify-deepseek-harness.mjs classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts; git commit -m \"Align checkpoint test deadlines with real WASM integration budgets\"",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-728bffdf-95fd-4d7f-bc87-f59c77e36b8c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:19:09.143Z",
+  "parents": [],
+  "branch": "main"
+}

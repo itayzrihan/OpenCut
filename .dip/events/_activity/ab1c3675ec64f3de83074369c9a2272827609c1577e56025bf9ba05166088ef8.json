@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab1c3675ec64f3de83074369c9a2272827609c1577e56025bf9ba05166088ef8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:23:02.289Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/earshot-next-turbo.log\nls -lh /tmp/earshot-lint.log\ncat /tmp/earshot-types3.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-365346c6-f9a8-4061-83cf-c33f1a901a61"
+      },
+      {
+        "at": "2026-10-29T05:23:02.589Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -15 /tmp/earshot-next-turbo.log\nls -lh /tmp/earshot-lint.log\ncat /tmp/earshot-types3.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-365346c6-f9a8-4061-83cf-c33f1a901a61"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:23:03.042Z",
+  "parents": [],
+  "branch": "main"
+}

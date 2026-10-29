@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99dcae454938d4a40e576cbe922fab2db6d76d130378ad949d79a9da62355b2b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:01:46.148Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff 6477b062^ 6477b062 -- crates/editor-api classic/rust/crates/timeline | git apply\n git diff 600c0f6e^ 600c0f6e -- classic crates | git apply",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-60e578dc-f491-4129-8bdc-4ea91dda42c0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:01:46.357Z",
+  "parents": [],
+  "branch": "main"
+}

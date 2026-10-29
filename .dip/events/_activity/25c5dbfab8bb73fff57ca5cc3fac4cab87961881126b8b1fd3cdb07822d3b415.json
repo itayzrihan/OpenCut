@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "25c5dbfab8bb73fff57ca5cc3fac4cab87961881126b8b1fd3cdb07822d3b415",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:36.247Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts');s=p.read_text().replace('}, 20_000);','}, INTEGRATION_TIMEOUT);');p.write_text(s)\nPY\ngit add classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts; git commit --amend --no-edit",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-2441acdc-0832-46cf-b88e-82c28fa2b5ce"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:36.300Z",
+  "parents": [],
+  "branch": "main"
+}

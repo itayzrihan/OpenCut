@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "eventId": "927e556eca7fae011bb0f1abba403089dc1dfe67c89083bc55bace9b18f5b3ec",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:23:47.493Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts",
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-browser.test.ts"
+        ],
+        "changeHash": "8b52af9ad71eea78d62c9e4f5aa8ecb3bb530014427901ecfa564dbbed95fbcc",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-ee48a05e-d4e1-4ca1-84e0-ee418cc8f656"
+      },
+      {
+        "at": "2026-10-29T05:23:47.759Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts",
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-browser.test.ts"
+        ],
+        "changeHash": "8b52af9ad71eea78d62c9e4f5aa8ecb3bb530014427901ecfa564dbbed95fbcc",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-ee48a05e-d4e1-4ca1-84e0-ee418cc8f656"
+      },
+      {
+        "at": "2026-10-29T05:23:47.778Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "OPENCUT_EARSHOT_EXPORT_TEST=1 bun test src/earshot/__tests__/export-browser.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-9e50bef2-7899-42db-8865-7fa4e7f5a73c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:23:48.264Z",
+  "parents": [],
+  "branch": "main"
+}

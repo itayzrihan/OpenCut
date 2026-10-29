@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c019ba6d4e33147593441705bc46da87312c879b8e55fe5c057a5052dae44a53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:31:07.810Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '98,170p' classic/apps/web/src/earshot/components/library.tsx\nrg -n 'element-bundle' classic/apps/web/src/timeline | head -30\ntail -4 /tmp/earshot-final-verify.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-55a6efaa-b94f-4561-90b1-ee208466f5b4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:31:07.842Z",
+  "parents": [],
+  "branch": "main"
+}

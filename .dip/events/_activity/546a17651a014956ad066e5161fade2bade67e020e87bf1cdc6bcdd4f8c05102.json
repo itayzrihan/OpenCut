@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "546a17651a014956ad066e5161fade2bade67e020e87bf1cdc6bcdd4f8c05102",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:57:50.130Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/public/earshot/worker.js';s=open(p).read().replace(\"const url = typeof value === 'string' ? value : value.url;\", \"const url = typeof value === 'string' ? value : value?.url || String(value);\");open(p,'w').write(s)\np='classic/apps/web/public/earshot/renderer.py';s=open(p).read();a=s.index(\"if '_earshot_kernels' in globals():\");b=s.index('\\n\\n\\ndef render_clip',a)\ns=s[:a]+'''if '_earshot_kernels' in globals():\n    def _kernel(name, *args):\n        # PyBuffer may describe strided/subarray views. Own contiguous arrays make\n        # logical shapes and data lengths identical for every upstream call.\n        owned = [np.array(a, dtype=np.float64, order='C', copy=True) if isinstance(a, np.ndarray) else a for a in args]\n        return np.asarray(getattr(_earshot_kernels, name)(*owned).to_py(), dtype=np.float64)\n    dsp._svf = lambda *args: _kernel('svf', *args)\n    dsp._osc = lambda *args: _kernel('osc', *args)\n    fx._allpass = lambda *args: _kernel('allpass', *args)\n    fx._follow = lambda *args: _kernel('follow', *args)\n    fx._rise = lambda *args: _kernel('rise', *args)\n    fx._release = lambda *args: _kernel('release', *args)\n    def _fdn(*args):\n        return _kernel('fdn', *args).reshape((args[-1], args[2].shape[1]))\n    fx._fdn = _fdn'''+s[b:];open(p,'w').write(s)\nPY\nnode classic/scripts/prepare-earshot-runtime.mjs\nnode classic/scripts/test-earshot-runtime.mjs > /tmp/earshot-wasm-test.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-02080dfe-4107-4446-b62c-0581220eacd7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:57:51.073Z",
+  "parents": [],
+  "branch": "main"
+}

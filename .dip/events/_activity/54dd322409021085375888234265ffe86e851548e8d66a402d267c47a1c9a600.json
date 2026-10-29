@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "54dd322409021085375888234265ffe86e851548e8d66a402d267c47a1c9a600",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:53:38.303Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/crates/editor-api/src/classic_procedural.rs"
+        ],
+        "changeHash": "41dede7ad1660e83cf0cd4d4a10b3ff29c72e8d762f9f17ea66176858d33026b",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-0c88d441-cd34-4bde-b809-2a020352406e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:53:38.329Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b749a7382b9671fd4ca73786cefe810957c8445bcb4a2aa0bb0e93b3332ceb74",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:26:51.733Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git apply /tmp/earshot-ai-lint.patch\ngit diff a7cb961c^ a7cb961c -- classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/runtime.ts classic/apps/web/src/earshot/types.ts | git apply\ncat /tmp/earshot-root-lint2.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-7f8589fa-8b54-4294-980b-5673a58bc153"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:26:53.197Z",
+  "parents": [],
+  "branch": "main"
+}

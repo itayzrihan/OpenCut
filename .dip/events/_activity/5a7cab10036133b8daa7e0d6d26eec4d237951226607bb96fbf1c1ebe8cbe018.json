@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5a7cab10036133b8daa7e0d6d26eec4d237951226607bb96fbf1c1ebe8cbe018",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:37:56.259Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/git-fetch.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "06cacb05-c5be-4c90-8a0a-00e2d7ae9c57"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:37:56.267Z",
+  "parents": [],
+  "branch": "main"
+}

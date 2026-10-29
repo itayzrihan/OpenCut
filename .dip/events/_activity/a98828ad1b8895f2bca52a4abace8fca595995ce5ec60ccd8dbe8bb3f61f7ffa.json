@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a98828ad1b8895f2bca52a4abace8fca595995ce5ec60ccd8dbe8bb3f61f7ffa",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:52:15.234Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/public/earshot/renderer.py <<'EOF'\n\"\"\"OpenCut's in-memory Earshot adapter. Runs only inside the opaque WASM worker.\"\"\"\nimport json\nimport sys\nimport types\nimport numpy as np\nfrom earshot.forge import bank, dsp\n\n\ndef render_clip(spec):\n    entry = bank.get(spec['presetId'])\n    seed = int(spec['seed'])\n    duration = float(spec['duration'])\n    entry.setdefault('params', {}).update(spec.get('parameters') or {})\n    source = spec.get('sourceCode')\n    if source:\n        # A fresh module, in the recipe package, supports the upstream relative imports.\n        name = 'earshot.forge.recipes._opencut_custom'\n        module = types.ModuleType(name)\n        module.__package__ = 'earshot.forge.recipes'\n        module.__dict__.update(np=np, dsp=dsp)\n        sys.modules[name] = module\n        exec(compile(source, '<earshot-clip>', 'exec'), module.__dict__)\n        render = getattr(module, 'render', None)\n        if not callable(render):\n            raise ValueError('Sound code must define render(params, r).')\n        params = dict(entry.get('params') or {})\n        params['duration'] = duration\n        y = np.asarray(render(params, dsp.rng(seed)), dtype=np.float32)\n        # Custom recipes own timbre/pitch/structure; OpenCut owns the exact clip length.\n    else:\n        y, _ = bank.render(entry, seed=seed, dur=duration, apex=spec.get('apex'),\n                           pitch=spec.get('pitch'), checks=False, sr=48000)\n    if y.ndim == 1:\n        y = y[:, None]\n    n = round(duration * 48000)\n    if y.ndim != 2 or y.shape[1] not in (1, 2) or not len(y) or len(y) > 48000 * 60:\n        raise ValueError('Sound code must return mono or stereo PCM, at most 60 seconds.')\n    if not np.isfinite(y).all():\n        raise ValueError('Sound code produced non-finite samples.')\n    y = np.array(y[:n], dtype=np.float32, copy=True)\n    if len(y) < n:\n        y = np.pad(y, ((0, n - len(y)), (0, 0)))\n    peak = float(np.abs(y).max())\n    if peak > 1:\n        y *= (10 ** (-1 ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-57c7ea35-d24c-4317-8d5a-b4b123c6c92f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:52:15.403Z",
+  "parents": [],
+  "branch": "main"
+}

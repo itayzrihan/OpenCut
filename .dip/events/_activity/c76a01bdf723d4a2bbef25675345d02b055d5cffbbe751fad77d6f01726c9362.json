@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c76a01bdf723d4a2bbef25675345d02b055d5cffbbe751fad77d6f01726c9362",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:54:45.085Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat > classic/apps/web/public/earshot/kernels.js <<'EOF'\n/* MIT Leon Lin / Earshot: numerical equivalents of its optional numba kernels.\n * NumPy/scipy recipes stay upstream; only sequential loops execute in JS in WASM builds.\n * No filesystem/network/browser references are exposed by this object. */\n(() => {\n const call = (args, fn) => { const buffers=[]; try { const a=args.map(v=>{if(v?.getBuffer){const b=v.getBuffer('f64');buffers.push(b);return {data:b.data,shape:Array.from(b.shape)};}return v;});return fn(...a); } finally {for(const b of buffers)b.release();} };\n const vector=(name,fn)=>(...a)=>call(a,fn);\n const blep=(t,dt)=>t<dt?(t/=dt,t+t-t*t-1):t>1-dt?(t=(t-1)/dt,t*t+t+t+1):0;\n globalThis.earshotKernels=Object.freeze({\n  svf:vector('svf',(x,fc,q,mode)=>{let i1=0,i2=0;const y=new Float64Array(x.data.length);for(let i=0;i<y.length;i++){const g=Math.tan(Math.PI*fc.data[i]/48000),k=1/Math.max(q.data[i],.05),a1=1/(1+g*(g+k)),a2=g*a1,a3=g*a2,v3=x.data[i]-i2,v1=a1*i1+a2*v3,v2=i2+a2*i1+a3*v3;i1=2*v1-i1;i2=2*v2-i2;y[i]=mode===0?v2:mode===1?v1:mode===3?k*v1:x.data[i]-k*v1-v2;}return y;}),\n  osc:vector('osc',(f,shape,ph)=>{const y=new Float64Array(f.data.length);for(let i=0;i<y.length;i++){const dt=Math.min(Math.max(f.data[i]/48000,1e-9),.49);y[i]=shape===0?Math.sin(2*Math.PI*ph):shape===1?2*ph-1-blep(ph,dt):(ph<.5?1:-1)+blep(ph,dt)-blep((ph+.5)%1,dt);ph+=dt;if(ph>=1)ph-=1;}return y;}),\n  allpass:vector('allpass',(x,d,g)=>{const y=new Float64Array(x.data.length),buf=new Float64Array(d);let j=0;for(let i=0;i<y.length;i++){const v=buf[j],u=x.data[i]+g*v;y[i]=v-g*u;buf[j]=u;j++;if(j>=d)j=0;}return y;}),\n  follow:vector('follow',(x,att,rel)=>{const y=new Float64Array(x.data.length);let e=0;for(let i=0;i<y.length;i++){const a=x.data[i]>e?att:rel;e=a*e+(1-a)*x.data[i];y[i]=e;}return y;}),\n  rise:vector('rise',(x,att)=>{const y=new Float64Array(x.data.length);let s=0;for(let i=0;i<y.length;i++){s=att*s+(1-att)*x.data[i];s=Math.min(s,x.data[i]);y[i]=s;}return y;}),\n  release:",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-8a29e0fe-fbe7-44b1-96e8-8d3cb1df19d5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:54:45.739Z",
+  "parents": [],
+  "branch": "main"
+}

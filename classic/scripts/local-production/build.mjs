@@ -60,7 +60,7 @@ try {
   const fingerprint = await sourceFingerprint();
   const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository }).toString().trim();
   const branch = execFileSync('git', ['branch', '--show-current'], { cwd: repository }).toString().trim();
-  const dirty = !!execFileSync('git', ['status', '--porcelain'], { cwd: repository }).toString().trim();
+  const dirty = !!execFileSync('git', ['status', '--porcelain'], { cwd: repository, maxBuffer: 64 * 1024 ** 2 }).toString().trim();
   await status('Building canonical Rust / WASM');
   await run(config.bun, ['run', 'build:wasm']);
   await status('Preparing local assets');

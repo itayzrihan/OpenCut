@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "27403773d3530aa802ca99cf9395e9807066b3c73af33244650ba87a2d935e01",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:00:51.332Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/production-build.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "173d2d70-7fbf-4044-af85-2d235e5c2311"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:00:51.338Z",
+  "parents": [],
+  "branch": "main"
+}

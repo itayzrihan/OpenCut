@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "78300ce9663485c0c3aef7ee14976e96d0942b87d138f3d6909866acc04dca35",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:01:48.738Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '1,200p' classic/rust/editor-runtime-wasm/src/lib.rs && rg -n 'store_agent_render|storeAgentRender|render artifact' classic/rust/editor-runtime-wasm && sed -n '1,160p' crates/editor-api/tests/hyperframes_reference_source.rs && sed -n '1,180p' classic/apps/web/src/earshot/audio.ts && sed -n '1,150p' classic/apps/web/src/earshot/types.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-8c7e63be-3e9d-4a8d-81a0-7acd9e09d455"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:01:49.178Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "06757f1e431ec52f05e59f788e86e96845c4a3070a01b8aab6e2817930d9d2bf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T06:00:12.952Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git worktree add --no-checkout -b codex/earshot-mcp-library /tmp/opencut-earshot-mcp-library a212f186",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-ae116a2b-9dec-494b-b302-f233cef7da9a"
+      },
+      {
+        "at": "2026-10-29T06:00:12.958Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout set crates classic/rust classic/vendor/earshot classic/apps/web/src/earshot resources/hyperframes docs && git checkout",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-6e794463-f2dc-4109-80dd-a4a18170befd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:00:13.613Z",
+  "parents": [],
+  "branch": "main"
+}

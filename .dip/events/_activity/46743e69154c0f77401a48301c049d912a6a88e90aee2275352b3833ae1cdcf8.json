@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "46743e69154c0f77401a48301c049d912a6a88e90aee2275352b3833ae1cdcf8",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:42:37.047Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git branch --show-current; git remote -v; git status --short --untracked-files=no -- . ':!.dip' | head -70; rg --files -g AGENTS.md -g '*codex*' -g '*agent*' -g '*harness*' -g package.json -g Cargo.toml -g '!classic/bun.lock' | head -180",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-1ff14891-c381-44d7-9625-f6e7fd2a27fe"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:42:37.303Z",
+  "parents": [],
+  "branch": "main"
+}

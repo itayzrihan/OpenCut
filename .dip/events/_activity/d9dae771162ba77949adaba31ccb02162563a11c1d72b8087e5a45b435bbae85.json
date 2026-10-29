@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d9dae771162ba77949adaba31ccb02162563a11c1d72b8087e5a45b435bbae85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:23:37.107Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/earshot/audio.ts');s=p.read_text().replace('async function sourcePcm(\\n\\tspec: EarshotSpec,\\n\\tsignal?: AbortSignal,\\n): Promise<Pcm> {','async function sourcePcm({ spec, signal }: { spec: EarshotSpec; signal?: AbortSignal }): Promise<Pcm> {').replace('sourcePcm(spec, signal)','sourcePcm({ spec, signal })');p.write_text(s)\np=Path('classic/apps/web/src/earshot/__tests__/timeline-audio.test.ts');s=p.read_text();s='/* eslint-disable opencut/prefer-object-params, @typescript-eslint/no-unsafe-type-assertion -- Test doubles implement native positional Web Audio APIs and inspect the private playback boundary. */\\n'+s;p.write_text(s)\np=Path('classic/apps/web/src/earshot/components/properties.tsx');s=p.read_text().replace('useEffect, useRef, useState','useEffect, useId, useRef, useState').replace('const editor = useEditor();','const editor = useEditor();\\n\\tconst controlId = useId();')\nfor label,key in [('Duration (s)','duration'),('Seed','seed'),('Peak time (s)','apex'),('Pitch (note / Hz)','pitch')]:\n s=s.replace('<label className=\"space-y-1 text-xs\">\\n\\t\\t\\t\\t\\t'+label, '<label htmlFor={`${controlId}-'+key+'`} className=\"space-y-1 text-xs\">\\n\\t\\t\\t\\t\\t'+label)\n s=s.replace('aria-label=\"Code sound '+key+'\"','id={`${controlId}-'+key+'`} aria-label=\"Code sound '+key+'\"')\np.write_text(s)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-90a83450-4ea1-4b6d-a02b-1709340e1a26"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:23:37.230Z",
+  "parents": [],
+  "branch": "main"
+}

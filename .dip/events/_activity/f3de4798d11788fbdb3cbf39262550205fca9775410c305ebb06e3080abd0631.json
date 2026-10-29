@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f3de4798d11788fbdb3cbf39262550205fca9775410c305ebb06e3080abd0631",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:14:26.563Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/tmp/opencut-earshot-canonical/classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts"
+        ],
+        "changeHash": "5af0edcc45b42df3337097a3512a3a0bc79c41ec265508b71db6c36e4f734f95",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-cb8ec494-96b3-47d3-897b-647d0e905d23"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:14:26.603Z",
+  "parents": [],
+  "branch": "main"
+}

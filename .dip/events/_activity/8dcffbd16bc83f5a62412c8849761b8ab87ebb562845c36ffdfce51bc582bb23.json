@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8dcffbd16bc83f5a62412c8849761b8ab87ebb562845c36ffdfce51bc582bb23",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:02:56.914Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/live-before.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "93e704b6-cb46-485b-8785-ce2f166e5617"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:02:56.931Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1ed5d6247bd231795a74bc63692c0ba6c7d9b27be7f2d20d0bfb4367647846b6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:16:30.572Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit --only -m 'test: verify procedural audio export PCM parity in browser' -- classic/apps/web/src/earshot/__tests__/export-browser.test.ts classic/apps/web/src/earshot/__tests__/export-pcm-fixture.ts classic/apps/web/src/earshot/__tests__/export-pcm-source-fixture.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-08e76ad8-0a20-4c70-9d78-debe1eb38cac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:16:31.297Z",
+  "parents": [],
+  "branch": "main"
+}

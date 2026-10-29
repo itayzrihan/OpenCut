@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2676c19b40ddb16206a54754e0b226d3d9bc55acbddd1019393662e605f6ba5c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:07:21.676Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git ls-tree -r --long HEAD .dip/events/_activity | python3 -c 'import sys; rows=[x.split() for x in sys.stdin]; print(len(rows),sum(int(x[3]) for x in rows))'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-024959c1-b668-4396-ba36-a6a7d1537896"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:07:21.699Z",
+  "parents": [],
+  "branch": "main"
+}

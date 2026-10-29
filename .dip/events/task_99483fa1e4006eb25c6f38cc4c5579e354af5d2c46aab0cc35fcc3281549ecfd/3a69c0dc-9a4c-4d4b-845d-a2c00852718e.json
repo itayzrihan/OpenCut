@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3a69c0dc-9a4c-4d4b-845d-a2c00852718e",
+  "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented canonical local replacement of surviving smart-take ranges after trims, splits, deletions, reorder and bookmark edits, plus edited-assembly silence cleanup. Preserves archived alternatives, unrelated clips, caption presentation, source audio and Undo/Redo. Added native/private-project and real-WASM regressions. Built and deployed production; switched the user's edited split group through the UI, verified source/unrelated clip preservation and exact Undo restoration.",
+      "replacedBy": [],
+      "remaining": []
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-29T06:05:38.694Z",
+  "parents": [
+    "de3401fb-68bc-4e9c-9638-d32c276eb9f7"
+  ],
+  "branch": "main"
+}

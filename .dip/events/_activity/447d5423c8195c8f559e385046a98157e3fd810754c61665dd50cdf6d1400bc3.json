@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "447d5423c8195c8f559e385046a98157e3fd810754c61665dd50cdf6d1400bc3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:22:56.051Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun -e 'console.log(Bun.resolveSync(\"@/preview/preview-snap\", process.cwd()+\"/src/masks\")); console.log((await Bun.file(\"src/preview/preview-snap.ts\").text()).slice(0,120))'\nls -la src/preview | head -15",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-c5d7e4ba-8db2-477f-b807-5d112b69caf1"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:22:57.123Z",
+  "parents": [],
+  "branch": "main"
+}

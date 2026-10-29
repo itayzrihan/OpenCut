@@ -367,6 +367,20 @@
         ".dip/tools/verify-smart-takes-integrity.mjs"
       ],
       "timeoutMs": 600000
+    },
+    "deepseek-editor-harness": {
+      "command": [
+        "node",
+        ".dip/tools/verify-deepseek-harness.mjs"
+      ],
+      "timeoutMs": 480000
+    },
+    "take-replacement": {
+      "command": [
+        "node",
+        ".dip/tools/verify-take-replacement.mjs"
+      ],
+      "timeoutMs": 480000
     }
   },
   "mode": "coordinate"

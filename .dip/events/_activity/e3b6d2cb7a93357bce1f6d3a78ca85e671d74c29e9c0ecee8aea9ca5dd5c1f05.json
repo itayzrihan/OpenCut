@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e3b6d2cb7a93357bce1f6d3a78ca85e671d74c29e9c0ecee8aea9ca5dd5c1f05",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:50:17.899Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p /tmp/earshot-pyodide-download\npython3 - <<'PY'\nfrom pathlib import Path\nimport json,urllib.request,concurrent.futures,hashlib\nlock=json.load(open('/tmp/earshot-pyodide-lock.json')); names=['pyodide.js','pyodide.asm.js','pyodide.asm.wasm','python_stdlib.zip','pyodide-lock.json']+[lock['packages'][k]['file_name'] for k in ['numpy','scipy','libopenblas']]\ndef get(name):\n p=Path('/tmp/earshot-pyodide-download')/name\n if not p.exists():urllib.request.urlretrieve('https://cdn.jsdelivr.net/pyodide/v0.28.3/full/'+name,p)\n return {'file':name,'sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'size':p.stat().st_size}\nwith concurrent.futures.ThreadPoolExecutor(max_workers=4) as ex:rows=list(ex.map(get,names))\nPath('classic/vendor/earshot/pyodide-assets.json').write_text(json.dumps({'version':'0.28.3','baseURL':'https://cdn.jsdelivr.net/pyodide/v0.28.3/full/','assets':rows},indent=2)+'\\n')\nprint(rows)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-7f5d2dad-cb22-488b-8a3f-39cf9a1e4207"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:50:18.469Z",
+  "parents": [],
+  "branch": "main"
+}

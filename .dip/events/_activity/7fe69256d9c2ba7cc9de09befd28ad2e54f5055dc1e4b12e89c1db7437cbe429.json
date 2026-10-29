@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fe69256d9c2ba7cc9de09befd28ad2e54f5055dc1e4b12e89c1db7437cbe429",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:25:47.144Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat /tmp/earshot-root-lint2.log\nls -lh analysis/earshot-integration-2026-10-29/evidence",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-35c57aeb-3a12-4a06-a2fd-3944dc620286"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:25:48.120Z",
+  "parents": [],
+  "branch": "main"
+}

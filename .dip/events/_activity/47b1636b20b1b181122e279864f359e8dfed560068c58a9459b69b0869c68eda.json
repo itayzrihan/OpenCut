@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "47b1636b20b1b181122e279864f359e8dfed560068c58a9459b69b0869c68eda",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:49:56.670Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js -o /tmp/earshot-pyodide.js\npython3 - <<'PY'\ns=open('/tmp/earshot-pyodide.js').read();print(s[-700:]);print('lockFileContents' in s,'stdlibURL' in s);print(len(s))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-4a7fced0-0b4a-4c79-a1ce-246bf21b044a"
+      },
+      {
+        "at": "2026-10-29T04:49:57.120Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl -fsSL https://cdn.jsdelivr.net/pyodide/v0.28.3/full/pyodide.js -o /tmp/earshot-pyodide.js\npython3 - <<'PY'\ns=open('/tmp/earshot-pyodide.js').read();print(s[-700:]);print('lockFileContents' in s,'stdlibURL' in s);print(len(s))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-4a7fced0-0b4a-4c79-a1ce-246bf21b044a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:49:57.383Z",
+  "parents": [],
+  "branch": "main"
+}

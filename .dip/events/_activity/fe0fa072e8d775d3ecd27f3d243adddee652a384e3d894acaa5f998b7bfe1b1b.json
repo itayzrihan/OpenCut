@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fe0fa072e8d775d3ecd27f3d243adddee652a384e3d894acaa5f998b7bfe1b1b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:26:02.722Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nbase=Path('classic/apps/web/src/earshot')\np=base/'types.ts'\ns=p.read_text().replace('  const s = value as EarshotSpec;', '  // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Every serialized field is validated below before returning a clone.\\n  const s = value as EarshotSpec;')\ns=s.replace('  const number = (v: unknown, lo: number, hi: number) => typeof v === \"number\" && Number.isFinite(v) && v >= lo && v <= hi;', '  const number = ({ value, min, max }: { value: unknown; min: number; max: number }) => typeof value === \"number\" && Number.isFinite(value) && value >= min && value <= max;')\ns=re.sub(r'number\\(([^,]+), ([^,]+), ([^)]+)\\)', r'number({ value: \\1, min: \\2, max: \\3 })', s)\np.write_text(s)\np=base/'catalog.ts'; s=p.read_text().replace('export const EARSHOT_SOUNDS:', '// eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- Generated pinned bank rows are checked by catalog and all-preset WASM tests.\\nexport const EARSHOT_SOUNDS:'); p.write_text(s)\np=base/'runtime.ts'; s=p.read_text().replace('    const manifest = await response.json()', '    // eslint-disable-next-line @typescript-eslint/no-unsafe-type-assertion -- The local build manifest is bounded and each resource is validated before use.\\n    const manifest = await response.json()'); p.write_text(s)\nPY\ngit diff -- classic/apps/web/src/earshot/types.ts classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/runtime.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-4ae8390e-df51-47ab-a3a6-d73b087cbc7b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:26:03.234Z",
+  "parents": [],
+  "branch": "main"
+}

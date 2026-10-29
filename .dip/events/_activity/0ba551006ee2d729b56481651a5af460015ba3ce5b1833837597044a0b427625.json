@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0ba551006ee2d729b56481651a5af460015ba3ce5b1833837597044a0b427625",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:21:05.992Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,etime,%cpu,command | rg 'eslint|next build|rustc|tsc'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-07139bb0-9668-4a67-afe7-71c46f053577"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:21:06.104Z",
+  "parents": [],
+  "branch": "main"
+}

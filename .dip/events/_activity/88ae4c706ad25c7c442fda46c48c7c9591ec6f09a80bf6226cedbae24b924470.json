@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "88ae4c706ad25c7c442fda46c48c7c9591ec6f09a80bf6226cedbae24b924470",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T04:48:26.384Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun add --exact --ignore-scripts @deepseek-ai/cordis@4.0.6-alpha.1 @deepseek-ai/dsh-agent@0.2.2-alpha.2 @deepseek-ai/dsh-agent-loop@0.2.2-alpha.2 @deepseek-ai/dsh-llm@0.2.2-alpha.2 @deepseek-ai/dsh-session@0.2.2-alpha.2 @deepseek-ai/dsh-session-projection@0.2.2-alpha.2 @deepseek-ai/dsh-system-prompt@0.2.2-alpha.2 @deepseek-ai/dsh-tools@0.2.2-alpha.2 @deepseek-ai/dsh-tool-executor-native@0.2.2-alpha.2",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-0434892c-7b11-4526-ad76-936656d7af37"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:48:27.322Z",
+  "parents": [],
+  "branch": "main"
+}

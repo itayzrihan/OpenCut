@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "964965db365b2a4484b043be617289b2c401649e53f79bd544a25e6e033c1414",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:26:20.834Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit --only -m 'style: align Earshot adapters with lint contracts' -- classic/apps/web/src/earshot/types.ts classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/runtime.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-3310b596-4972-459c-8f78-14df81753c38"
+      },
+      {
+        "at": "2026-10-29T05:26:25.380Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git commit --only -m 'style: align Earshot adapters with lint contracts' -- classic/apps/web/src/earshot/types.ts classic/apps/web/src/earshot/catalog.ts classic/apps/web/src/earshot/runtime.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-3310b596-4972-459c-8f78-14df81753c38"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:26:25.613Z",
+  "parents": [],
+  "branch": "main"
+}

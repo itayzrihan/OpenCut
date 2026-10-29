@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e6727c253a5849163843f7a468980ae42506e624d74beed9816782d9aa2ec4b4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:09:18.105Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun x tsc --noEmit -p tsconfig.build.json > /tmp/earshot-types2.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bdfc86a7-9d93-48f9-aeea-0c816e594ace"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:09:18.921Z",
+  "parents": [],
+  "branch": "main"
+}

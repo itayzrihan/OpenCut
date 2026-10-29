@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c55b61aaacae3f165a330228f3074ed974293ca5ffa03c94a1be4d524b41a1e2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:52:14.423Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,112p' crates/editor-api/src/operations/hyperframes_examples.rs; git sparse-checkout add resources/hyperframes/upstream/4c4b8574406cc566d28778a13f22c072d727a871/registry/catalog-artifact resources/hyperframes/opencut",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-77ccbee5-20b8-4fc9-bf50-516e9a34a7e3"
+      },
+      {
+        "at": "2026-10-29T04:52:15.234Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '90,112p' crates/editor-api/src/operations/hyperframes_examples.rs; git sparse-checkout add resources/hyperframes/upstream/4c4b8574406cc566d28778a13f22c072d727a871/registry/catalog-artifact resources/hyperframes/opencut",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-77ccbee5-20b8-4fc9-bf50-516e9a34a7e3"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:52:15.402Z",
+  "parents": [],
+  "branch": "main"
+}

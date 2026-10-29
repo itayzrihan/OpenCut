@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "db956d23c2dd105d86fd9fef8237e9209596ceb496f1d99d0408e8fe836cdd85",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T05:42:39.597Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-replacement-2026-10-29/commit.mjs"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f37787a2-cc54-4c3e-8bb5-4d4e917fa694"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:42:39.602Z",
+  "parents": [],
+  "branch": "main"
+}

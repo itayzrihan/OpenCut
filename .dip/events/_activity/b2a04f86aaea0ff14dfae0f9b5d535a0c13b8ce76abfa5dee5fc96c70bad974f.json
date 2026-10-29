@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b2a04f86aaea0ff14dfae0f9b5d535a0c13b8ce76abfa5dee5fc96c70bad974f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:10:54.028Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,%cpu,%mem,etime,command | rg '(tsc|rustc|wasm-pack)' | head -20",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bdfe7ac5-9562-4e6f-a1f4-81078c2a28a2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:10:55.784Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "cd5f2a29c9b3ec3b915f26814231900cfd0f9cb8bdc4dd43ea4baec84f2d8883",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:25:26.005Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('analysis/earshot-integration-2026-10-29/verify.mjs');s=p.read_text().replace(\"console.log('Earshot canonical, synthesis, AI and timeline integration checks passed.');\", \"run('node',['src/ai/skills/automatic-word-animation/generate.mjs','--check'],path.join(root,'classic/apps/web'));\\nrun('node',['node_modules/typescript/bin/tsc','--noEmit','-p','tsconfig.build.json'],path.join(root,'classic/apps/web'));\\nconsole.log('Earshot canonical, synthesis, AI and timeline integration checks passed.');\");p.write_text(s)\nPY\nbunx eslint src/earshot/audio.ts src/earshot/components/properties.tsx src/earshot/__tests__/timeline-audio.test.ts > /tmp/earshot-root-lint2.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-1cd4cdac-5d28-40ec-b43c-8853bc9001c7"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:25:26.105Z",
+  "parents": [],
+  "branch": "main"
+}

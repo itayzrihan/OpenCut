@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "08796f5b7184c190b5db5acd8bc9ce088f3e6baacc14efd04cc7d04a62172c69",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T04:50:59.431Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '650,735p' crates/editor-api/src/operations.rs; rg -n 'struct Patch|enum.*Patch|expected_revision.*' crates/editor-api/src/operations.rs | head -15; sed -n '1,100p' crates/editor-api/tests/classic_remove.rs; git sparse-checkout add apps/desktop apps/mcp",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-6cbc4703-c67e-4738-a4ea-a9c29c8e8842"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:51:00.239Z",
+  "parents": [],
+  "branch": "main"
+}

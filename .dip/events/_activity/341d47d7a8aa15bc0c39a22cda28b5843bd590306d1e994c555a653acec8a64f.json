@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "341d47d7a8aa15bc0c39a22cda28b5843bd590306d1e994c555a653acec8a64f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:01.750Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -n 'createBuilder|create.*Builder|export.*Builder' node_modules/@content-collections/core/dist/index.* node_modules/@content-collections/next/dist/* | head -25; node --input-type=module -e 'console.log(Object.keys(await import(\"@content-collections/core\")))'; cat node_modules/@content-collections/next/dist/index.js | head -85; git diff --check -- classic",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PostToolUse:exec-ac3790fa-a8a1-4d71-96d7-6cbe71605fcf"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:02.407Z",
+  "parents": [],
+  "branch": "main"
+}

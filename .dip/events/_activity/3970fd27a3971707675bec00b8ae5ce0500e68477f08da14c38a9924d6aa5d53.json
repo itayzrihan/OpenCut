@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3970fd27a3971707675bec00b8ae5ce0500e68477f08da14c38a9924d6aa5d53",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:03:21.752Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "collaborationsend_message",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:call_421165d41b73462fa3e2b55ed06b18f1"
+      },
+      {
+        "at": "2026-10-29T05:03:21.990Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "collaborationsend_message",
+        "branch": "main",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:call_421165d41b73462fa3e2b55ed06b18f1"
+      },
+      {
+        "at": "2026-10-29T05:03:22.008Z",
+        "kind": "PreCompact",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "",
+        "branch": "main",
+        "recordId": "644e8cac-441c-4308-b0fa-80939f54bfe0"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:03:22.017Z",
+  "parents": [],
+  "branch": "main"
+}

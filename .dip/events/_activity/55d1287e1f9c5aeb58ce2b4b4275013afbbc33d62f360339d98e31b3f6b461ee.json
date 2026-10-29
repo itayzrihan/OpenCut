@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "55d1287e1f9c5aeb58ce2b4b4275013afbbc33d62f360339d98e31b3f6b461ee",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:24:38.369Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -30 /tmp/earshot-verify.log\ncat /tmp/earshot-format2.log\ngit diff --check -- classic crates analysis .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-666f0a45-cb23-4a15-9200-dedeaf94c849"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:24:38.826Z",
+  "parents": [],
+  "branch": "main"
+}

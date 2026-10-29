@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "efd9b2aa16cef32b819d5aedfef20db571a375c9fa25b52ad38dace4ed63dacb",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:03.575Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '140,163p' classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts; tail -20 classic/apps/web/src/editor-agent/__tests__/checkpoint.test.ts",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-257cf56a-f8f4-486f-bf36-9db290041666"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:04.728Z",
+  "parents": [],
+  "branch": "main"
+}

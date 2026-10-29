@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "abf1644ea0ce6c14328f0853f4807a5b0e87eb75a64a42dfc1c19e915856b972",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:07:42.255Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add --no-cone '/.dip/events/_activity/' '/classic/scripts/test-earshot-runtime.mjs'\npython3 - <<'PY'\nimport json,subprocess\nfiles=json.load(open('/tmp/earshot-own-paths.json'))\nsubprocess.run(['git','commit','--only','-m','feat: vendor Earshot and synthesize all sounds in isolated WASM','--',*files],check=True)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-cee1de2b-e31c-4ee1-bdbf-7d75ba9e12ac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:07:42.770Z",
+  "parents": [],
+  "branch": "main"
+}

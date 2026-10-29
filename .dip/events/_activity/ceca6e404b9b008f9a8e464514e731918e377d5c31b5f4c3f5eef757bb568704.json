@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ceca6e404b9b008f9a8e464514e731918e377d5c31b5f4c3f5eef757bb568704",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T05:37:43.687Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/take-replacement-2026-10-29\ncat > analysis/take-replacement-2026-10-29/README.md <<'EOF'\n# Replacing smart takes after manual editing\n\n## Root cause\n\n`timeline.classic.takes.edit` regenerated the entire archived assembly. Its comparison guard correctly prevented that regeneration from undoing later edits, but also blocked legitimate alternative selection after a trim, split, deletion, reordering or bookmark edit. The same guard blocked silence cleanup on an edited assembly.\n\n## Change\n\nThis capability remains classic-only, implemented in the canonical Rust editor runtime and projected through the existing UI/WASM/MCP contract. No additional state store or alternate mutation endpoint was added.\n\nAn unchanged assembly still uses the existing renderer. An edited assembly uses a local replacement transaction:\n\n- Locate surviving members of the chosen take group by archive identity and media/source time, independently of their current timeline position or generated clip IDs.\n- Align old and alternative dialogue monotonically by word text, with bounded dynamic programming and interpolation for different wording. Retain only the ranges still present after manual cuts; deleted groups cannot be resurrected.\n- Replace those retained ranges, preserving authored framing, mix parameters, caption presentation and sliced animation channels. Source offsets come from the new archived performance.\n- Ripple subsequent existing material by the actual duration change. Preserve unrelated clip IDs, media ranges, durations, edits and ordering, and retain current bookmarks.\n- Splice the affected caption words/cues and synchronized source audio. Keep current layers and independent overlays instead of restoring all archived tracks.\n- Apply the same mechanism to silence cleanup, sharing one reference render across groups. Save through the normal canonical transaction, validation, revision checks and Undo/Redo.\n\nReplacing or extending the selected clip beyond its archived sour",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-04395ce0-e1a1-4ab7-afac-6106f9a64137"
+      },
+      {
+        "at": "2026-10-29T05:37:44.037Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_99483fa1e4006eb25c6f38cc4c5579e354af5d2c46aab0cc35fcc3281549ecfd",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p analysis/take-replacement-2026-10-29\ncat > analysis/take-replacement-2026-10-29/README.md <<'EOF'\n# Replacing smart takes after manual editing\n\n## Root cause\n\n`timeline.classic.takes.edit` regenerated the entire archived assembly. Its comparison guard correctly prevented that regeneration from undoing later edits, but also blocked legitimate alternative selection after a trim, split, deletion, reordering or bookmark edit. The same guard blocked silence cleanup on an edited assembly.\n\n## Change\n\nThis capability remains classic-only, implemented in the canonical Rust editor runtime and projected through the existing UI/WASM/MCP contract. No additional state store or alternate mutation endpoint was added.\n\nAn unchanged assembly still uses the existing renderer. An edited assembly uses a local replacement transaction:\n\n- Locate surviving members of the chosen take group by archive identity and media/source time, independently of their current timeline position or generated clip IDs.\n- Align old and alternative dialogue monotonically by word text, with bounded dynamic programming and interpolation for different wording. Retain only the ranges still present after manual cuts; deleted groups cannot be resurrected.\n- Replace those retained ranges, preserving authored framing, mix parameters, caption presentation and sliced animation channels. Source offsets come from the new archived performance.\n- Ripple subsequent existing material by the actual duration change. Preserve unrelated clip IDs, media ranges, durations, edits and ordering, and retain current bookmarks.\n- Splice the affected caption words/cues and synchronized source audio. Keep current layers and independent overlays instead of restoring all archived tracks.\n- Apply the same mechanism to silence cleanup, sharing one reference render across groups. Save through the normal canonical transaction, validation, revision checks and Undo/Redo.\n\nReplacing or extending the selected clip beyond its archived sour",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PostToolUse:exec-04395ce0-e1a1-4ab7-afac-6106f9a64137"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:37:44.162Z",
+  "parents": [],
+  "branch": "main"
+}

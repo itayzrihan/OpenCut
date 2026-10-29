@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "4c67949d10b90c913dd177cfe9803add37e61d1df10f99dda26b7f9ee41eb77a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T04:20:42.821Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_74adc44a9e5d534f024b6aa163f82f08ae8ce4810f82a375f66dd03f5c18060c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,os,signal\np=json.load(open('.local/smart-takes-2026-10-29/mcp-client-pids.json'))\nos.kill(p['client'],signal.SIGTERM)\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-14175bb9-4120-4b7e-b23f-00ebcc34cdf9"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:20:43.052Z",
+  "parents": [],
+  "branch": "main"
+}

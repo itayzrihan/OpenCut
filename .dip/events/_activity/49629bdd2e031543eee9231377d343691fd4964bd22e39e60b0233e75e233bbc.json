@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "49629bdd2e031543eee9231377d343691fd4964bd22e39e60b0233e75e233bbc",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:39.359Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json,subprocess\nfiles=json.load(open('/tmp/earshot-own-paths.json'))\nwith open('/tmp/earshot-commit.log','w') as out:\n r=subprocess.run(['git','commit','--only','-m','feat: vendor Earshot and synthesize all sounds in isolated WASM','--',*files],stdout=out,stderr=subprocess.STDOUT)\nprint('commit exit',r.returncode)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-59363d79-c64e-4777-b062-34e079a54e88"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:40.628Z",
+  "parents": [],
+  "branch": "main"
+}

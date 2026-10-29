@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e2b72917780b399f6b017a01d80fe17314825a43128e402b0eaf1dc7ccdede01",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:09:15.517Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test src/earshot/__tests__/timeline-audio.test.ts src/earshot/catalog.test.ts > /tmp/earshot-root-tests.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-d616d617-4dc0-4915-b4d1-951510a44eb2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:09:16.519Z",
+  "parents": [],
+  "branch": "main"
+}

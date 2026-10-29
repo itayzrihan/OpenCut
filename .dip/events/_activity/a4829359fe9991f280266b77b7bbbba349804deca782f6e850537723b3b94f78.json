@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a4829359fe9991f280266b77b7bbbba349804deca782f6e850537723b3b94f78",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+    "records": [
+      {
+        "at": "2026-10-29T05:20:03.550Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502",
+        "taskId": "task_e44620a4-58dc-4201-8de3-c11e3e867c64",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "../../node_modules/.bin/eslint src/ai/__tests__/automatic-sound-effects.test.ts src/ai/__tests__/earshot-repository.test.ts src/ai/__tests__/full-auto-edit-resume.test.ts src/ai/__tests__/full-auto-edit-routed.test.ts src/ai/__tests__/full-auto-edit-takes.test.ts src/ai/automatic-sound-effects.ts src/ai/automatic-word-animation.ts src/ai/components/ai-chat-view.tsx src/ai/components/automatic-sound-effects-button.tsx src/ai/components/automatic-word-animation-button.tsx src/ai/components/full-auto-edit-button.tsx src/ai/earshot-direction.ts src/ai/earshot-repository.ts src/ai/full-auto-edit.ts src/ai/skills/automatic-word-animation/runtime.generated.ts src/app/api/batch-edit/route.ts src/app/api/earshot/repository/route.ts src/batch/automation-progress.tsx src/batch/provider.tsx src/batch/scene-jobs.ts src/batch/server.ts --format json --output-file /tmp/earshot-ai-eslint.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185fc-382c-7c80-8996-dfe0222d3502:PreToolUse:exec-77b66bcd-e9e0-4e9d-896d-7cc5f22a7096"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:20:04.725Z",
+  "parents": [],
+  "branch": "main"
+}

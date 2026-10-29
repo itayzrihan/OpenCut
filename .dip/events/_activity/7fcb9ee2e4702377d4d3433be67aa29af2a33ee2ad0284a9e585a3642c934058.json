@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "7fcb9ee2e4702377d4d3433be67aa29af2a33ee2ad0284a9e585a3642c934058",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T04:59:04.151Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/earshot/audio.ts');s=p.read_text();a=s.index('export async function resolveEarshotBuffer');b=s.index('/** Preserve the source clock',a)\ns=s[:a]+'''type Pending = { promise: Promise<Pcm>; controller: AbortController; readers: number };\nconst pending = new Map<string, Pending>();\n\nasync function sourcePcm(spec: EarshotSpec, signal?: AbortSignal): Promise<Pcm> {\n\\tsignal?.throwIfAborted();\n\\tconst key = earshotSourceKey(spec);\n\\tconst cached = cache.get(key);\n\\tif (cached) { cache.delete(key); cache.set(key, cached); return cached; }\n\\tlet task = pending.get(key);\n\\tif (!task || task.controller.signal.aborted) {\n\\t\\tconst controller = new AbortController();\n\\t\\tconst frozen = structuredClone(spec);\n\\t\\tconst promise = (async () => {\n\\t\\t\\tconst { renderEarshotSound } = await import(\"./render\");\n\\t\\t\\tconst pcm = await renderEarshotSound({ spec: frozen, signal: controller.signal });\n\\t\\t\\tcontroller.signal.throwIfAborted();\n\\t\\t\\tconst bytes = pcm.channels.reduce((n, channel) => n + channel.byteLength, 0);\n\\t\\t\\twhile (cacheBytes + bytes > MAX_CACHE_BYTES && cache.size) {\n\\t\\t\\t\\tconst [oldKey, old] = cache.entries().next().value!;\n\\t\\t\\t\\tcache.delete(oldKey);\n\\t\\t\\t\\tcacheBytes -= old.channels.reduce((n, channel) => n + channel.byteLength, 0);\n\\t\\t\\t}\n\\t\\t\\tif (bytes <= MAX_CACHE_BYTES && !cache.has(key)) { cache.set(key, pcm); cacheBytes += bytes; }\n\\t\\t\\treturn pcm;\n\\t\\t})();\n\\t\\ttask = {promise, controller, readers: 0};\n\\t\\tpending.set(key, task);\n\\t\\tconst owned = task;\n\\t\\tconst cleanup = () => { if (pending.get(key) === owned) pending.delete(key); };\n\\t\\tvoid promise.then(cleanup, cleanup);\n\\t}\n\\tconst active = task;\n\\tactive.readers++;\n\\treturn new Promise<Pcm>((resolve, reject) => {\n\\t\\tlet done = false;\n\\t\\tconst release = () => {\n\\t\\t\\tif (done) return false;\n\\t\\t\\tdone = true; signal?.removeEventListener(\"abort\", abort);\n\\t\\t\\tactive.readers--;\n\\t\\t\\tif (!active.readers && pending.get(ke",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-e617f131-a1cb-4066-aa06-6729c8ae1a98"
+      },
+      {
+        "at": "2026-10-29T04:59:04.453Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\np=Path('classic/apps/web/src/earshot/audio.ts');s=p.read_text();a=s.index('export async function resolveEarshotBuffer');b=s.index('/** Preserve the source clock',a)\ns=s[:a]+'''type Pending = { promise: Promise<Pcm>; controller: AbortController; readers: number };\nconst pending = new Map<string, Pending>();\n\nasync function sourcePcm(spec: EarshotSpec, signal?: AbortSignal): Promise<Pcm> {\n\\tsignal?.throwIfAborted();\n\\tconst key = earshotSourceKey(spec);\n\\tconst cached = cache.get(key);\n\\tif (cached) { cache.delete(key); cache.set(key, cached); return cached; }\n\\tlet task = pending.get(key);\n\\tif (!task || task.controller.signal.aborted) {\n\\t\\tconst controller = new AbortController();\n\\t\\tconst frozen = structuredClone(spec);\n\\t\\tconst promise = (async () => {\n\\t\\t\\tconst { renderEarshotSound } = await import(\"./render\");\n\\t\\t\\tconst pcm = await renderEarshotSound({ spec: frozen, signal: controller.signal });\n\\t\\t\\tcontroller.signal.throwIfAborted();\n\\t\\t\\tconst bytes = pcm.channels.reduce((n, channel) => n + channel.byteLength, 0);\n\\t\\t\\twhile (cacheBytes + bytes > MAX_CACHE_BYTES && cache.size) {\n\\t\\t\\t\\tconst [oldKey, old] = cache.entries().next().value!;\n\\t\\t\\t\\tcache.delete(oldKey);\n\\t\\t\\t\\tcacheBytes -= old.channels.reduce((n, channel) => n + channel.byteLength, 0);\n\\t\\t\\t}\n\\t\\t\\tif (bytes <= MAX_CACHE_BYTES && !cache.has(key)) { cache.set(key, pcm); cacheBytes += bytes; }\n\\t\\t\\treturn pcm;\n\\t\\t})();\n\\t\\ttask = {promise, controller, readers: 0};\n\\t\\tpending.set(key, task);\n\\t\\tconst owned = task;\n\\t\\tconst cleanup = () => { if (pending.get(key) === owned) pending.delete(key); };\n\\t\\tvoid promise.then(cleanup, cleanup);\n\\t}\n\\tconst active = task;\n\\tactive.readers++;\n\\treturn new Promise<Pcm>((resolve, reject) => {\n\\t\\tlet done = false;\n\\t\\tconst release = () => {\n\\t\\t\\tif (done) return false;\n\\t\\t\\tdone = true; signal?.removeEventListener(\"abort\", abort);\n\\t\\t\\tactive.readers--;\n\\t\\t\\tif (!active.readers && pending.get(ke",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-e617f131-a1cb-4066-aa06-6729c8ae1a98"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:59:05.072Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -9,6 +9,7 @@ mod auto_edit;
 mod podcast;
 mod presentation;
 mod quality;
+mod replacement;
 mod review;
 pub(super) use podcast::reference::Region as PodcastReferenceRegion;
 use quality::{AudioEvidence, AudioGaps, QualityReport};
@@ -675,7 +676,7 @@ pub(super) fn register_classic_takes(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.takes.edit",
         "Assemble or select smart takes",
-        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection preserves uniform framing and caption-position edits, rejecting structural timeline/bookmark changes. cleanSilence analyzes archived source audio, trims only verified pauses in scoped take groups and retains every alternative. New assemblies clean verified internal pauses automatically; legacy assemblies retain their timing until explicit cleanup. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
+        "Atomically apply a semantic story plan or select a group's alternative, including multi-cut alternatives of unequal duration. Plan groups are in narrative order, selected indexes are recommendations, parts reference inclusive word IDs from takes.prepare, discarded ranges require reasons, and every word must be accounted for. No AI/network inside this capability. Retains immutable source tracks/bookmarks and all alternatives in scene.takeAssembly; no source files deleted. Version 2 preserves caption word clocks and edit boundaries, prefers continuous fluent alternatives, coalesces consecutive parts, and extends speech-safe handles. Optional bounded clip-local audioEvidence frames use the shared conservative silence analyzer; only compact quiet ranges and quality warnings are persisted. Unverified boundaries are reported, not claimed acoustically safe. Rebuilds transcript/captions, retimed trims, animation slices and synchronized tracks; ripples following material. Selection replaces surviving group clips locally after structural edits, maps retained source ranges to the alternative by word alignment, and preserves deleted material, unrelated edits and bookmarks. cleanSilence analyzes archived source audio, trims only verified pauses in scoped take groups and retains every alternative. New assemblies clean verified internal pauses automatically; legacy assemblies retain their timing until explicit cleanup. Explicit project/scene/revision; registry idempotency, dry run, cancellation, transactions and Undo/Redo. Read state through app.state.read.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -699,11 +700,42 @@ pub(super) fn register_classic_takes(
                             .ok_or_else(|| invalid("Scene not found"))?
                             .clone();
                         let canvas = classic.document["settings"]["canvasSize"].clone();
+                        let mut local_selection = None;
                         let presentation = if scene["takeAssembly"].is_object() {
                             let old: Assembly =
                                 serde_json::from_value(scene["takeAssembly"].clone())
                                     .map_err(|_| invalid("Invalid take assembly"))?;
-                            Some(presentation::capture(&old, &scene, &canvas, &context)?)
+                            match presentation::capture(&old, &scene, &canvas, &context) {
+                                Ok(patches) => Some(patches),
+                                Err(CapabilityError::Conflict(_))
+                                    if matches!(
+                                        input.change,
+                                        Change::Select { .. } | Change::CleanSilence { .. }
+                                    ) =>
+                                {
+                                    let groups = match &input.change {
+                                        Change::Select { group_index, .. } => vec![*group_index],
+                                        Change::CleanSilence { group_indexes, .. } => group_indexes
+                                            .clone()
+                                            .unwrap_or_else(|| (0..old.plan.groups.len()).collect())
+                                            .into_iter()
+                                            .filter(|group| {
+                                                arr(&scene["tracks"]["main"]["elements"])
+                                                    .iter()
+                                                    .any(|e| {
+                                                        e["takeGroup"]["assemblyId"] == old.id
+                                                            && e["takeGroup"]["groupIndex"].as_u64()
+                                                                == Some(*group as u64)
+                                                    })
+                                            })
+                                            .collect(),
+                                        _ => unreachable!(),
+                                    };
+                                    local_selection = Some((old, groups));
+                                    None
+                                }
+                                Err(error) => return Err(error),
+                            }
                         } else {
                             None
                         };
@@ -848,10 +880,15 @@ pub(super) fn register_classic_takes(
                         );
                         let mut fresh =
                             || classic_duplicate::fresh(document, &mut occupied, "take");
-                        let (mut tracks, bookmarks) =
+                        let (mut tracks, mut bookmarks) =
                             render(&assembly, &words, start, end, &canvas, &mut fresh, &context)?;
                         if let Some(patches) = presentation {
                             presentation::apply(&mut tracks, patches);
+                        }
+                        if let Some((old, groups)) = local_selection {
+                            (tracks, bookmarks) = replacement::apply(
+                                &old, &groups, &scene, &tracks, &canvas, &mut fresh, &context,
+                            )?;
                         }
                         assembly.applied_digest = digest(&tracks, &bookmarks);
                         let classic = classic_scenes::classic_target(document, &input.project_id)?;

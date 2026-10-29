@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "60a56d568e119eb0ccc82a9c24674c151dac005eff2240ef20d60d969ca74bb4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:33.780Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git sparse-checkout add '/.dip/events/_activity/' '/classic/scripts/test-earshot-runtime.mjs'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-98f462d5-9f76-465c-b062-8b64e747d4f4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:34.244Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1b14b05788c48a977b7ad2098527bd94e372d20b4ab524e97ef3f4f968ea28e0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T05:00:14.335Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '25,82p' classic/apps/web/src/export/pcm-file.ts\nsed -n '1,85p' classic/apps/web/src/export/audio-source-windows.ts\nsed -n '175,205p' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-93594577-4968-4511-bbfe-2219b4b0620c"
+      },
+      {
+        "at": "2026-10-29T05:00:14.552Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_4c8f19b3839cc7b17d301abace409b3dfaa8bf42dae7898b8890aa1e3dd5f140",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "sed -n '25,82p' classic/apps/web/src/export/pcm-file.ts\nsed -n '1,85p' classic/apps/web/src/export/audio-source-windows.ts\nsed -n '175,205p' classic/apps/web/src/export/audio-stream.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-93594577-4968-4511-bbfe-2219b4b0620c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:00:15.123Z",
+  "parents": [],
+  "branch": "main"
+}

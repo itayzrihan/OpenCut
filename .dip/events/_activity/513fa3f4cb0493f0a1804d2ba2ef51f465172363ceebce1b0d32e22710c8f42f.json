@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "513fa3f4cb0493f0a1804d2ba2ef51f465172363ceebce1b0d32e22710c8f42f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:46:52.412Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "/tmp/opencut-earshot-research-venv/bin/pip install numpy scipy pytest",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-6f99cdda-e67c-455c-adee-ac25fe252b71"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:46:53.414Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "9c0d32220fcd1430b1a7cc7931a187b7319daf54692c8eb3242b4b735a507f0b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T05:08:43.832Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cp /tmp/opencut-earshot-synthesis/classic/apps/web/src/earshot/types.ts classic/apps/web/src/earshot/types.ts\nsed -n '1,115p' classic/apps/web/src/earshot/audio.ts\nsed -n '1,140p' classic/apps/web/src/wasm/index.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-7f55f2b5-c1a6-45bf-ba49-b97c3438ce5d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:08:44.323Z",
+  "parents": [],
+  "branch": "main"
+}

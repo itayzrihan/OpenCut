@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "30845ddb6d1468a0d9174ca1a05fae1856b1daa5bf46d554a8290c0f743d9ab6",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:59:17.767Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\np='classic/apps/web/src/earshot/catalog.ts';s=open(p).read().replace('catalog.map((row)', '(catalog as unknown as EarshotSound[]).map((row)');open(p,'w').write(s)\nPY\nmkdir -p crates/editor-api/tests/fixtures\ncp /tmp/opencut-earshot-canonical/crates/editor-api/tests/fixtures/earshot-source-contract.json crates/editor-api/tests/fixtures/earshot-source-contract.json\ncat > classic/apps/web/src/earshot/catalog.test.ts <<'EOF'\nimport { describe, expect, test } from 'bun:test';\nimport fs from 'node:fs';\nimport { EARSHOT_SOUNDS, createEarshotSpec, getEarshotSound } from './catalog';\nimport { validateEarshotSpec } from './types';\nimport { EARSHOT_SANDBOX_HTML } from './runtime';\n\ndescribe('Earshot recipe contract', () => {\n  test('every one of the 252 shipped presets produces a canonical valid recipe', () => {\n    expect(EARSHOT_SOUNDS).toHaveLength(252);\n    expect(new Set(EARSHOT_SOUNDS.map(s => s.id)).size).toBe(252);\n    for (const sound of EARSHOT_SOUNDS) {\n      const spec = createEarshotSpec(sound.id);\n      expect(validateEarshotSpec(spec)).toEqual(spec);\n      expect(getEarshotSound(sound.id)).toBe(sound);\n      expect(sound.sourcePath.startsWith('earshot/')).toBe(true);\n    }\n  });\n  test('the browser validator agrees with the shared Rust capability contract fixture', () => {\n    const fixture = JSON.parse(fs.readFileSync(new URL('../../../../../crates/editor-api/tests/fixtures/earshot-source-contract.json', import.meta.url), 'utf8'));\n    for (const { patch, valid } of fixture.cases) {\n      let accepted = true;\n      try { validateEarshotSpec({ ...fixture.base, ...patch }); } catch { accepted = false; }\n      expect(accepted, JSON.stringify(patch)).toBe(valid);\n    }\n  });\n  test('rejects oversized code, excessive parameters, null echo and non-finite inputs', () => {\n    const base = createEarshotSpec('ui_pop/soft');\n    for (const patch of [{ duration: NaN }, { sourceCode: 'x'.repeat(32769) }, { sourceCode: 'א'.repeat(17000) }, { parameters: Obj",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-399bdf47-345f-4448-bb14-8c9c24772050"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:59:18.051Z",
+  "parents": [],
+  "branch": "main"
+}

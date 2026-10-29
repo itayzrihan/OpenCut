@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a5b8237303df100938a81ec72e14ce67cd0e42895ab7565f9b8a78dcb9f7570e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T05:02:22.913Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_e26d7af0db664a30b96f25e1b83e863796ab9442731bdb40396152e38b3d0f30",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/.codex/worktrees/deepseek-video-agent/PoCut/classic/apps/web/src/editor-agent/__tests__/harness-fetch-fixture.ts"
+        ],
+        "changeHash": "81d0c0da46ff9ba6f6c75a18267310710b6c18b3a10456ec703f72f37c8babfd",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-6a5e1239-af47-4ca2-8d86-f012c504237c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T05:02:22.955Z",
+  "parents": [],
+  "branch": "main"
+}

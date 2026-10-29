@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f41573aec862623724d38e5fd3454ca36e01e992dbc8ad13e28d02bb9afafc31",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T04:56:29.377Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/test-earshot-runtime.mjs > /tmp/earshot-wasm-test.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-ec963f08-472d-4168-b091-0fb6c602cf3e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T04:56:30.003Z",
+  "parents": [],
+  "branch": "main"
+}
