@@ -109,12 +109,15 @@ function rootAt(cwd) {
   return root;
 }
 function sharedPortable(root) {
-  const run = (args) =>
-    execFileSync("git", ["-C", root, ...args], {
+  const run = (args, options = {}) => {
+    const value = execFileSync("git", ["-C", root, ...args], {
       encoding: "utf8",
       maxBuffer: 256 * 1024 ** 2,
-      env: { ...process.env, GIT_TRACE2_EVENT: "0" },
-    }).trim();
+      ...options,
+      env: { ...process.env, GIT_TRACE2_EVENT: "0", ...(options.env || {}) },
+    });
+    return options.encoding === null ? value : value.trim();
+  };
   const marker = path.join(root, ".git"),
     gitDir = fs.statSync(marker).isDirectory()
       ? marker
@@ -181,18 +184,70 @@ function sharedPortable(root) {
       throw Error(
         "Shared DIP history is unavailable; fetch dip/state or restore the local store",
       );
-    const names = run([
-      "ls-tree",
-      "-r",
-      "--name-only",
-      ref,
-      "--",
-      ".dip/events",
-    ])
+    const entries = run(["ls-tree", "-r", ref, "--", ".dip/events"])
       .split("\n")
-      .filter((n) => n.endsWith(".json"));
-    for (const name of names)
-      events.push(JSON.parse(run(["show", ref + ":" + name])));
+      .filter(Boolean)
+      .map((line) => {
+        const [meta, name] = line.split("\t");
+        return { name, oid: meta.split(" ")[2] };
+      });
+    const oids = entries.map((e) => e.oid);
+    if (oids.length) {
+      const missing = run(
+        ["cat-file", "--batch-check=%(objectname) %(objecttype)"],
+        { input: oids.join("\n") + "\n", env: { GIT_NO_LAZY_FETCH: "1" } },
+      )
+        .split("\n")
+        .filter((line) => line.endsWith(" missing"))
+        .map((line) => line.split(" ")[0]);
+      if (missing.length) {
+        const remote = run([
+          "config",
+          "--get-regexp",
+          "^remote\\..*\\.promisor$",
+        ])
+          .split("\n")
+          .map((line) => line.match(/^remote\.(.+)\.promisor\s+true$/)?.[1])
+          .find(Boolean);
+        if (!remote) throw Error("Missing portable metadata objects");
+        for (let i = 0; i < missing.length; i += 512)
+          run(
+            [
+              "-c",
+              "fetch.negotiationAlgorithm=noop",
+              "fetch",
+              "--no-tags",
+              "--no-write-fetch-head",
+              "--recurse-submodules=no",
+              "--no-filter",
+              "--stdin",
+              remote,
+            ],
+            {
+              input: missing.slice(i, i + 512).join("\n") + "\n",
+              timeout: 45000,
+            },
+          );
+      }
+      const raw = run(["cat-file", "--batch"], {
+        input: oids.join("\n") + "\n",
+        encoding: null,
+      });
+      let offset = 0;
+      for (const entry of entries) {
+        const end = raw.indexOf(10, offset),
+          header = raw.subarray(offset, end).toString().split(" "),
+          size = Number(header[2]);
+        if (header[1] !== "blob" || !Number.isSafeInteger(size))
+          throw Error("Invalid portable metadata blob");
+        offset = end + 1;
+        const e = JSON.parse(raw.subarray(offset, offset + size));
+        offset += size + 1;
+        if (entry.name !== `.dip/events/${e.taskId}/${e.eventId}.json`)
+          throw Error("Portable event path mismatch");
+        events.push(e);
+      }
+    }
   }
   const spool = path.join(dir, "portable");
   if (fs.existsSync(spool))
@@ -204,10 +259,29 @@ function sharedPortable(root) {
         ),
       );
     }
+  const headText = fs.readFileSync(path.join(gitDir, "HEAD"), "utf8").trim(),
+    ref = headText.startsWith("ref: ") ? headText.slice(5) : null;
+  let codeHead = ref ? null : headText;
+  if (ref) {
+    const loose = path.join(common, ref);
+    if (fs.existsSync(loose)) codeHead = fs.readFileSync(loose, "utf8").trim();
+    else if (fs.existsSync(path.join(common, "packed-refs"))) {
+      const line = fs
+        .readFileSync(path.join(common, "packed-refs"), "utf8")
+        .split("\n")
+        .find((line) => line.endsWith(" " + ref));
+      if (line) codeHead = line.split(" ")[0];
+    }
+  }
   return {
     common,
     dir,
     spool,
+    origin: {
+      worktree: root,
+      branch: ref ? ref.replace(/^refs\/heads\//, "") : "detached",
+      head: codeHead,
+    },
     events: [...new Map(events.map((e) => [e.eventId, e])).values()],
   };
 }
@@ -417,6 +491,10 @@ function write(root, id, type, payload, actor, parents) {
       branch: "portable",
     };
   const shared = sharedPortable(root);
+  if (shared) {
+    event.branch = shared.origin.branch;
+    event.origin = shared.origin;
+  }
   const file = shared
       ? safe(shared.common, `dip/portable/${eventId}.json`, true)
       : safe(root, `.dip/events/${identity(id)}/${eventId}.json`, true),
