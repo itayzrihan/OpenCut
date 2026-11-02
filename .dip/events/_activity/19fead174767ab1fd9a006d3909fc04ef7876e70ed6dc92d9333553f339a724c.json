@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19fead174767ab1fd9a006d3909fc04ef7876e70ed6dc92d9333553f339a724c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:51:03.697Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "rg -l 'earshot-code-audio' .dip/events -g '*.json' | head -6; ps -o pid,ppid,etime,comm -p 29981,32471,32481",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-3b83855e-b0e4-4e5c-824e-6784f0e50b66"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:51:04.419Z",
+  "parents": [],
+  "branch": "main"
+}

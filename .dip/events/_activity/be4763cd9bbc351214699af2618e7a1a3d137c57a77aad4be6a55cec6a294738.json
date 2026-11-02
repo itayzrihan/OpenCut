@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "be4763cd9bbc351214699af2618e7a1a3d137c57a77aad4be6a55cec6a294738",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T10:05:09.093Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_482b06eb075acb67bdcd3ae9b55acce32d32ec6fe1f03440c3a4aa7216b0f8da",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "gh run list --repo itayzrihan/OpenCut --branch main --commit a387a78b29ebc5164349b60faae4e865952ceb0c --limit 10 --json name,status,conclusion,url",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-33645538-1fe2-4cf7-8626-1c7aa5ba986b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T10:05:09.574Z",
+  "parents": [],
+  "branch": "main"
+}

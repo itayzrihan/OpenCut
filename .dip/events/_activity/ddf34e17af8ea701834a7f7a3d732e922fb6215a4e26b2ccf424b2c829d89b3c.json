@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ddf34e17af8ea701834a7f7a3d732e922fb6215a4e26b2ccf424b2c829d89b3c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:43:40.202Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,json\nbase=json.loads(subprocess.check_output(['git','show','46c71db4:.dip/config.json'],text=True))['verification']\nfor ref in ['main','codex/earshot-sound-effects','codex/deepseek-video-agent']:\n value=json.loads(subprocess.check_output(['git','show',ref+':.dip/config.json'],text=True))['verification']\n print(ref, json.dumps({k:v for k,v in value.items() if base.get(k)!=v},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-de28e8b5-730b-4f8d-b40f-335ccc5f3e36"
+      },
+      {
+        "at": "2026-10-29T07:43:40.353Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,json\nbase=json.loads(subprocess.check_output(['git','show','46c71db4:.dip/config.json'],text=True))['verification']\nfor ref in ['main','codex/earshot-sound-effects','codex/deepseek-video-agent']:\n value=json.loads(subprocess.check_output(['git','show',ref+':.dip/config.json'],text=True))['verification']\n print(ref, json.dumps({k:v for k,v in value.items() if base.get(k)!=v},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-de28e8b5-730b-4f8d-b40f-335ccc5f3e36"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:43:41.108Z",
+  "parents": [],
+  "branch": "main"
+}

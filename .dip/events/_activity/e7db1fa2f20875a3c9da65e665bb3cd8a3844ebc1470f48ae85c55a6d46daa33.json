@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e7db1fa2f20875a3c9da65e665bb3cd8a3844ebc1470f48ae85c55a6d46daa33",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-11-02T04:43:07.772Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/accounts/legitate-oidc.ts",
+          "classic/apps/web/src/accounts/legitate-oidc.test.ts",
+          "classic/apps/web/src/accounts/legitate-server.ts",
+          "classic/apps/web/src/accounts/legitate-server.test.ts",
+          "classic/apps/web/src/accounts/legitate-session.test.ts",
+          "classic/apps/web/src/app/api/accounts/legitate/start/route.ts",
+          "classic/apps/web/src/app/api/accounts/legitate/callback/route.ts",
+          "classic/apps/web/src/app/api/accounts/legitate/connect/route.ts",
+          "classic/apps/web/src/accounts/storage-settings.tsx",
+          "classic/apps/web/src/accounts/gate.tsx"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "4007e72a-4577-48ef-8782-64afaa72baf6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:43:07.775Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c325c2004ace932760a4a41af9a37e36ba48982a6e12d6a2a360a5c526e6ef62",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:57:40.932Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node .local/take-silence-current-2026-10-29/activate.mjs",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-c37e1f13-ad31-4c91-bf38-48134b6befac"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:57:41.096Z",
+  "parents": [],
+  "branch": "main"
+}

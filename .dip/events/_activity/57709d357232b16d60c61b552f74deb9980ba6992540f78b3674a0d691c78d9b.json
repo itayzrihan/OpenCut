@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "57709d357232b16d60c61b552f74deb9980ba6992540f78b3674a0d691c78d9b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T05:40:56.488Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain=v1 --untracked-files=all | rg -v '^...\\.dip/' | wc -l",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-8ab00b1e-1a6e-46bb-a5c0-5166fc9523b2"
+      },
+      {
+        "at": "2026-11-02T05:40:56.546Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain=v1 --untracked-files=all | awk 'substr($0,4,5)==\".dip/\" && substr($0,4,12)!=\".dip/events/\" {print}' | head -100",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-c30b8297-a530-4ce1-857a-dd23094c8e21"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T05:40:57.342Z",
+  "parents": [],
+  "branch": "main"
+}

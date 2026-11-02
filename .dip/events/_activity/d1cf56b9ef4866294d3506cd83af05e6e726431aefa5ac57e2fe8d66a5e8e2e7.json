@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d1cf56b9ef4866294d3506cd83af05e6e726431aefa5ac57e2fe8d66a5e8e2e7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T07:59:08.264Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess as sp,json,hashlib,zipfile,datetime\nr=Path.cwd(); target=sp.check_output(['git','rev-parse','codex/earshot-deepseek-integration'],text=True).strip(); head=sp.check_output(['git','rev-parse','HEAD'],text=True).strip()\ndef names(*args):return set(x.decode() for x in sp.check_output(['git',*args,'-z']).split(b'\\0') if x)\nstaged=names('diff','--cached','--name-only'); unstaged=names('diff','--name-only'); unknown=names('ls-files','--others','--exclude-standard'); incoming=names('diff','--name-only',head,target)\nprint(json.dumps({'head':head,'target':target,'staged':len(staged),'unstaged':len(unstaged),'untracked':len(unknown),'dirtyIncoming':sorted((staged|unstaged)&incoming),'untrackedIncoming':sorted(unknown&incoming)},indent=2))\nexpected={'classic/rust/crates/timeline/src/full_auto_edit.rs','classic/rust/crates/timeline/src/timeline.rs'}\nassert ((staged|unstaged)&incoming)==expected\nassert not unknown&incoming\nfor p in expected:\n assert sp.check_output(['git','show',f'7ce4e749:{p}'])==sp.check_output(['git','show',f'{target}:{p}'])\n prepared=Path('/tmp/opencut-main-format-merge-g1bep1p5')/(Path(p).name+'.resolved')\n assert prepared.exists()\nbackup=r/'.local'/('before-earshot-main-ff-'+datetime.datetime.now().strftime('%Y%m%d-%H%M%S')); backup.mkdir()\npaths=staged|unstaged|unknown; files={}\nwith zipfile.ZipFile(backup/'local-files.zip','w',compression=zipfile.ZIP_DEFLATED) as z:\n for p in sorted(paths):\n  q=r/p\n  if q.is_file():\n   b=q.read_bytes(); files[p]=hashlib.sha256(b).hexdigest();z.writestr(p,b)\n  else:files[p]=None\n(backup/'index-entries').write_bytes(sp.check_output(['git','ls-files','--stage','-z']))\nfor kind,args in [('staged',['--cached']),('unstaged',[])]: (backup/(kind+'.patch')).write_bytes(sp.check_output(['git','diff','--binary',*args]))\n(backup/'index').write_bytes(Path(sp.check_output(['git','rev-parse','--git-path','index'],text=True).strip()).read_bytes())\n(backup/'manifest.json').write_",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-6df7fa1f-6c5e-4faa-b911-4956a8efc389"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:59:09.218Z",
+  "parents": [],
+  "branch": "main"
+}

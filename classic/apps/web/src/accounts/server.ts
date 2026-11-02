@@ -36,6 +36,7 @@ interface Credential extends LocalAccount {
 interface Session {
 	accountId: string;
 	expiresAt: number;
+	provider?: "legitate";
 }
 export const accountScope = new AsyncLocalStorage<LocalAccount>();
 const failures = new Map<string, { count: number; until: number }>();
@@ -211,7 +212,7 @@ function sessionPath(token: string) {
 function publicAccount(value: Credential): LocalAccount {
 	return { id: value.id, displayName: value.displayName, login: value.login };
 }
-async function newSession(account: LocalAccount) {
+export async function newSession(account: LocalAccount, provider?: "legitate") {
 	const token = randomBytes(32).toString("hex");
 	await mkdir(join(accountsRoot(), "sessions"), { recursive: true });
 	await writeFile(
@@ -220,6 +221,7 @@ async function newSession(account: LocalAccount) {
 			accountId: account.id,
 			expiresAt: Date.now() + SESSION_MS,
 			account,
+			...(provider ? { provider } : {}),
 		}),
 		{ flag: "wx", mode: 0o600 },
 	);
@@ -483,7 +485,8 @@ export async function authenticateAccount(
 	if (
 		session.expiresAt <= Date.now() ||
 		!/^[a-f0-9-]{36}$/.test(session.accountId) ||
-		session.account.id !== session.accountId
+		session.account.id !== session.accountId ||
+		(process.env.OPENCUT_LEGITATE_ONLY === "true" && session.provider !== "legitate")
 	)
 		throw new Error("Session expired. Sign in again");
 	if (!(await importLocked(session.accountId)))

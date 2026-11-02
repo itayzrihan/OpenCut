@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d06cf7be9036fefa2573c1336901fdad08075ff97a419f38dba10fa02d055cd",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:21:17.854Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__vizu_gateway_veICerGUJ89ENfZ_YyRk_aOn8M_iwBvxXdIDgziw__itaymac__run_root_command",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport yaml\np='/etc/metrix/codeip-preview/control/authelia-configuration-4183d9355dd3.yml'\nc=yaml.safe_load(open(p)); oidc=c.get('identity_providers',{}).get('oidc',{}); print('OIDC enabled:',bool(oidc)); print('clients:',[{k:v for k,v in x.items() if k in ('client_id','redirect_uris','public','token_endpoint_auth_method','authorization_policy','require_pkce')} for x in oidc.get('clients',[])]); print('policy enabled:', c.get('legitate',{}).get('enabled')); print('policy mappings:',c.get('legitate',{}).get('oidc_clients'))\nPY\nls -la /opt/metrix/platform/source/infra/compose",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-e0b3eab3-efb5-4f72-9826-879c569f1f9c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:21:18.099Z",
+  "parents": [],
+  "branch": "main"
+}

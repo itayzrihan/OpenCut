@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "90136391a82953912abcb3c0096328b99d303a81ee4693387bebf19d574726ba",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:37:56.310Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 15 -sS -w '\\nHTTP %{http_code}\\n' -X POST -H 'Origin: http://localhost:3000' -H 'Content-Type: application/json' --data '{\"action\":\"login\",\"login\":\"example\",\"password\":\"irrelevant\"}' http://localhost:3000/api/accounts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-01dfda77-a731-4061-8060-bd464e7b7a87"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:37:57.009Z",
+  "parents": [],
+  "branch": "main"
+}

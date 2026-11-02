@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "264e2baf49c2ce8b62cc3d0f72345586477173c5134cfafb1f4ec4497cb82bbf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:53:50.107Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport os,pathlib,subprocess,tempfile,hashlib,json\nroot=pathlib.Path(tempfile.mkdtemp(prefix='opencut-ff-preservation-',dir='/tmp'))\nenv={**os.environ,'GIT_OPTIONAL_LOCKS':'0'}\ndef git(*args,check=True):\n p=subprocess.run(['git','-C',str(root),*args],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)\n if check and p.returncode:raise RuntimeError((args,p.stdout,p.stderr))\n return p\ndef put(path,text):\n p=root/path;p.parent.mkdir(parents=True,exist_ok=True);p.write_text(text)\ndef relevant(path):return path.startswith(('.activity/','docs/')) or path in ['rules.md','collision.txt']\ndef state():\n status=[x for x in git('status','--porcelain=v1','--untracked-files=all').stdout.splitlines() if relevant(x[3:])]\n index=[x for x in git('ls-files','--stage').stdout.splitlines() if relevant(x.split('\\t',1)[1])]\n hashes={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in root.rglob('*') if p.is_file() and '.git' not in p.relative_to(root).parts and relevant(str(p.relative_to(root)))}\n return status,index,hashes\n\ngit('init','-b','main');git('config','user.name','Preservation Test');git('config','user.email','test@localhost')\nfor i in range(64):put(f'.activity/events/{i}.json',json.dumps({'event':i})+'\\n')\nput('.activity/integration.json','{\"stage\":\"base\"}\\n');put('rules.md','baseline instructions\\n')\nput('src/full_auto_edit.rs','fn modes(){match n{1=>old(),_=>rest()}}\\n')\nput('src/timeline.rs','pub use transcription::*;\\npub use restore::*;\\n')\ngit('add','.');git('commit','-m','base')\nbase=git('rev-parse','HEAD').stdout.strip();git('switch','-c','integration')\nput('src/full_auto_edit.rs','fn modes() {\\n    match n {\\n        1 => old(),\\n        2 => sound_effects(),\\n        _ => rest(),\\n    }\\n}\\n')\nput('src/timeline.rs','mod earshot;\\npub use transcription::*;\\npub use restore::*;\\npub use earshot::*;\\n')\nput('new-feature.rs','new feature\\n');put('collision.txt','incoming data\\n')\ngit('add','.');git('commit','-m','integ",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-1bc844af-c10a-4247-abb5-5bb033417437"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:53:50.602Z",
+  "parents": [],
+  "branch": "main"
+}

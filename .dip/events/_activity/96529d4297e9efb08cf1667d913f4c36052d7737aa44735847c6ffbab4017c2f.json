@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "96529d4297e9efb08cf1667d913f4c36052d7737aa44735847c6ffbab4017c2f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T08:02:03.333Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/public/earshot/runtime"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "f55acb6f-115e-4ccf-ac9a-dca65d81d651"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:02:03.334Z",
+  "parents": [],
+  "branch": "main"
+}

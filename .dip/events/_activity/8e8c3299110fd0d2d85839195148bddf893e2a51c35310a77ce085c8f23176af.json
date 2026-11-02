@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8e8c3299110fd0d2d85839195148bddf893e2a51c35310a77ce085c8f23176af",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-11-02T04:22:47.567Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/src/app/api/accounts/legitate",
+          "classic/apps/web/src/app/api/accounts/legitate/start",
+          "classic/apps/web/src/app/api/accounts/legitate/start/route.ts",
+          "classic/apps/web/src/app/api/accounts/legitate/callback",
+          "classic/apps/web/src/app/api/accounts/legitate/callback/route.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1ab3e307-3a69-4f53-887b-df2d0b644b9d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:22:47.572Z",
+  "parents": [],
+  "branch": "main"
+}

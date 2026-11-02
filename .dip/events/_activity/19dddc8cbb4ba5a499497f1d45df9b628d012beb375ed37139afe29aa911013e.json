@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "19dddc8cbb4ba5a499497f1d45df9b628d012beb375ed37139afe29aa911013e",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T07:42:02.564Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport os\nbase=Path('/Users/itayzrihan/.codex/worktrees/deepseek-video-agent/PoCut')\nroot=Path.cwd()\n(root/'classic/node_modules').symlink_to(base/'classic/node_modules',target_is_directory=True)\nsrc=base/'classic/apps/web/node_modules'; dst=root/'classic/apps/web/node_modules';dst.mkdir(exist_ok=True)\nfor p in src.iterdir():\n if p.name.startswith('@') and p.is_dir() and not p.is_symlink():\n  (dst/p.name).mkdir(exist_ok=True)\n  for q in p.iterdir(): (dst/p.name/q.name).symlink_to(q.resolve(),target_is_directory=True)\n elif p.name not in ('opencut-wasm','opencut-editor-runtime-wasm'):\n  (dst/p.name).symlink_to(p.resolve(),target_is_directory=p.is_dir())\nfor pkg,folder in [('opencut-wasm','wasm'),('opencut-editor-runtime-wasm','editor-runtime-wasm')]:\n (dst/pkg).symlink_to(root/'classic/rust'/folder/'pkg',target_is_directory=True)\n(root/'.local').mkdir(exist_ok=True)\n(root/'.local/earshot-cargo-target').symlink_to(Path('/Users/itayzrihan/.codex/worktrees/earshot-sound-effects/PoCut/.local/earshot-cargo-target'),target_is_directory=True)\nprint('Reused installed dependencies with workspace-local WASM resolution')\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bd774bf7-7ab7-4308-977a-e33497faddcd"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:42:02.745Z",
+  "parents": [],
+  "branch": "main"
+}

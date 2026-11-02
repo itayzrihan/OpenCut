@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ea548041382f8a8638824f2d157f13cfb6d5dc4d81f131cbca7937f07e7c9c13",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:54:13.149Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor f in Path('.dip/events/task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d').glob('*.json'):\n d=json.loads(f.read_text())\n if d['type']=='task.evidence':\n  print(f)\n  print(json.dumps({k:v for k,v in d['payload'].items() if k not in ['summary','snapshot']},indent=2))\nPY\ndip task get --id task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-22ebfff1-8713-4e23-a6d6-05e69630dfe2"
+      },
+      {
+        "at": "2026-10-29T06:54:13.618Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor f in Path('.dip/events/task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d').glob('*.json'):\n d=json.loads(f.read_text())\n if d['type']=='task.evidence':\n  print(f)\n  print(json.dumps({k:v for k,v in d['payload'].items() if k not in ['summary','snapshot']},indent=2))\nPY\ndip task get --id task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-22ebfff1-8713-4e23-a6d6-05e69630dfe2"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:54:15.421Z",
+  "parents": [],
+  "branch": "main"
+}

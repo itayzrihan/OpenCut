@@ -11,18 +11,19 @@ import {
 } from "@/accounts/server";
 import { readBoundedBody } from "@/accounts/request-body";
 import { importAccountIdentity } from "@/accounts/identity-transfer";
+import { legitateClientId } from "@/accounts/legitate-server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
 	try {
 		const account = await authenticateAccount(request);
 		return Response.json(
-			{ account, storageBusy: await accountDataLocked(account.id) },
+			{ account, storageBusy: await accountDataLocked(account.id), legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true" },
 			{ headers: { "Cache-Control": "no-store" } },
 		);
 	} catch {
 		return Response.json(
-			{ account: null },
+			{ account: null, legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true" },
 			{ headers: { "Cache-Control": "no-store" } },
 		);
 	}
@@ -36,6 +37,8 @@ export async function POST(request: Request) {
 			await readBoundedBody({ request: request, maximumBytes: 16 * 1024 }),
 		);
 		const body = JSON.parse(text);
+		if (process.env.OPENCUT_LEGITATE_ONLY === "true" && body.action !== "logout")
+			return Response.json({ error: "Sign in through Legitate" }, { status: 403 });
 		if (body.action === "change-password") {
 			return await withAccount(async () => {
 				if (

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "8ff4d33c4960a51e06e9d49db1de7de69fc1947a07909bfbc9ee9f7c9f744119",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:24:58.407Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__vizu_gateway_veICerGUJ89ENfZ_YyRk_aOn8M_iwBvxXdIDgziw__itaymac__run_root_command",
+        "branch": "main",
+        "command": "img=$(docker inspect metrix-platform-authelia-1 --format '{{.Config.Image}}'); docker run --rm --volumes-from metrix-platform-authelia-1 -v /tmp/opencut-legitate-oidc-review.yml:/tmp/review.yml:ro -e X_AUTHELIA_CONFIG_FILTERS=template -e AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET_FILE=/run/secrets/authelia_jwt_secret -e AUTHELIA_SESSION_SECRET_FILE=/run/secrets/authelia_session_secret -e AUTHELIA_STORAGE_ENCRYPTION_KEY_FILE=/run/secrets/authelia_storage_encryption_key --entrypoint /app/authelia \"$img\" config validate --config /tmp/review.yml",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-f3da98c5-d4f6-45e2-9af9-3d0365d71735"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:24:58.938Z",
+  "parents": [],
+  "branch": "main"
+}

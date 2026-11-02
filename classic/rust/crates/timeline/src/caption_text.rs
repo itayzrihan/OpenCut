@@ -2,7 +2,7 @@
 //! wrapping, geometry, word timing and serializable clip state are shared policy.
 use super::caption_sync::{js_whitespace, strip_caption_punctuation};
 use serde::Serialize;
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use time::MediaTime;
 
 #[derive(Serialize)]

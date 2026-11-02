@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89f2d5dc96e956539615952294f8d4d6af475dcfd5361285b8cf35d4a5812cb7",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:10:06.093Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_dee47e200b027c874a95bcd5e0a9afb1b8062c9a3dda66d6f9bf968460db66de",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "mkdir -p \"$HOME/Movies/OpenCut Accounts/data/2df9a596-0b6e-4d1f-9ca3-f41f26bcf1d4\" && rsync -a --exclude='*.lock' \"$HOME/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects\" \"$HOME/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/project-fonts\" \"$HOME/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/shared-library\" \"$HOME/Movies/OpenCut Accounts/data/2df9a596-0b6e-4d1f-9ca3-f41f26bcf1d4/\"",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-0961648e-4903-442b-aeb3-8d9e00955e3c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:10:06.197Z",
+  "parents": [],
+  "branch": "main"
+}

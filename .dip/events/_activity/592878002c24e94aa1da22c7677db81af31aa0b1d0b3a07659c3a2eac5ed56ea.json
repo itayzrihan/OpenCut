@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "eventId": "592878002c24e94aa1da22c7677db81af31aa0b1d0b3a07659c3a2eac5ed56ea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T07:57:44.175Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 18 .local/earshot-deepseek-integration-check.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-bd12be79-1cb9-4b53-8996-bd32f419ab80"
+      },
+      {
+        "at": "2026-10-29T07:57:44.217Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip task finish --help",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-93bc726a-033a-4d85-a6ce-288fca572ec2"
+      },
+      {
+        "at": "2026-10-29T07:57:44.218Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --cached --stat; git diff -- .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-77b99a66-bdfb-4062-b9f0-f16492b1a27f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:57:45.107Z",
+  "parents": [],
+  "branch": "main"
+}

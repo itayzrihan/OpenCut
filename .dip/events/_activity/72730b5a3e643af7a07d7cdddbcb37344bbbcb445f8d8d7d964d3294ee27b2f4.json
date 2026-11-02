@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "72730b5a3e643af7a07d7cdddbcb37344bbbcb445f8d8d7d964d3294ee27b2f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:43:16.408Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs --jobs=1 apps/web/src/accounts/legitate-oidc.test.ts apps/web/src/accounts/legitate-server.test.ts apps/web/src/accounts/legitate-session.test.ts apps/web/src/accounts/server.test.ts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-b3e575e2-ca02-4e62-9bb5-e75b4e9237cc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:43:16.781Z",
+  "parents": [],
+  "branch": "main"
+}

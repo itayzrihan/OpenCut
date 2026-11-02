@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "eventId": "229a52e30a1675134f15cb78026f77e6407deffda0102c3d3edafb6822b8bc99",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:21:04.277Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_0f366f3b96c30b40dbe2c340100dc3eff399934d534207646196881d78b038c3",
+        "tool": "mcp__dip__task_adopt",
+        "branch": "main",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-8ed9044c-47ab-4844-b622-09ab8ca56fd5"
+      },
+      {
+        "at": "2026-11-02T04:21:04.423Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__dip__task_adopt",
+        "branch": "main",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-8ed9044c-47ab-4844-b622-09ab8ca56fd5"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:21:05.072Z",
+  "parents": [],
+  "branch": "main"
+}

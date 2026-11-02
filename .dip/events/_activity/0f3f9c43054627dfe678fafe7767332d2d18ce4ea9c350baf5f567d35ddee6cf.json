@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "0f3f9c43054627dfe678fafe7767332d2d18ce4ea9c350baf5f567d35ddee6cf",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T05:01:05.192Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node - <<'NODE'\nconst fs=require('fs'),p=require('path'),crypto=require('crypto');const root=p.join(process.env.HOME,'Library/Application Support/OpenCut Local'),candidate=JSON.parse(fs.readFileSync(p.join(root,'candidate.json'),'utf8'));if(candidate.id!=='2026-11-02T04-55-12-530Z-a387a78b'||!fs.existsSync(p.join(candidate.appRoot,'server.js'))) throw Error('Verified candidate is unavailable');const backup=p.join(root,'legitate-cutover-backup-'+Date.now());fs.mkdirSync(backup,{mode:0o700});for(const n of ['current.json','previous.json','runtime.env']){let from=p.join(root,n);if(fs.existsSync(from))fs.copyFileSync(from,p.join(backup,n),fs.constants.COPYFILE_EXCL)};function write(name,value){const file=p.join(root,name),tmp=file+'.'+crypto.randomUUID()+'.tmp';fs.writeFileSync(tmp,value,{mode:0o600,flag:'wx'});fs.renameSync(tmp,file)};const current=fs.readFileSync(p.join(root,'current.json'));let runtime=fs.existsSync(p.join(root,'runtime.env'))?fs.readFileSync(p.join(root,'runtime.env'),'utf8'):'';runtime=runtime.split(/\\r?\\n/).filter(line=>!/^\\s*(?:export\\s+)?OPENCUT_LEGITATE_(CLIENT_ID|ONLY)\\s*=/.test(line)).join('\\n').replace(/\\n*$/,'');runtime+='\\nOPENCUT_LEGITATE_CLIENT_ID=opencut-local\\nOPENCUT_LEGITATE_ONLY=true\\n';write('previous.json',current);write('runtime.env',runtime);write('current.json',JSON.stringify(candidate,null,2));console.log(JSON.stringify({candidate:candidate.id,backup}));\nNODE",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-8f5e4d5e-7b01-43b0-be14-483cc3c13ebb"
+      },
+      {
+        "at": "2026-11-02T05:01:05.325Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node - <<'NODE'\nconst fs=require('fs'),p=require('path'),crypto=require('crypto');const root=p.join(process.env.HOME,'Library/Application Support/OpenCut Local'),candidate=JSON.parse(fs.readFileSync(p.join(root,'candidate.json'),'utf8'));if(candidate.id!=='2026-11-02T04-55-12-530Z-a387a78b'||!fs.existsSync(p.join(candidate.appRoot,'server.js'))) throw Error('Verified candidate is unavailable');const backup=p.join(root,'legitate-cutover-backup-'+Date.now());fs.mkdirSync(backup,{mode:0o700});for(const n of ['current.json','previous.json','runtime.env']){let from=p.join(root,n);if(fs.existsSync(from))fs.copyFileSync(from,p.join(backup,n),fs.constants.COPYFILE_EXCL)};function write(name,value){const file=p.join(root,name),tmp=file+'.'+crypto.randomUUID()+'.tmp';fs.writeFileSync(tmp,value,{mode:0o600,flag:'wx'});fs.renameSync(tmp,file)};const current=fs.readFileSync(p.join(root,'current.json'));let runtime=fs.existsSync(p.join(root,'runtime.env'))?fs.readFileSync(p.join(root,'runtime.env'),'utf8'):'';runtime=runtime.split(/\\r?\\n/).filter(line=>!/^\\s*(?:export\\s+)?OPENCUT_LEGITATE_(CLIENT_ID|ONLY)\\s*=/.test(line)).join('\\n').replace(/\\n*$/,'');runtime+='\\nOPENCUT_LEGITATE_CLIENT_ID=opencut-local\\nOPENCUT_LEGITATE_ONLY=true\\n';write('previous.json',current);write('runtime.env',runtime);write('current.json',JSON.stringify(candidate,null,2));console.log(JSON.stringify({candidate:candidate.id,backup}));\nNODE",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-8f5e4d5e-7b01-43b0-be14-483cc3c13ebb"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T05:01:05.820Z",
+  "parents": [],
+  "branch": "main"
+}

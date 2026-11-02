@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "f586e8c62ae27694c4c2486d4354388481a39608856da8d799182e98b33ce04f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:48:55.089Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -Ao pid,etime,pcpu,comm | rg 'rustc|cargo|wasm-pack|bun$'; lsof -a -c rustc -d cwd -Fn",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-39bb4c26-809f-46de-a97a-07adbed31365"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:48:55.360Z",
+  "parents": [],
+  "branch": "main"
+}

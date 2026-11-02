@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "eventId": "22da9661-21f0-4429-841c-8746c78dfeb4",
+  "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Verified live Legitate identity binding to the existing workspace, enabled and verified Legitate-only development login including sign-out and re-login, built and smoke-tested a separate local production candidate, and verified its password login is rejected. Awaiting the user to save the currently open production project before restarting.",
+    "remaining": [
+      {
+        "disposition": "required",
+        "summary": "After user saves the active production project, activate the verified candidate with Legitate runtime configuration, restart and verify production sign-in and project visibility; reconcile the IdP client with durable identity deployment source."
+      }
+    ],
+    "automatic": false
+  },
+  "actor": "codex:01a19a70-4f76-7d02-8042-b95213d69df0",
+  "createdAt": "2026-11-02T04:57:38.283Z",
+  "parents": [
+    "35b8e61c-662a-42bb-aebe-93728e5aadd3"
+  ],
+  "branch": "main"
+}

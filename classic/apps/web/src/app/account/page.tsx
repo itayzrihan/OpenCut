@@ -19,6 +19,7 @@ export default function AccountPage() {
 		[error, setError] = useState("");
 	const [browserImport, setBrowserImport] = useState(false),
 		[browserProgress, setBrowserProgress] = useState("");
+	const [legitateOnly, setLegitateOnly] = useState(true);
 	async function refresh() {
 		const response = await fetch("/api/accounts/migration", {
 				cache: "no-store",
@@ -29,6 +30,10 @@ export default function AccountPage() {
 	}
 	useEffect(() => {
 		void refresh().catch((e) => setError(e.message));
+		void fetch("/api/accounts", { cache: "no-store" })
+			.then((response) => response.json())
+			.then((result) => setLegitateOnly(!!result.legitateOnly))
+			.catch(() => setError("Could not load account settings."));
 	}, []);
 	useEffect(() => {
 		if (state?.job?.status !== "running") return;
@@ -97,8 +102,8 @@ export default function AccountPage() {
 					Manage Brand Kits
 				</Link>
 			</section>
-			<StorageSettings />
-			<PasswordSettings />
+			<StorageSettings legitateOnly={legitateOnly} />
+			{!legitateOnly && <PasswordSettings />}
 			{state?.allowed && (
 				<section className="space-y-4 rounded-xl border p-6">
 					<h2 className="text-lg font-medium">Bring your existing work</h2>

@@ -12,37 +12,48 @@ export function AccountGate({ children }: { children: ReactNode }) {
 	const [recover, setRecover] = useState(false);
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
+	const [legitateConfigured, setLegitateConfigured] = useState(false);
+	const [legitateOnly, setLegitateOnly] = useState(false);
 	useEffect(() => {
 		let cancelled = false;
 		fetch("/api/accounts", { cache: "no-store" })
 			.then((r) => r.json())
-			.then(async ({ account: current, storageBusy }) => {
-				if (cancelled) return;
-				if ((current?.id ?? null) !== window.__opencutAccountId) {
-					console.info("[workspace] Reloading after account change");
-					window.__opencutActivateAccount(current?.id ?? null);
-					return;
-				}
-				setAccount(current);
-				if (current && storageBusy) {
-					if (window.location.pathname !== "/account") {
-						window.location.replace("/account");
+			.then(
+				async ({
+					account: current,
+					storageBusy,
+					legitateConfigured: configured,
+					legitateOnly: only,
+				}) => {
+					if (cancelled) return;
+					setLegitateConfigured(!!configured);
+					setLegitateOnly(!!only);
+					if ((current?.id ?? null) !== window.__opencutAccountId) {
+						console.info("[workspace] Reloading after account change");
+						window.__opencutActivateAccount(current?.id ?? null);
 						return;
 					}
+					setAccount(current);
+					if (current && storageBusy) {
+						if (window.location.pathname !== "/account") {
+							window.location.replace("/account");
+							return;
+						}
+						setLoading(false);
+						return;
+					}
+					const preferencesChanged =
+						current && (await hydrateAccountPreferences());
+					if (cancelled) return;
+					if (preferencesChanged) {
+						console.info("[workspace] Reloading after preference hydration");
+						window.location.reload();
+						return;
+					}
+					setAccount(current);
 					setLoading(false);
-					return;
-				}
-				const preferencesChanged =
-					current && (await hydrateAccountPreferences());
-				if (cancelled) return;
-				if (preferencesChanged) {
-					console.info("[workspace] Reloading after preference hydration");
-					window.location.reload();
-					return;
-				}
-				setAccount(current);
-				setLoading(false);
-			})
+				},
+			)
 			.catch(() => {
 				if (cancelled) return;
 				setError("Could not connect to account storage. Try reloading.");
@@ -128,116 +139,136 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					>
 						Brand Kits
 					</a>
+					{legitateConfigured && !legitateOnly && (
+						<form action="/api/accounts/legitate/start" method="post">
+							<button className="rounded border bg-background px-3 py-1 text-xs shadow">
+								Connect Legitate
+							</button>
+						</form>
+					)}
 				</nav>
 			</>
 		);
 	return (
 		<main className="grid min-h-screen place-items-center p-6">
-			<form
-				onSubmit={submit}
-				className="w-full max-w-md space-y-5 rounded-xl border p-8"
-			>
-				<div>
-					<h1 className="text-2xl font-semibold">Your OpenCut workspace</h1>
-					<p className="mt-2 text-sm text-muted-foreground">
-						Projects, assets, and settings belong to your account. Your existing
-						work stays preserved for import after setup.
-					</p>
-				</div>
-				{recover ? (
+			{!legitateOnly && (
+				<form
+					onSubmit={submit}
+					className="w-full max-w-md space-y-5 rounded-xl border p-8"
+				>
+					<div>
+						<h1 className="text-2xl font-semibold">Your OpenCut workspace</h1>
+						<p className="mt-2 text-sm text-muted-foreground">
+							Projects, assets, and settings belong to your account. Your
+							existing work stays preserved for import after setup.
+						</p>
+					</div>
+					{recover ? (
+						<label className="block text-sm">
+							Account recovery file
+							<input
+								required
+								type="file"
+								accept=".json,application/json"
+								name="recovery"
+								className="mt-1 w-full rounded border p-2"
+							/>
+						</label>
+					) : (
+						<label className="block text-sm">
+							Account name
+							<input
+								required
+								name="login"
+								autoComplete="username"
+								minLength={3}
+								maxLength={128}
+								className="mt-1 w-full rounded border bg-background p-2"
+							/>
+						</label>
+					)}
+					{register && !recover && (
+						<label className="block text-sm">
+							Display name
+							<input
+								required
+								name="displayName"
+								maxLength={128}
+								className="mt-1 w-full rounded border bg-background p-2"
+							/>
+						</label>
+					)}
 					<label className="block text-sm">
-						Account recovery file
+						Password
 						<input
 							required
-							type="file"
-							accept=".json,application/json"
-							name="recovery"
-							className="mt-1 w-full rounded border p-2"
-						/>
-					</label>
-				) : (
-					<label className="block text-sm">
-						Account name
-						<input
-							required
-							name="login"
-							autoComplete="username"
-							minLength={3}
-							maxLength={128}
+							name="password"
+							type="password"
+							autoComplete={register ? "new-password" : "current-password"}
+							minLength={register ? 12 : 1}
+							maxLength={1024}
 							className="mt-1 w-full rounded border bg-background p-2"
 						/>
 					</label>
-				)}
-				{register && !recover && (
-					<label className="block text-sm">
-						Display name
-						<input
-							required
-							name="displayName"
-							maxLength={128}
-							className="mt-1 w-full rounded border bg-background p-2"
-						/>
-					</label>
-				)}
-				<label className="block text-sm">
-					Password
-					<input
-						required
-						name="password"
-						type="password"
-						autoComplete={register ? "new-password" : "current-password"}
-						minLength={register ? 12 : 1}
-						maxLength={1024}
-						className="mt-1 w-full rounded border bg-background p-2"
-					/>
-				</label>
-				{error && (
-					<p role="alert" className="text-sm text-red-500">
-						{error}
-					</p>
-				)}
-				<button
-					disabled={busy}
-					className="w-full rounded bg-primary p-2 text-primary-foreground disabled:opacity-50"
-				>
-					{busy
-						? "Opening…"
-						: recover
-							? "Recover account"
-							: register
-								? "Create account"
-								: "Sign in"}
-				</button>
-				<button
-					type="button"
-					disabled={busy}
-					onClick={() => {
-						setRegister(recover ? false : !register);
-						setRecover(false);
-					}}
-					className="w-full text-sm underline"
-				>
-					{register || recover
-						? "Use an existing account"
-						: "Create a new account"}
-				</button>
-				{!recover && (
+					{error && (
+						<p role="alert" className="text-sm text-red-500">
+							{error}
+						</p>
+					)}
+					<button
+						disabled={busy}
+						className="w-full rounded bg-primary p-2 text-primary-foreground disabled:opacity-50"
+					>
+						{busy
+							? "Opening…"
+							: recover
+								? "Recover account"
+								: register
+									? "Create account"
+									: "Sign in"}
+					</button>
 					<button
 						type="button"
 						disabled={busy}
 						onClick={() => {
-							setRegister(false);
-							setRecover(true);
+							setRegister(recover ? false : !register);
+							setRecover(false);
 						}}
 						className="w-full text-sm underline"
 					>
-						Recover an account on this machine
+						{register || recover
+							? "Use an existing account"
+							: "Create a new account"}
 					</button>
-				)}
-				<p className="text-xs text-muted-foreground">
-					This account is stored on this machine. Keep your password safe.
-				</p>
-			</form>
+					{!recover && (
+						<button
+							type="button"
+							disabled={busy}
+							onClick={() => {
+								setRegister(false);
+								setRecover(true);
+							}}
+							className="w-full text-sm underline"
+						>
+							Recover an account on this machine
+						</button>
+					)}
+					<p className="text-xs text-muted-foreground">
+						This account is stored on this machine. Keep your password safe.
+					</p>
+				</form>
+			)}
+			{legitateConfigured && (
+				<form
+					action="/api/accounts/legitate/start"
+					method="post"
+					className="w-full max-w-md"
+				>
+					<button className="w-full rounded border px-4 py-2">
+						Sign in with Legitate
+					</button>
+				</form>
+			)}
 		</main>
 	);
 }

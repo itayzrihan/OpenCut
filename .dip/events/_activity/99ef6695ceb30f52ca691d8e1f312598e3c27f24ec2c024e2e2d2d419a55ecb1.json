@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "eventId": "99ef6695ceb30f52ca691d8e1f312598e3c27f24ec2c024e2e2d2d419a55ecb1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T08:00:12.270Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/index.pack",
+          "classic/apps/web/.next-local-production/cache/webpack/server-production/0.pack",
+          "classic/apps/web/src/transcription/timeline-stream.ts",
+          "classic/apps/web/src/accounts/bridge-transport.ts",
+          "classic/apps/web/src/accounts/bridge-transport.test.ts",
+          "classic/apps/web/src/export/pcm-file.ts",
+          "classic/apps/web/src/export/scratch.ts",
+          "classic/apps/web/src/export/audio-stream.ts",
+          "classic/apps/web/src/editor-agent/server/session-renewal.ts",
+          "classic/apps/web/src/services/waveform-cache/streaming.ts",
+          "classic/apps/web/src/services/waveform-cache/streaming-client.ts",
+          "classic/apps/web/src/media/audio-window.ts"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "e2edcfa4-adcf-4b07-9a85-3576953ae31d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:00:12.271Z",
+  "parents": [],
+  "branch": "main"
+}

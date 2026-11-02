@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6504d671943c34bb2396415ab6b1c20f441b4397546960453e04e8f12d627327",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+    "records": [
+      {
+        "at": "2026-10-29T06:45:36.268Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a185f6-4e9f-7093-a702-1ae20b14d304",
+        "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "cat >> crates/editor-agent/tests/permissions.rs <<'EOF'\n\n#[tokio::test]\nasync fn changing_policy_expires_a_pending_project_approval() {\n    let (runtime, mut agent, count) = setup(\"askDestructive\", false).await;\n    assert!(invoke(&mut agent, \"request\", 1).is_err());\n    let id = serde_json::to_value(agent.run()).unwrap()[\"pendingApproval\"][\"approvalId\"].as_str().unwrap().to_owned();\n    runtime.registry().invoke(\"agent.policy.set\", InvocationContext::default(), json!({\"projectId\":\"classic-project\",\"expectedRevision\":runtime.snapshot().unwrap().revision,\"mode\":\"fullAccess\",\"computerAccess\":false})).await.unwrap();\n    assert!(agent.command(AgentCommand::Approve { approval_id: id, allow: true }).unwrap_err().to_string().contains(\"expired\"));\n    assert_eq!(count.load(Ordering::SeqCst), 0);\n}\n\n#[tokio::test]\nasync fn checkpoint_recovery_does_not_restore_an_approved_ticket() {\n    let (runtime, mut agent, count) = setup(\"askDestructive\", false).await;\n    assert!(invoke(&mut agent, \"request\", 1).is_err());\n    let id = serde_json::to_value(agent.run()).unwrap()[\"pendingApproval\"][\"approvalId\"].as_str().unwrap().to_owned();\n    agent.command(AgentCommand::Approve { approval_id: id, allow: true }).unwrap();\n    let checkpoint = agent.checkpoint().unwrap();\n    let mut restored = RuntimeAgent::restore_checkpoint(runtime,\"alice\",\"classic-project\",AccessLevel::Destructive,None,&checkpoint).unwrap();\n    let scope=restored.run().scope().clone();\n    restored.resume(&scope).unwrap();restored.observe().unwrap();\n    assert!(invoke(&mut restored,\"after-recovery\",1).is_err());\n    assert_eq!(count.load(Ordering::SeqCst),0);\n}\nEOF\nrustfmt --edition 2024 crates/editor-agent/tests/permissions.rs\ngit add crates/editor-agent/tests/permissions.rs",
+        "recordId": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304:PreToolUse:exec-da1f3917-b84b-414c-84fb-17ede886344b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:45:36.347Z",
+  "parents": [],
+  "branch": "main"
+}

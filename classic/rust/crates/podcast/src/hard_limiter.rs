@@ -31,11 +31,7 @@ pub fn hard_limit_audio(
                 .iter()
                 .filter(|v| v.is_finite())
                 .fold(0.0_f32, |p, v| p.max(v.abs()));
-            if peak > ceiling {
-                ceiling / peak
-            } else {
-                1.0
-            }
+            if peak > ceiling { ceiling / peak } else { 1.0 }
         })
         .collect();
     // Backwards ramp starts reducing gain before each transient, without moving

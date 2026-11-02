@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ab322fb79bc678f37aa87db0add52b683818f948cbeb8497a0ef96916db7ea6f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:20:09.369Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ssh -o BatchMode=yes -o ConnectTimeout=5 codeip-production 'hostname; docker ps --format \"{{.Names}}\" | grep -i -E \"authelia|legitate|identity\"'",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-18f47ebd-a42c-4817-ace4-5a2bf4ca673c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:20:09.673Z",
+  "parents": [],
+  "branch": "main"
+}

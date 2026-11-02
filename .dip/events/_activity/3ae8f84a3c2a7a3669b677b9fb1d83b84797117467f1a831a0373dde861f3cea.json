@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "3ae8f84a3c2a7a3669b677b9fb1d83b84797117467f1a831a0373dde861f3cea",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:26:39.509Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__vizu_gateway_veICerGUJ89ENfZ_YyRk_aOn8M_iwBvxXdIDgziw__itaymac__run_root_command",
+        "branch": "main",
+        "command": "set -eu\np=/etc/metrix/codeip-preview/control/authelia-configuration-4183d9355dd3.yml\ns=/tmp/opencut-legitate-oidc-review.yml\nexpected=4e264fee03a46d246d0bb90646564663b7c81eefbc44617a80213b6df95b8f6d\n[ \"$(sha256sum \"$p\" | cut -d' ' -f1)\" = \"$expected\" ] || { echo 'Active configuration changed; stopped.'; exit 1; }\nb=\"${p}.before-opencut-$(date -u +%Y%m%d%H%M%S)\"\ncp -p \"$p\" \"$b\"\nrollback() { cat \"$b\" > \"$p\"; docker restart metrix-platform-authelia-1 >/dev/null || true; }\ntrap rollback ERR\ncat \"$s\" > \"$p\"\ndocker restart metrix-platform-authelia-1 >/dev/null\nfor i in $(seq 1 30); do\n  health=$(docker inspect metrix-platform-authelia-1 --format '{{.State.Health.Status}}')\n  if [ \"$health\" = healthy ]; then echo \"Legitate is healthy; OpenCut client configuration installed. Backup: $b\"; exit 0; fi\n  sleep 1\ndone\necho 'Health check failed; restoring previous configuration.'\nfalse",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-ad48d641-3cb9-4086-bf72-420bfb92b78b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:26:39.679Z",
+  "parents": [],
+  "branch": "main"
+}

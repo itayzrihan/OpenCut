@@ -34,7 +34,11 @@ type State = {
 		error?: string;
 	} | null;
 };
-export function StorageSettings() {
+export function StorageSettings({
+	legitateOnly = false,
+}: {
+	legitateOnly?: boolean;
+}) {
 	const [state, setState] = useState<State | null>(null),
 		[folder, setFolder] = useState(""),
 		[password, setPassword] = useState("");
@@ -365,32 +369,34 @@ export function StorageSettings() {
 					</ul>
 				</div>
 			) : null}
-			<div className="space-y-3 border-t pt-4">
-				<h3 className="font-medium">Use this account on another machine</h3>
-				<p className="text-sm text-muted-foreground">
-					Download your password-protected recovery file. On the other machine,
-					choose “Recover an account”, connect the same drive folder, and
-					restore a saved version. Keep this file and its password: they unlock
-					your encrypted storage.
-				</p>
-				<label className="block text-sm">
-					Account password
-					<input
-						type="password"
-						autoComplete="current-password"
-						value={password}
-						onChange={(event) => setPassword(event.target.value)}
-						className="mt-1 w-full rounded border bg-background p-2"
-					/>
-				</label>
-				<button
-					disabled={disabled || !password}
-					onClick={() => void action({ action: "export-identity", password })}
-					className="rounded border px-4 py-2 disabled:opacity-50"
-				>
-					Download account recovery file
-				</button>
-			</div>
+			{!legitateOnly && (
+				<div className="space-y-3 border-t pt-4">
+					<h3 className="font-medium">Use this account on another machine</h3>
+					<p className="text-sm text-muted-foreground">
+						Download your password-protected recovery file. On the other
+						machine, choose “Recover an account”, connect the same drive folder,
+						and restore a saved version. Keep this file and its password: they
+						unlock your encrypted storage.
+					</p>
+					<label className="block text-sm">
+						Account password
+						<input
+							type="password"
+							autoComplete="current-password"
+							value={password}
+							onChange={(event) => setPassword(event.target.value)}
+							className="mt-1 w-full rounded border bg-background p-2"
+						/>
+					</label>
+					<button
+						disabled={disabled || !password}
+						onClick={() => void action({ action: "export-identity", password })}
+						className="rounded border px-4 py-2 disabled:opacity-50"
+					>
+						Download account recovery file
+					</button>
+				</div>
+			)}
 			{error && (
 				<p role="alert" className="text-sm text-red-500">
 					{error}

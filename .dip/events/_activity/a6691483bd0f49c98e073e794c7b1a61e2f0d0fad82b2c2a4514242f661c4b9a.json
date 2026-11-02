@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "a6691483bd0f49c98e073e794c7b1a61e2f0d0fad82b2c2a4514242f661c4b9a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T06:58:51.444Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-silence-current-2026-10-29/live-after.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "a90dd032-0a15-4fc8-9f60-62ac9d048fd6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:58:51.450Z",
+  "parents": [],
+  "branch": "main"
+}

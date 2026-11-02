@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "668751f55519ebacc67318f572d764a8e76544b585095889c0aabbcd4da53d4d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:07:38.662Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_ead2ed46c47510c9656fdde19061f42655216b79fc56952975374517f33d2d1f",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "find -L \"$HOME/Movies/OpenCut Accounts/data\" -maxdepth 3 -type d -print | head -80",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-e3db6eab-0fcf-4a00-9fa4-47fddce4fc07"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:07:38.777Z",
+  "parents": [],
+  "branch": "main"
+}

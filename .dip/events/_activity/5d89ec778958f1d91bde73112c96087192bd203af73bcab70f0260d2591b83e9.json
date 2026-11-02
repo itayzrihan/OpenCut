@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "5d89ec778958f1d91bde73112c96087192bd203af73bcab70f0260d2591b83e9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:57:58.141Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git worktree list --porcelain",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-df33206a-e4ae-4aab-99be-b9ce571d3c6a"
+      },
+      {
+        "at": "2026-10-29T07:57:58.193Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport pathlib,subprocess,json,os\nrepo=pathlib.Path('/Users/itayzrihan/Documents/PoCut')\nref='codex/earshot-deepseek-integration'\ndef manifest(ref,path):return json.loads(subprocess.check_output(['git','-C',str(repo),'show',ref+':'+path],text=True))\nbase=manifest('main','classic/apps/web/package.json');target=manifest(ref,'classic/apps/web/package.json')\nchanged={k:v for k,v in target.get('dependencies',{}).items() if base.get('dependencies',{}).get(k)!=v}\nprint('Changed dependencies:',json.dumps(changed))\nfor root in [repo/'classic',repo/'classic/apps/web',pathlib.Path('/Users/itayzrihan/.codex/worktrees/earshot-deepseek-integration/PoCut/classic'),pathlib.Path('/Users/itayzrihan/.codex/worktrees/deepseek-video-agent/PoCut/classic')]:\n nm=root/'node_modules'\n print('node_modules',str(nm),'exists',nm.exists(),'symlink',nm.is_symlink(),'real',str(nm.resolve()))\n for package in changed:\n  p=nm/package\n  if p.exists():\n   try:actual=json.loads((p/'package.json').read_text()).get('version')\n   except Exception as e:actual=str(e)\n   print(' ',package,'version',actual,'symlink',p.is_symlink(),'real',str(p.resolve()))\n  else:print(' ',package,'missing')\nprint('Root manifest:',json.dumps({k:v for k,v in manifest(ref,'classic/package.json').items() if k in ['packageManager','workspaces','scripts']},ensure_ascii=False))\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-eaa41812-450f-482f-b8fe-b3660a5d13ea"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:57:59.132Z",
+  "parents": [],
+  "branch": "main"
+}

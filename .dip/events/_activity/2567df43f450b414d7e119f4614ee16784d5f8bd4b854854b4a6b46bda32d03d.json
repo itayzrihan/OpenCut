@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2567df43f450b414d7e119f4614ee16784d5f8bd4b854854b4a6b46bda32d03d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:00:05.848Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/take-silence-current-2026-10-29/cleaned-test.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "1feee922-835b-4ebf-b4ac-7857274c2b5d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:00:05.851Z",
+  "parents": [],
+  "branch": "main"
+}

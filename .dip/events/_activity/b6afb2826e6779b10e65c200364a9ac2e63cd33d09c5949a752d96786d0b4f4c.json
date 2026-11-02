@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b6afb2826e6779b10e65c200364a9ac2e63cd33d09c5949a752d96786d0b4f4c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:37:08.779Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "printf 'OPENCUT_LEGITATE_ONLY=true\\n' >> apps/web/.env.local",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-880728e9-1b39-4bed-a3f4-ad16763f7e53"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:37:09.171Z",
+  "parents": [],
+  "branch": "main"
+}

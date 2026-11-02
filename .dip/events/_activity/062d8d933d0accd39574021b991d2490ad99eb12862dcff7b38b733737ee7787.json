@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "062d8d933d0accd39574021b991d2490ad99eb12862dcff7b38b733737ee7787",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T07:57:44.054Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "tail -n 18 .local/earshot-deepseek-integration-check.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-bd12be79-1cb9-4b53-8996-bd32f419ab80"
+      },
+      {
+        "at": "2026-10-29T07:57:44.053Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node classic/scripts/verify-earshot-deepseek.mjs > .local/earshot-deepseek-integration-check.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-de4e8ea2-7284-4452-b795-6b3337dbb2f4"
+      },
+      {
+        "at": "2026-10-29T07:57:44.055Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip task finish --help",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-93bc726a-033a-4d85-a6ce-288fca572ec2"
+      },
+      {
+        "at": "2026-10-29T07:57:44.058Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --cached --stat; git diff -- .dip/config.json",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-77b99a66-bdfb-4062-b9f0-f16492b1a27f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:57:44.118Z",
+  "parents": [],
+  "branch": "main"
+}

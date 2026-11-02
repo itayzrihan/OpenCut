@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "401fb7cf1e2d4259daaa38773d18fa12c5d0a4c8ab92e8487e1f01972be4491c",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:58:51.066Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport json\nfrom pathlib import Path\nfolder=Path('.local/take-silence-current-2026-10-29'); path=Path('/Users/itayzrihan/Movies/OpenCut Accounts/data/4fec0688-9a78-4304-849c-9ea937873751/projects/5417ff97-dff1-4e2d-90f4-3e62bf10d467/project.json');(folder/'live-after.json').write_text(path.read_text())\ndef doc(p): return json.loads(json.loads(p.read_text())['__opencutEditorSession'])['saved']['bundle']['archive']['classic']['document']['scenes'][0]\na=doc(folder/'live-before.json');b=doc(folder/'live-after.json')\nprint('Tracks unchanged:',a['tracks']==b['tracks']);print('Archive unchanged:',a['takeAssembly']['sourceTracks']==b['takeAssembly']['sourceTracks']);print('Alternatives unchanged:',a['takeAssembly']['plan']==b['takeAssembly']['plan']);print('New cleanup scope:',b['takeAssembly'].get('silenceMinimums'));print('Audio diagnostics:',b['takeAssembly']['quality']['audioDiagnostics'])\nassert a['tracks']==b['tracks'];assert a['takeAssembly']['sourceTracks']==b['takeAssembly']['sourceTracks'];assert a['takeAssembly']['plan']==b['takeAssembly']['plan']\nPY",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-5632fce9-6ba8-493b-bcc7-eaa56b76e97d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:58:51.447Z",
+  "parents": [],
+  "branch": "main"
+}

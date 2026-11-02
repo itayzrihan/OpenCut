@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "eventId": "56cdc3b0-3bcd-4044-a518-cdb2d159b1aa",
+  "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Fixed silence cleanup on structurally edited takes: native cleanup maps verified archived-source quiet ranges onto surviving live clip clocks instead of invoking take replacement/reassembly. Protects current transcript/caption words, trims, deleted footage, exact selected occurrences and alternatives; supports ripple and Undo. Reproduced old extension conflict; 30 native tests incl real current-project microphone evidence plus 19 host/WASM tests and TypeScript passed. Two lint errors pre-exist unchanged at commands.ts lines967/1090. Deployed exact source release 2026-10-29T06-57-01-486Z-6bfe32e4; live Protect Speech clicked twice on edited take, no conflict, displayed correct NoClearSilence result, tracks/archive/alternatives unchanged. Committed/pushed fbd41319. Evidence .local/take-silence-current-2026-10-29/verification.json and live-cleanup.png.",
+      "replacedBy": [],
+      "remaining": []
+    }
+  },
+  "actor": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85",
+  "createdAt": "2026-10-29T06:59:55.234Z",
+  "parents": [
+    "0c68dfda-d53e-48d1-9aa2-5104a865c553"
+  ],
+  "branch": "main"
+}

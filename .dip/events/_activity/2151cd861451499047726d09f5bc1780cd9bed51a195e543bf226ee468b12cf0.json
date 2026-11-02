@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2151cd861451499047726d09f5bc1780cd9bed51a195e543bf226ee468b12cf0",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T08:02:36.170Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,ppid,etime,command | rg 'verify-earshot-deepseek|wasm-pack build|cargo test|test-web.mjs|tsc --noEmit' | head -n 12",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-57ec9abe-358a-4d21-837f-efdc5546a32a"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:02:36.456Z",
+  "parents": [],
+  "branch": "main"
+}

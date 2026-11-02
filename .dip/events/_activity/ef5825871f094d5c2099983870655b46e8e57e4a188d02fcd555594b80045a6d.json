@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ef5825871f094d5c2099983870655b46e8e57e4a188d02fcd555594b80045a6d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:22:00.287Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "apply_patch",
+        "branch": "main",
+        "files": [
+          "/Users/itayzrihan/Documents/PoCut/classic/apps/web/src/accounts/legitate-oidc.test.ts"
+        ],
+        "changeHash": "f4139f2c32ff51e6178a6a12512acca09b768db113d73cdd8495a8d93c6ef92c",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-a05e282e-e77f-4cfa-84fa-153e5ff63730"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:22:01.031Z",
+  "parents": [],
+  "branch": "main"
+}

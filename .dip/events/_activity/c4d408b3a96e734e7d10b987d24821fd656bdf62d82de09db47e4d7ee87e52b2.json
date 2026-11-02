@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "c4d408b3a96e734e7d10b987d24821fd656bdf62d82de09db47e4d7ee87e52b2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:59:13.213Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/before-earshot-main-ff-20261029-095908/staged.patch",
+          ".local/before-earshot-main-ff-20261029-095908/unstaged.patch",
+          ".local/before-earshot-main-ff-20261029-095908/index",
+          ".local/before-earshot-main-ff-20261029-095908/manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "87fd620f-7fef-4363-9290-7ffa17744892"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:59:13.215Z",
+  "parents": [],
+  "branch": "main"
+}

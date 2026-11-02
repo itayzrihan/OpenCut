@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b74a76bf3e9b01586bb48c66bc7ba5950503f8e1a1d98a1d173c7b25b20a6fad",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:31:06.369Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bun test apps/web/src/accounts/legitate-session.test.ts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-5e4aeebe-3a9f-4c42-b4b9-9c2c70d2c4f6"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:31:06.461Z",
+  "parents": [],
+  "branch": "main"
+}

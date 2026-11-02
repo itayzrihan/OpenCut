@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "84636fee98229ef76563e679021b0afddaf6f73aaec3496e4ca66e206f664106",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T08:02:05.345Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/public/earshot/runtime/scipy-1.14.1-cp313-cp313-pyodide_2025_0_wasm32.whl.tmp",
+          "classic/apps/web/public/earshot/runtime/scipy-1.14.1-cp313-cp313-pyodide_2025_0_wasm32.whl",
+          "classic/apps/web/public/earshot/runtime/libopenblas-0.3.26.zip.tmp",
+          "classic/apps/web/public/earshot/runtime/libopenblas-0.3.26.zip"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b75a70be-9e14-4056-a100-643b07043b8e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:02:05.346Z",
+  "parents": [],
+  "branch": "main"
+}

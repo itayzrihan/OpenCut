@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "381f64be309d1436d9977cc7d8bf671ed4aa2d31760ca89c5e880331318ff2c9",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:15:40.729Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__codex_apps__github__fetch_file",
+        "branch": "main",
+        "path": "integrations/legitate-platform/README.md",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-711c97d6-b4c9-4aff-ad30-d7abaa5f3bb4"
+      },
+      {
+        "at": "2026-11-02T04:15:40.730Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__codex_apps__github__fetch_file",
+        "branch": "main",
+        "path": "integrations/legitate-platform/examples/partner-app/README.md",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-edddd842-c4f2-4d0c-8965-868b75ba531e"
+      },
+      {
+        "at": "2026-11-02T04:15:40.732Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__codex_apps__github__fetch_file",
+        "branch": "main",
+        "path": "[sensitive file]",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-35a55d0b-315d-4dec-bb51-36eb6b3314c9"
+      },
+      {
+        "at": "2026-11-02T04:15:40.740Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "mcp__codex_apps__github__fetch_file",
+        "branch": "main",
+        "path": "integrations/legitate-platform/authelia/configuration.yml",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-964eafb1-1acc-4c11-99af-dfbb76de25dc"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:15:41.030Z",
+  "parents": [],
+  "branch": "main"
+}

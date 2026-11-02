@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "37d5800bf775f5181b52a12f3ab51f7924443efa49514d7b5c96f7c1e9917b1b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:43:08.861Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git show codex/earshot-sound-effects:classic/apps/web/src/core/managers/commands.ts | sed -n '1738,1875p'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-51371a21-884a-44a4-ab34-2278fefcb41c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:43:08.972Z",
+  "parents": [],
+  "branch": "main"
+}

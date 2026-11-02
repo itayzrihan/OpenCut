@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "fff2d8c4fd36e777f95dd4249bba69c74fe7993c3d7f6dec74371920afeb1938",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:56:29.533Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "dip task finish --id task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d --outcome implemented --check earshot-mcp --summary 'Complete Earshot catalog, repository, editable audio preview and AI automation access through the authenticated canonical MCP bridge; verified on isolated feature branch.' --remaining '[{\"disposition\":\"verification_limit\",\"summary\":\"Full 80-case manager suite exceeded its 480-second budget after 31 passing cases. The five affected manager and agent-host scenarios are included in the configured check with all Earshot registry, transport, synthesis and automation suites.\"}]' --actor codex:01a1739b-f88b-7a70-ba24-09875f764e15 --session 01a1739b-f88b-7a70-ba24-09875f764e15 --token 157c7813-3793-4e2f-b1e8-79ed48989355 > .local/earshot-mcp-finish.log 2>&1",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-289cfe5a-a5f3-4e6c-b7b3-50b864da003f"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:56:29.915Z",
+  "parents": [],
+  "branch": "main"
+}

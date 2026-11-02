@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1f3d33fb-95eb-403b-90ee-aa0e01cfd5c5",
+  "taskId": "task_8d85b69d87d161381a9dc7869437327cde8d3629b12e2440d5c66eca84571360",
+  "type": "task.update",
+  "payload": {
+    "status": "implemented",
+    "kind": "work",
+    "requestState": "promoted",
+    "resolution": {
+      "outcome": "implemented",
+      "summary": "Implemented and committed 72f8a319 on codex/deepseek-video-agent: Electron computer-access switch, canonical Plan/AskDestructive/FullAccess policy, Rust one-use project approvals, scoped native file/shell IO and confirmation, cancellation/replay handling, Harness-inspired permission/plan/action UI, and documented UI recommendations. Codex subscription sign-in and provider transport remain unchanged. Actual Electron UI mode/toggle checks and screenshot review completed using an isolated test account/profile and a mocked native confirmation response.",
+      "replacedBy": [],
+      "remaining": [
+        {
+          "disposition": "verification_limit",
+          "summary": "No live Codex model request, production package build, or replacement of the installed application was performed. Verification uses native/WASM tests, scripted provider responses, and the actual development Electron shell."
+        }
+      ]
+    }
+  },
+  "actor": "codex:01a185f6-4e9f-7093-a702-1ae20b14d304",
+  "createdAt": "2026-10-29T06:49:24.136Z",
+  "parents": [
+    "5fbbc0b4-3146-4d7a-bc45-e039077120ec"
+  ],
+  "branch": "main"
+}

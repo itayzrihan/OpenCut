@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "eventId": "16db5404b83955a50bec29dbf5f74628fd8c02cf5f0c25cfd1eec4462a183128",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:59:43.240Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/before-earshot-main-ff-20261029-095908/preservation-report.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "b2c2176f-622b-48be-9713-cc8428708b27"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:59:43.242Z",
+  "parents": [],
+  "branch": "main"
+}

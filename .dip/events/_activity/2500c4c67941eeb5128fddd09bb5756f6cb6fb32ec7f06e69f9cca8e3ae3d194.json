@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "eventId": "2500c4c67941eeb5128fddd09bb5756f6cb6fb32ec7f06e69f9cca8e3ae3d194",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:39:09.982Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git branch --show-current && git log -1 --format='%h %s' && git log -1 --format='%h %s' codex/earshot-sound-effects && git log -1 --format='%h %s' codex/deepseek-video-agent && git merge-base main codex/earshot-sound-effects && git merge-base main codex/deepseek-video-agent && git merge-base codex/earshot-sound-effects codex/deepseek-video-agent && git worktree list --porcelain",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-68fe1a61-e988-471e-ab77-88544dddc88b"
+      },
+      {
+        "at": "2026-10-29T07:39:09.984Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --name-status main...codex/earshot-sound-effects -- . ':!.dip' ':!.agents' ':!.claude' ':!AGENTS.md' ':!CLAUDE.md' && git diff --name-status main...codex/deepseek-video-agent -- . ':!.dip' ':!.agents' ':!.claude' ':!AGENTS.md' ':!CLAUDE.md'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-933acd47-f6ca-4b23-815b-e6c15517817b"
+      },
+      {
+        "at": "2026-10-29T07:39:09.993Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain=v1 -z | python3 -c 'import sys,collections; a=sys.stdin.buffer.read().split(b\"\\0\"); c=collections.Counter(); rows=[]; i=0\nwhile i<len(a):\n s=a[i].decode(\"utf-8\",\"replace\"); i+=1\n if not s: continue\n status=s[:2]; p=s[3:]\n if status[0] in \"RC\" or status[1] in \"RC\":\n  old=a[i].decode(\"utf-8\",\"replace\") if i<len(a) else \"\"; i+=1\n else: old=\"\"\n if p.startswith(\".dip/\"): c[(status,\".dip\")]+=1\n else: rows.append((status,p,old))\nprint(\"DIP status counts:\",dict(c)); print(\"Other changes:\")\nfor r in rows: print(*r)'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-5542208d-bb49-4e88-976d-11cf46303452"
+      },
+      {
+        "at": "2026-10-29T07:39:10.120Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git diff --name-status main...codex/earshot-sound-effects -- . ':!.dip' ':!.agents' ':!.claude' ':!AGENTS.md' ':!CLAUDE.md' && git diff --name-status main...codex/deepseek-video-agent -- . ':!.dip' ':!.agents' ':!.claude' ':!AGENTS.md' ':!CLAUDE.md'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-933acd47-f6ca-4b23-815b-e6c15517817b"
+      },
+      {
+        "at": "2026-10-29T07:39:10.177Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git branch --show-current && git log -1 --format='%h %s' && git log -1 --format='%h %s' codex/earshot-sound-effects && git log -1 --format='%h %s' codex/deepseek-video-agent && git merge-base main codex/earshot-sound-effects && git merge-base main codex/deepseek-video-agent && git merge-base codex/earshot-sound-effects codex/deepseek-video-agent && git worktree list --porcelain",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-68fe1a61-e988-471e-ab77-88544dddc88b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:39:10.229Z",
+  "parents": [],
+  "branch": "main"
+}

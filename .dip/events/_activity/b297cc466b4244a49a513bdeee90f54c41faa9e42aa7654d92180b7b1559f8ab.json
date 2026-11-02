@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b297cc466b4244a49a513bdeee90f54c41faa9e42aa7654d92180b7b1559f8ab",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T10:07:48.883Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1793268319350/src__core____tests____canonical-smart-takes.test.ts.log",
+          ".local/classic-web-tests/1793268319350/src__batch__server.test.ts.log",
+          ".local/classic-web-tests/1793268319350/summary.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "5d38a50e-0d15-4567-97af-f2e0f6ea0ab4"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T10:07:48.887Z",
+  "parents": [],
+  "branch": "main"
+}

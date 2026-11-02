@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6e465150beb1b9510ec2242ac51b86af4b274bb2b2ab62390926fb4482da6e6b",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T05:01:12.999Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 10 -sS -w '\\nHTTP %{http_code}\\n' -X POST -H 'Origin: http://localhost:3211' -H 'Content-Type: application/json' --data '{\"action\":\"login\",\"login\":\"example\",\"password\":\"irrelevant\"}' http://localhost:3211/api/accounts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-6bd60c00-5216-4412-9e1f-7a2bc301de22"
+      },
+      {
+        "at": "2026-11-02T05:01:13.001Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 10 -sS http://localhost:3211/api/accounts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-e390837c-7a66-4a46-a5c9-62404013920f"
+      },
+      {
+        "at": "2026-11-02T05:01:13.126Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 10 -sS http://localhost:3211/api/accounts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-e390837c-7a66-4a46-a5c9-62404013920f"
+      },
+      {
+        "at": "2026-11-02T05:01:13.128Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "curl --max-time 10 -sS -w '\\nHTTP %{http_code}\\n' -X POST -H 'Origin: http://localhost:3211' -H 'Content-Type: application/json' --data '{\"action\":\"login\",\"login\":\"example\",\"password\":\"irrelevant\"}' http://localhost:3211/api/accounts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-6bd60c00-5216-4412-9e1f-7a2bc301de22"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T05:01:13.828Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "1acf50f30a694e77ea07b5cf95cfba5da557eabc129bf838a5abea2debf5b2d2",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T10:06:23.601Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/classic-web-tests/1793268319350/src__editor-agent____tests____checkpoint.test.ts.log",
+          ".local/classic-web-tests/1793268319350/src__editor-agent____tests____earshot-preview-effect.test.ts.log"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "2bb8269b-40c3-4387-8886-c36d5657eaab"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T10:06:23.604Z",
+  "parents": [],
+  "branch": "main"
+}

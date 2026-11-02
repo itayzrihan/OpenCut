@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d31c8add2b2622ac039661907104115c8bac3cd8d6fdfb13c469b0eaf03fc375",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T04:43:06.437Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_121b446ed7342414590307a5fe8b669b0d0c925bc1f8bcf121d85b8c36454f53",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "bunx prettier --write apps/web/src/accounts/legitate-oidc.ts apps/web/src/accounts/legitate-oidc.test.ts apps/web/src/accounts/legitate-server.ts apps/web/src/accounts/legitate-server.test.ts apps/web/src/accounts/legitate-session.test.ts apps/web/src/app/api/accounts/legitate/start/route.ts apps/web/src/app/api/accounts/legitate/callback/route.ts apps/web/src/app/api/accounts/legitate/connect/route.ts apps/web/src/app/account/page.tsx apps/web/src/accounts/storage-settings.tsx apps/web/src/accounts/gate.tsx",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-1d3c8def-cb22-42e1-bf35-880dcdadac09"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T04:43:06.774Z",
+  "parents": [],
+  "branch": "main"
+}

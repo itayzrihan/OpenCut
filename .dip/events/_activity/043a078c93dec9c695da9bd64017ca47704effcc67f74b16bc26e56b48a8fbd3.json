@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "043a078c93dec9c695da9bd64017ca47704effcc67f74b16bc26e56b48a8fbd3",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T10:08:56.624Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_482b06eb075acb67bdcd3ae9b55acce32d32ec6fe1f03440c3a4aa7216b0f8da",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport json,subprocess as sp\np=Path('.dip/events/task_482b06eb075acb67bdcd3ae9b55acce32d32ec6fe1f03440c3a4aa7216b0f8da')\nfound=False\nfor f in p.glob('*.json'):\n d=json.loads(f.read_text())\n if d.get('type')=='task.evidence':\n  v=d['payload'];print({k:v.get(k) for k in ['check','result','exitCode','changedDuringCheck','changedIntentDuringCheck']});assert v['result']=='passed' and v['exitCode']==0 and not v.get('changedDuringCheck');found=True\nassert found\nhead=sp.check_output(['git','rev-parse','HEAD'],text=True).strip();remote=sp.check_output(['git','ls-remote','--heads','origin','main'],text=True).split()[0];print('main',head,'GitHub',remote);assert head==remote=='a387a78b29ebc5164349b60faae4e865952ceb0c'\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-87fd4145-5189-4afd-891d-c2243d0b6fba"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T10:08:56.756Z",
+  "parents": [],
+  "branch": "main"
+}

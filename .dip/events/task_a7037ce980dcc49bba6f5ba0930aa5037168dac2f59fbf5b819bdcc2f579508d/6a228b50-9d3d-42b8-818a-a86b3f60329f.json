@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "eventId": "6a228b50-9d3d-42b8-818a-a86b3f60329f",
+  "taskId": "task_a7037ce980dcc49bba6f5ba0930aa5037168dac2f59fbf5b819bdcc2f579508d",
+  "type": "task.checkpoint",
+  "payload": {
+    "summary": "Prepared a local password reset for the selected existing account; the user must run it and set their own password.",
+    "remaining": [
+      {
+        "disposition": "required",
+        "summary": "After the user completes password reset, verify sign-in and existing projects in the dashboard."
+      }
+    ],
+    "automatic": false
+  },
+  "actor": "codex:01a19a70-4f76-7d02-8042-b95213d69df0",
+  "createdAt": "2026-11-02T04:08:48.387Z",
+  "parents": [
+    "aa78d085-5514-43a5-956b-2132adb6780c"
+  ],
+  "branch": "main"
+}

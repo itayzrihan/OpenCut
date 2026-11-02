@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "89536d4a7963076a4fcca907c9bc2c0347d2c504c7fb6f7b960af563e7a16ad1",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T08:04:39.955Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,ppid,etime,command | rg 'verify-earshot-deepseek|cargo test|test-web.mjs|tsc --noEmit' | head -n 10; tail -n 4 .local/earshot-main-final-verification.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c77bdb71-9ae8-4417-9db8-4654be38476e"
+      },
+      {
+        "at": "2026-10-29T08:04:40.203Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_92492b29b6694add1bd7ea5c25145a0a2d4d88136014cf28dba1f4f571aa2a73",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,ppid,etime,command | rg 'verify-earshot-deepseek|cargo test|test-web.mjs|tsc --noEmit' | head -n 10; tail -n 4 .local/earshot-main-final-verification.log",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-c77bdb71-9ae8-4417-9db8-4654be38476e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:04:40.598Z",
+  "parents": [],
+  "branch": "main"
+}

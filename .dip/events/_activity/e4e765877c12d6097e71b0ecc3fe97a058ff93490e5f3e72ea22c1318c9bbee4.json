@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "e4e765877c12d6097e71b0ecc3fe97a058ff93490e5f3e72ea22c1318c9bbee4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+    "records": [
+      {
+        "at": "2026-11-02T05:41:16.421Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "GIT_INDEX_FILE=/tmp/pocut-publish-index.aY4yb1 git diff --cached --check",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-1213d8ae-c0fe-40ee-a2df-c54b8b871d3e"
+      },
+      {
+        "at": "2026-11-02T05:41:16.421Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs --jobs=1 src/accounts/legitate-oidc.test.ts src/accounts/legitate-server.test.ts src/accounts/legitate-session.test.ts src/accounts/server.test.ts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PreToolUse:exec-bfd3c907-438e-427f-8f3a-bb5f72c9cb5b"
+      },
+      {
+        "at": "2026-11-02T05:41:16.647Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "GIT_INDEX_FILE=/tmp/pocut-publish-index.aY4yb1 git diff --cached --check",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-1213d8ae-c0fe-40ee-a2df-c54b8b871d3e"
+      },
+      {
+        "at": "2026-11-02T05:41:16.723Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a19a70-4f76-7d02-8042-b95213d69df0",
+        "taskId": "task_10dacbb7beb19df8c1e587b04b1626574a93ff74a1c2840b3c3ed442e74389e3",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node scripts/test-web.mjs --jobs=1 src/accounts/legitate-oidc.test.ts src/accounts/legitate-server.test.ts src/accounts/legitate-session.test.ts src/accounts/server.test.ts",
+        "recordId": "codex:01a19a70-4f76-7d02-8042-b95213d69df0:PostToolUse:exec-bfd3c907-438e-427f-8f3a-bb5f72c9cb5b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-11-02T05:41:17.358Z",
+  "parents": [],
+  "branch": "main"
+}

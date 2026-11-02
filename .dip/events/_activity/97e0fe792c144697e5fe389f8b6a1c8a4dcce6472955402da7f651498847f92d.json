@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "eventId": "97e0fe792c144697e5fe389f8b6a1c8a4dcce6472955402da7f651498847f92d",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:54:02.594Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -o pid,ppid,etime,comm -p 29981; ps -Ao pid,ppid,etime,comm | awk '$2 == 29981 {print}'; python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor f in Path('.dip/events/task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d').glob('*.json'):\n d=json.loads(f.read_text())\n if d['type']=='task.evidence': print(d['payload']['result'],d['payload']['summary'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-28105422-8f9c-48f1-90dd-18e05bcfcc25"
+      },
+      {
+        "at": "2026-10-29T06:54:02.997Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -o pid,ppid,etime,comm -p 29981; ps -Ao pid,ppid,etime,comm | awk '$2 == 29981 {print}'; python3 - <<'PY'\nfrom pathlib import Path\nimport json\nfor f in Path('.dip/events/task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d').glob('*.json'):\n d=json.loads(f.read_text())\n if d['type']=='task.evidence': print(d['payload']['result'],d['payload']['summary'])\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PostToolUse:exec-28105422-8f9c-48f1-90dd-18e05bcfcc25"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:54:03.443Z",
+  "parents": [],
+  "branch": "main"
+}

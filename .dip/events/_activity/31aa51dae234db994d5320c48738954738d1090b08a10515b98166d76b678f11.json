@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "eventId": "31aa51dae234db994d5320c48738954738d1090b08a10515b98166d76b678f11",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T07:42:44.391Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git show codex/deepseek-video-agent:crates/editor-api/src/computer.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-cdaca1a1-b7b4-4a8c-9258-cfa18925ecf1"
+      },
+      {
+        "at": "2026-10-29T07:42:44.390Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,json\nrefs=['46c71db4','main','codex/earshot-sound-effects','codex/deepseek-video-agent']\nfor ref in refs:\n raw=subprocess.check_output(['git','show',ref+':.dip/config.json'],text=True)\n obj=json.loads(raw)\n print(ref, 'top level keys=',list(obj))\n for k,v in obj.items():\n  if 'check' in k.lower() and isinstance(v,(dict,list)):\n   print(k, json.dumps(v,ensure_ascii=False)[:4500])\nfor path in ['.dip/tools/verify-agent-computer.mjs','.dip/tools/verify-deepseek-harness.mjs']:\n a=subprocess.check_output(['git','rev-parse','main:'+path],text=True).strip();b=subprocess.check_output(['git','rev-parse','codex/deepseek-video-agent:'+path],text=True).strip()\n print(path, 'identical main/DeepSeek=',a==b)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-03d59a69-0512-4252-ab78-8fdf1ae58b0c"
+      },
+      {
+        "at": "2026-10-29T07:42:44.633Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git show codex/deepseek-video-agent:crates/editor-api/src/computer.rs",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-cdaca1a1-b7b4-4a8c-9258-cfa18925ecf1"
+      },
+      {
+        "at": "2026-10-29T07:42:44.849Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nimport subprocess,json\nrefs=['46c71db4','main','codex/earshot-sound-effects','codex/deepseek-video-agent']\nfor ref in refs:\n raw=subprocess.check_output(['git','show',ref+':.dip/config.json'],text=True)\n obj=json.loads(raw)\n print(ref, 'top level keys=',list(obj))\n for k,v in obj.items():\n  if 'check' in k.lower() and isinstance(v,(dict,list)):\n   print(k, json.dumps(v,ensure_ascii=False)[:4500])\nfor path in ['.dip/tools/verify-agent-computer.mjs','.dip/tools/verify-deepseek-harness.mjs']:\n a=subprocess.check_output(['git','rev-parse','main:'+path],text=True).strip();b=subprocess.check_output(['git','rev-parse','codex/deepseek-video-agent:'+path],text=True).strip()\n print(path, 'identical main/DeepSeek=',a==b)\nPY",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PostToolUse:exec-03d59a69-0512-4252-ab78-8fdf1ae58b0c"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:42:45.023Z",
+  "parents": [],
+  "branch": "main"
+}

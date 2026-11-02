@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "eventId": "17cfa51bbab2ffb8e7002e97ceeb760879b38a7cc8f0e7765af59b6b0d99a2f4",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T10:04:15.476Z",
+        "kind": "files.changed",
+        "files": [
+          "classic/apps/web/public/earshot/runtime/source-files.json",
+          "classic/apps/web/public/earshot/runtime/worker.js",
+          "classic/apps/web/public/earshot/runtime/renderer.py",
+          "classic/apps/web/public/earshot/runtime/kernels.js",
+          "classic/apps/web/public/earshot/runtime/manifest.json"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "80dd658a-cea6-4014-a9a0-91dec1fea11d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T10:04:15.478Z",
+  "parents": [],
+  "branch": "main"
+}

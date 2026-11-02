@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "bfcf6039e2c80e267bf95f928a795429f4abb878dd52ecd313a2d6fea0513524",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "filesystem",
+    "records": [
+      {
+        "at": "2026-10-29T07:59:09.217Z",
+        "kind": "files.changed",
+        "files": [
+          ".local/before-earshot-main-ff-20261029-095908",
+          ".local/before-earshot-main-ff-20261029-095908/local-files.zip"
+        ],
+        "agent": "filesystem",
+        "branch": "main",
+        "recordId": "adaac964-abf5-44fa-9ef8-8e0d5a530e5d"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:59:09.219Z",
+  "parents": [],
+  "branch": "main"
+}

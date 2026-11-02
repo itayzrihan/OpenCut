@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "ccbd31fb8aa4e9cabe016f88f119bf8f52dc0d17d8bc2a22031288582f56b21a",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T07:42:09.557Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git status --porcelain=v1 --untracked-files=normal | rg -v '(^.. \\.dip/|^.. \\.local/|^.. AGENTS.md$|^.. CLAUDE.md$)'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PreToolUse:exec-43d46a4e-615d-4bfe-bf08-8f21fa87b43b"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:42:09.786Z",
+  "parents": [],
+  "branch": "main"
+}

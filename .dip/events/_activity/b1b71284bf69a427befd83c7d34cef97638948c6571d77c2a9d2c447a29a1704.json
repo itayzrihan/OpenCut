@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "b1b71284bf69a427befd83c7d34cef97638948c6571d77c2a9d2c447a29a1704",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+    "records": [
+      {
+        "at": "2026-10-29T08:04:55.768Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc",
+        "taskId": "task_49690a9f-447c-47ff-a1fc-a2a60957bd37",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess,tempfile,os,json,hashlib\nrepo=Path('/tmp/opencut-ff-preservation-ad35i1zl');prep=Path(tempfile.mkdtemp(prefix='opencut-evidence-writer-',dir='/tmp'));env={**os.environ,'GIT_OPTIONAL_LOCKS':'0'}\ndef git(root,*args,check=True):\n r=subprocess.run(['git','-C',str(root),*args],text=True,capture_output=True,env=env)\n if check and r.returncode:raise RuntimeError((args,r.stdout,r.stderr))\n return r\nrecord=Path('.evidence/events/task/finished.json');payload=b'{\"task\":\"toy\",\"outcome\":\"implemented\",\"check\":\"passed\"}\\n'\ndef snapshot():\n index=[s for s in git(repo,'ls-files','--stage').stdout.splitlines() if s.split('\\t',1)[1].startswith('.activity/')]\n hashes={str(p.relative_to(repo)):hashlib.sha256(p.read_bytes()).hexdigest() for p in (repo/'.activity').rglob('*') if p.is_file()}\n return index,hashes\nbefore=snapshot();before_head=git(repo,'rev-parse','HEAD').stdout.strip()\ngit(repo,'worktree','add','-b','evidence',str(prep),'HEAD')\n(prep/record).parent.mkdir(parents=True);(prep/record).write_bytes(payload)\ngit(prep,'add','--',str(record));git(prep,'commit','-m','Record completed toy task evidence')\ntarget=git(prep,'rev-parse','HEAD').stdout.strip()\n(repo/record).parent.mkdir(parents=True);(repo/record).write_bytes(payload)\nattempt=git(repo,'merge','--ff-only','--no-autostash',target,check=False)\nidentical_allowed=attempt.returncode==0\nerror=attempt.stderr.strip()\nif not identical_allowed:\n assert git(repo,'rev-parse','HEAD').stdout.strip()==before_head\n assert snapshot()==before\n backup=repo.parent/(repo.name+'-record-backup.json');backup.write_bytes((repo/record).read_bytes());(repo/record).unlink()\n git(repo,'merge','--ff-only','--no-autostash',target)\n assert (repo/record).read_bytes()==backup.read_bytes()\nassert snapshot()==before\nassert (repo/record).read_bytes()==payload\nprint(json.dumps({'toyRepo':str(repo),'writerWorktree':str(prep),'identicalUntrackedFileAcceptedByFF':identical_allowed,'firstAttemptError':err",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-e6e6-7f21-8db5-c6c6086986cc:PreToolUse:exec-7e61d6ad-8a06-4d99-92d0-fc37e2f5c743"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T08:04:56.632Z",
+  "parents": [],
+  "branch": "main"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "d99f288b75f383de774f8cce4dc2708803f956f35f42f31c599ae9a5cb9c1433",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+    "records": [
+      {
+        "at": "2026-10-29T06:59:05.311Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15",
+        "taskId": "task_26fddb02c574aadfa3147c2cfe78a2e256215413a465c2d644f1541e639a4f4d",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "git branch --show-current; git commit -m 'feat: expose Earshot editing and automation through MCP'",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:PreToolUse:exec-c844d3e8-0e80-4163-936a-2344e6caba80"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:59:05.436Z",
+  "parents": [],
+  "branch": "main"
+}

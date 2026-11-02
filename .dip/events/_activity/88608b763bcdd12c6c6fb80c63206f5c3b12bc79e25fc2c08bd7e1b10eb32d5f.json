@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "88608b763bcdd12c6c6fb80c63206f5c3b12bc79e25fc2c08bd7e1b10eb32d5f",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+    "records": [
+      {
+        "at": "2026-10-29T06:48:47.387Z",
+        "kind": "PreToolUse",
+        "agent": "codex",
+        "session": "01a14446-6593-7e93-9eaa-0d9a4150ea85",
+        "taskId": "task_329fa7bdb18743b6aa849fe5cbdba0cc7a80eb72371a930c4fd1cb133fdb9a6c",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "ps -axo pid,etime,%cpu,command | rg 'wasm-opt|opencut-mcp.*release|next.*build' | head -6",
+        "recordId": "codex:01a14446-6593-7e93-9eaa-0d9a4150ea85:PreToolUse:exec-7038b737-1fbb-4c17-94c2-83d13b54288e"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T06:48:47.408Z",
+  "parents": [],
+  "branch": "main"
+}

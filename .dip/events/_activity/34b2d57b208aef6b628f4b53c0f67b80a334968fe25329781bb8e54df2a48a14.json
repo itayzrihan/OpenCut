@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "eventId": "34b2d57b208aef6b628f4b53c0f67b80a334968fe25329781bb8e54df2a48a14",
+  "taskId": "_activity",
+  "type": "activity.batch",
+  "payload": {
+    "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+    "records": [
+      {
+        "at": "2026-10-29T07:49:20.295Z",
+        "kind": "PostToolUse",
+        "agent": "codex",
+        "session": "01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23",
+        "taskId": "task_00927313-07d4-4013-9fbd-deb55f89aa40",
+        "tool": "Bash",
+        "branch": "main",
+        "command": "node ../../node_modules/eslint/bin/eslint.js src/editor-agent/__tests__/deepseek-earshot.test.ts",
+        "recordId": "codex:01a1739b-f88b-7a70-ba24-09875f764e15:01a185f9-b669-7d90-b782-1445d1a34e23:PostToolUse:exec-cb8853d3-a8d1-43b0-b5bd-1f0374e5a915"
+      }
+    ]
+  },
+  "actor": "recorder",
+  "createdAt": "2026-10-29T07:49:20.322Z",
+  "parents": [],
+  "branch": "main"
+}

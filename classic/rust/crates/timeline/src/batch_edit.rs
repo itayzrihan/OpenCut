@@ -81,9 +81,15 @@ mod tests {
     }
     #[test]
     fn recovery_fences_only_resumable_work() {
-        for status in ["ready","running","interrupted"] {assert_eq!(step(status,"recover"),"ready");}
-        for status in ["failed","interrupted"] {assert_eq!(step(status,"retry"),"ready");}
-        for status in ["completed","cancelled"] {assert_eq!(step(status,"recover"),"");assert_eq!(step(status,"retry"),"");}
+        for status in ["ready", "running", "interrupted"] {
+            assert_eq!(step(status, "recover"), "ready");
+        }
+        for status in ["failed", "interrupted"] {
+            assert_eq!(step(status, "retry"), "ready");
+        }
+        for status in ["completed", "cancelled"] {
+            assert_eq!(step(status, "recover"), "");
+            assert_eq!(step(status, "retry"), "");
+        }
     }
-
 }
