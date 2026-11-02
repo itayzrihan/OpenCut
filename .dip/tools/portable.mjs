@@ -2,6 +2,9 @@
 // It uses only Node built-ins and never executes repository verification commands.
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
+import { createRequire } from "node:module";
+import { gunzipSync } from "node:zlib";
 import { randomUUID } from "node:crypto";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -101,8 +104,112 @@ function rootAt(cwd) {
   const config = JSON.parse(
     fs.readFileSync(safe(root, ".dip/config.json"), "utf8"),
   );
-  if (config.schemaVersion !== 1) throw new Error("Unsupported project schema");
+  if (![1, 2].includes(config.schemaVersion))
+    throw new Error("Unsupported project schema");
   return root;
+}
+function sharedPortable(root) {
+  const run = (args) =>
+    execFileSync("git", ["-C", root, ...args], {
+      encoding: "utf8",
+      maxBuffer: 256 * 1024 ** 2,
+      env: { ...process.env, GIT_TRACE2_EVENT: "0" },
+    }).trim();
+  const marker = path.join(root, ".git"),
+    gitDir = fs.statSync(marker).isDirectory()
+      ? marker
+      : path.resolve(
+          root,
+          fs
+            .readFileSync(marker, "utf8")
+            .trim()
+            .replace(/^gitdir:\s*/, ""),
+        );
+  const common = fs.realpathSync(
+      fs.existsSync(path.join(gitDir, "commondir"))
+        ? path.resolve(
+            gitDir,
+            fs.readFileSync(path.join(gitDir, "commondir"), "utf8").trim(),
+          )
+        : gitDir,
+    ),
+    dir = path.join(common, "dip");
+  if (fs.existsSync(path.join(dir, "migration.lock")))
+    throw Error("DIP migration is in progress; retry the portable operation");
+  const config = JSON.parse(
+    fs.readFileSync(safe(root, ".dip/config.json"), "utf8"),
+  );
+  if (
+    config.schemaVersion !== 2 &&
+    !fs.existsSync(path.join(dir, "storage.json"))
+  )
+    return null;
+  const events = [],
+    dbfile = path.join(dir, "store.sqlite");
+  if (fs.existsSync(dbfile)) {
+    if (fs.lstatSync(dbfile).isSymbolicLink())
+      throw Error("Shared database cannot be a symbolic link");
+    let DatabaseSync;
+    try {
+      ({ DatabaseSync } = createRequire(import.meta.url)("node:sqlite"));
+    } catch {
+      throw Error(
+        "Shared DIP storage requires Node 24+; use the installed DIP runtime",
+      );
+    }
+    const db = new DatabaseSync(dbfile, { readOnly: true });
+    try {
+      db.exec("PRAGMA busy_timeout=5000");
+      for (const row of db.prepare("SELECT data FROM events").all())
+        events.push(JSON.parse(gunzipSync(row.data)));
+    } finally {
+      db.close();
+    }
+  } else {
+    let ref;
+    for (const candidate of [
+      "refs/heads/dip/state",
+      "refs/remotes/origin/dip/state",
+    ]) {
+      try {
+        run(["rev-parse", "--verify", candidate]);
+        ref = candidate;
+        break;
+      } catch {}
+    }
+    if (!ref)
+      throw Error(
+        "Shared DIP history is unavailable; fetch dip/state or restore the local store",
+      );
+    const names = run([
+      "ls-tree",
+      "-r",
+      "--name-only",
+      ref,
+      "--",
+      ".dip/events",
+    ])
+      .split("\n")
+      .filter((n) => n.endsWith(".json"));
+    for (const name of names)
+      events.push(JSON.parse(run(["show", ref + ":" + name])));
+  }
+  const spool = path.join(dir, "portable");
+  if (fs.existsSync(spool))
+    for (const name of fs.readdirSync(spool)) {
+      if (!/^[\w-]{1,100}\.json$/.test(name)) continue;
+      events.push(
+        JSON.parse(
+          fs.readFileSync(safe(common, "dip/portable/" + name), "utf8"),
+        ),
+      );
+    }
+  return {
+    common,
+    dir,
+    spool,
+    events: [...new Map(events.map((e) => [e.eventId, e])).values()],
+  };
 }
 function validatePatch(patch, historical = false) {
   if (!patch || typeof patch !== "object" || Array.isArray(patch))
@@ -182,15 +289,25 @@ function validatePatch(patch, historical = false) {
 function history(root, id) {
   identity(id);
   const directory = safe(root, `.dip/events/${id}`),
-    events = [];
-  if (!fs.existsSync(directory)) throw new Error("Task not found");
-  for (const name of fs.readdirSync(directory).sort()) {
+    events = [],
+    shared = sharedPortable(root);
+  if (!shared && !fs.existsSync(directory)) throw new Error("Task not found");
+  const candidates = shared
+    ? shared.events
+        .filter((e) => e.taskId === id)
+        .map((e) => [e.eventId + ".json", e])
+    : fs
+        .readdirSync(directory)
+        .sort()
+        .map((name) => [name, null]);
+  if (!candidates.length) throw Error("Task not found");
+  for (const [name, provided] of candidates) {
     if (!name.endsWith(".json") || name.startsWith("._")) continue;
     try {
-      const file = safe(root, `.dip/events/${id}/${name}`);
-      if (fs.statSync(file).size > 8 * 1024 * 1024)
+      const file = provided ? null : safe(root, `.dip/events/${id}/${name}`);
+      if (!provided && fs.statSync(file).size > 8 * 1024 * 1024)
         throw new Error("Event too large");
-      const e = JSON.parse(fs.readFileSync(file, "utf8"));
+      const e = provided || JSON.parse(fs.readFileSync(file, "utf8"));
       if (
         e.schemaVersion !== 1 ||
         e.taskId !== id ||
@@ -299,7 +416,10 @@ function write(root, id, type, payload, actor, parents) {
       parents,
       branch: "portable",
     };
-  const file = safe(root, `.dip/events/${identity(id)}/${eventId}.json`, true),
+  const shared = sharedPortable(root);
+  const file = shared
+      ? safe(shared.common, `dip/portable/${eventId}.json`, true)
+      : safe(root, `.dip/events/${identity(id)}/${eventId}.json`, true),
     tmp = file + ".tmp";
   const fd = fs.openSync(tmp, "wx", 0o600);
   try {
@@ -337,13 +457,16 @@ export function portable(action, args = {}, cwd = process.cwd()) {
     const directory = safe(root, ".dip/events"),
       tasks = [],
       errors = [];
-    for (const id of (fs.existsSync(directory)
-      ? fs.readdirSync(directory)
-      : []
+    const shared = sharedPortable(root);
+    for (const id of (shared
+      ? [...new Set(shared.events.map((e) => e.taskId))]
+      : fs.existsSync(directory)
+        ? fs.readdirSync(directory)
+        : []
     ).sort()) {
       if (
         id === "_activity" ||
-        !fs.statSync(safe(root, `.dip/events/${id}`)).isDirectory()
+        (!shared && !fs.statSync(safe(root, `.dip/events/${id}`)).isDirectory())
       )
         continue;
       try {
