@@ -23,6 +23,8 @@ import { OverlayMovementView } from "@/effects/components/overlay-movement-asset
 import { ParallaxStoryTellerView } from "@/effects/components/parallax-story-teller-assets-view";
 import { TransitionsView } from "@/transitions/components/assets-view";
 import { LoopsView } from "@/loops/components/assets-view";
+import { GenerativeView } from "@/generative/components/generative-view";
+import { GenerativeResultImporter } from "@/generative/components/result-importer";
 import { AiChatView } from "@/ai/components/ai-chat-view";
 import { TimelineCodeView } from "@/ai/components/timeline-code-view";
 import { TemplatesView } from "@/templates/components/assets-view";
@@ -34,6 +36,7 @@ export function AssetsPanel() {
 		media: <MediaView />,
 		catalog: <CatalogView />,
 		ai: <AiChatView />,
+		generative: <GenerativeView />,
 		"timeline-code": <TimelineCodeView />,
 		sounds: <SoundsView />,
 		text: <TextView />,
@@ -59,7 +62,8 @@ export function AssetsPanel() {
 	};
 
 	return (
-		<div className="panel bg-background flex h-full rounded-sm border overflow-hidden">
+		<div className="panel bg-background relative flex h-full rounded-sm border overflow-hidden">
+			<GenerativeResultImporter />
 			<TabBar />
 			<Separator orientation="vertical" />
 			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[activeTab]}</div>

@@ -339,6 +339,12 @@ impl Project {
             ));
         }
         self.settings.validate()?;
+        if let Some(value) = self.extensions.get(crate::generative::KEY) {
+            let state: crate::generative::GenerativeDocument =
+                serde_json::from_value(value.clone())
+                    .map_err(|e| ModelError::Invalid(e.to_string()))?;
+            state.validate()?;
+        }
         if let Some(value) = self.extensions.get(crate::studio::STUDIO_KEY) {
             let source: crate::studio::StudioDocument = serde_json::from_value(value.clone())
                 .map_err(|e| ModelError::Invalid(e.to_string()))?;

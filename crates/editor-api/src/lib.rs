@@ -91,3 +91,5 @@ pub use registry::{
 pub use runtime::{
     OpenCutRuntime, ProjectSessionInfo, RecentProjectInfo, RuntimeCheckpoint, RuntimeError,
 };
+
+pub mod generative;

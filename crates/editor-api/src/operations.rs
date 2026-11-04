@@ -52,6 +52,7 @@ fn collect_ids(value: &Value, ids: &mut HashSet<String>) {
 }
 
 mod brand_kits;
+mod generative;
 mod classic;
 mod classic_advanced_podcast;
 mod classic_animation_catalog;
@@ -134,6 +135,7 @@ pub(crate) fn register_all(
     register_manifest(registry)?;
     earshot_library::register(registry, artifacts.clone())?;
     register_state_read(registry, state.clone())?;
+    generative::register_generative(registry, state.clone(), events.clone())?;
     register_state_patch(registry, state.clone(), events.clone())?;
     studio::register_studio(registry, state.clone(), events.clone())?;
     register_account_storage(registry, state.clone(), events.clone())?;

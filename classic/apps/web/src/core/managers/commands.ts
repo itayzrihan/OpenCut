@@ -1400,6 +1400,27 @@ export class CommandManager {
 		});
 	}
 
+	/** Read-only registry query; polling must never create undo transactions. */
+	readGenerative({
+		projectId,
+		accountId,
+	}: {
+		projectId: string;
+		accountId: string;
+	}): unknown {
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+			this.agentAccountId() !== accountId
+		)
+			throw new Error("The Director's account or project changed");
+		return this.canonical.invokeControl({
+			capabilityId: "project.generative.read",
+			input: {},
+		});
+	}
+
 	/** The UI uses the same typed track contract discovered by the agent/MCP. */
 	editClassicTrackLayout(
 		change: import("@/core/canonical-classic-session").ClassicTrackLayoutChange,

@@ -840,6 +840,7 @@ function MediaItemWithContextMenu({
 	onCreatePodcastSync: ({ ids }: { ids: string[] }) => void;
 	onUnify: ({ ids }: { ids: string[] }) => void;
 }) {
+	const editor = useEditor();
 	const { isSelected, selectedIds } = useSelection();
 	const idsToDelete = isSelected(item.id) ? selectedIds : [item.id];
 	const deleteLabel =
@@ -849,7 +850,43 @@ function MediaItemWithContextMenu({
 		<ContextMenu>
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
-				<ContextMenuItem>Export clips</ContextMenuItem>
+				<ContextMenuItem
+					disabled={item.type === "file"}
+					onClick={() => {
+						if (item.type === "file") return;
+						editor.timeline.insertElement({
+							element: buildElementFromMedia({
+								mediaId: item.id,
+								mediaType: item.type,
+								name: item.name,
+								duration:
+									item.duration != null
+										? mediaTimeFromSeconds({ seconds: item.duration })
+										: DEFAULT_NEW_ELEMENT_DURATION,
+								startTime: editor.playback.getCurrentTime(),
+							}),
+							placement: { mode: "auto" },
+						});
+					}}
+				>
+					Add to timeline
+				</ContextMenuItem>
+				<ContextMenuItem
+					disabled={!item.file && !item.url}
+					onClick={() => {
+						const url = item.file ? URL.createObjectURL(item.file) : item.url;
+						if (!url) return;
+						const a = document.createElement("a");
+						a.href = url;
+						a.download = item.name;
+						document.body.append(a);
+						a.click();
+						a.remove();
+						if (item.file) setTimeout(() => URL.revokeObjectURL(url), 60_000);
+					}}
+				>
+					Download original
+				</ContextMenuItem>
 				<UnifiedWithAudioAction ids={idsToDelete} />
 				<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
 					Unify as Unified Angles

@@ -20,6 +20,7 @@ import { HugeiconsIcon, type IconSvgElement } from "@hugeicons/react";
 export const TAB_KEYS = [
 	"media",
 	"ai",
+	"generative",
 	"timeline-code",
 	"catalog",
 	"sounds",
@@ -59,6 +60,10 @@ export const tabs = {
 	ai: {
 		icon: createHugeiconsIcon({ icon: AiChat02Icon }),
 		label: "AI",
+	},
+	generative: {
+		icon: createHugeiconsIcon({ icon: MagicWand05Icon }),
+		label: "Generative",
 	},
 	"timeline-code": {
 		icon: createHugeiconsIcon({ icon: SourceCodeIcon }),

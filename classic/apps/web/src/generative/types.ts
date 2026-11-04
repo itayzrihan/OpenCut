@@ -1,0 +1,51 @@
+export interface DirectorReference {
+	id: string;
+	name: string;
+	kind: "image" | "audio" | "video";
+	mime: string;
+	bytes: number;
+	storyboard: boolean;
+}
+export interface DirectorMessage {
+	id: string;
+	role: "user" | "assistant";
+	text: string;
+}
+export interface DirectorJobLink {
+	id: string;
+	digest: string;
+	status: string;
+	mediaId?: string | null;
+}
+export interface DirectorDocument {
+	messages: DirectorMessage[];
+	references: DirectorReference[];
+	direction: string;
+	transcript: string;
+	jobs: DirectorJobLink[];
+}
+export interface DirectorJob {
+	id: string;
+	projectId: string;
+	kind: "video" | "storyboard";
+	status: string;
+	digest: string;
+	prompt: string;
+	model: string;
+	duration?: number;
+	resolution?: string;
+	aspectRatio?: string;
+	references: DirectorReference[];
+	createdAt: number;
+	submittedAt?: number;
+	providerId?: string;
+	message: string;
+	cost?: number;
+	output?: DirectorReference;
+}
+export interface DirectorStatus {
+	configured: boolean;
+	sessionSeconds: number;
+	jobs: DirectorJob[];
+	publicOrigin: string | null;
+}
