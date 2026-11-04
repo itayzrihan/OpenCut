@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
+import { useDirectorReviewFocus } from "../review-focus";
 import { directorReply } from "../chat-response";
 import { imageObservation, videoObservations } from "../vision";
 import { aiClientFetch } from "@/ai/client-transport";
@@ -93,6 +94,24 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		confirmPinRef = useRef<HTMLInputElement>(null),
 		keyRef = useRef<HTMLInputElement>(null);
 	const oauth = useAiOAuthStatus();
+	const focus = useDirectorReviewFocus();
+	useEffect(() => {
+		if (
+			focus.accountId !== window.__opencutAccountId ||
+			focus.projectId !== projectId ||
+			!focus.jobId
+		)
+			return;
+		const job = remote?.jobs.find(
+			(j) => j.id === focus.jobId && j.status === "review",
+		);
+		if (job) {
+			queueMicrotask(() => {
+				setReview(job);
+				focus.clear();
+			});
+		}
+	}, [focus, projectId, remote]);
 	const refresh = useCallback(() => {
 		if (!projectId) return;
 		try {

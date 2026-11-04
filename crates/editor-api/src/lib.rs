@@ -93,3 +93,6 @@ pub use runtime::{
 };
 
 pub mod generative;
+
+mod generative_host;
+pub use generative_host::register_generative_host;

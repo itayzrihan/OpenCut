@@ -42,6 +42,13 @@ export async function performHostEffect({
 	}) => unknown;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
+	if (effect.adapter === "generativeReview") {
+		const { performGenerativeReviewEffect } = await import("@/generative/host-effect");
+		return performGenerativeReviewEffect({
+			effect, accountId, signal, activeProjectId, currentRevision,
+		});
+	}
+
 	if (effect.adapter === "computer") {
 		const bridge = window.opencutElectron;
 		if (

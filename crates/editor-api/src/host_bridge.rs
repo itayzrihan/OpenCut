@@ -132,6 +132,7 @@ impl HostBridge {
         let max_request = match adapter {
             "hyperframesAuthoring" => 4_000_000,
             "subscriptionImage" | "sceneAutomation" => 12_000_000,
+            "generativeReview" => 17_000_000,
             _ => 400_000,
         };
         if request.to_string().len() > max_request {
