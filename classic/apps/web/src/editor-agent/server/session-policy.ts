@@ -18,7 +18,10 @@ export async function runSessionPolicy({
 }): Promise<unknown> {
 	const binary =
 		process.env.OPENCUT_SESSION_POLICY_BINARY ??
-		resolve(process.cwd(), "../../../opencut-session-policy");
+		resolve(
+			process.cwd(),
+			`../../../opencut-session-policy${process.platform === "win32" ? ".exe" : ""}`,
+		);
 	if (!existsSync(binary)) {
 		// Small development/test fixtures retain the portable WASM adapter.
 		// Never allow a large save to freeze all media requests on this host.
@@ -40,7 +43,10 @@ export async function runSessionPolicy({
 	if (Buffer.byteLength(input) > 256 * 1024 ** 2)
 		throw new Error("Session policy input exceeds its limit");
 	return new Promise((resolveResult, reject) => {
-		const child = spawn(binary, [], { stdio: ["pipe", "pipe", "pipe"] });
+		const child = spawn(binary, [], {
+			windowsHide: true,
+			stdio: ["pipe", "pipe", "pipe"],
+		});
 		const chunks: Buffer[] = [];
 		let bytes = 0;
 		let error = "";

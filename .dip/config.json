@@ -425,6 +425,33 @@
         "classic/scripts/verify-earshot-deepseek.mjs"
       ],
       "timeoutMs": 1200000
+    },
+    "legitate-only-local": {
+      "command": [
+        "node",
+        "classic/scripts/verify-legitate-local.mjs"
+      ],
+      "timeoutMs": 300000
+    },
+    "legitate-auth": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/accounts/legitate-server.test.ts",
+        "src/accounts/legitate-start.test.ts",
+        "src/accounts/legitate-callback.test.ts",
+        "src/accounts/legitate-oidc.test.ts",
+        "--jobs=1",
+        "--report=.local/peer-sync-qa/legitate-auth-check"
+      ],
+      "timeoutMs": 120000
+    },
+    "peer-media-sync": {
+      "command": [
+        "node",
+        "classic/scripts/verify-peer-media.mjs"
+      ],
+      "timeoutMs": 1200000
     }
   },
   "mode": "coordinate"

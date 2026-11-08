@@ -37,6 +37,35 @@ const policy: StoragePolicy = {
 	},
 };
 
+test("peer download staging stays local while verified linked originals enter snapshots once", async () => {
+	const root = await mkdtemp(join(tmpdir(), "opencut-peer-vault-"));
+	const previous = process.env.OPENCUT_ACCOUNTS_DIR;
+	process.env.OPENCUT_ACCOUNTS_DIR = join(root, "host");
+	try {
+		const { account } = await registerAccount({ login: "peer-owner", displayName: "Peer Owner", password: "peer snapshot testing password" });
+		await mkdir(join(root, "external"));
+		await accountScope.run(account, async () => {
+			const data = accountDataRoot(), staging = join(data, "peer-transfers", "one", "pull");
+			await mkdir(staging, { recursive: true });
+			await writeFile(join(staging, "original.partial"), "unfinished bytes");
+			await writeFile(join(staging, "journal.json"), '{"hostOnly":true}');
+			const original = join(staging, "verified-original.mp4");
+			await writeFile(original, "verified source");
+			await mkdir(join(data, "projects", "one", "media"), { recursive: true });
+			await writeFile(join(data, "projects", "one", "project.json"), '{"keep":"all edits"}');
+			await writeFile(join(data, "projects", "one", "media", "index.json"), JSON.stringify([{ id: "clip", fileName: "original.mp4", size: 15, storageKind: "linked", sourcePath: original }]));
+			await configureStorageFolder({ folder: join(root, "external"), policy });
+			const snapshot = await publishAccountSnapshot({ policy });
+			expect(snapshot.files.some(file => file.path.startsWith("peer-transfers/"))).toBe(false);
+			expect(snapshot.files.filter(file => file.bytes === 15).length).toBe(1);
+			expect(await readFile(join(staging, "original.partial"), "utf8")).toBe("unfinished bytes");
+		});
+	} finally {
+		if (previous === undefined) delete process.env.OPENCUT_ACCOUNTS_DIR; else process.env.OPENCUT_ACCOUNTS_DIR = previous;
+		await rm(root, { recursive: true, force: true });
+	}
+});
+
 test("offline sources survive encrypted snapshots and metadata-only restore preserves the full version", async () => {
 	const root = await mkdtemp(join(tmpdir(), "opencut-offline-vault-"));
 	const previous = process.env.OPENCUT_ACCOUNTS_DIR;

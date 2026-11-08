@@ -6,6 +6,8 @@ import { z } from "zod";
 import { captureEditorUi } from "./editor-ui";
 import { controlEditorUi } from "./ui-control";
 import { editorWriteHeaders } from "./write-authority";
+import type { EditorCore } from "@/core";
+import { performPeerMediaEffect } from "@/peer-sync/editor-effect";
 
 /** Adapter routing only, never a capability/tool table. Rust constructs the
  * bounded effect after live registry validation; the server owns authorization. */
@@ -24,6 +26,7 @@ export async function performHostEffect({
 	currentRevision,
 	storeScreenshot,
 	storeImage,
+	editor,
 }: {
 	effect: EditingAgentHostEffect;
 	accountId: string;
@@ -40,6 +43,7 @@ export async function performHostEffect({
 		width: number;
 		height: number;
 	}) => unknown;
+	editor?: EditorCore;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
 	if (effect.adapter === "generativeReview") {
@@ -49,6 +53,10 @@ export async function performHostEffect({
 		});
 	}
 
+	if (effect.adapter === "peerMedia") {
+		if (!editor) return { type: "rejected", message: "The scoped media-transfer editor is unavailable" };
+		return performPeerMediaEffect({ effect, editor, accountId, signal });
+	}
 	if (effect.adapter === "computer") {
 		const bridge = window.opencutElectron;
 		if (

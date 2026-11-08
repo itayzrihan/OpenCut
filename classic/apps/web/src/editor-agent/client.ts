@@ -468,6 +468,7 @@ export class EditorAgentClient {
 							})
 						: await performHostEffect({
 								effect,
+								editor: this.editor,
 								accountId: this.account,
 								signal,
 								activeProjectId: () =>

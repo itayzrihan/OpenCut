@@ -178,6 +178,8 @@ function spawnMcp() {
 		"--quiet",
 		"-p",
 		"opencut-mcp-server",
+		"--bin",
+		"opencut-mcp",
 	]);
 }
 

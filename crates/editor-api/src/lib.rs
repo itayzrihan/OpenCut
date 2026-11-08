@@ -9,6 +9,8 @@ mod capability;
 mod host_bridge;
 mod editor_ui;
 mod editor_host;
+mod peer_media;
+pub use peer_media::{register_peer_media, validate_media_pull};
 mod editor_ui_control;
 mod editor_screenshot;
 mod computer;

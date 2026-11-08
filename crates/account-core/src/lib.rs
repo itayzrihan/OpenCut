@@ -6,6 +6,7 @@ use std::collections::BTreeSet;
 pub mod snapshot;
 pub mod media;
 pub mod brand_kit;
+pub mod transfer;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]

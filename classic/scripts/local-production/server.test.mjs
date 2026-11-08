@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm, copyFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createServer } from 'node:net';
@@ -19,12 +19,13 @@ async function eventually(check) {
 test('loopback launcher authenticates commands, preserves release on update rejection, and stops its processes', async () => {
   const root = await mkdtemp(join(tmpdir(), 'opencut-launcher-test-'));
   const panelPort = await freePort(), appPort = await freePort();
-  const releaseRoot = join(root, 'releases/test'), appRoot = join(releaseRoot, 'server/apps/web');
+  const releaseRoot = join(root, 'artifact-cache/test'), appRoot = join(releaseRoot, 'server/apps/web');
   await mkdir(appRoot, { recursive: true });
   await writeFile(join(root, 'config.json'), JSON.stringify({ node:process.execPath,path:process.env.PATH,accountsRoot:join(root,'accounts'),panelPort,appPort }));
-  await writeFile(join(root, 'current.json'), JSON.stringify({ id:'test',appRoot,commit:'abcdef1234' }));
+  await writeFile(join(root, 'current.json'), JSON.stringify({ id:'test',directory:releaseRoot,appRoot,commit:'abcdef1234' }));
   await writeFile(join(appRoot,'server.js'), `process.on('SIGTERM',()=>process.exit(143));require('node:http').createServer((q,s)=>s.end('production')).listen(Number(process.env.PORT),'127.0.0.1');`);
-  await writeFile(join(releaseRoot,'opencut-mcp'), '#!/bin/sh\nexec cat > /dev/null\n', { mode:0o755 });
+  if (process.platform === 'win32') await copyFile(process.execPath, join(releaseRoot,'opencut-mcp.exe'));
+  else await writeFile(join(releaseRoot,'opencut-mcp'), '#!/bin/sh\nexec cat > /dev/null\n', { mode:0o755 });
   const controller = spawn(process.execPath,[join(import.meta.dirname,'server.mjs')],{env:{...process.env,OPENCUT_LOCAL_DEPLOYMENT_DIR:root},stdio:'pipe'});
   let logs='';controller.stderr.on('data',chunk=>logs+=chunk);
   const origin=`http://127.0.0.1:${panelPort}`;

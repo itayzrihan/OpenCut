@@ -5,7 +5,9 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const appRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const publicRoot = resolve(appRoot, "public");
+const publicArgument = process.argv.indexOf("--public-root");
+if (publicArgument !== -1 && !process.argv[publicArgument + 1]) throw new Error("Public asset directory required");
+const publicRoot = publicArgument === -1 ? resolve(appRoot, "public") : resolve(process.argv[publicArgument + 1]);
 const manifestPath = resolve(publicRoot, "background-removal-assets.json");
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const failures = [];

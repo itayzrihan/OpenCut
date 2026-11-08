@@ -714,6 +714,46 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	/** Refresh host-observed source metadata without restoring a stale host
+	 * document or introducing media that is absent from the saved session. */
+	refreshLocalMediaBindings({
+		bindings,
+	}: {
+		bindings: CanonicalClassicSnapshot["mediaAssets"];
+	}): void {
+		const observed = new Map(bindings.map((binding) => [binding.id, binding]));
+		const classic = this.read();
+		const sourceFields = [
+			"missing",
+			"sourcePath",
+			"storageKind",
+			"bindingRevision",
+			"canUndoRelink",
+			"size",
+			"lastModified",
+			"fileName",
+			"mimeType",
+			"width",
+			"height",
+			"duration",
+			"fps",
+			"hasAudio",
+		] as const;
+		this.synchronize({
+			classic: {
+				...classic,
+				mediaAssets: classic.mediaAssets.map((saved) => {
+					const local = observed.get(saved.id);
+					if (!local) return saved;
+					const source: Record<string, unknown> = {};
+					for (const key of sourceFields)
+						if (key in local) source[key] = local[key];
+					return { ...saved, ...source };
+				}),
+			},
+		});
+	}
+
 	begin(): void {
 		this.runtime.beginTransaction(this.projectId, this.status().revision);
 	}

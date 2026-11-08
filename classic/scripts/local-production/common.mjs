@@ -7,8 +7,9 @@ import { parseEnv } from 'node:util';
 export const classicRoot = resolve(import.meta.dirname, '../..');
 export const repository = resolve(classicRoot, '..');
 export const deploymentRoot = process.env.OPENCUT_LOCAL_DEPLOYMENT_DIR ||
-  join(homedir(), 'Library', 'Application Support', 'OpenCut Local');
+  (process.platform === 'win32' ? join(process.env.LOCALAPPDATA || join(homedir(), 'AppData/Local'), 'OpenCut Local') : join(homedir(), 'Library', 'Application Support', 'OpenCut Local'));
 export const configPath = join(deploymentRoot, 'config.json');
+export const releaseDirectory = release => release.directory || join(deploymentRoot, 'releases', release.id);
 export async function readJson(path, fallback = null) {
   try { return JSON.parse(await readFile(path, 'utf8')); }
   catch (error) { if (error.code === 'ENOENT') return fallback; throw error; }
@@ -31,7 +32,7 @@ export async function runtimeEnvironment(config) {
   catch (error) { if (error.code !== 'ENOENT') throw error; }
   // Local Production is always loopback-only, even if development used a proxy.
   const environment = { ...process.env, ...configured, PATH: config.path, NODE_ENV: 'production',
-    NEXT_PUBLIC_SITE_URL: `http://localhost:${config.appPort}`, NEXT_TELEMETRY_DISABLED: '1',
+    NEXT_PUBLIC_SITE_URL: `http://127.0.0.1:${config.appPort}`, NEXT_TELEMETRY_DISABLED: '1',
     OPENCUT_ACCOUNTS_DIR: config.accountsRoot };
   delete environment.OPENCUT_PUBLIC_ORIGIN;
   delete environment.ELECTRON_RUN_AS_NODE;

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { ProjectMediaPullPanel } from "@/peer-sync/project-panel";
 import {
 	useEditor,
 	useEditorMedia,
@@ -53,6 +54,7 @@ export function OfflineMediaPanel() {
 			</button>
 			{open && (
 				<div className="max-h-64 space-y-3 overflow-auto pt-2">
+					{!!missing.length && <ProjectMediaPullPanel key={projectId} editor={editor} projectId={projectId} />}
 					<p>
 						All cuts, effects and timing are retained. You can keep editing.
 						Paste the full path to the original file on this computer to restore

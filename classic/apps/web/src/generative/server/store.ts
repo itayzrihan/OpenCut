@@ -5,14 +5,17 @@ import {
 	readFile,
 	writeFile,
 	rename,
+	rm,
 	readdir,
 	stat,
 } from "node:fs/promises";
 import { join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import type { DirectorReference, DirectorJob } from "../types";
 export const id = () => randomBytes(16).toString("hex");
 export const sha = (b: Buffer | string) =>
 	createHash("sha256").update(b).digest("hex");
+const pendingJsonWrites = new Map<string, Promise<void>>();
 export function validId(value: string) {
 	if (!/^[a-f0-9]{32}$/.test(value)) throw new Error("Invalid artifact/job ID");
 	return value;
@@ -35,10 +38,48 @@ export async function saveJson({
 	name: string;
 	value: unknown;
 }) {
+	const target = join(root, name);
+	const previous = pendingJsonWrites.get(target);
+	const write = (async () => {
+		await previous?.catch(() => {});
+		await replaceJson({ root, target, value });
+	})();
+	pendingJsonWrites.set(target, write);
+	try {
+		await write;
+	} finally {
+		if (pendingJsonWrites.get(target) === write) pendingJsonWrites.delete(target);
+	}
+}
+
+async function replaceJson({ root, target, value }: {
+	root: string;
+	target: string;
+	value: unknown;
+}) {
 	await mkdir(root, { recursive: true, mode: 0o700 });
 	const tmp = join(root, `${id()}.tmp`);
 	await writeFile(tmp, JSON.stringify(value), { mode: 0o600, flag: "wx" });
-	await rename(tmp, join(root, name));
+	try {
+		for (let attempt = 0; ; attempt++) {
+			try {
+				await rename(tmp, target);
+				return;
+			} catch (error) {
+				const code = (error as NodeJS.ErrnoException).code;
+				if (
+					process.platform !== "win32" || attempt === 5 ||
+					(code !== "EPERM" && code !== "EBUSY" && code !== "EACCES")
+				)
+					throw error;
+				// A concurrent Windows reader can briefly hold the destination open.
+				await delay(10 * 2 ** attempt);
+			}
+		}
+	} catch (error) {
+		await rm(tmp, { force: true }).catch(() => {});
+		throw error;
+	}
 }
 export async function json<T>({
 	root,
@@ -47,7 +88,10 @@ export async function json<T>({
 	root: string;
 	name: string;
 }): Promise<T> {
-	return JSON.parse(await readFile(join(root, name), "utf8"));
+	const target = join(root, name);
+	// Let queued writes finish before opening another Windows file handle.
+	await pendingJsonWrites.get(target)?.catch(() => {});
+	return JSON.parse(await readFile(target, "utf8"));
 }
 export function jobRoot({ root, jobId }: { root: string; jobId: string }) {
 	return join(root, "jobs", validId(jobId));

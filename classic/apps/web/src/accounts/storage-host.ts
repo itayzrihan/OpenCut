@@ -229,6 +229,10 @@ async function walk({
 			throw error;
 		},
 	)) {
+		// Download journals and partial/corrupt originals are host-local IO.
+		// Verified linked originals are already materialized through media indexes
+		// below; copying this cache would duplicate large files in every snapshot.
+		if (!prefix && item.name === "peer-transfers") continue;
 		const path = join(root, item.name),
 			name = prefix ? `${prefix}/${item.name}` : item.name;
 		if (item.isSymbolicLink())

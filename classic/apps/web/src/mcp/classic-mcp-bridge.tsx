@@ -370,6 +370,7 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 								return performSceneAutomationEffect(scope);
 							return performHostEffect({
 								effect,
+								editor,
 								accountId,
 								signal,
 								activeProjectId: () =>

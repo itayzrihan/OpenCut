@@ -4,6 +4,7 @@ import { hydrateAccountPreferences } from "@/services/local-drive/preferences";
 import { BackgroundSnapshots } from "./background-snapshots";
 import { ClientAiSetup } from "@/ai/components/client-ai-setup";
 import { WorkspaceLoading } from "@/components/workspace-loading";
+import { PeerSyncPresence } from "@/peer-sync/presence";
 type Account = { id: string; displayName: string };
 export function AccountGate({ children }: { children: ReactNode }) {
 	const [account, setAccount] = useState<Account | null>(null);
@@ -120,6 +121,7 @@ export function AccountGate({ children }: { children: ReactNode }) {
 		return (
 			<>
 				<BackgroundSnapshots />
+				<PeerSyncPresence />
 				<ClientAiSetup />
 				{children}
 				<nav

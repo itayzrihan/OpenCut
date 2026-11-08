@@ -1,0 +1,15 @@
+{
+	"extends": "./tsconfig.test.json",
+	"include": [
+		"src/peer-sync/**/*.ts",
+		"src/peer-sync/**/*.tsx",
+		"src/types/**/*.d.ts",
+		"src/editor-agent/__tests__/dsh-schema-runtime.test.ts",
+		"src/accounts/legitate-callback.test.ts",
+		"src/accounts/legitate-server.test.ts",
+		"src/accounts/legitate-start.test.ts",
+		"src/accounts/legitate-only-api.test.ts",
+		"next-env.d.ts"
+	],
+	"exclude": ["node_modules"]
+}

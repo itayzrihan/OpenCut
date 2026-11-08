@@ -662,7 +662,7 @@ async function mutateFontIndex(
 	});
 }
 
-function mimeTypeForPath(path: string): string {
+export function mimeTypeForPath(path: string): string {
 	const extension = extname(path).toLowerCase();
 	const mimeTypes: Record<string, string> = {
 		".mp4": "video/mp4",

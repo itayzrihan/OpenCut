@@ -20,6 +20,7 @@ import { homedir } from "node:os";
 import { join, resolve } from "node:path";
 import { promisify } from "node:util";
 import { recoverInterruptedRestores } from "./restore-recovery";
+import { notifyAccountDisconnect } from "./lifecycle";
 
 const derive = promisify(scrypt);
 const COOKIE = "opencut-account";
@@ -476,7 +477,27 @@ export async function authenticateAccount(
 			await import("@/export/queue/worker-auth");
 		return authenticateRenderWorker(request, accountsRoot());
 	}
+	return readAccountSession(request);
+}
 
+/** An OAuth confirmation document may be opened by a cross-site navigation.
+ * It exposes no account data and its same-origin POST still performs linking. */
+export async function authenticateAccountNavigation(
+	request: Request,
+): Promise<LocalAccount> {
+	if (
+		request.method !== "GET" ||
+		request.headers.get("sec-fetch-mode") !== "navigate" ||
+		request.headers.get("sec-fetch-dest") !== "document"
+	)
+		return authenticateAccount(request);
+	const origin = localRequestOrigin(request);
+	if (request.headers.has("origin") && request.headers.get("origin") !== origin)
+		throw new Error("Cross-origin request rejected");
+	return readAccountSession(request);
+}
+
+async function readAccountSession(request: Request): Promise<LocalAccount> {
 	const token = readToken(request);
 	if (!token) throw new Error("Sign in to an OpenCut account first");
 	const session = await readFile(sessionPath(token), "utf8").then(
@@ -486,7 +507,8 @@ export async function authenticateAccount(
 		session.expiresAt <= Date.now() ||
 		!/^[a-f0-9-]{36}$/.test(session.accountId) ||
 		session.account.id !== session.accountId ||
-		(process.env.OPENCUT_LEGITATE_ONLY === "true" && session.provider !== "legitate")
+		(process.env.OPENCUT_LEGITATE_ONLY === "true" &&
+			session.provider !== "legitate")
 	)
 		throw new Error("Session expired. Sign in again");
 	if (!(await importLocked(session.accountId)))
@@ -497,6 +519,8 @@ export async function authenticateAccount(
 	return session.account;
 }
 export async function logoutAccount(request: Request) {
+	const account = await authenticateAccount(request).catch(() => null);
+	if (account) notifyAccountDisconnect(account.id);
 	assertLocalOrigin(request);
 	const token = readToken(request);
 	if (token)

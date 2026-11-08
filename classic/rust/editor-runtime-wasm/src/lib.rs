@@ -12,6 +12,15 @@ use serde_json::{Map, Value};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 
+/// Shared policy for host download staging; the host supplies authenticated
+/// account scope and original file facts, never a peer-provided local path.
+#[wasm_bindgen(js_name = validateMediaPull)]
+pub fn validate_media_pull(request: JsValue, manifest: JsValue, local: JsValue) -> Result<(), JsValue> {
+    let parse = |v| serde_wasm_bindgen::from_value(v).map_err(|e| JsValue::from_str(&e.to_string()));
+    opencut_editor_api::validate_media_pull(parse(request)?, parse(manifest)?, parse(local)?)
+        .map_err(|e| JsValue::from_str(&e))
+}
+
 #[derive(Default, Deserialize)]
 #[serde(rename_all = "camelCase", default, deny_unknown_fields)]
 struct InvocationOptions {

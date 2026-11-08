@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { saveAllAccountPreferences } from "@/services/local-drive/preferences";
+import { PeerSyncSettings } from "@/peer-sync/settings";
 type StorageMode = "localOnly" | "externalDrive" | "personalDevices";
 type State = {
 	profile: {
@@ -116,6 +117,7 @@ export function StorageSettings({
 		disabled = busy || running;
 	return (
 		<section className="space-y-5 rounded-xl border p-6">
+			<PeerSyncSettings />
 			<div>
 				<h2 className="text-lg font-medium">Your storage</h2>
 				<p className="mt-2 text-sm text-muted-foreground">

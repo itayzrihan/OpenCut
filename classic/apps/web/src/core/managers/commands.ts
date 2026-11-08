@@ -2668,11 +2668,13 @@ export class CommandManager {
 	async enableCanonical({
 		runtime,
 		atomicBundle,
+		localMediaBindings,
 		persistSession,
 		persistInitial = true,
 	}: {
 		runtime?: CanonicalEditorRuntime;
 		atomicBundle?: EditorSessionBundle;
+		localMediaBindings?: CanonicalClassicSnapshot["mediaAssets"];
 		persistSession?: (capture: () => EditorSessionBundle) => Promise<void>;
 		persistInitial?: boolean;
 	} = {}): Promise<void> {
@@ -2741,6 +2743,10 @@ export class CommandManager {
 						accountId,
 						checkpoint: atomicBundle.agentCheckpoint,
 					});
+				// Restore the paired checkpoint against its saved revision first.
+				// Host observations may then legitimately advance the live revision.
+				if (localMediaBindings)
+					session.refreshLocalMediaBindings({ bindings: localMediaBindings });
 			} else if (this.canonicalArchive) {
 				session.restore(this.canonicalArchive);
 				// Project and history use separate durable records. The loaded project

@@ -5,11 +5,12 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { open, readFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { once } from 'node:events';
-import { configuration, deploymentRoot, readJson, delay, runtimeEnvironment } from './common.mjs';
+import { configuration, deploymentRoot, readJson, delay, runtimeEnvironment, releaseDirectory } from './common.mjs';
+import { executableName, openLocalTarget } from './platform.mjs';
 
 const config = await configuration();
 const origin = `http://127.0.0.1:${config.panelPort}`;
-const appUrl = `http://localhost:${config.appPort}/projects`;
+const appUrl = `http://127.0.0.1:${config.appPort}/projects`;
 const token = randomBytes(32).toString('hex');
 let production = null, electron = null, builder = null, controlPlane = null, busy = false, lastSeen = Date.now(), error = null;
 let activeRelease = null;
@@ -18,7 +19,7 @@ await mkdir(join(deploymentRoot, 'logs'), { recursive: true });
 async function child(command, args, options, logName) {
   const log = await open(join(deploymentRoot, 'logs', logName), 'a', 0o600);
   try {
-    const process = spawn(command, args, { ...options, stdio: [options?.keepStdin ? 'pipe' : 'ignore', log.fd, log.fd] });
+    const process = spawn(command, args, { ...options, windowsHide: true, stdio: [options?.keepStdin ? 'pipe' : 'ignore', log.fd, log.fd] });
     await once(process, 'spawn');
     return process;
   } finally { await log.close(); }
@@ -42,9 +43,11 @@ async function start() {
   const release = await readJson(join(deploymentRoot, 'current.json'));
   if (!release) throw Error('Build production first using the update button.');
   await assertFreePort(config.appPort);
+  const environment = await runtimeEnvironment(config);
   const process = await child(config.node, [join(release.appRoot, 'server.js')], {
     cwd: release.appRoot,
-    env: { ...await runtimeEnvironment(config), NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1',
+    env: { ...environment, NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1',
+      OPENCUT_SESSION_POLICY_BINARY: environment.OPENCUT_SESSION_POLICY_BINARY ?? join(releaseDirectory(release), executableName('opencut-session-policy')),
       HOSTNAME: '127.0.0.1', PORT: String(config.appPort), OPENCUT_ACCOUNTS_DIR: config.accountsRoot },
   }, 'production.log');
   production = process;
@@ -62,7 +65,7 @@ async function start() {
       try {
         const r = await fetch(`http://127.0.0.1:${config.appPort}/`, { signal: AbortSignal.timeout(1000) });
         if (r.ok) {
-          controlPlane = await child(join(deploymentRoot, 'releases', release.id, 'opencut-mcp'), [], {
+          controlPlane = await child(join(releaseDirectory(release), executableName('opencut-mcp')), [], {
             cwd: release.appRoot, keepStdin: true, env: { ...globalThis.process.env, PATH: config.path },
           }, 'control-plane.log');
           // This is a launcher-owned process. External MCP instances are untouched.
@@ -82,8 +85,9 @@ async function stop() {
 }
 async function openElectron() {
   await start();
+  if (activeRelease.webOnly) throw Error('This production release runs in your browser.');
   if (electron) return;
-  const releaseRoot = join(deploymentRoot, 'releases', activeRelease.id);
+  const releaseRoot = releaseDirectory(activeRelease);
   await mkdir(join(deploymentRoot, 'electron-profile'), { recursive: true, mode: 0o700 });
   const process = await child(join(releaseRoot, 'Electron.app/Contents/MacOS/Electron'), [join(releaseRoot, 'electron')], {
     env: { ...globalThis.process.env, ELECTRON_RUN_AS_NODE: undefined, PATH: config.path, NODE_ENV: 'production',
@@ -142,8 +146,8 @@ const server = createServer(async (request, response) => {
     if (busy) return json(response, { error: 'An action is already running' }, 409);
     const actions = {
       '/start': start, '/stop': stop, '/electron': openElectron, '/update': update,
-      '/browser': async () => { await start(); spawn('/usr/bin/open', [appUrl], { stdio: 'ignore' }).unref(); },
-      '/logs': async () => { spawn('/usr/bin/open', [join(deploymentRoot, 'logs')], { stdio: 'ignore' }).unref(); },
+      '/browser': async () => { await start(); openLocalTarget(appUrl); },
+      '/logs': async () => { openLocalTarget(join(deploymentRoot, 'logs')); },
       '/quit': async () => { if (production || builder || electron) throw Error('Stop production and wait for updates before closing the panel.'); setTimeout(() => server.close(), 100); },
     };
     if (!Object.hasOwn(actions, path)) return json(response, { error: 'Unknown action' }, 404);

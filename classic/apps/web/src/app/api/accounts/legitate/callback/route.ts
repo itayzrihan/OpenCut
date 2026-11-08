@@ -1,4 +1,7 @@
-import { legitateFinish } from "@/accounts/legitate-server";
+import {
+	legitateFinish,
+	LegitateSignInFailure,
+} from "@/accounts/legitate-server";
 import {
 	localRequestOrigin,
 	newSession,
@@ -43,12 +46,28 @@ export async function GET(request: Request) {
 			"opencut-legitate=; HttpOnly; SameSite=Lax; Path=/api/accounts/legitate/callback; Max-Age=0",
 		);
 		return new Response(null, { status: 303, headers });
-	} catch {
+	} catch (error) {
+		const expired =
+			error instanceof Error &&
+			["Legitate sign-in expired", "Incomplete Legitate response"].includes(
+				error.message,
+			);
+		// Never log callback URLs, authorization codes, cookies or identity tokens.
+		console.warn("[legitate] Callback rejected", {
+			reason: expired ? "expired_request" : "verification_failed",
+			...(error instanceof LegitateSignInFailure
+				? error.diagnostics
+				: { stage: "local_session" }),
+		});
+		const message = expired
+			? "This sign-in link expired. Start again from OpenCut in this browser."
+			: "Legitate sign-in could not be completed. Start a new sign-in from your OpenCut workspace.";
 		return new Response(
-			"Legitate sign-in could not be completed. Return to OpenCut and try again.",
+			`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to OpenCut</title><body style="background:#111;color:#eee;font:16px system-ui;padding:48px;max-width:640px;margin:auto"><h1>Return to OpenCut</h1><p>${message}</p><p><a style="color:#b9a5ff" href="/account">Open account settings and try again</a></p></body></html>`,
 			{
 				status: 400,
 				headers: {
+					"Content-Type": "text/html; charset=utf-8",
 					"Cache-Control": "no-store",
 					"Referrer-Policy": "no-referrer",
 				},

@@ -124,6 +124,7 @@ await verifyExports(
 		"knowledgeDispatch",
         "sessionStoreTransition",
 		"hyperframesEmbeddingPlan",
+		"validateMediaPull",
 		"hyperframesReferenceSource",
 		"subscriptionImagePlan",
 		"ownedProjectRead",

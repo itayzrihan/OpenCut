@@ -1,4 +1,5 @@
 import { startOperationTiming } from "@/diagnostics/operation";
+import { canonicalMediaBindings } from "@/core/canonical-classic-session";
 import { localDriveRequest } from "@/services/local-drive/client";
 import {
 	isBatchReadOnly,
@@ -700,6 +701,9 @@ export class ProjectManager {
 			// including projects which have never imported a HyperFrames composition.
 			await this.editor.command.enableCanonical({
 				atomicBundle,
+				// The local media index observes this machine's sources. Its file
+				// availability and relink receipts must supersede archived bindings.
+				localMediaBindings: canonicalMediaBindings(this.editor.media.getAssets()),
 				persistInitial: canAcquire,
 				persistSession: async (capture) => {
 					if (this.editorSession !== session || this.sessionOwnershipLost)
