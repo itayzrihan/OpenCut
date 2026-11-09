@@ -247,6 +247,7 @@ export class StorageService {
 	}
 
 	async ensureBrowserDataMigrated(): Promise<void> {
+		if (isHostedBrowserWorkspace()) return;
 		if (this.browserMigrationPromise) return this.browserMigrationPromise;
 		this.browserMigrationPromise = this.migrateBrowserData().catch((error) => {
 			this.browserMigrationPromise = null;

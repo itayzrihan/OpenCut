@@ -17,6 +17,7 @@ import {
 	isGpuAvailable,
 } from "@/services/renderer/gpu-renderer";
 import { createReplacementProjectIfMissing } from "@/editor/project-loading";
+import { useWorkspaceAccount } from "@/accounts/gate";
 import { ClassicMcpBridge } from "@/mcp/classic-mcp-bridge";
 import { WorkspaceLoading } from "@/components/workspace-loading";
 
@@ -248,5 +249,6 @@ function EditorRuntimeBindings() {
 
 	useEditorActions();
 	useKeybindingsListener();
-	return <ClassicMcpBridge editor={editor} />;
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
+	return hosted ? null : <ClassicMcpBridge editor={editor} />;
 }

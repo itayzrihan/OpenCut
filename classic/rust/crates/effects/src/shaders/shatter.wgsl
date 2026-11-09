@@ -57,7 +57,7 @@ fn fragment_main(input: VertexOutput) -> @location(0) vec4f {
         return vec4f(0.0);
     }
 
-    let source = textureSample(input_texture, input_sampler, source_uv);
+    let source = textureSampleLevel(input_texture, input_sampler, source_uv, 0.0);
     let fade = 1.0 - smoothstep(0.62, 1.0, progress) * (0.55 + random_a * 0.45);
     let glint = (1.0 - smoothstep(crack_width, crack_width * 2.2, crack)) * 0.08 * progress;
     return vec4f(source.rgb + vec3f(glint), source.a * fade);

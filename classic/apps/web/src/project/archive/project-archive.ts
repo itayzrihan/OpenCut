@@ -1,12 +1,9 @@
+import { browserRecoveryProject } from "opencut-wasm";
 import type { MediaAsset } from "@/media/types";
 import type { ProjectFontAsset } from "@/fonts/types";
 import type { TProject } from "@/project/types";
 import { storageService } from "@/services/storage/service";
-import type {
-	SerializedCommandHistory,
-	SerializedCommandHistoryEntry,
-	SerializedProjectHistorySnapshot,
-} from "@/services/storage/types";
+import type { SerializedCommandHistory } from "@/services/storage/types";
 import {
 	sharedLibraryService,
 	type SharedAudioAsset,
@@ -594,72 +591,6 @@ function remapProjectId({
 	};
 }
 
-function remapSnapshotProjectId({
-	snapshot,
-	fromProjectId,
-	toProjectId,
-}: {
-	snapshot: SerializedProjectHistorySnapshot;
-	fromProjectId: string;
-	toProjectId: string;
-}): SerializedProjectHistorySnapshot {
-	return {
-		...snapshot,
-		metadata: {
-			...snapshot.metadata,
-			id:
-				snapshot.metadata.id === fromProjectId
-					? toProjectId
-					: snapshot.metadata.id,
-		},
-	};
-}
-
-function remapHistoryEntry({
-	entry,
-	fromProjectId,
-	toProjectId,
-}: {
-	entry: SerializedCommandHistoryEntry;
-	fromProjectId: string;
-	toProjectId: string;
-}): SerializedCommandHistoryEntry {
-	return {
-		...entry,
-		before: remapSnapshotProjectId({
-			snapshot: entry.before,
-			fromProjectId,
-			toProjectId,
-		}),
-		after: remapSnapshotProjectId({
-			snapshot: entry.after,
-			fromProjectId,
-			toProjectId,
-		}),
-	};
-}
-
-function remapCommandHistory({
-	history,
-	fromProjectId,
-	toProjectId,
-}: {
-	history: SerializedCommandHistory;
-	fromProjectId: string;
-	toProjectId: string;
-}): SerializedCommandHistory {
-	return {
-		...history,
-		projectId: toProjectId,
-		undoStack: history.undoStack.map((entry) =>
-			remapHistoryEntry({ entry, fromProjectId, toProjectId }),
-		),
-		redoStack: history.redoStack.map((entry) =>
-			remapHistoryEntry({ entry, fromProjectId, toProjectId }),
-		),
-	};
-}
-
 function remapSharedReferences({
 	project,
 	audioIdMap,
@@ -971,12 +902,16 @@ export async function importProjectArchive({
 		if (manifest.commandHistory) {
 			const historyEntry = entries.get(manifest.commandHistory.path);
 			if (historyEntry) {
-				const history = remapCommandHistory({
-					history: await historyEntry.json<SerializedCommandHistory>(),
-					fromProjectId: sourceProject.metadata.id,
-					toProjectId: projectId,
-				});
-				await storageService.saveCommandHistory({ history });
+				const history = await historyEntry.json<SerializedCommandHistory>();
+				const historyForImport = remapped
+					? (JSON.parse(browserRecoveryProject({
+							projectJson: JSON.stringify(sourceProject),
+							historyJson: JSON.stringify(history),
+							sourceId: sourceProject.metadata.id,
+							destinationId: projectId,
+						})) as { history: SerializedCommandHistory }).history
+					: history;
+				await storageService.saveCommandHistory({ history: historyForImport });
 			}
 		}
 	} catch (error) {
