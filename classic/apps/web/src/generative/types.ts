@@ -32,6 +32,8 @@ export interface DirectorJob {
 	digest: string;
 	prompt: string;
 	model: string;
+	replacement?: ReplaceTarget;
+	referenceImage?: true;
 	duration?: number;
 	resolution?: string;
 	aspectRatio?: string;
@@ -42,6 +44,15 @@ export interface DirectorJob {
 	message: string;
 	cost?: number;
 	output?: DirectorReference;
+}
+export type ReplaceMode = "full" | "refine";
+export interface ReplaceTarget {
+	sceneId: string;
+	trackId: string;
+	elementId: string;
+	anchor: string;
+	durationTicks: number;
+	mode: ReplaceMode;
 }
 export interface DirectorStatus {
 	configured: boolean;

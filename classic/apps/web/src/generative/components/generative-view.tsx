@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
+import { applyReplacement, planReplace } from "../replace-clip";
+import { TICKS_PER_SECOND } from "@/wasm";
 import { useDirectorReviewFocus } from "../review-focus";
 import { directorReply } from "../chat-response";
 import { imageObservation, videoObservations } from "../vision";
@@ -699,7 +701,15 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 						className="space-y-2 rounded-lg border p-3 text-sm"
 					>
 						<div className="flex justify-between">
-							<strong>{j.kind === "video" ? "וידאו" : "סטוריבורד"}</strong>
+							<strong>
+								{j.replacement
+									? "Replace clip"
+									: j.referenceImage
+										? "Replacement reference image"
+										: j.kind === "video"
+											? "וידאו"
+											: "סטוריבורד"}
+							</strong>
 							<span>{labels[j.status] ?? j.status}</span>
 						</div>
 						<p className="text-xs text-muted-foreground">{j.message}</p>
@@ -758,6 +768,27 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							>
 								<Download size={13} />
 								הורדה
+							</Button>
+						)}
+						{j.replacement && j.status === "ready" && (
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={() =>
+									void action(async () => {
+										const mediaId = canonical({ editor }).document.jobs.find(
+											(link) => link.id === j.id,
+										)?.mediaId;
+										if (!mediaId)
+											throw new Error(
+												"Wait for the generated video to appear in Media",
+											);
+										if (applyReplacement({ editor, job: j, mediaId }))
+											toast.success("Clip replaced at its original duration");
+									})
+								}
+							>
+								Apply replacement
 							</Button>
 						)}
 					</section>
@@ -918,6 +949,7 @@ function ReviewDialog({
 	close: () => void;
 	run: (f: () => Promise<void>) => Promise<void>;
 }) {
+	const editor = useEditor();
 	const pin = useRef<HTMLInputElement>(null);
 	return (
 		<div
@@ -927,7 +959,14 @@ function ReviewDialog({
 			aria-label="Review paid generation"
 		>
 			<div className="flex justify-between border-b p-3">
-				<h3 className="font-semibold">אישור יצירה אחת · {job.kind}</h3>
+				<h3 className="font-semibold">
+					אישור יצירה אחת ·{" "}
+					{job.replacement
+						? "Replace clip"
+						: job.referenceImage
+							? "Replacement reference image"
+							: job.kind}
+				</h3>
 				<Button variant="ghost" size="icon" onClick={close}>
 					<X size={16} />
 				</Button>
@@ -937,6 +976,15 @@ function ReviewDialog({
 					{job.model} · {job.duration ?? ""}s · {job.resolution} ·{" "}
 					{job.aspectRatio}
 				</p>
+				{job.replacement && (
+					<p className="text-xs">
+						Timeline duration ·{" "}
+						{Number(
+							(job.replacement.durationTicks / TICKS_PER_SECOND).toFixed(5),
+						)}
+						s
+					</p>
+				)}
 				<p className="rounded border p-2 text-sm">
 					יצירה בתשלום. הספק מחייב לפי השימוש; אין הצעת מחיר קבועה מאומתת. אישור
 					זה ישלח בקשה אחת בלבד.
@@ -999,6 +1047,15 @@ function ReviewDialog({
 					const value = pin.current?.value;
 					if (pin.current) pin.current.value = "";
 					void run(async () => {
+						if (
+							job.replacement &&
+							(scope(editor).projectId !== job.projectId ||
+								planReplace({ editor, target: job.replacement }).anchor !==
+									job.replacement.anchor)
+						)
+							throw new Error(
+								"The selected clip changed. Prepare the replacement again.",
+							);
 						await api({
 							projectId: projectId,
 							action: "approve",

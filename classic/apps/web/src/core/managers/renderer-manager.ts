@@ -30,6 +30,9 @@ import { getSourceTimeAtClipTime } from "@/retime";
 import { mapParallaxParentTimeToSourceTime } from "@/parallax-story-teller/camera-geometry";
 import { HyperframesRenderCache } from "@/hyperframes/render-cache";
 import type { HyperframesRenderContext } from "@/hyperframes/types";
+import type { VideoElement } from "@/timeline/types";
+import { ALL_FORMATS, CanvasSink, Input } from "mediabunny";
+import { createMediaSource } from "@/media/source";
 
 export type SnapshotResult =
 	| { success: true; blob: Blob; filename: string }
@@ -278,6 +281,74 @@ export class RendererManager {
 			mimeType: "image/jpeg",
 			maxBytes: Math.max(16_000, Math.min(250_000, Math.floor(maxBytes))),
 		});
+	}
+
+	async captureVideoSourceFrames({
+		clip,
+		times,
+		signal,
+	}: {
+		clip: VideoElement;
+		times: MediaTime[];
+		signal: AbortSignal;
+	}): Promise<Blob[]> {
+		const asset = this.editor.media.getAssets().find((a) => a.id === clip.mediaId);
+		if (!asset || (!asset.file && !asset.url))
+			throw new Error("Relink the selected source video before generating");
+		const captureSignal = AbortSignal.any([signal, AbortSignal.timeout(60_000)]);
+		captureSignal.throwIfAborted();
+		const input = new Input({
+			formats: ALL_FORMATS,
+			source: createMediaSource(asset),
+		});
+		const dispose = () => input.dispose();
+		captureSignal.addEventListener("abort", dispose, { once: true });
+		try {
+			const track = await input.getPrimaryVideoTrack();
+			if (!track || !(await track.canDecode()))
+				throw new Error("Could not decode the selected video frame");
+			// Use a dedicated decoder for source references. The preview's
+			// compositor and decoder remain free while the editor is open.
+			const scale = 1024 / Math.max(1024, track.displayWidth, track.displayHeight);
+			const width = Math.max(1, Math.round(track.displayWidth * scale));
+			const height = Math.max(1, Math.round(track.displayHeight * scale));
+			const sink = new CanvasSink(track, {
+				width, height, fit: "contain", poolSize: 1,
+			});
+			const timestamps = times.map((time) =>
+				mediaTimeToSeconds({
+					time: roundMediaTime({
+						time: clip.trimStart + getSourceTimeAtClipTime({
+							clipTime: time - clip.startTime,
+							retime: clip.retime,
+						}),
+					}),
+				}),
+			);
+			const canvas = document.createElement("canvas");
+			canvas.width = width;
+			canvas.height = height;
+			const context = canvas.getContext("2d");
+			if (!context) throw new Error("Could not capture source video frames");
+			const frames: Blob[] = [];
+			for await (const frame of sink.canvasesAtTimestamps(timestamps)) {
+				captureSignal.throwIfAborted();
+				if (!frame) throw new Error("Could not decode the selected video frame");
+				context.drawImage(frame.canvas, 0, 0);
+				const blob = await encodeCanvasBlob({
+					canvas, mimeType: "image/jpeg", maxBytes: 250_000,
+				});
+				if (!blob) throw new Error("Could not encode the selected video frame");
+				frames.push(blob);
+			}
+			captureSignal.throwIfAborted();
+			if (frames.length !== times.length)
+				throw new Error("Could not decode all of the selected video frames");
+			return frames;
+		} finally {
+			captureSignal.removeEventListener("abort", dispose);
+			if (!captureSignal.aborted) dispose();
+		}
 	}
 
 	async saveSnapshot(): Promise<{ success: boolean; error?: string }> {

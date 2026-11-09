@@ -2,6 +2,7 @@ import type { EditorCore } from "@/core";
 import type { MediaAsset } from "@/media/types";
 import type { DirectorJob } from "./types";
 import { fileUrl, canonical } from "./client";
+import { applyReplacement } from "./replace-clip";
 const imports = new Set<string>();
 /** Host bytes pass through the normal canonical Media import; no parallel asset store. */
 export async function importDirectorResult({
@@ -13,6 +14,7 @@ export async function importDirectorResult({
 	current,
 	process,
 	notify = () => {},
+	notifyWarning = () => {},
 }: {
 	editor: EditorCore;
 	projectId: string;
@@ -22,6 +24,7 @@ export async function importDirectorResult({
 	current: () => boolean;
 	process: (input: { files: File[] }) => Promise<Omit<MediaAsset, "id">[]>;
 	notify?: (message: string) => void;
+	notifyWarning?: (message: string) => void;
 }) {
 	if (!current()) return;
 	const document = canonical({ editor }).document,
@@ -42,32 +45,30 @@ export async function importDirectorResult({
 	if (job.status !== "ready" || !job.output || link?.mediaId) return;
 	const mediaId = "generative-" + job.id,
 		key = accountId + ":" + projectId + ":" + job.id;
-	if (
-		imports.has(key) ||
-		editor.media.getAssets().some((a) => a.id === mediaId)
-	)
-		return;
+	if (imports.has(key)) return;
 	imports.add(key);
 	try {
 		const output = job.output;
-		const response = await fetch(fileUrl({ projectId, id: output.id }), {
-			credentials: "same-origin",
-			signal,
-		});
-		if (!response.ok) throw new Error("Generated media download failed");
-		const file = new File([await response.blob()], output.name, {
-			type: output.mime,
-		});
-		const assets = await process({ files: [file] });
-		if (!current()) return;
-		const asset = assets[0];
-		if (!asset) throw new Error("Could not decode generated media");
-		const imported = await editor.media.addMediaAsset({
-			projectId,
-			asset: { ...asset, id: mediaId },
-		});
-		if (!current()) return;
-		if (!imported) throw new Error("Generated media import did not complete");
+		if (!editor.media.getAssets().some((a) => a.id === mediaId)) {
+			const response = await fetch(fileUrl({ projectId, id: output.id }), {
+				credentials: "same-origin",
+				signal,
+			});
+			if (!response.ok) throw new Error("Generated media download failed");
+			const file = new File([await response.blob()], output.name, {
+				type: output.mime,
+			});
+			const assets = await process({ files: [file] });
+			if (!current()) return;
+			const asset = assets[0];
+			if (!asset) throw new Error("Could not decode generated media");
+			const imported = await editor.media.addMediaAsset({
+				projectId,
+				asset: { ...asset, id: mediaId },
+			});
+			if (!current()) return;
+			if (!imported) throw new Error("Generated media import did not complete");
+		}
 		if (
 			job.kind === "storyboard" &&
 			!document.references.some((r) => r.id === output.id)
@@ -80,11 +81,23 @@ export async function importDirectorResult({
 				job: { id: job.id, digest: job.digest, status: "ready", mediaId },
 			},
 		});
-		notify(
-			job.kind === "storyboard"
-				? "Director storyboard ready for review"
-				: "Generated video added to Media",
-		);
+		if (job.replacement) {
+			try {
+				if (applyReplacement({ editor, job, mediaId }))
+					notify("Clip replaced at its original duration");
+			} catch {
+				notifyWarning(
+					"The replacement is in Media. The original clip was left in place.",
+				);
+			}
+		} else
+			notify(
+				job.referenceImage
+					? "Replacement reference image is ready"
+					: job.kind === "storyboard"
+						? "Director storyboard ready for review"
+						: "Generated video added to Media",
+			);
 	} finally {
 		imports.delete(key);
 	}

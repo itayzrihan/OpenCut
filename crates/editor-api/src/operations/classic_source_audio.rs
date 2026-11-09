@@ -73,7 +73,7 @@ pub(super) fn register_classic_source_audio(
                     "Edit source audio",
                     Some(input.expected_revision),
                     |document| {
-                        outcome = apply_source_audio(document, &input)?;
+                        outcome = apply_source_audio(document, &input, false)?;
                         let mut ids = vec![
                             input.project_id.clone(),
                             input.scene_id.clone(),
@@ -127,7 +127,7 @@ fn tracks_mut<'a>(
         .ok_or_else(|| invalid("source audio scene not found"))
 }
 
-fn track_mut<'a>(tracks: &'a mut Value, id: &str) -> Option<&'a mut Value> {
+pub(super) fn track_mut<'a>(tracks: &'a mut Value, id: &str) -> Option<&'a mut Value> {
     tracks.as_object_mut()?.iter_mut().find_map(|(key, value)| {
         if key == "main" && value["id"] == id {
             return Some(value);
@@ -140,6 +140,19 @@ fn track_mut<'a>(tracks: &'a mut Value, id: &str) -> Option<&'a mut Value> {
         }
         None
     })
+}
+
+pub(super) fn find_clip<'a>(tracks: &'a Value, id: &str) -> Option<(&'a Value, &'a Value)> {
+    std::iter::once(&tracks["main"])
+        .chain(tracks["overlay"].as_array().into_iter().flatten())
+        .chain(tracks["audio"].as_array().into_iter().flatten())
+        .find_map(|track| {
+            track["elements"]
+                .as_array()?
+                .iter()
+                .find(|clip| clip["id"] == id)
+                .map(|clip| (track, clip))
+        })
 }
 
 fn source_mut<'a>(
@@ -160,6 +173,7 @@ fn source_mut<'a>(
 fn apply_source_audio(
     document: &mut EditorDocument,
     input: &SourceAudioInput,
+    preserve_audibility: bool,
 ) -> Result<SourceAudioOutcome, CapabilityError> {
     let source = source_mut(tracks_mut(document, input)?, input)?.clone();
     if source["type"] != "video" {
@@ -232,12 +246,17 @@ fn apply_source_audio(
     if let Some(value) = source.get("podcastFinishingVersion") {
         audio["podcastFinishingVersion"] = value.clone();
     }
+    if preserve_audibility {
+        if let Some(enabled) = source.get("enabled") {
+            audio["enabled"] = enabled.clone();
+        }
+    }
     if let Some(value) = source.get("sourceDuration") {
         audio["sourceDuration"] = value.clone();
     }
     if let Some(retime) = source.get("retime").filter(|v| !v.is_null()) {
         let mut selected = Map::new();
-        for key in ["rate", "maintainPitch"] {
+        for key in ["rate", "maintainPitch", "speedKeyframes"] {
             if let Some(value) = retime.get(key) {
                 selected.insert(key.into(), value.clone());
             }
@@ -281,6 +300,7 @@ fn apply_source_audio(
             all.iter().any(|track| {
                 track["id"] == **id
                     && track["type"] == "audio"
+                    && (!preserve_audibility || (track["locked"] != true && track["muted"] != true))
                     && track["elements"].as_array().is_some_and(|elements| {
                         elements.iter().all(|element| {
                             let other_start = element["startTime"].as_i64().unwrap();
@@ -307,6 +327,47 @@ fn apply_source_audio(
         audio_element_id: Some(audio_id),
         audio_track_id: Some(track_id),
     })
+}
+
+/// Preserve embedded sound as an independent clip before changing the video source.
+pub(super) fn preserve_for_video_replacement(
+    document: &mut EditorDocument,
+    project_id: &str,
+    scene_id: &str,
+    track_id: &str,
+    element_id: &str,
+    muted_track: bool,
+) -> Result<Vec<String>, CapabilityError> {
+    let input = SourceAudioInput {
+        project_id: project_id.into(),
+        scene_id: scene_id.into(),
+        track_id: track_id.into(),
+        element_id: element_id.into(),
+        expected_revision: document.revision,
+        action: SourceAudioAction::Extract,
+    };
+    let outcome = apply_source_audio(document, &input, true)?;
+    if muted_track {
+        if let (Some(track_id), Some(audio_id)) =
+            (&outcome.audio_track_id, &outcome.audio_element_id)
+        {
+            if let Some(audio) = track_mut(tracks_mut(document, &input)?, track_id)
+                .and_then(|track| track["elements"].as_array_mut())
+                .and_then(|elements| {
+                    elements
+                        .iter_mut()
+                        .find(|element| element["id"] == *audio_id)
+                })
+            {
+                audio["params"]["muted"] = json!(true);
+            }
+        }
+    }
+    Ok(outcome
+        .audio_element_id
+        .into_iter()
+        .chain(outcome.audio_track_id)
+        .collect())
 }
 
 /// Volume copies retain curve metadata, sort keys stably, clamp scalar handles

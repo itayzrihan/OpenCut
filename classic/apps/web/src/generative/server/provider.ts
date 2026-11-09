@@ -1,6 +1,12 @@
 /** HTTP/credential adapter only. Canonical editing state lives in Rust. */
 import { z } from "zod";
 import type { DirectorJob, DirectorReference } from "../types";
+import {
+	REPLACE_IMAGE_MODEL,
+	REPLACE_MAX_REFERENCES,
+	REPLACE_VIDEO_MODEL,
+	type VideoGenerationModel,
+} from "../replace-model";
 import * as store from "./store";
 import * as vault from "./vault";
 export type Fetcher = (
@@ -19,24 +25,29 @@ const settingsSchema = z
 		projectId: z.string().min(1).max(256),
 		kind: z.enum(["video", "storyboard"]),
 		model: z.string().min(1).max(200),
-		prompt: z.string().min(20).max(100_000),
-		duration: z.number().int().min(4).max(30).optional(),
-		resolution: z.enum(["480p", "720p"]).optional(),
+		prompt: z.string().max(100_000),
+		duration: z.number().int().min(1).max(30).optional(),
+		resolution: z.enum(["480p", "720p", "1080p"]).optional(),
 		aspectRatio: z
 			.enum(["9:16", "16:9", "4:3", "3:4", "1:1", "21:9"])
 			.optional(),
 		referenceIds: z.array(z.string().regex(/^[a-f0-9]{32}$/)).max(12),
 		httpsReferences: z.record(z.string(), z.string().url()).optional(),
+		referenceImage: z.literal(true).optional(),
+		replacement: z
+			.object({
+				sceneId: z.string().min(1).max(256),
+				trackId: z.string().min(1).max(256),
+				elementId: z.string().min(1).max(256),
+				anchor: z.string().regex(/^[a-f0-9]{64}$/),
+				durationTicks: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+				mode: z.enum(["full", "refine"]),
+			})
+			.strict()
+			.optional(),
 	})
 	.strict();
-export interface Model {
-	id: string;
-	name?: string;
-	supported_durations?: number[];
-	supported_resolutions?: string[];
-	supported_aspect_ratios?: string[];
-	pricing_skus?: Record<string, string>;
-}
+export type Model = VideoGenerationModel;
 export async function models(net: Fetcher = fetch): Promise<Model[]> {
 	const r = await net(API + "/videos/models", {
 		redirect: "error",
@@ -110,6 +121,38 @@ export async function prepare({
 }) {
 	const i = settingsSchema.parse(raw);
 	store.validProject(i.projectId);
+	const replacement = i.replacement;
+	if (
+		replacement &&
+		(i.kind !== "video" ||
+			i.model !== REPLACE_VIDEO_MODEL ||
+			i.referenceImage ||
+			i.httpsReferences ||
+			i.referenceIds.length > REPLACE_MAX_REFERENCES ||
+			new Set(i.referenceIds).size !== i.referenceIds.length ||
+			(replacement.mode === "refine" && i.referenceIds.length === 0))
+	)
+		throw new Error(
+			"Replace requires Wan 3.0 and up to ten distinct image references",
+		);
+	if (
+		i.referenceImage &&
+		(i.kind !== "storyboard" ||
+			i.model !== REPLACE_IMAGE_MODEL ||
+			i.httpsReferences ||
+			i.referenceIds.length > REPLACE_MAX_REFERENCES)
+	)
+		throw new Error("Invalid replacement reference image request");
+	if (
+		!i.prompt.trim() ||
+		(!replacement && !i.referenceImage && i.prompt.length < 20)
+	)
+		throw new Error("Enter a generation prompt");
+	if (
+		!replacement &&
+		((i.duration !== undefined && i.duration < 4) || i.resolution === "1080p")
+	)
+		throw new Error("Unsupported Director generation settings");
 	const refs = [];
 	const bindings = [];
 	let embeddedBytes = 0;
@@ -120,6 +163,8 @@ export async function prepare({
 			projectId: i.projectId,
 		});
 		const ref = f.info;
+		if (replacement && ref.kind !== "image")
+			throw new Error("Replace accepts image references only");
 		if (ref.kind === "image") {
 			embeddedBytes += f.bytes.length;
 			if (embeddedBytes > 24 * 1024 * 1024)
@@ -188,6 +233,7 @@ export async function prepare({
 	}
 	if (
 		i.kind === "video" &&
+		!replacement &&
 		!refs.some((r) => r.storyboard && r.kind === "image")
 	)
 		throw new Error(
@@ -216,8 +262,8 @@ export async function prepare({
 			duration: i.duration,
 			resolution: i.resolution,
 			aspect_ratio: i.aspectRatio,
-			generate_audio: true,
-			input_references: bindings,
+			generate_audio: !replacement,
+			...(bindings.length ? { input_references: bindings } : {}),
 		};
 	} else {
 		body = {
@@ -240,6 +286,8 @@ export async function prepare({
 			digest: store.sha(bytes),
 			prompt: i.prompt,
 			model: i.model,
+			...(replacement ? { replacement } : {}),
+			...(i.referenceImage ? { referenceImage: true as const } : {}),
 			duration: i.duration,
 			resolution: i.resolution,
 			aspectRatio: i.aspectRatio,
@@ -340,23 +388,28 @@ async function submit({
 			const image =
 				typeof url === "string" &&
 				/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(url);
-			if (!image)
-				throw new Error("Image provider returned no inline storyboard image");
+			if (!image) throw new Error("Image provider returned no inline image");
+			const name = j.referenceImage
+				? "Replace reference image"
+				: "Director storyboard";
 			j.output = await store.artifact({
 				root: root,
 				projectId: j.projectId,
 				name:
-					image[1] === "image/jpeg"
-						? "Director storyboard.jpg"
+					name +
+					(image[1] === "image/jpeg"
+						? ".jpg"
 						: image[1] === "image/webp"
-							? "Director storyboard.webp"
-							: "Director storyboard.png",
+							? ".webp"
+							: ".png"),
 				mime: image[1],
 				bytes: Buffer.from(image[2], "base64"),
-				storyboard: true,
+				storyboard: !j.referenceImage,
 			});
 			j.status = "ready";
-			j.message = "Storyboard ready. Review it before preparing the video.";
+			j.message = j.referenceImage
+				? "Reference image ready. Reopen Replace to select it."
+				: "Storyboard ready. Review it before preparing the video.";
 			j.cost =
 				typeof result.usage?.cost === "number" ? result.usage.cost : undefined;
 		} else {
@@ -412,7 +465,10 @@ async function monitor({
 				j.output = await store.artifact({
 					root: root,
 					projectId: j.projectId,
-					name: `Director-${j.id.slice(0, 8)}.mp4`,
+					name:
+						(j.replacement ? "Replace-" : "Director-") +
+						j.id.slice(0, 8) +
+						".mp4",
 					mime: "video/mp4",
 					bytes: bytes,
 				});
@@ -439,7 +495,10 @@ async function monitor({
 				});
 				return;
 			}
-			j.status = result.status === "processing" ? "processing" : "pending";
+			j.status =
+				result.status === "processing" || result.status === "in_progress"
+					? "processing"
+					: "pending";
 			j.message = "Provider status: " + j.status;
 			await store.saveJson({ root: directory, name: "review.json", value: j });
 		} catch {

@@ -38,6 +38,7 @@ export function GenerativeResultImporter() {
 						current,
 						process: processMediaAssets,
 						notify: (message) => toast.success(message),
+						notifyWarning: (message) => toast.warning(message),
 					});
 			} catch (e) {
 				if (!controller.signal.aborted)

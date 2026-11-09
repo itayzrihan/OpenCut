@@ -12,6 +12,12 @@ The current Classic OpenCut editor has a Generative tab immediately after AI. It
 6. Accepted jobs run in the authenticated Node host. Free status/content reads use a fixed900second monotonic in-memory lease after PIN unlock, never extended by polling. Restart/expiry pauses existing-job checks; unlock resumes them without resubmitting. Ambiguous POST outcomes stay uncertain. No key, PIN or approve/unlock operation enters the canonical registry or MCP.
 7. Completed video/image bytes enter the normal project's Media through its existing import manager, exactly once per job. No automatic timeline insertion. Right-click a Media asset for Download original or Add to timeline at the playhead. Removing an imported asset does not cause background reinsertion.
 
+## Replace a clip
+
+In Classic, right-click a regular timeline video and choose **Replace…**. A full replacement accepts a direction and up to ten optional image references. **Prepare reference image** creates a separate Gemini image review through OpenRouter. Reopen Replace to select the approved image when it is ready. To keep the style and characters, provide a correction and the editor samples up to ten evenly spaced frames from the original cut.
+
+The Director presents the Wan 3.0 video request for PIN approval. The provider duration follows its supported whole-second choices. The canonical Replace operation fits the result to the selected clip's exact timeline duration, preserves the original sound, and keeps surrounding clips in place. The operation is undoable. If the source cut changes before the result arrives, the generated video is available in Media.
+
 ## Original audio and video HTTPS
 
 OpenRouter provider ingestion needs reachable HTTPS links for these source types. When `OPENCUT_PUBLIC_ORIGIN` points to this host's publicly reachable HTTPS deployment, the adapter creates a random bearer link valid for1hour. It is readable by anyone holding the link until expiry; private account/project state is never exposed. The UI discloses this before approval. This does not create a tunnel or make a local-only host public by itself.

@@ -88,6 +88,7 @@ mod classic_scenes;
 mod classic_session;
 pub(crate) mod classic_settings;
 mod classic_source_audio;
+mod classic_replace;
 mod classic_split;
 mod classic_start_end;
 pub(crate) mod classic_takes;
@@ -179,6 +180,7 @@ pub(crate) fn register_all(
     )?;
     classic_transitions::register_classic_transitions(registry, state.clone(), events.clone())?;
     classic_split::register_classic_split(registry, state.clone(), events.clone())?;
+    classic_replace::register(registry, state.clone(), events.clone())?;
     classic_text_merge::register_classic_text_merge(registry, state.clone(), events.clone())?;
     classic_ripple::register_classic_ripple(registry, state.clone(), events.clone())?;
     classic_caption_cues::register_caption_cues(registry, state.clone())?;

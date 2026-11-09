@@ -1,3 +1,4 @@
+import { REPLACE_IMAGE_MODEL, REPLACE_VIDEO_MODEL } from "../replace-model";
 import { afterEach, expect, test, spyOn } from "bun:test";
 import { mkdtemp, rm, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -351,4 +352,108 @@ test("storyboard uses separate PIN-approved image call and returns a physical im
 	expect(done.output?.storyboard).toBe(true);
 	expect(done.output?.kind).toBe("image");
 	expect(done.status).toBe("ready");
+});
+
+test("Replace prepares ten chronological image references or a full text-only shot", async () => {
+	const { root, input } = await fixture();
+	const frames = await Promise.all(
+		Array.from({ length: 10 }, (_, i) =>
+			store.artifact({
+				root,
+				projectId: input.projectId,
+				name: `frame-${i}.jpg`,
+				mime: "image/jpeg",
+				bytes: Buffer.from(`original frame ${i}`),
+				storyboard: false,
+			}),
+		),
+	);
+	const net: Fetcher = async (url, init) => {
+		expect(String(url)).toEndWith("/videos/models");
+		expect(init?.method).toBeUndefined();
+		return Response.json({
+			data: [
+				{
+					id: REPLACE_VIDEO_MODEL,
+					supported_durations: [2, 4],
+					supported_resolutions: ["720p"],
+					supported_aspect_ratios: ["9:16"],
+				},
+			],
+		});
+	};
+	const replacement = {
+		sceneId: "scene",
+		trackId: "track",
+		elementId: "selected",
+		anchor: "a".repeat(64),
+		durationTicks: 458400,
+		mode: "refine",
+	};
+	const raw = {
+		...input,
+		replacement,
+		model: REPLACE_VIDEO_MODEL,
+		duration: 4,
+		resolution: "720p",
+		referenceIds: frames.map((f) => f.id),
+	};
+	const referenceUrl = async () => {
+		throw new Error("Use inline reference images");
+	};
+	const refine = await prepare({ root, raw, net, referenceUrl });
+	expect(refine.replacement).toEqual(replacement);
+	expect(refine.status).toBe("review");
+	const payload = await store.json({
+		root: store.jobRoot({ root, jobId: refine.id }),
+		name: "payload.json",
+	});
+	expect(payload).toEqual({
+		model: REPLACE_VIDEO_MODEL,
+		prompt: raw.prompt,
+		duration: 4,
+		resolution: "720p",
+		aspect_ratio: "9:16",
+		generate_audio: false,
+		input_references: frames.map((_, i) => ({
+			type: "image_url",
+			image_url: {
+				url: `data:image/jpeg;base64,${Buffer.from(`original frame ${i}`).toString("base64")}`,
+			},
+		})),
+	});
+	const full = await prepare({
+		root,
+		raw: {
+			...raw,
+			replacement: { ...replacement, mode: "full" },
+			referenceIds: [],
+		},
+		net,
+		referenceUrl,
+	});
+	expect(full.references).toEqual([]);
+	await expect(
+		prepare({
+			root,
+			raw: { ...raw, referenceIds: [] },
+			net,
+			referenceUrl,
+		}),
+	).rejects.toThrow("distinct image references");
+	const image = await prepare({
+		root,
+		referenceUrl,
+		net,
+		raw: {
+			projectId: input.projectId,
+			kind: "storyboard",
+			model: REPLACE_IMAGE_MODEL,
+			prompt: "A single still",
+			referenceImage: true,
+			referenceIds: [],
+		},
+	});
+	expect(image.referenceImage).toBe(true);
+	expect(image.status).toBe("review");
 });

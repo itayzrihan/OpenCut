@@ -1,5 +1,7 @@
 "use client";
 
+import { ReplaceDialog } from "@/generative/components/replace-dialog";
+
 import { useEarshotBuffer } from "@/earshot/use-buffer";
 import { earshotSourceKey } from "@/earshot/audio";
 import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
@@ -293,6 +295,8 @@ function TimelineElementComponent({
 	isDropTarget = false,
 	isExpanded,
 }: TimelineElementProps) {
+	const [replaceOpen, setReplaceOpen] = useState(false);
+	const [replaceStarted, setReplaceStarted] = useState(false);
 	const mediaAsset = useEditorMediaAsset({
 		mediaId: hasMediaId(element) ? element.mediaId : null,
 	});
@@ -404,9 +408,21 @@ function TimelineElementComponent({
 						trackId={track.id}
 						mediaAsset={mediaAsset}
 						isExpanded={isExpanded}
+						onReplace={() => {
+							setReplaceStarted(true);
+							setReplaceOpen(true);
+						}}
 					/>
 				</ContextMenuContent>
 			</ContextMenu>
+			{replaceStarted && element.type === "video" && (
+				<ReplaceDialog
+					open={replaceOpen}
+					onOpenChange={setReplaceOpen}
+					trackId={track.id}
+					clip={element}
+				/>
+			)}
 		</PixelsPerSecondContext.Provider>
 	);
 }
@@ -636,11 +652,13 @@ function TimelineElementMenuContent({
 	trackId,
 	mediaAsset,
 	isExpanded,
+	onReplace,
 }: {
 	element: TimelineElementType;
 	trackId: string;
 	mediaAsset: MediaAsset | null;
 	isExpanded: boolean;
+	onReplace: () => void;
 }) {
 	const editor = useEditor();
 	const allMediaAssets = useEditorMedia((currentEditor) =>
@@ -1157,13 +1175,15 @@ function TimelineElementMenuContent({
 					>
 						Reveal media
 					</ContextMenuItem>
-					<ContextMenuItem
-						icon={<HugeiconsIcon icon={Exchange01Icon} />}
-						disabled
-					>
-						Replace media
-					</ContextMenuItem>
 				</>
+			)}
+			{element.type === "video" && (
+				<ContextMenuItem
+					icon={<HugeiconsIcon icon={Exchange01Icon} />}
+					onSelect={onReplace}
+				>
+					Replace…
+				</ContextMenuItem>
 			)}
 			<ContextMenuSeparator />
 			<ActionMenuItem

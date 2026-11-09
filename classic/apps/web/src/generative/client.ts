@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Rust validates canonical registry projections; authenticated JSON is typed at this host transport boundary. */
 import type { EditorCore } from "@/core";
-import type { DirectorDocument, DirectorStatus } from "./types";
+import type { DirectorDocument, DirectorReference, DirectorStatus } from "./types";
 export function scope(editor: EditorCore) {
 	const projectId = editor.project.getActiveOrNull()?.metadata.id,
 		accountId = window.__opencutAccountId;
@@ -77,7 +77,11 @@ export async function api<T = unknown>({
 				: {}),
 		},
 	);
-	const result = await response.json();
+	const result = await response.json().catch(() => {
+		throw new Error(
+			`POCUT returned an invalid Director response (HTTP ${response.status})`,
+		);
+	});
 	if (window.__opencutAccountId !== account) throw new Error("Account changed");
 	if (!response.ok) throw new Error(result.error || "Director request failed");
 	return result as T;
@@ -95,6 +99,29 @@ export async function status({
 		data: {},
 		signal: signal,
 	});
+}
+export async function uploadDirectorReference({
+	projectId, accountId, file, name, signal,
+}: {
+	projectId: string;
+	accountId: string;
+	file: Blob;
+	name: string;
+	signal: AbortSignal;
+}) {
+	const form = new FormData();
+	form.append("projectId", projectId);
+	form.append("file", file, name);
+	const response = await fetch("/api/generative", {
+		method: "POST",
+		headers: { "X-OpenCut-Account": accountId },
+		body: form,
+		signal,
+	});
+	const result: { reference?: DirectorReference; error?: string } = await response.json();
+	if (!response.ok || !result.reference)
+		throw new Error(result.error ?? "Could not store the reference image");
+	return result.reference;
 }
 export function downloadFile({ url, name }: { url: string; name: string }) {
 	const a = document.createElement("a");
