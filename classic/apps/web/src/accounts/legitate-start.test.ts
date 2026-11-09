@@ -117,3 +117,34 @@ test("first link requires the local account in the same browser, while an existi
 	const linkedSignIn = await POST(request());
 	expect(linkedSignIn.status).toBe(303);
 });
+
+test("hosted sign-in starts on its exact HTTPS origin without a local workspace", async () => {
+	const env = {
+		OPENCUT_LEGITATE_HOSTED: "true",
+		OPENCUT_LEGITATE_ONLY: "true",
+		OPENCUT_PUBLIC_ORIGIN: "https://pocut.vxu.me",
+	};
+	const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
+	Object.assign(process.env, env);
+	try {
+		const request = (host: string) => new Request(
+			"http://127.0.0.1:3000/api/accounts/legitate/start",
+			{
+				method: "POST",
+				headers: { host, "x-forwarded-proto": "https", origin: env.OPENCUT_PUBLIC_ORIGIN },
+			},
+		);
+		const accepted = await POST(request("pocut.vxu.me"));
+		expect(accepted.status).toBe(303);
+		expect(new URL(accepted.headers.get("location")!).searchParams.get("redirect_uri")).toBe(
+			"https://pocut.vxu.me/api/accounts/legitate/callback",
+		);
+		expect(accepted.headers.get("set-cookie")).toContain("; Secure");
+		expect((await POST(request("forged.example"))).status).toBe(400);
+	} finally {
+		for (const [key, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+	}
+});

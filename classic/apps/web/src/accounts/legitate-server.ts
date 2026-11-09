@@ -16,6 +16,7 @@ type Pending = {
 	browser: string;
 	redirectUri: string;
 	account: LocalAccount | null;
+	hosted: boolean;
 	expires: number;
 };
 const globalHost = globalThis as typeof globalThis & {
@@ -50,6 +51,9 @@ type SignInStage =
 	| "id_token_validation"
 	| "workspace_binding"
 	| "peer_identity_cache";
+export const LEGITATE_IDENTITY_CONSENT_REQUIRED =
+	"ERR_LEGITATE_IDENTITY_CONSENT_REQUIRED";
+
 export class LegitateSignInFailure extends Error {
 	readonly diagnostics: {
 		stage: SignInStage;
@@ -95,6 +99,27 @@ export class LegitateSignInFailure extends Error {
 export function legitateClientId() {
 	return process.env.OPENCUT_LEGITATE_CLIENT_ID || "";
 }
+export function legitateHostedOrigin() {
+	if (process.env.OPENCUT_LEGITATE_HOSTED !== "true") return undefined;
+	const origin = process.env.OPENCUT_PUBLIC_ORIGIN;
+	if (
+		process.env.OPENCUT_LEGITATE_ONLY !== "true" ||
+		!origin ||
+		!origin.startsWith("https://") ||
+		new URL(origin).origin !== origin
+	)
+		throw new Error("Hosted Legitate requires an exact HTTPS origin and Legitate-only mode");
+	return origin;
+}
+
+function hostedAccount(subjectHash: string): LocalAccount {
+	// UUIDv8 derived from the verified issuer and subject. A stable namespace
+	// avoids first-login races and keeps each account's editor data separate.
+	const variant = ((parseInt(subjectHash[16], 16) & 3) | 8).toString(16);
+	const id = `${subjectHash.slice(0, 8)}-${subjectHash.slice(8, 12)}-8${subjectHash.slice(13, 16)}-${variant}${subjectHash.slice(17, 20)}-${subjectHash.slice(20, 32)}`;
+	return { id, login: `legitate-${id}`, displayName: "Legitate" };
+}
+
 export function legitateStart(origin: string, account: LocalAccount | null) {
 	const clientId = legitateClientId();
 	if (!clientId) throw new Error("Legitate sign-in is not configured");
@@ -102,7 +127,8 @@ export function legitateStart(origin: string, account: LocalAccount | null) {
 		if (value.expires <= Date.now()) pending.delete(key);
 	if (pending.size >= 100) throw new Error("Too many pending sign-in requests");
 	const redirectUri = `${origin}/api/accounts/legitate/callback`;
-	const tx = createLegitateAuthorization({ clientId, redirectUri });
+	const hostedOrigin = legitateHostedOrigin();
+	const tx = createLegitateAuthorization({ clientId, redirectUri, hostedOrigin });
 	const browser = randomBytes(32).toString("base64url");
 	pending.set(tx.state, {
 		nonce: tx.nonce,
@@ -110,6 +136,7 @@ export function legitateStart(origin: string, account: LocalAccount | null) {
 		browser,
 		redirectUri,
 		account,
+		hosted: !!hostedOrigin,
 		expires: Date.now() + LEGITATE_SIGN_IN_TTL_SECONDS * 1000,
 	});
 	return { url: tx.url, browser };
@@ -162,8 +189,19 @@ export async function legitateFinish({
 			!("id_token" in data) ||
 			typeof data.id_token !== "string" ||
 			data.id_token.length > 32_768
-		)
+		) {
+			if (
+				data &&
+				typeof data === "object" &&
+				"scope" in data &&
+				typeof data.scope === "string" &&
+				!data.scope.split(/\s+/).includes("openid")
+			)
+				throw Object.assign(new Error("Legitate identity was not shared"), {
+					code: LEGITATE_IDENTITY_CONSENT_REQUIRED,
+				});
 			throw new Error("Invalid Legitate response");
+		}
 		stage = "id_token_validation";
 		const identity = await verifyLegitateIdToken({
 			token: data.id_token,
@@ -173,6 +211,7 @@ export async function legitateFinish({
 		const subjectHash = createHash("sha256")
 			.update(`${identity.issuer}\0${identity.subject}`)
 			.digest("hex");
+		if (tx.hosted) return hostedAccount(subjectHash);
 		stage = "workspace_binding";
 		const root = accountsRoot(),
 			path = join(root, BINDING);

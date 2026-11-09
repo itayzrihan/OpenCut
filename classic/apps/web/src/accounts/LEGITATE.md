@@ -26,3 +26,18 @@ the exact production build and account binding have been verified.
 
 The OIDC client must be maintained in the identity server's deployment source;
 a manually changed running configuration is not sufficient for durable rollout.
+
+## Hosted PoCut sign-in
+
+The browser deployment sets `OPENCUT_LEGITATE_HOSTED=true`,
+`OPENCUT_LEGITATE_ONLY=true`, and `OPENCUT_PUBLIC_ORIGIN` to its exact HTTPS
+origin. Use a public PKCE client with the exact
+`/api/accounts/legitate/callback` URL and the `openid` scope. PoCut on
+`https://pocut.vxu.me` uses the Legitate client `pocut-web`.
+
+A verified Legitate issuer and subject resolve to a stable account namespace.
+Each subject has separate workspace data. Keep `OPENCUT_ACCOUNTS_DIR` on a
+persistent volume and bind the Next server to loopback behind the HTTPS
+reverse proxy. Preserve the external host and overwrite forwarded protocol
+headers at that proxy. Publish the browser API allowlist and keep host tools,
+desktop callbacks, and the MCP bridge on private interfaces.

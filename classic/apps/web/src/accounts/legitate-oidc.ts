@@ -19,23 +19,28 @@ function randomValue() {
 export function createLegitateAuthorization({
 	clientId,
 	redirectUri,
+	hostedOrigin,
 }: {
 	clientId: string;
 	redirectUri: string;
+	hostedOrigin?: string;
 }) {
 	if (!/^[A-Za-z0-9._-]{1,128}$/.test(clientId))
 		throw new Error("Invalid Legitate client ID");
 	const callback = new URL(redirectUri);
+	const validOrigin = hostedOrigin
+		? callback.protocol === "https:" && callback.origin === hostedOrigin
+		: callback.protocol === "http:" &&
+			["localhost", "127.0.0.1", "[::1]"].includes(callback.hostname);
 	if (
-		callback.protocol !== "http:" ||
-		!["localhost", "127.0.0.1", "[::1]"].includes(callback.hostname) ||
+		!validOrigin ||
 		callback.username ||
 		callback.password ||
 		callback.search ||
 		callback.hash ||
 		callback.pathname !== "/api/accounts/legitate/callback"
 	)
-		throw new Error("Invalid local Legitate callback");
+		throw new Error("Invalid Legitate callback");
 	const state = randomValue(),
 		nonce = randomValue(),
 		verifier = randomValue();
@@ -44,7 +49,7 @@ export function createLegitateAuthorization({
 		response_type: "code",
 		client_id: clientId,
 		redirect_uri: callback.href,
-		scope: "openid profile",
+		scope: hostedOrigin ? "openid" : "openid profile",
 		state,
 		nonce,
 		code_challenge: createHash("sha256").update(verifier).digest("base64url"),

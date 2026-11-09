@@ -1,0 +1,30 @@
+[Unit]
+Description=PoCut hosted web editor
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=pocut
+Group=pocut
+WorkingDirectory=/srv/pocut/live/apps/web
+ExecStart=/usr/bin/node server.js
+Environment=NODE_ENV=production
+Environment=HOSTNAME=127.0.0.1
+Environment=PORT=3211
+Environment=NEXT_TELEMETRY_DISABLED=1
+Environment=NEXT_PUBLIC_SITE_URL=https://pocut.vxu.me
+Environment=OPENCUT_PUBLIC_ORIGIN=https://pocut.vxu.me
+Environment=OPENCUT_LEGITATE_CLIENT_ID=pocut-web
+Environment=OPENCUT_LEGITATE_ONLY=true
+Environment=OPENCUT_LEGITATE_HOSTED=true
+Environment=OPENCUT_ACCOUNTS_DIR=/var/lib/pocut/accounts
+Environment=OPENCUT_SESSION_POLICY_BINARY=/srv/pocut/bin/opencut-session-policy
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/pocut
+Restart=on-failure
+RestartSec=3
+[Install]
+WantedBy=multi-user.target

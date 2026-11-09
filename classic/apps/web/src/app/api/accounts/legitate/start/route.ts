@@ -5,6 +5,7 @@ import {
 } from "@/accounts/server";
 import {
 	hasLegitateWorkspaceBinding,
+	legitateHostedOrigin,
 	legitateStart,
 	LEGITATE_SIGN_IN_TTL_SECONDS,
 } from "@/accounts/legitate-server";
@@ -13,7 +14,9 @@ export const dynamic = "force-dynamic";
 export async function POST(request: Request) {
 	try {
 		assertLocalOrigin(request);
-		const account = await authenticateAccount(request).catch(
+		const hosted = legitateHostedOrigin();
+		const origin = localRequestOrigin(request);
+		const account = hosted ? null : await authenticateAccount(request).catch(
 			(error: unknown) => {
 				const message = error instanceof Error ? error.message : "";
 				const reason =
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
 				return null;
 			},
 		);
-		if (!account && !(await hasLegitateWorkspaceBinding()))
+		if (!hosted && !account && !(await hasLegitateWorkspaceBinding()))
 			return new Response(
 				"Sign in to your POCUT workspace first, then connect Legitate from Account settings.",
 				{
@@ -45,12 +48,13 @@ export async function POST(request: Request) {
 					},
 				},
 			);
-		const tx = legitateStart(localRequestOrigin(request), account);
+		const tx = legitateStart(origin, account);
+		const secure = origin.startsWith("https://") ? "; Secure" : "";
 		return new Response(null, {
 			status: 303,
 			headers: {
 				Location: tx.url,
-				"Set-Cookie": `opencut-legitate=${tx.browser}; HttpOnly; SameSite=Lax; Path=/api/accounts/legitate/callback; Max-Age=${LEGITATE_SIGN_IN_TTL_SECONDS}`,
+				"Set-Cookie": `opencut-legitate=${tx.browser}; HttpOnly; SameSite=Lax; Path=/api/accounts/legitate/callback; Max-Age=${LEGITATE_SIGN_IN_TTL_SECONDS}${secure}`,
 				"Cache-Control": "no-store",
 			},
 		});

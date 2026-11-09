@@ -168,3 +168,84 @@ test("requires browser-bound one-use transactions and keeps the first verified i
 		),
 	).rejects.toThrow();
 });
+
+test("hosted Legitate sign-in allocates stable, separate workspaces by verified subject", async () => {
+	const env = {
+		OPENCUT_LEGITATE_HOSTED: "true",
+		OPENCUT_LEGITATE_ONLY: "true",
+		OPENCUT_PUBLIC_ORIGIN: "https://pocut.vxu.me",
+	};
+	const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
+	const previousSubject = subject;
+	Object.assign(process.env, env);
+	try {
+		async function signIn(as: string) {
+			subject = as;
+			const tx = legitateStart(env.OPENCUT_PUBLIC_ORIGIN, null);
+			return legitateFinish({
+				state: new URL(tx.url).searchParams.get("state")!,
+				browser: tx.browser,
+				code: "hosted-fixture",
+			});
+		}
+		const first = await signIn("hosted-one");
+		const second = await signIn("hosted-two");
+		expect(first.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-8[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+		expect(second.id).not.toBe(first.id);
+		expect(await signIn("hosted-one")).toEqual(first);
+	} finally {
+		subject = previousSubject;
+		for (const [key, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+	}
+});
+
+test("a hosted callback without identity consent explains the retry and issues no session", async () => {
+	const { GET } = await import("@/app/api/accounts/legitate/callback/route");
+	const env = {
+		OPENCUT_LEGITATE_HOSTED: "true",
+		OPENCUT_LEGITATE_ONLY: "true",
+		OPENCUT_PUBLIC_ORIGIN: "https://pocut.vxu.me",
+	};
+	const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
+	const previousFetch = globalThis.fetch;
+	Object.assign(process.env, env);
+	try {
+		const callback = () => {
+			const tx = legitateStart(env.OPENCUT_PUBLIC_ORIGIN, null);
+			const state = new URL(tx.url).searchParams.get("state")!;
+			return GET(new Request(
+				`${env.OPENCUT_PUBLIC_ORIGIN}/api/accounts/legitate/callback?state=${state}&code=fixture-code`,
+				{ headers: { host: "pocut.vxu.me", cookie: `opencut-legitate=${tx.browser}` } },
+			));
+		};
+		globalThis.fetch = (async () => Response.json({
+			access_token: "private-fixture-access-token",
+			scope: "",
+		})) as unknown as typeof fetch;
+		const denied = await callback();
+		expect(denied.status).toBe(400);
+		expect(denied.headers.get("set-cookie")).toBeNull();
+		const html = await denied.text();
+		expect(html).toContain("The account identification in the application");
+		expect(html).toContain('href="/projects#sign-in"');
+		expect(html).not.toContain("private-fixture-access-token");
+
+		globalThis.fetch = (async () => Response.json({
+			id_token: "verified-fixture-id-token",
+			scope: "openid",
+		})) as unknown as typeof fetch;
+		const accepted = await callback();
+		expect(accepted.status).toBe(303);
+		expect(accepted.headers.get("location")).toBe(`${env.OPENCUT_PUBLIC_ORIGIN}/projects`);
+		expect(accepted.headers.get("set-cookie")).toContain("opencut-account=");
+	} finally {
+		globalThis.fetch = previousFetch;
+		for (const [key, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+	}
+});

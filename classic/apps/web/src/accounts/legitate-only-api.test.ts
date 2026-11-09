@@ -1,10 +1,20 @@
-import { afterAll, expect, test } from "bun:test";
+import { afterAll, expect, mock, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { GET, POST } from "@/app/api/accounts/route";
 import { registerAccount, newSession, sessionCookie } from "./server";
 import { GET as legacyGet, POST as legacyPost } from "@/app/api/auth/[...all]/route";
+mock.module("opencut-wasm", () => ({
+	batchEditIsLocked: () => false,
+	fullAutoEditStages: () => [],
+	batchEditTransition: () => { throw new Error("Unexpected batch edit"); },
+	mediaLinkThresholdBytes: () => 0,
+	mediaStorageDisposition: () => "copy",
+	mediaRelinkBinding: () => { throw new Error("Unexpected media relink"); },
+	browserRecoveryProject: () => { throw new Error("Unexpected browser recovery"); },
+}));
+const { POST: drive } = await import("@/app/api/local-drive/route");
 const root = await mkdtemp(join(tmpdir(), "opencut-legitate-only-"));
 const originalRoot = process.env.OPENCUT_ACCOUNTS_DIR;
 const originalOnly = process.env.OPENCUT_LEGITATE_ONLY;
@@ -80,4 +90,42 @@ test("Legitate-only also blocks the legacy hosted password and session endpoints
 		expect(response.headers.get("cache-control")).toBe("no-store");
 	}
 	expect((await legacyGet(new Request("http://127.0.0.1:3000/api/auth/get-session"))).status).toBe(403);
+});
+
+test("hosted storage requires a Legitate session and rejects linking host files", async () => {
+	const env = {
+		OPENCUT_LEGITATE_HOSTED: "true",
+		OPENCUT_LEGITATE_ONLY: "true",
+		OPENCUT_PUBLIC_ORIGIN: "https://pocut.vxu.me",
+	};
+	const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
+	Object.assign(process.env, env);
+	try {
+		const account = { id: crypto.randomUUID(), displayName: "Fixture", login: "hosted" };
+		const { token } = await newSession(account, "legitate");
+		const request = (operation: string, signedIn: boolean) => new Request(
+			"https://pocut.vxu.me/api/local-drive",
+			{
+				method: "POST",
+				headers: {
+					host: "pocut.vxu.me",
+					origin: env.OPENCUT_PUBLIC_ORIGIN,
+					"sec-fetch-site": "same-origin",
+					"content-type": "application/json",
+					...(signedIn ? { cookie: sessionCookie(token).split(";")[0] } : {}),
+				},
+				body: JSON.stringify({ operation }),
+			},
+		);
+		expect((await drive(request("preferences.list", false))).status).toBe(401);
+		const result = await drive(request("preferences.list", true));
+		expect(result.status).toBe(200);
+		expect(await result.json()).toEqual({});
+		expect((await drive(request("media.registerPath", true))).status).toBe(403);
+	} finally {
+		for (const [key, value] of Object.entries(previous)) {
+			if (value === undefined) delete process.env[key];
+			else process.env[key] = value;
+		}
+	}
 });

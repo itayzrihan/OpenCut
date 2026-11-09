@@ -202,6 +202,11 @@ export function PocutLanding({
 								<UiMessage text={"See pricing"} /> <ArrowDown size={14} />
 							</a>
 						</div>
+						{showLegitate && legitateOnly && (
+							<p className="text-sm text-muted-foreground">
+								<UiMessage text={"On the Legitate consent screen, select account identification to continue."} />
+							</p>
+						)}
 						{error && (
 							<p className={styles.error} role="alert">
 								<UiValue>{error}</UiValue>

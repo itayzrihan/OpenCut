@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { NextConfig } from "next";
@@ -11,6 +12,11 @@ import {
 
 const webRootDirectory = dirname(fileURLToPath(import.meta.url));
 const workspaceRootDirectory = resolve(webRootDirectory, "../..");
+const resolveDependency = createRequire(import.meta.url).resolve;
+const transformersWebEntry = resolve(
+	dirname(resolveDependency("@huggingface/transformers-v4")),
+	"transformers.web.js",
+);
 const localWasmEntry = resolve(
 	workspaceRootDirectory,
 	"rust/wasm/pkg/opencut_wasm.js",
@@ -131,6 +137,9 @@ const nextConfig: NextConfig = {
 		}
 		config.resolve.alias = {
 			...config.resolve.alias,
+			// The transcription worker runs in the browser, even when Webpack
+			// discovers its chunk through the server-rendered component graph.
+			"@huggingface/transformers-v4$": transformersWebEntry,
 			"opencut-wasm": localWasmEntry,
 			"opencut-editor-runtime-wasm": resolve(
 				workspaceRootDirectory,

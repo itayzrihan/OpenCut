@@ -1,4 +1,5 @@
 import {
+	LEGITATE_IDENTITY_CONSENT_REQUIRED,
 	legitateFinish,
 	LegitateSignInFailure,
 } from "@/accounts/legitate-server";
@@ -44,7 +45,7 @@ export async function GET(request: Request) {
 		headers.append("Set-Cookie", sessionCookie(session.token));
 		headers.append(
 			"Set-Cookie",
-			"opencut-legitate=; HttpOnly; SameSite=Lax; Path=/api/accounts/legitate/callback; Max-Age=0",
+			`opencut-legitate=; HttpOnly; SameSite=Lax; Path=/api/accounts/legitate/callback; Max-Age=0${origin.startsWith("https://") ? "; Secure" : ""}`,
 		);
 		return new Response(null, { status: 303, headers });
 	} catch (error) {
@@ -53,6 +54,9 @@ export async function GET(request: Request) {
 			["Legitate sign-in expired", "Incomplete Legitate response"].includes(
 				error.message,
 			);
+		const needsIdentityConsent =
+			error instanceof LegitateSignInFailure &&
+			error.diagnostics.code === LEGITATE_IDENTITY_CONSENT_REQUIRED;
 		// Never log callback URLs, authorization codes, cookies or identity tokens.
 		console.warn("[legitate] Callback rejected", {
 			reason: expired ? "expired_request" : "verification_failed",
@@ -60,11 +64,17 @@ export async function GET(request: Request) {
 				? error.diagnostics
 				: { stage: "local_session" }),
 		});
-		const message = expired
-			? "This sign-in link expired. Start again from POCUT in this browser."
-			: "Legitate sign-in could not be completed. Start a new sign-in from your POCUT workspace.";
+		const message = needsIdentityConsent
+			? 'On the Legitate consent screen, select <strong>The account identification in the application</strong>, then choose <strong>Confirm and continue</strong>.</p><p lang="he" dir="rtl">במסך ההסכמה של Legitate יש לסמן <strong>זיהוי החשבון באפליקציה</strong> ואז ללחוץ על <strong>אישור והמשך</strong>.'
+			: expired
+				? "This sign-in link expired. Start again from POCUT in this browser."
+				: "Legitate sign-in could not be completed. Start a new sign-in from your POCUT workspace.";
+		const retryUrl = needsIdentityConsent ? "/projects#sign-in" : ACCOUNT_WORKSPACE_HREF;
+		const retryLabel = needsIdentityConsent
+			? "Back to POCUT to sign in again"
+			: "Open account settings and try again";
 		return new Response(
-			`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to POCUT</title><body style="background:#111;color:#eee;font:16px system-ui;padding:48px;max-width:640px;margin:auto"><h1>Return to POCUT</h1><p>${message}</p><p><a style="color:#b9a5ff" href="${ACCOUNT_WORKSPACE_HREF}">Open account settings and try again</a></p></body></html>`,
+			`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to POCUT</title><body style="background:#111;color:#eee;font:16px system-ui;padding:48px;max-width:640px;margin:auto"><h1>Return to POCUT</h1><p>${message}</p><p><a style="color:#b9a5ff" href="${retryUrl}">${retryLabel}</a></p></body></html>`,
 			{
 				status: 400,
 				headers: {

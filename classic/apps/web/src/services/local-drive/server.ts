@@ -13,7 +13,7 @@ import {
 	writeFile,
 } from "node:fs/promises";
 import { platform } from "node:os";
-import { accountDataRoot } from "@/accounts/server";
+import { accountDataRoot, localRequestOrigin } from "@/accounts/server";
 import { withEditorProjectWrite } from "@/editor-agent/server/project-write";
 import { createCancellationSafeFileStream } from "./file-stream";
 import {
@@ -711,6 +711,11 @@ function disposition({
 }
 
 export function assertLocalDriveRequest(request: Request): void {
+	if (process.env.OPENCUT_LEGITATE_HOSTED === "true") {
+		if (localRequestOrigin(request) !== process.env.OPENCUT_PUBLIC_ORIGIN)
+			throw new Error("Invalid hosted storage origin");
+		return;
+	}
 	const host = new URL(request.url).hostname.replace(/^\[|\]$/g, "");
 	if (!host || !["localhost", "127.0.0.1", "::1"].includes(host)) {
 		throw new Error("Local-drive storage is available only from localhost");

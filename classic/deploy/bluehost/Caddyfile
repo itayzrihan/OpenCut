@@ -1,0 +1,46 @@
+{
+	admin off
+}
+
+(pocut-backend) {
+	reverse_proxy 127.0.0.1:3211 {
+		header_up Host pocut.vxu.me
+		header_up X-Forwarded-Host pocut.vxu.me
+		header_up X-Forwarded-Proto https
+		header_up -Forwarded
+		header_up -X-OpenCut-Render-Worker
+	}
+}
+
+pocut.vxu.me {
+	tls /etc/caddy/pocut/origin.pem /etc/caddy/pocut/origin.key
+	encode zstd gzip
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy same-origin
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	@entry path /
+	redir @entry /projects 302
+	@hostTools path /batch-worker /render-worker /transcription-check
+	handle @hostTools {
+		respond 404
+	}
+	@media path /api/local-drive/media /api/local-drive/font /api/local-drive/project-thumbnail /api/local-drive/shared-file /api/account-assets/* /api/global-assets/*
+	handle @media {
+		header Content-Security-Policy "sandbox; default-src 'none'"
+		import pocut-backend
+	}
+	@appApi path /api/health /api/accounts /api/accounts/legitate/start /api/accounts/legitate/callback /api/local-drive /api/editor-session /api/project-fonts /api/shared-library /api/brand-kits /api/batch-edit
+	handle @appApi {
+		import pocut-backend
+	}
+	@otherApi path /api /api/*
+	handle @otherApi {
+		respond 404
+	}
+	handle {
+		import pocut-backend
+	}
+}

@@ -126,6 +126,14 @@ async function dispatchPost(request: Request) {
 			body.operation,
 			"operation",
 		) as LocalDriveOperation;
+		if (
+			process.env.OPENCUT_LEGITATE_HOSTED === "true" &&
+			["media.pick", "media.registerPath", "media.registerPaths", "media.relink", "media.relink.undo"].includes(operation)
+		)
+			return NextResponse.json(
+				{ error: "Upload source files from your browser" },
+				{ status: 403 },
+			);
 		const projectId = () => readString(body.projectId, "projectId");
 		const collection = () => readString(body.collection, "collection");
 		const kind = () => readString(body.kind, "kind");
