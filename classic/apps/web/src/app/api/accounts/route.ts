@@ -18,12 +18,12 @@ export async function GET(request: Request) {
 	try {
 		const account = await authenticateAccount(request);
 		return Response.json(
-			{ account, storageBusy: await accountDataLocked(account.id), legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true" },
+			{ account, storageBusy: await accountDataLocked(account.id), legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true", hostedLegitate: process.env.OPENCUT_LEGITATE_HOSTED === "true" },
 			{ headers: { "Cache-Control": "no-store" } },
 		);
 	} catch {
 		return Response.json(
-			{ account: null, legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true" },
+			{ account: null, legitateConfigured: !!legitateClientId(), legitateOnly: process.env.OPENCUT_LEGITATE_ONLY === "true", hostedLegitate: process.env.OPENCUT_LEGITATE_HOSTED === "true" },
 			{ headers: { "Cache-Control": "no-store" } },
 		);
 	}

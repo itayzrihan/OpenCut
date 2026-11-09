@@ -37,6 +37,7 @@ type State = {
 };
 export function AccountSettingsPanel() {
 	const account = useWorkspaceAccount();
+	const hostedLegitate = account?.hostedLegitate ?? false;
 	const [state, setState] = useState<State | null>(null),
 		[error, setError] = useState("");
 	const [browserImport, setBrowserImport] = useState(false),
@@ -50,8 +51,9 @@ export function AccountSettingsPanel() {
 		setState(result);
 	}
 	useEffect(() => {
+		if (hostedLegitate) return;
 		void refresh().catch((e) => setError(e.message));
-	}, []);
+	}, [hostedLegitate]);
 	useEffect(() => {
 		if (state?.job?.status !== "running") return;
 		const timer = setInterval(
@@ -127,8 +129,12 @@ export function AccountSettingsPanel() {
 			<div className={styles.columns}>
 				<div className="min-w-0 space-y-4">
 					<LanguageSettings />
-					<StorageSettings legitateOnly={account?.legitateOnly ?? true} />
-					<PeerSyncSettings />
+					{!hostedLegitate && (
+						<>
+							<StorageSettings legitateOnly={account?.legitateOnly ?? true} />
+							<PeerSyncSettings />
+						</>
+					)}
 					{state?.allowed && (
 						<section className={styles.card}>
 							<h3 className={styles.heading}>

@@ -23,6 +23,7 @@ const WorkspaceAccount = createContext<{
 	displayName: string;
 	canConnectLegitate: boolean;
 	legitateOnly: boolean;
+	hostedLegitate: boolean;
 	storageBusy: boolean;
 } | null>(null);
 
@@ -37,6 +38,7 @@ export function AccountGate({ children }: { children: ReactNode }) {
 	const [error, setError] = useState("");
 	const [legitateConfigured, setLegitateConfigured] = useState(false);
 	const [legitateOnly, setLegitateOnly] = useState(false);
+	const [hostedLegitate, setHostedLegitate] = useState(false);
 	const [storageBusy, setStorageBusy] = useState(false);
 	useEffect(() => {
 		let cancelled = false;
@@ -48,10 +50,12 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					storageBusy,
 					legitateConfigured: configured,
 					legitateOnly: only,
+					hostedLegitate: hosted,
 				}) => {
 					if (cancelled) return;
 					setLegitateConfigured(!!configured);
 					setLegitateOnly(!!only);
+					setHostedLegitate(!!hosted);
 					if ((current?.id ?? null) !== window.__opencutAccountId) {
 						console.info("[workspace] Reloading after account change");
 						window.__opencutActivateAccount(current?.id ?? null);
@@ -140,11 +144,12 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					displayName: account.displayName,
 					canConnectLegitate: legitateConfigured && !legitateOnly,
 					legitateOnly,
+					hostedLegitate,
 					storageBusy,
 				}}
 			>
-				<BackgroundSnapshots />
-				<PeerSyncPresence />
+				{!hostedLegitate && <BackgroundSnapshots />}
+				{!hostedLegitate && <PeerSyncPresence />}
 				{children}
 				{path !== "/projects" && (
 					<UiLocalized<"nav">
