@@ -30,7 +30,7 @@ export async function probeReference({
 		{ timeout: 30000, maxBuffer: 64 * 1024, windowsHide: true },
 	).catch(() => {
 		throw new Error(
-			"Unable to verify original audio/video duration. Install ffprobe on the OpenCut host and upload a playable media file.",
+			"Unable to verify original audio/video duration. Install ffprobe on the POCUT host and upload a playable media file.",
 		);
 	});
 	const durationSeconds = Number(JSON.parse(stdout).format?.duration);

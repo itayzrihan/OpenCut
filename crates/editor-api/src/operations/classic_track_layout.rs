@@ -109,13 +109,8 @@ pub(super) fn register_classic_track_layout(
     )
 }
 
-pub(super) fn apply_layout(scene: &mut Value, change: LayoutChange) -> Result<String, CapabilityError> {
-    let canvas = scene.get("parallax").is_some_and(Value::is_object);
-    let tracks = scene
-        .get_mut("tracks")
-        .and_then(Value::as_object_mut)
-        .ok_or_else(|| CapabilityError::InvalidInput("invalid Classic tracks".into()))?;
-    let all: Vec<&Value> = tracks
+fn all_tracks(tracks: &Map<String, Value>) -> Vec<&Value> {
+    tracks
         .get("overlay")
         .and_then(Value::as_array)
         .into_iter()
@@ -128,11 +123,10 @@ pub(super) fn apply_layout(scene: &mut Value, change: LayoutChange) -> Result<St
                 .into_iter()
                 .flatten(),
         )
-        .collect();
-    let default: Vec<String> = all
-        .iter()
-        .filter_map(|track| track["id"].as_str().map(str::to_owned))
-        .collect();
+        .collect()
+}
+
+fn track_order(tracks: &Map<String, Value>, default: &[String]) -> Vec<String> {
     let mut order = Vec::new();
     for id in tracks
         .get("order")
@@ -146,6 +140,37 @@ pub(super) fn apply_layout(scene: &mut Value, change: LayoutChange) -> Result<St
             order.push(id.to_owned());
         }
     }
+    order
+}
+
+pub(super) fn display_track_index(tracks: &Value, track_id: &str) -> Option<i64> {
+    let tracks = tracks.as_object()?;
+    let default = track_ids(&all_tracks(tracks));
+    track_order(tracks, &default)
+        .iter()
+        .position(|id| id == track_id)
+        .map(|index| index as i64)
+}
+
+fn track_ids(tracks: &[&Value]) -> Vec<String> {
+    tracks
+        .iter()
+        .filter_map(|track| track["id"].as_str().map(str::to_owned))
+        .collect()
+}
+
+pub(super) fn apply_layout(
+    scene: &mut Value,
+    change: LayoutChange,
+) -> Result<String, CapabilityError> {
+    let canvas = scene.get("parallax").is_some_and(Value::is_object);
+    let tracks = scene
+        .get_mut("tracks")
+        .and_then(Value::as_object_mut)
+        .ok_or_else(|| CapabilityError::InvalidInput("invalid Classic tracks".into()))?;
+    let all = all_tracks(tracks);
+    let default = track_ids(&all);
+    let mut order = track_order(tracks, &default);
     let id = match change {
         LayoutChange::Reorder { track_id, to_index } => {
             let from = order.iter().position(|id| id == &track_id).ok_or_else(|| {

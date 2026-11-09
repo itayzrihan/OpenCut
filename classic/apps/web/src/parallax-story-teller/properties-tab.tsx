@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
 import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
@@ -25,12 +29,8 @@ import {
 	RotateCcw,
 	ShieldCheck,
 } from "lucide-react";
-import { toast } from "sonner";
-import {
-	mediaTimeToSeconds,
-	ZERO_MEDIA_TIME,
-	type MediaTime,
-} from "@/wasm";
+import { toast } from "@/i18n/toast";
+import { mediaTimeToSeconds, ZERO_MEDIA_TIME, type MediaTime } from "@/wasm";
 import {
 	Section,
 	SectionContent,
@@ -80,17 +80,22 @@ export function ParallaxStoryPropertiesTab({
 	return (
 		<div className="flex h-full flex-col">
 			<div className="flex h-11 shrink-0 items-center border-b px-3.5">
-				<SectionTitle>Parallax Story</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Parallax Story"} />
+				</SectionTitle>
 			</div>
 			<div className="space-y-4 p-3.5">
 				<div className="overflow-hidden rounded-lg border bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(139,92,246,0.08))] p-3">
 					<div className="flex items-center gap-2 text-sm font-medium">
 						<Camera className="size-4 text-cyan-300" />
-						Canvas Pan
+						<UiMessage text={"Canvas Pan"} />
 					</div>
 					<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-						A nested world scene with its own timeline. Text, images and video
-						keep their world position while the camera travels.
+						<UiMessage
+							text={
+								"A nested world scene with its own timeline. Text, images and video keep their world position while the camera travels."
+							}
+						/>
 					</p>
 				</div>
 				<Button
@@ -100,7 +105,7 @@ export function ParallaxStoryPropertiesTab({
 				>
 					<span className="flex items-center gap-2">
 						<Layers3 className="size-4" />
-						Edit Canvas
+						<UiMessage text={"Edit Canvas"} />
 					</span>
 					<ArrowRight className="size-4" />
 				</Button>
@@ -108,32 +113,41 @@ export function ParallaxStoryPropertiesTab({
 					<div className="flex items-center justify-between gap-3">
 						<span className="flex items-center gap-1.5 text-muted-foreground">
 							<MoveHorizontal className="size-3.5" />
-							Direction
+							<UiMessage text={"Direction"} />
 						</span>
 						<span className="capitalize">
 							{scene?.parallax?.direction ?? "—"}
 						</span>
 					</div>
 					<div className="flex items-center justify-between gap-3">
-						<span className="text-muted-foreground">World width</span>
+						<span className="text-muted-foreground">
+							<UiMessage text={"World width"} />
+						</span>
 						<span>
-							{scene?.parallax?.worldWidthFrames ?? "—"} camera frames
+							{scene?.parallax?.worldWidthFrames ?? "—"}{" "}
+							<UiMessage text={"camera frames"} />
 						</span>
 					</div>
 				</div>
 				<div className="rounded-md border border-cyan-400/20 bg-cyan-400/5 p-3 text-xs">
 					<div className="flex items-center gap-2 font-medium">
 						<Camera className="size-3.5 text-cyan-300" />
-						Camera source: Canvas Pan Camera
+						<UiMessage text={"Camera source: Canvas Pan Camera"} />
 					</div>
 					<p className="mt-1.5 leading-relaxed text-muted-foreground">
-						Open Edit Canvas and select the Camera layer to edit its position,
-						zoom and keyframes. This story clip only retimes that camera path.
+						<UiMessage
+							text={
+								"Open Edit Canvas and select the Camera layer to edit its position, zoom and keyframes. This story clip only retimes that camera path."
+							}
+						/>
 					</p>
 				</div>
 				<p className="text-[11px] leading-relaxed text-muted-foreground">
-					Tip: change this clip’s length on the main timeline to retime the
-					camera movement. The inner timeline remains local to the story.
+					<UiMessage
+						text={
+							"Tip: change this clip’s length on the main timeline to retime the camera movement. The inner timeline remains local to the story."
+						}
+					/>
 				</p>
 			</div>
 		</div>
@@ -167,28 +181,36 @@ export function ParallaxMotionLoopsPropertiesTab({
 			],
 		});
 	};
-	const rangeStartSeconds =
-		durationSeconds * (settings.startPercent / 100);
+	const rangeStartSeconds = durationSeconds * (settings.startPercent / 100);
 	const rangeEndSeconds = durationSeconds * (settings.endPercent / 100);
 
 	return (
 		<div className="flex h-full flex-col">
 			<div className="flex h-11 shrink-0 items-center border-b px-3.5">
-				<SectionTitle>Motion Loops</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Motion Loops"} />
+				</SectionTitle>
 			</div>
 			<div className="space-y-4 p-3.5">
 				<div className="rounded-lg border border-violet-400/25 bg-violet-400/10 p-3">
 					<div className="flex items-center gap-2 text-sm font-medium">
 						<Repeat2 className="size-4 text-violet-300" />
-						Parallax Story movement
+						<UiMessage text={"Parallax Story movement"} />
 					</div>
 					<p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-						Adds a repeating screen-space movement after the inner camera has
-						framed the canvas.
+						<UiMessage
+							text={
+								"Adds a repeating screen-space movement after the inner camera has framed the canvas."
+							}
+						/>
 					</p>
 				</div>
 
-				<SectionField label="Loop style">
+				<UiLocalized<typeof SectionField>
+					element={SectionField}
+					messageProps={["label"]}
+					label="Loop style"
+				>
 					<Select
 						value={settings.presetId}
 						onValueChange={(presetId) => {
@@ -207,9 +229,11 @@ export function ParallaxMotionLoopsPropertiesTab({
 							))}
 						</SelectContent>
 					</Select>
-				</SectionField>
+				</UiLocalized>
 
-				<MotionLoopSlider
+				<UiLocalized<typeof MotionLoopSlider>
+					element={MotionLoopSlider}
+					messageProps={["label"]}
 					label="Amount"
 					value={settings.amount}
 					min={0}
@@ -220,7 +244,9 @@ export function ParallaxMotionLoopsPropertiesTab({
 					onChange={(amount) => update({ amount })}
 				/>
 
-				<MotionLoopSlider
+				<UiLocalized<typeof MotionLoopSlider>
+					element={MotionLoopSlider}
+					messageProps={["label"]}
 					label="Cycle duration"
 					value={settings.cycleSeconds}
 					min={0.1}
@@ -231,7 +257,11 @@ export function ParallaxMotionLoopsPropertiesTab({
 					onChange={(cycleSeconds) => update({ cycleSeconds })}
 				/>
 
-				<SectionField label="Active range">
+				<UiLocalized<typeof SectionField>
+					element={SectionField}
+					messageProps={["label"]}
+					label="Active range"
+				>
 					<div className="space-y-3 rounded-md border p-3">
 						<Slider
 							value={[settings.startPercent, settings.endPercent]}
@@ -241,18 +271,23 @@ export function ParallaxMotionLoopsPropertiesTab({
 							minStepsBetweenThumbs={1}
 							disabled={!enabled}
 							onValueChange={([startPercent, endPercent]) => {
-								if (startPercent === undefined || endPercent === undefined) return;
+								if (startPercent === undefined || endPercent === undefined)
+									return;
 								update({ startPercent, endPercent });
 							}}
 						/>
 						<div className="grid grid-cols-2 gap-2">
-							<RangeInput
+							<UiLocalized<typeof RangeInput>
+								element={RangeInput}
+								messageProps={["label"]}
 								label="Start"
 								value={settings.startPercent}
 								disabled={!enabled}
 								onChange={(startPercent) => update({ startPercent })}
 							/>
-							<RangeInput
+							<UiLocalized<typeof RangeInput>
+								element={RangeInput}
+								messageProps={["label"]}
 								label="End"
 								value={settings.endPercent}
 								disabled={!enabled}
@@ -263,16 +298,19 @@ export function ParallaxMotionLoopsPropertiesTab({
 							{rangeStartSeconds.toFixed(2)}s – {rangeEndSeconds.toFixed(2)}s
 						</p>
 					</div>
-				</SectionField>
+				</UiLocalized>
 
 				<div className="rounded-md border border-emerald-400/20 bg-emerald-400/5 p-3 text-xs">
 					<div className="flex items-center gap-2 font-medium">
 						<ShieldCheck className="size-3.5 text-emerald-300" />
-						Automatic edge protection
+						<UiMessage text={"Automatic edge protection"} />
 					</div>
 					<p className="mt-1.5 leading-relaxed text-muted-foreground">
-						Zoom is calculated for every frame from its exact translation,
-						rotation and scale, so the main viewport stays fully covered.
+						<UiMessage
+							text={
+								"Zoom is calculated for every frame from its exact translation, rotation and scale, so the main viewport stays fully covered."
+							}
+						/>
 					</p>
 				</div>
 			</div>
@@ -371,12 +409,17 @@ export function ParallaxCameraPropertiesTab({
 	return (
 		<div className="flex h-full flex-col">
 			<div className="flex h-11 shrink-0 items-center border-b px-3.5">
-				<SectionTitle>Camera Layer</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Camera Layer"} />
+				</SectionTitle>
 			</div>
 			<div className="space-y-4 p-3.5">
 				<div className="rounded-lg border border-cyan-400/25 bg-cyan-400/10 p-3 text-xs leading-relaxed text-muted-foreground">
-					The world canvas stays fixed. This layer controls only the camera
-					window and its keyframes.
+					<UiMessage
+						text={
+							"The world canvas stays fixed. This layer controls only the camera window and its keyframes."
+						}
+					/>
 				</div>
 				<Button
 					variant="outline"
@@ -406,7 +449,8 @@ export function ParallaxCameraPropertiesTab({
 						toast.success("Camera restored. This action can also be undone.");
 					}}
 				>
-					<RotateCcw className="size-4" /> Undo Camera Man
+					<RotateCcw className="size-4" />{" "}
+					<UiMessage text={"Undo Camera Man"} />
 				</Button>
 				<Section
 					collapsible
@@ -414,7 +458,9 @@ export function ParallaxCameraPropertiesTab({
 					sectionKey={`${element.id}:camera-keyframes`}
 				>
 					<SectionHeader>
-						<SectionTitle>Camera KeyFrames</SectionTitle>
+						<SectionTitle>
+							<UiMessage text={"Camera KeyFrames"} />
+						</SectionTitle>
 					</SectionHeader>
 					<SectionContent>
 						<SectionFields>

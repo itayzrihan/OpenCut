@@ -7,6 +7,7 @@ import { SceneExporter } from "@/services/renderer/scene-exporter";
 import { RootNode } from "@/services/renderer/nodes/root-node";
 import { createTimelineAudioBuffer, type AudioClipSource } from "@/media/audio";
 import type { SceneTracks } from "@/timeline";
+import type { MediaAsset } from "@/media/types";
 import { mediaTime } from "@/wasm";
 import {
 	AudioBufferSink,
@@ -144,7 +145,8 @@ export async function stagedStorageQuota() {
 export async function audioParity() {
 	const rows = [];
 	for (const rate of [44100, 48000])
-		for (const processing of [false, true]) {
+		for (const mode of ["plain", "processing", "ramp"] as const) {
+			const processing = mode === "processing";
 			const scratch = await ExportScratch.create(),
 				file = wav(rate);
 			const first = clip(
@@ -158,6 +160,29 @@ export async function audioParity() {
 						}
 					: {},
 			);
+			if (mode === "ramp") {
+				first.retime = {
+					rate: 1,
+					speedKeyframes: [
+						{
+							time: mediaTime({ ticks: 0 }),
+							rate: 1.4,
+							interpolation: "easeInOut",
+						},
+						{
+							time: mediaTime({ ticks: 3 * 120000 }),
+							rate: 0.65,
+							interpolation: "easeOut",
+						},
+						{
+							time: mediaTime({ ticks: 6 * 120000 }),
+							rate: 1.2,
+							interpolation: "hold",
+						},
+					],
+				};
+				first.timelineElement.retime = first.retime;
+			}
 			const second = {
 				...clip(file, {}, 1.317, 0.331),
 				id: "b",
@@ -209,7 +234,7 @@ export async function audioParity() {
 				}
 				rows.push({
 					rate,
-					processing,
+					mode,
 					length: offset,
 					expected: old.length,
 					rms: Math.sqrt(squared / (offset * 2)),
@@ -408,7 +433,7 @@ export async function longMux() {
 }
 export async function pitchParity() {
 	const { renderRetimedBuffer } = await import("@/retime");
-	const { streamPitchPreserved } = await import("../pitch-stream");
+	const { streamPitchPreserved } = await import("@/retime/pitch-stream");
 	const ctx = new OfflineAudioContext(2, 1, 44100),
 		source = ctx.createBuffer(2, 44100 * 32, 44100);
 	for (let c = 0; c < 2; c++)
@@ -416,12 +441,20 @@ export async function pitchParity() {
 			source.getChannelData(c)[i] =
 				0.3 * Math.sin((i * 2 * Math.PI * 440) / 44100);
 	const rows = [];
-	for (const rate of [0.75, 1.5, 5]) {
+	const cases = [
+		[0.75, 0.08],
+		[1.2, 0.56944],
+		[1.2, 1.16667],
+		[0.75, 6],
+		[1.5, 6],
+		[5, 6],
+	];
+	for (const [rate, duration] of cases) {
 		const old = await renderRetimedBuffer({
 			audioContext: ctx,
 			sourceBuffer: source,
 			trimStart: 0.123,
-			clipDuration: 6,
+			clipDuration: duration,
 			retime: { rate, maintainPitch: true },
 			maintainPitch: true,
 		});
@@ -429,7 +462,7 @@ export async function pitchParity() {
 		for await (const b of streamPitchPreserved({
 			context: ctx,
 			trimStart: 0.123,
-			duration: 6,
+			duration,
 			rate,
 			readSource: async (start, end) => {
 				const first = Math.floor(start * 44100),
@@ -456,6 +489,8 @@ export async function pitchParity() {
 			error = Math.max(error, Math.abs(result[i] - original[i]));
 		rows.push({
 			rate,
+			duration,
+			frames: result.length,
 			error,
 			oldFirst: original.findIndex((x) => Math.abs(x) > 0.001),
 			newFirst: result.findIndex((x) => Math.abs(x) > 0.001),
@@ -464,6 +499,139 @@ export async function pitchParity() {
 		});
 	}
 	return rows;
+}
+
+export async function encodedAudioParity(input?: {
+	tracks: SceneTracks;
+	mediaAssets: MediaAsset[];
+	duration: number;
+	windows: Array<[number, number]>;
+}) {
+	const signal = new AbortController().signal;
+	const scratch = await ExportScratch.create();
+	const context = new AudioContext({ sampleRate: 44100 });
+	const file = wav(44100);
+	const speech = (
+		[start, length, trim]: number[],
+		index: number,
+	): AudioClipSource => {
+		const source = clip(file, {}, start, trim);
+		const retime = { rate: 1.2, maintainPitch: true };
+		return {
+			...source,
+			id: `speech-${index}`,
+			duration: length,
+			retime,
+			timelineElement: { ...source.timelineElement, retime },
+		};
+	};
+	const additionalClips = input
+		? []
+		: [
+				...[
+					[15.375, 1.16667, 0.35],
+					[16.33333, 0.56944, 4.1],
+				].map(speech),
+				...Array.from({ length: 7 }, (_, i) => ({
+					...clip(file, {}, 14.5, 4.3),
+					id: `background-${i}`,
+					duration: 3.5,
+					volume: 0.02,
+				})),
+			];
+	const duration = input?.duration ?? 18 * 120000;
+	const scene = {
+		tracks: input?.tracks ?? tracks,
+		mediaAssets: input?.mediaAssets ?? [],
+		duration,
+	};
+	const windows = input?.windows ?? [
+		[15.39, 15.49],
+		[16.82, 16.89],
+	];
+	try {
+		const reference = await createTimelineAudioBuffer({
+			...scene,
+			additionalClips,
+			audioContext: context,
+		});
+		const stream = await prepareExportAudio({
+			...scene,
+			additionalClips,
+			scratch,
+			signal,
+			onProgress: () => undefined,
+		});
+		if (!reference || !stream)
+			throw new Error("Missing reference or export audio");
+		const handle = await scratch.file("audio-parity.mp4");
+		const disk = await DiskExportTarget.open(handle, signal);
+		const exporter = new SceneExporter({
+			width: 160,
+			height: 90,
+			fps: { numerator: 10, denominator: 1 },
+			format: "mp4",
+			quality: "low",
+			target: disk.target,
+			shouldIncludeAudio: true,
+			audioStream: stream,
+			signal,
+		});
+		if (!(await exporter.export({ rootNode: new RootNode({ duration }) })))
+			throw new Error("Export failed");
+		await disk.commit();
+		const encoded = new Input({
+			formats: ALL_FORMATS,
+			source: new BlobSource(await handle.getFile()),
+		});
+		try {
+			const track = await encoded.getPrimaryAudioTrack();
+			if (!track) throw new Error("Encoded file has no audio");
+			const sink = new AudioBufferSink(track);
+			return await Promise.all(
+				windows.map(async ([start, end]) => {
+					const samples = reference
+						.getChannelData(0)
+						.subarray(
+							Math.round(start * reference.sampleRate),
+							Math.round(end * reference.sampleRate),
+						);
+					let energy = 0;
+					let count = 0;
+					for await (const { buffer, timestamp } of sink.buffers(start, end)) {
+						const first = Math.max(
+							0,
+							Math.round((start - timestamp) * buffer.sampleRate),
+						);
+						const last = Math.min(
+							buffer.length,
+							Math.round((end - timestamp) * buffer.sampleRate),
+						);
+						for (const sample of buffer
+							.getChannelData(0)
+							.subarray(first, last)) {
+							energy += sample * sample;
+							count++;
+						}
+					}
+					return {
+						start,
+						reference: Math.sqrt(
+							samples.reduce((sum, sample) => sum + sample * sample, 0) /
+								samples.length,
+						),
+						encoded: Math.sqrt(energy / Math.max(1, count)),
+						coverage: count / (track.sampleRate * (end - start)),
+					};
+				}),
+			);
+		} finally {
+			encoded.dispose();
+		}
+	} finally {
+		await context.close();
+		await scratch.dispose();
+	}
 }
 /** Isolate queue/encoder snapshot correctness from the separate GPU compositor
  * integration. This fixture substitutes only the producer with a native canvas. */

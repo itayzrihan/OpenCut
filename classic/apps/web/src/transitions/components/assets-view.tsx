@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import type { CSSProperties } from "react";
 import { useCallback } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -20,7 +21,11 @@ type TransitionPreviewStyle = CSSProperties & {
 
 export function TransitionsView() {
 	return (
-		<PanelView title="Transitions">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Transitions"
+		>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(108px, 1fr))" }}
@@ -31,7 +36,7 @@ export function TransitionsView() {
 					<TransitionItem key={transition.id} transition={transition} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 

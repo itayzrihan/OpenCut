@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import type {
 	ParamDefinition,
 	NumberParamDefinition,
@@ -153,7 +154,11 @@ function ParamInput({
 				}}
 			>
 				<SelectTrigger className="w-full">
-					<SelectValue placeholder="Mixed values" />
+					<UiLocalized<typeof SelectValue>
+						element={SelectValue}
+						messageProps={["placeholder"]}
+						placeholder="Mixed values"
+					/>
 				</SelectTrigger>
 				<SelectContent>
 					{param.options.map((option, optionIndex) => (

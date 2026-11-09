@@ -20,7 +20,7 @@ export function oauthReturnDocument(request: Request): Response | null {
 	const nonce = randomBytes(24).toString("base64url");
 	const target = `/api/ai/oauth/complete?handoff=${encodeURIComponent(handoff)}&opencutReturn=1`;
 	return new Response(
-		`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Returning to OpenCut</title></head><body><p>Finishing sign-in…</p><noscript>Enable JavaScript and return to OpenCut to finish sign-in.</noscript><script nonce="${nonce}">window.location.replace(${JSON.stringify(target)});</script></body></html>`,
+		`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="referrer" content="no-referrer"><title>Returning to POCUT</title></head><body><p>Finishing sign-in…</p><noscript>Enable JavaScript and return to POCUT to finish sign-in.</noscript><script nonce="${nonce}">window.location.replace(${JSON.stringify(target)});</script></body></html>`,
 		{
 			status: 200,
 			headers: {

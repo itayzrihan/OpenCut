@@ -1,21 +1,24 @@
-import { Hero } from "@/components/landing/hero";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { PocutLanding } from "@/components/landing/pocut-landing";
+import { authenticateAccountNavigation } from "@/accounts/server";
+import { legitateClientId } from "@/accounts/legitate-server";
 import { SITE_URL } from "@/site/brand";
 
 export const metadata: Metadata = {
-	alternates: {
-		canonical: SITE_URL,
-	},
+	alternates: { canonical: SITE_URL },
 };
 
 export default async function Home() {
+	const account = await authenticateAccountNavigation(
+		new Request("http://localhost", { headers: await headers() }),
+	).catch(() => null);
 	return (
-		<div>
-			<Header />
-			<Hero />
-			<Footer />
-		</div>
+		<PocutLanding
+			signedIn={!!account}
+			legitateConfigured={!!legitateClientId()}
+			legitateOnly={process.env.OPENCUT_LEGITATE_ONLY === "true"}
+			localReturnTo="/projects"
+		/>
 	);
 }

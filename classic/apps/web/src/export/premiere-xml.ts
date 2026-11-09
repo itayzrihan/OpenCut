@@ -29,7 +29,7 @@ function exportFileName(sceneName: string): string {
 		.replace(/[<>:"/\\|?*]/g, "_")
 		.replace(/\s+/g, " ")
 		.trim();
-	return `${safeName || "PoCut sequence"}_Premiere.xml`;
+	return `${safeName || "POCUT sequence"}_Premiere.xml`;
 }
 
 function buildClip({

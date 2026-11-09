@@ -1,4 +1,11 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { ElectronBackButton } from "@/components/electron-back-button";
 import {
 	BatchEditButton,
 	BatchProjectBadge,
@@ -7,13 +14,12 @@ import {
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import type { ChangeEvent, KeyboardEvent, MouseEvent } from "react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useRouter, useSearchParams } from "next/navigation";
+import type { ChangeEvent } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "@/i18n/toast";
 import type { EditorCore } from "@/core";
 import { MigrationDialog } from "@/project/components/migration-dialog";
-import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,15 +34,25 @@ import type {
 } from "@/project/types";
 import { formatTimecode, mediaTimeToSeconds } from "opencut-wasm";
 import { formatDate } from "@/utils/date";
+import { useInterfaceLanguage } from "@/i18n/provider";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbLink,
-	BreadcrumbList,
-	BreadcrumbPage,
-	BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+	ArrowUpRight,
+	FolderOpen,
+	Layers3,
+	Settings,
+	Sparkles,
+} from "lucide-react";
+import { useWorkspaceAccount } from "@/accounts/gate";
+import { ACCOUNT_WORKSPACE_HREF } from "@/accounts/workspace-route";
+import { AccountSettingsPanel } from "@/accounts/settings-panel";
+import { WorkspaceLink } from "@/components/workspace-link";
+import { BRAND_KITS_HREF } from "@/brand-kits/types";
+import { BrandKitsPanel } from "@/brand-kits/panel";
+import { WorkspaceLoading } from "@/components/workspace-loading";
+import { PocutWordmark } from "@/components/landing/pocut-brand";
+import brand from "@/components/landing/pocut-brand.module.css";
+import styles from "./projects.module.css";
 import {
 	Calendar04Icon,
 	GridViewIcon,
@@ -53,7 +69,6 @@ import {
 	FileImportIcon,
 	Download04Icon,
 } from "@hugeicons/core-free-icons";
-import { OcVideoIcon } from "@/components/icons";
 import { Label } from "@/components/ui/label";
 import {
 	ContextMenu,
@@ -64,7 +79,8 @@ import {
 } from "@/components/ui/context-menu";
 import {
 	DropdownMenu,
-	DropdownMenuCheckboxItem,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
@@ -74,7 +90,6 @@ import { DeleteProjectDialog } from "@/project/components/delete-project-dialog"
 import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
-import { ChangelogNotification } from "@/changelog/components/changelog-notification";
 import { filterAndSortProjectMetadata } from "@/core/managers/project-manager";
 import { PROJECT_ARCHIVE_ACCEPT } from "@/project/archive/project-archive";
 import type { StorageMigrationFailure } from "@/services/storage/migrations";
@@ -98,6 +113,43 @@ const VIEW_MODE_OPTIONS = [
 ];
 
 export default function ProjectsPage() {
+	return (
+		<Suspense fallback={<WorkspaceLoading />}>
+			<ProjectsWorkspace />
+		</Suspense>
+	);
+}
+
+function ProjectsWorkspace() {
+	const requestedTab = useSearchParams().get("tab");
+	const storageBusy = useWorkspaceAccount()?.storageBusy ?? false;
+	const tab =
+		storageBusy || requestedTab === "account"
+			? "account"
+			: requestedTab === "brand-kits"
+				? "brand-kits"
+				: "projects";
+	const [openedBrandKits, setOpenedBrandKits] = useState(tab === "brand-kits");
+	// Defer the library request until first use, then keep unsaved drafts across tab switches.
+	if (tab === "brand-kits" && !openedBrandKits) setOpenedBrandKits(true);
+	return (
+		<div className={cn(brand.theme, brand.workspaceTheme, styles.workspace)}>
+			<ProjectsNavigation tab={tab} />
+			<main className={styles.main}>
+				<ProjectsHeader storageBusy={storageBusy} />
+				{openedBrandKits && (
+					<div hidden={tab !== "brand-kits"}>
+						<BrandKitsPanel />
+					</div>
+				)}
+				{tab === "account" && <AccountSettingsPanel />}
+				{tab === "projects" && <ProjectsLibrary />}
+			</main>
+		</div>
+	);
+}
+
+function ProjectsLibrary() {
 	const { searchQuery, sortKey, sortOrder, viewMode } = useProjectsStore();
 	const editor = useEditor();
 	const batch = useBatchEdit();
@@ -147,106 +199,129 @@ export default function ProjectsPage() {
 	}, [editor.project]);
 
 	return (
-		<div className="bg-background min-h-screen">
+		<>
 			<MigrationDialog />
-			<StoragePersistenceDialog />
-			<ChangelogNotification />
-			<ProjectsHeader />
-			<ProjectsToolbar projectIds={projectIds} />
-			<main className="mx-auto px-4 pt-2 pb-6 flex flex-col gap-4">
-				{isLoading || !isInitialized ? (
-					<ProjectsSkeleton />
-				) : (
-					<>
-						{migrationFailures.length > 0 ? (
-							<ProjectsMigrationWarning failures={migrationFailures} />
-						) : null}
-						{loadError ? <ProjectsLoadError error={loadError} /> : null}
-						{loadError &&
-						savedProjects.length === 0 ? null : projectsToDisplay.length ===
-						  0 ? (
-							<EmptyState />
-						) : (
-							<div
-								className={
-									viewMode === "grid"
-										? "xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4 px-4"
-										: "flex flex-col"
-								}
-							>
-								{projectsToDisplay.map((project, index) => (
-									<ProjectItem
-										key={project.id}
-										project={project}
-										allProjectIds={projectIds}
-										prioritizeThumbnail={index < 4}
-									/>
-								))}
-							</div>
-						)}
-					</>
-				)}
-			</main>
-		</div>
+			<ProjectsToolbar
+				projectIds={projectIds}
+				isLoading={isLoading || !isInitialized}
+			/>
+			{isLoading || !isInitialized ? (
+				<ProjectsSkeleton />
+			) : (
+				<>
+					{migrationFailures.length > 0 ? (
+						<ProjectsMigrationWarning failures={migrationFailures} />
+					) : null}
+					{loadError ? <ProjectsLoadError error={loadError} /> : null}
+					{loadError &&
+					savedProjects.length === 0 ? null : projectsToDisplay.length === 0 ? (
+						<EmptyState />
+					) : (
+						<div className={viewMode === "grid" ? styles.grid : styles.list}>
+							{projectsToDisplay.map((project, index) => (
+								<ProjectItem
+									key={project.id}
+									project={project}
+									allProjectIds={projectIds}
+									prioritizeThumbnail={index < 4}
+								/>
+							))}
+						</div>
+					)}
+				</>
+			)}
+		</>
 	);
 }
 
-function ProjectsHeader() {
-	const { viewMode, isHydrated, setViewMode } = useProjectsStore();
+function ProjectsNavigation({
+	tab,
+}: {
+	tab: "projects" | "brand-kits" | "account";
+}) {
+	const account = useWorkspaceAccount();
+	const { t } = useInterfaceLanguage();
 
 	return (
-		<header className="sticky top-0 z-20 px-8 bg-background flex flex-col gap-2">
-			<div className="flex items-center justify-between h-16 pt-2">
-				<div className="flex items-center gap-5">
-					<Breadcrumb>
-						<BreadcrumbList>
-							<BreadcrumbItem>
-								<BreadcrumbLink asChild>
-									<Link href="/" className="text-sm sm:text-base">
-										Home
-									</Link>
-								</BreadcrumbLink>
-							</BreadcrumbItem>
-							<BreadcrumbSeparator />
-							<BreadcrumbItem>
-								<BreadcrumbPage className="text-sm sm:text-base font-medium">
-									All projects
-								</BreadcrumbPage>
-							</BreadcrumbItem>
-						</BreadcrumbList>
-					</Breadcrumb>
-
-					<div className="hidden md:flex items-center rounded-md border p-1 px-1.5 h-10">
-						{VIEW_MODE_OPTIONS.map(({ mode, icon, label }) => (
-							<Button
-								key={mode}
-								variant="ghost"
-								size="icon"
-								className={cn(
-									"rounded-sm hover:bg-background",
-									isHydrated && viewMode === mode && "!bg-accent",
-								)}
-								onClick={() => setViewMode({ viewMode: mode })}
-								aria-label={label}
-								aria-pressed={isHydrated && viewMode === mode}
-							>
-								<HugeiconsIcon icon={icon} className="size-4" />
-							</Button>
-						))}
-					</div>
-				</div>
-
-				<div className="flex items-center gap-3 md:gap-4">
-					<SearchBar className="hidden md:block" />
-					<Button asChild variant="outline">
-						<Link href="/brand-kits">Brand Kits</Link>
-					</Button>
-					<BatchEditButton />
-					<ImportProjectButton />
-					<NewProjectButton />
-				</div>
+		<aside className={styles.rail}>
+			<PocutWordmark />
+			<div className={cn(brand.eyebrow, styles.railLabel)}>
+				<UiMessage text={"Studio workspace"} />
 			</div>
-			<SearchBar className="block md:hidden mb-4" />
+			<UiLocalized<"nav">
+				element={"nav"}
+				messageProps={["aria-label"]}
+				aria-label="Workspace navigation"
+				className={styles.railLinks}
+			>
+				<WorkspaceLink
+					href="/projects"
+					aria-current={tab === "projects" ? "page" : undefined}
+					aria-disabled={account?.storageBusy}
+				>
+					<FolderOpen size={17} /> <UiMessage text={"Projects"} />
+				</WorkspaceLink>
+				<WorkspaceLink
+					href={BRAND_KITS_HREF}
+					aria-current={tab === "brand-kits" ? "page" : undefined}
+					aria-disabled={account?.storageBusy}
+				>
+					<Layers3 size={17} /> <UiMessage text={"Brand Kits"} />
+				</WorkspaceLink>
+			</UiLocalized>
+			<div className={styles.railFooter}>
+				{account?.canConnectLegitate && (
+					<form action="/api/accounts/legitate/start" method="post">
+						<Button type="submit" variant="outline">
+							<UiMessage text={"Connect Legitate"} />
+						</Button>
+					</form>
+				)}
+				<WorkspaceLink
+					href={ACCOUNT_WORKSPACE_HREF}
+					aria-label={t("Account and storage settings")}
+					aria-current={tab === "account" ? "page" : undefined}
+					className={styles.account}
+				>
+					<Settings size={17} />
+					<span>
+						<strong>
+							{account?.displayName || <UiMessage text={"Account"} />}
+						</strong>
+						<small>
+							<UiMessage text={"Account & storage"} />
+						</small>
+					</span>
+				</WorkspaceLink>
+			</div>
+		</aside>
+	);
+}
+
+function ProjectsHeader({ storageBusy }: { storageBusy: boolean }) {
+	return (
+		<header className={styles.hero}>
+			<div>
+				<div className="flex flex-wrap items-center gap-3">
+					<ElectronBackButton />
+					<span className={cn(brand.eyebrow, styles.kicker)}>
+						<Sparkles size={14} /> <UiMessage text={"Welcome to POCUT"} />
+					</span>
+				</div>
+				<h1>
+					<UiMessage text={"Your projects"} />
+				</h1>
+				<p>
+					<UiMessage text={"Start a new cut or pick up where you left off."} />
+				</p>
+				{!storageBusy && (
+					<div className={styles.heroActions}>
+						<NewProjectButton />
+						<ImportProjectButton />
+						<BatchEditButton />
+					</div>
+				)}
+			</div>
 		</header>
 	);
 }
@@ -258,7 +333,14 @@ const SORT_LABELS: Record<TProjectSortKey, string> = {
 	duration: "Duration",
 };
 
-function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
+function ProjectsToolbar({
+	projectIds,
+	isLoading,
+}: {
+	projectIds: string[];
+	isLoading: boolean;
+}) {
+	const { t } = useInterfaceLanguage();
 	const {
 		selectedProjectIds,
 		sortKey,
@@ -268,6 +350,7 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 		clearSelectedProjects,
 		viewMode,
 		setViewMode,
+		isHydrated,
 	} = useProjectsStore();
 
 	const selectedProjectCount = selectedProjectIds.length;
@@ -285,120 +368,106 @@ function ProjectsToolbar({ projectIds }: { projectIds: string[] }) {
 	};
 
 	return (
-		<div className="sticky top-16 z-10 flex items-center justify-between px-6 h-14 pt-2 bg-background">
-			<div className="flex items-center gap-2">
-				<Label
-					className="flex items-center gap-3 cursor-pointer px-2"
-					htmlFor="select-all-projects"
-				>
-					<Checkbox
-						className="size-5"
-						id="select-all-projects"
-						checked={
-							isAllSelected ? true : hasSomeSelected ? "indeterminate" : false
-						}
-						onCheckedChange={(checked) =>
-							handleSelectAll({ checked: checked === true })
-						}
-					/>
-					<span className="text-muted-foreground hidden md:block">
-						Select all
-					</span>
-				</Label>
-
-				<div className="h-4 w-px bg-border/50" />
-
-				<SortDropdown>
-					<Button variant="text" className="text-muted-foreground pl-2">
-						{SORT_LABELS[sortKey]}
-					</Button>
-				</SortDropdown>
-				<Button
-					variant="text"
-					className="text-muted-foreground"
-					onClick={() =>
-						setSortOrder({
-							sortOrder: sortOrder === "asc" ? "desc" : "asc",
-						})
-					}
-					onKeyDown={(event) => {
-						if (event.key === "Enter" || event.key === " ") {
-							setSortOrder({
-								sortOrder: sortOrder === "asc" ? "desc" : "asc",
-							});
-						}
-					}}
-					aria-label={`Sort ${sortOrder === "asc" ? "ascending" : "descending"}`}
-				>
-					<HugeiconsIcon
-						icon={ArrowDown02Icon}
-						className={sortOrder === "asc" ? "rotate-180" : ""}
-					/>
-				</Button>
-
-				<div className="h-4 w-px bg-border/50 block md:hidden" />
-
-				<div className="flex md:hidden items-center gap-4">
-					{VIEW_MODE_OPTIONS.map(({ mode, icon, label }) => (
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
+			className={styles.library}
+			aria-label="Project library controls"
+		>
+			<div className={styles.libraryTop}>
+				<div className={styles.libraryTitle}>
+					<h2>
+						<UiMessage text={"Project library"} />
+					</h2>
+					{!isLoading && <span>{projectIds.length}</span>}
+				</div>
+				<SearchBar />
+			</div>
+			<div className={styles.toolbar}>
+				<div className={styles.tools}>
+					<Label className={styles.selectAll} htmlFor="select-all-projects">
+						<Checkbox
+							id="select-all-projects"
+							disabled={projectIds.length === 0}
+							checked={
+								isAllSelected ? true : hasSomeSelected ? "indeterminate" : false
+							}
+							onCheckedChange={(checked) =>
+								handleSelectAll({ checked: checked === true })
+							}
+						/>
+						<span>
+							<UiMessage text={"Select all"} />
+						</span>
+					</Label>
+					<div className={styles.sort}>
+						<SortDropdown>
+							<Button variant="ghost" className={styles.sortKey}>
+								<UiMessage text={"Sort by"} /> {t(SORT_LABELS[sortKey])}
+							</Button>
+						</SortDropdown>
 						<Button
-							key={mode}
-							variant="text"
-							onClick={() => setViewMode({ viewMode: mode })}
-							aria-label={label}
+							variant="ghost"
+							size="icon"
+							onClick={() =>
+								setSortOrder({
+									sortOrder: sortOrder === "asc" ? "desc" : "asc",
+								})
+							}
+							aria-label={
+								sortOrder === "asc" ? t("Sort descending") : t("Sort ascending")
+							}
 						>
 							<HugeiconsIcon
-								icon={icon}
-								className={cn(
-									viewMode === mode ? "text-primary" : "text-muted-foreground",
-								)}
+								icon={ArrowDown02Icon}
+								className={sortOrder === "asc" ? "rotate-180" : ""}
 							/>
 						</Button>
-					))}
+					</div>
+				</div>
+				<div className={styles.tools}>
+					{selectedProjectCount > 0 && <ProjectActions />}
+					<UiLocalized<"div">
+						element={"div"}
+						messageProps={["aria-label"]}
+						className={styles.switcher}
+						aria-label="Project layout"
+						role="group"
+					>
+						{VIEW_MODE_OPTIONS.map(({ mode, icon, label }) => (
+							<Button
+								key={mode}
+								variant="ghost"
+								size="icon"
+								onClick={() => setViewMode({ viewMode: mode })}
+								aria-label={t(label)}
+								aria-pressed={isHydrated && viewMode === mode}
+							>
+								<HugeiconsIcon icon={icon} />
+							</Button>
+						))}
+					</UiLocalized>
 				</div>
 			</div>
-			{selectedProjectCount > 0 ? <ProjectActions /> : null}
-		</div>
+		</UiLocalized>
 	);
 }
 
-function SearchBar({
-	className,
-	collapsed,
-}: {
-	className?: string;
-	collapsed?: boolean;
-}) {
+function SearchBar() {
 	const { searchQuery, setSearchQuery } = useProjectsStore();
-
 	return (
-		<>
-			{collapsed ? (
-				<div className="block md:hidden">
-					<Button
-						size="icon"
-						variant="outline"
-						className="size-10.5 rounded-full"
-					>
-						<HugeiconsIcon icon={Search01Icon} />
-					</Button>
-				</div>
-			) : (
-				<div className={cn("relative", className)}>
-					<HugeiconsIcon
-						icon={Search01Icon}
-						className="text-muted-foreground pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2"
-						aria-hidden="true"
-					/>
-					<Input
-						placeholder="Search..."
-						value={searchQuery}
-						onChange={(event) => setSearchQuery({ query: event.target.value })}
-						size="lg"
-						className="pl-9"
-					/>
-				</div>
-			)}
-		</>
+		<div className={styles.search}>
+			<HugeiconsIcon icon={Search01Icon} aria-hidden="true" />
+			<UiLocalized<typeof Input>
+				element={Input}
+				messageProps={["aria-label", "placeholder"]}
+				aria-label="Search projects"
+				placeholder="Search projects"
+				value={searchQuery}
+				onChange={(event) => setSearchQuery({ query: event.target.value })}
+				size="lg"
+			/>
+		</div>
 	);
 }
 
@@ -456,6 +525,7 @@ async function renameProject({
 }
 
 function ProjectActions() {
+	const { t } = useInterfaceLanguage();
 	const editor = useEditor();
 	const { selectedProjectIds, clearSelectedProjects } = useProjectsStore();
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -501,8 +571,8 @@ function ProjectActions() {
 					{PROJECT_ACTIONS.map((action) => (
 						<Button
 							key={action.id}
-							aria-label={action.label}
-							title={action.label}
+							aria-label={t(action.label)}
+							title={t(action.label)}
 							size="icon"
 							variant={action.variant}
 							className="size-9"
@@ -515,9 +585,16 @@ function ProjectActions() {
 
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild className="sm:hidden">
-						<Button size="icon" variant="outline" className="size-9">
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
+							size="icon"
+							variant="outline"
+							className="size-9"
+							aria-label="Selected project actions"
+						>
 							<HugeiconsIcon icon={MoreHorizontalIcon} />
-						</Button>
+						</UiLocalized>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						{PROJECT_ACTIONS.map((action) => (
@@ -527,7 +604,7 @@ function ProjectActions() {
 								onClick={actionHandlers[action.id]}
 							>
 								<HugeiconsIcon icon={action.icon} />
-								{action.label}
+								{t(action.label)}
 							</DropdownMenuItem>
 						))}
 					</DropdownMenuContent>
@@ -557,30 +634,19 @@ function SortDropdown({ children }: { children: React.ReactNode }) {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-48" align="center">
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "createdAt"}
-					onCheckedChange={() => setSortKey({ sortKey: "createdAt" })}
-				>
-					Created
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "updatedAt"}
-					onCheckedChange={() => setSortKey({ sortKey: "updatedAt" })}
-				>
-					Modified
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "name"}
-					onCheckedChange={() => setSortKey({ sortKey: "name" })}
-				>
-					Name
-				</DropdownMenuCheckboxItem>
-				<DropdownMenuCheckboxItem
-					checked={sortKey === "duration"}
-					onCheckedChange={() => setSortKey({ sortKey: "duration" })}
-				>
-					Duration
-				</DropdownMenuCheckboxItem>
+				<DropdownMenuRadioGroup value={sortKey}>
+					{(["createdAt", "updatedAt", "name", "duration"] as const).map(
+						(option) => (
+							<DropdownMenuRadioItem
+								key={option}
+								value={option}
+								onSelect={() => setSortKey({ sortKey: option })}
+							>
+								<UiMessage text={SORT_LABELS[option]} />
+							</DropdownMenuRadioItem>
+						),
+					)}
+				</DropdownMenuRadioGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);
@@ -591,20 +657,22 @@ function NewProjectButton() {
 	const router = useRouter();
 
 	const handleCreateProject = async () => {
-		const projectId = await editor.project.createNewProject({
-			name: "New project",
-		});
-		router.push(`/editor/${projectId}`);
+		try {
+			const projectId = await editor.project.createNewProject({
+				name: "New project",
+			});
+			router.push(`/editor/${projectId}`);
+		} catch (error) {
+			toast.error("Failed to create project", {
+				description:
+					error instanceof Error ? error.message : "Please try again",
+			});
+		}
 	};
 
 	return (
-		<Button
-			size="lg"
-			className="flex px-5 md:px-6"
-			onClick={handleCreateProject}
-		>
-			<span className="text-sm font-medium hidden md:block">New project</span>
-			<span className="text-sm font-medium block md:hidden">New</span>
+		<Button size="lg" className={brand.primary} onClick={handleCreateProject}>
+			<HugeiconsIcon icon={PlusSignIcon} /> <UiMessage text={"New project"} />
 		</Button>
 	);
 }
@@ -629,14 +697,19 @@ function ImportProjectButton({ className }: { className?: string }) {
 				result.sharedAudioLinked + result.sharedStickersLinked;
 			const importedSharedCount =
 				result.sharedAudioImported + result.sharedStickersImported;
-			toast.success(`Imported "${result.projectName}"`, {
-				description: [
-					`${result.mediaImported} media`,
-					`${result.fontsImported} fonts`,
-					`${linkedSharedCount} shared linked`,
-					`${importedSharedCount} shared imported`,
-				].join(" | "),
-			});
+			toast.success(
+				localizeClientMessage('Imported "{v0}"', {
+					v0: String(result.projectName),
+				}),
+				{
+					description: [
+						`${result.mediaImported} media`,
+						`${result.fontsImported} fonts`,
+						`${linkedSharedCount} shared linked`,
+						`${importedSharedCount} shared imported`,
+					].join(" | "),
+				},
+			);
 			router.push(`/editor/${result.projectId}`);
 		} catch (error) {
 			console.error("Failed to import project ZIP:", error);
@@ -667,10 +740,18 @@ function ImportProjectButton({ className }: { className?: string }) {
 			>
 				<HugeiconsIcon icon={FileImportIcon} />
 				<span className="hidden sm:inline">
-					{isImporting ? "Importing..." : "Import ZIP"}
+					{isImporting ? (
+						<UiMessage text={"Importing..."} />
+					) : (
+						<UiMessage text={"Import ZIP"} />
+					)}
 				</span>
 				<span className="sm:hidden">
-					{isImporting ? "Importing..." : "Import"}
+					{isImporting ? (
+						<UiMessage text={"Importing..."} />
+					) : (
+						<UiMessage text={"Import"} />
+					)}
 				</span>
 			</Button>
 		</>
@@ -686,6 +767,7 @@ function ProjectItem({
 	allProjectIds: string[];
 	prioritizeThumbnail: boolean;
 }) {
+	const { locale } = useInterfaceLanguage();
 	const {
 		selectedProjectIds,
 		viewMode,
@@ -737,14 +819,14 @@ function ProjectItem({
 	};
 
 	const gridContent = (
-		<Card className="bg-background overflow-hidden border-none p-0">
-			<div className="bg-muted relative aspect-video">
+		<Card className={cn(styles.projectCard, isSelected && styles.selected)}>
+			<div className={styles.thumbnail}>
 				<div className="absolute inset-0">
 					{project.thumbnail ? (
 						<Image
 							src={project.thumbnail}
 							unoptimized={project.thumbnail.startsWith("/api/local-drive/")}
-							alt="Project thumbnail"
+							alt=""
 							fill
 							loading={prioritizeThumbnail ? "eager" : "lazy"}
 							sizes="(max-width: 639px) 100vw, (max-width: 1023px) 33vw, 25vw"
@@ -752,26 +834,31 @@ function ProjectItem({
 						/>
 					) : (
 						<div className="flex size-full items-center justify-center">
-							<OcVideoIcon className="text-muted-foreground size-12 shrink-0" />
+							<HugeiconsIcon
+								icon={Video01Icon}
+								className={styles.placeholder}
+							/>
 						</div>
 					)}
 				</div>
 
 				{durationLabel && (
-					<div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-semibold px-2 py-1 rounded-sm">
-						{durationLabel}
-					</div>
+					<div className={styles.duration}>{durationLabel}</div>
 				)}
 			</div>
 
-			<CardContent className="flex flex-col gap-2 px-0 pt-4">
+			<CardContent className={styles.cardBody}>
 				<BatchProjectBadge projectId={project.id} />
-				<h3 className="group-hover:text-foreground/90 line-clamp-2 text-sm leading-snug font-medium">
+				<h3 className={styles.cardName}>
 					{project.name}
+					<ArrowUpRight size={15} aria-hidden="true" />
 				</h3>
-				<div className="text-muted-foreground flex items-center gap-1.5 text-sm">
+				<div className={styles.cardDate}>
 					<HugeiconsIcon icon={Calendar04Icon} className="size-4" />
-					<span>Created {formatDate({ date: project.createdAt })}</span>
+					<span>
+						<UiMessage text={"Created"} />{" "}
+						{formatDate({ date: project.createdAt, locale })}
+					</span>
 				</div>
 			</CardContent>
 		</Card>
@@ -779,12 +866,12 @@ function ProjectItem({
 
 	const listRowContent = (
 		<div className="flex items-center gap-3 flex-1 min-w-0">
-			<div className="bg-muted relative size-10 rounded overflow-hidden shrink-0">
+			<div className={styles.rowThumbnail}>
 				{project.thumbnail ? (
 					<Image
 						src={project.thumbnail}
 						unoptimized={project.thumbnail.startsWith("/api/local-drive/")}
-						alt="Project thumbnail"
+						alt=""
 						fill
 						loading={prioritizeThumbnail ? "eager" : "lazy"}
 						sizes="40px"
@@ -792,7 +879,10 @@ function ProjectItem({
 					/>
 				) : (
 					<div className="flex size-full items-center justify-center">
-						<OcVideoIcon className="text-muted-foreground size-5 shrink-0" />
+						<HugeiconsIcon
+							icon={Video01Icon}
+							className="text-muted-foreground size-5 shrink-0"
+						/>
 					</div>
 				)}
 			</div>
@@ -806,17 +896,13 @@ function ProjectItem({
 			</span>
 
 			<span className="text-muted-foreground text-sm shrink-0 w-auto pl-8 text-right hidden xs:block">
-				{formatDate({ date: project.createdAt })}
+				{formatDate({ date: project.createdAt, locale })}
 			</span>
 		</div>
 	);
 
 	const listContent = (
-		<div
-			className={`flex items-center gap-4 py-2 px-4 border-b border-border/50 ${
-				isSelected ? "bg-primary/5" : ""
-			}`}
-		>
+		<div className={cn(styles.row, isSelected && styles.selected)}>
 			<Checkbox
 				checked={isSelected}
 				onMouseDown={(event) => event.preventDefault()}
@@ -827,6 +913,7 @@ function ProjectItem({
 					});
 				}}
 				onCheckedChange={() => {}}
+				aria-label={`Select ${project.name}`}
 				className="size-5 shrink-0"
 			/>
 
@@ -869,11 +956,8 @@ function ProjectItem({
 										});
 									}}
 									onCheckedChange={() => {}}
-									className={`absolute z-10 size-5 top-3 left-3 ${
-										isSelected || isDropdownOpen
-											? "opacity-100"
-											: "opacity-0 group-hover:opacity-100"
-									}`}
+									aria-label={`Select ${project.name}`}
+									className={styles.cardCheck}
 								/>
 
 								{!isMultiSelect && (
@@ -943,19 +1027,19 @@ function ProjectContextMenuContent({
 				icon={<HugeiconsIcon icon={Edit03Icon} />}
 				onClick={onRenameClick}
 			>
-				Rename
+				<UiMessage text={"Rename"} />
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={Copy01Icon} />}
 				onClick={onDuplicateClick}
 			>
-				Duplicate
+				<UiMessage text={"Duplicate"} />
 			</ContextMenuItem>
 			<ContextMenuItem
 				icon={<HugeiconsIcon icon={InformationCircleIcon} />}
 				onClick={onInfoClick}
 			>
-				Info
+				<UiMessage text={"Info"} />
 			</ContextMenuItem>
 			<ContextMenuSeparator />
 			<ContextMenuItem
@@ -963,7 +1047,7 @@ function ProjectContextMenuContent({
 				icon={<HugeiconsIcon icon={Delete02Icon} />}
 				onClick={onDeleteClick}
 			>
-				Delete
+				<UiMessage text={"Delete"} />
 			</ContextMenuItem>
 		</ContextMenuContent>
 	);
@@ -986,27 +1070,6 @@ function ProjectMenu({
 	onDeleteClick: () => void;
 	onInfoClick: () => void;
 }) {
-	const handleMenuClick = ({
-		event,
-	}: {
-		event: MouseEvent<HTMLButtonElement>;
-	}) => {
-		event.preventDefault();
-		event.stopPropagation();
-	};
-
-	const handleMenuKeyDown = ({
-		event,
-	}: {
-		event: KeyboardEvent<HTMLButtonElement>;
-	}) => {
-		if (event.key !== "Enter" && event.key !== " ") {
-			return;
-		}
-		event.preventDefault();
-		event.stopPropagation();
-	};
-
 	const handleRename = () => {
 		onRenameClick();
 		onOpenChange(false);
@@ -1032,50 +1095,42 @@ function ProjectMenu({
 	return (
 		<DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
 			<DropdownMenuTrigger asChild>
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label"]}
 					variant="background"
-					className={
-						isGrid
-							? `absolute z-10 top-3 right-3 ${isOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`
-							: "!bg-transparent !shadow-none"
-					}
+					className={isGrid ? styles.cardMenu : styles.rowMenu}
 					size="icon"
 					aria-label="Project menu"
-					onClick={(event) =>
-						handleMenuClick({
-							event: event as unknown as MouseEvent<HTMLButtonElement>,
-						})
-					}
+					onClick={(event) => {
+						event.preventDefault();
+						event.stopPropagation();
+					}}
 					onMouseDown={(event) => event.stopPropagation()}
-					onKeyDown={(event) =>
-						handleMenuKeyDown({
-							event: event as unknown as KeyboardEvent<HTMLButtonElement>,
-						})
-					}
 				>
 					<HugeiconsIcon
 						icon={MoreHorizontalIcon}
 						className="text-foreground"
 						aria-hidden="true"
 					/>
-				</Button>
+				</UiLocalized>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-48" align="end">
 				<DropdownMenuItem onClick={handleRename}>
 					<HugeiconsIcon icon={Edit03Icon} />
-					Rename
+					<UiMessage text={"Rename"} />
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleDuplicate}>
 					<HugeiconsIcon icon={Copy01Icon} />
-					Duplicate
+					<UiMessage text={"Duplicate"} />
 				</DropdownMenuItem>
 				<DropdownMenuItem onClick={handleInfoClick}>
 					<HugeiconsIcon icon={InformationCircleIcon} />
-					Info
+					<UiMessage text={"Info"} />
 				</DropdownMenuItem>
 				<DropdownMenuItem variant="destructive" onClick={handleDeleteClick}>
 					<HugeiconsIcon icon={Delete02Icon} />
-					Delete
+					<UiMessage text={"Delete"} />
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
@@ -1084,23 +1139,26 @@ function ProjectMenu({
 
 function ProjectsSkeleton() {
 	const skeletonIds = Array.from(
-		{ length: 24 },
+		{ length: 6 },
 		(_, index) => `skeleton-${index}`,
 	);
 
 	return (
-		<div className="px-4 xs:grid-cols-2 grid grid-cols-1 gap-6 sm:grid-cols-3 lg:grid-cols-4">
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
+			className={styles.grid}
+			aria-label="Loading projects"
+			aria-busy="true"
+		>
 			{skeletonIds.map((skeletonId) => (
-				<Card
-					key={skeletonId}
-					className="bg-background overflow-hidden border-none p-0"
-				>
+				<Card key={skeletonId} className={styles.projectCard}>
 					<div className="bg-muted relative aspect-video">
 						<div className="absolute inset-0">
 							<Skeleton className="bg-muted/50 size-full" />
 						</div>
 					</div>
-					<CardContent className="flex flex-col gap-2 px-0 pt-4">
+					<CardContent className={styles.cardBody}>
 						<Skeleton className="bg-muted/50 h-4 w-3/4" />
 						<div className="text-muted-foreground flex items-center gap-1.5">
 							<Skeleton className="bg-muted/50 size-4" />
@@ -1109,7 +1167,7 @@ function ProjectsSkeleton() {
 					</CardContent>
 				</Card>
 			))}
-		</div>
+		</UiLocalized>
 	);
 }
 
@@ -1129,13 +1187,18 @@ function ProjectsLoadError({ error }: { error: string }) {
 					/>
 				</div>
 				<div className="min-w-0">
-					<h3 className="font-medium">Projects could not be read</h3>
+					<h3 className="font-medium">
+						<UiMessage text={"Projects could not be read"} />
+					</h3>
 					<p className="mt-1 text-sm text-muted-foreground">
-						Your stored project data has not been deleted. Retry the browser
-						storage read, or import a project ZIP backup.
+						<UiMessage
+							text={
+								"Your stored project data has not been deleted. Retry the browser storage read, or import a project ZIP backup."
+							}
+						/>
 					</p>
 					<p className="mt-2 break-words font-mono text-xs text-muted-foreground">
-						{error}
+						<UiValue>{error}</UiValue>
 					</p>
 				</div>
 			</div>
@@ -1145,7 +1208,7 @@ function ProjectsLoadError({ error }: { error: string }) {
 					size="lg"
 					onClick={() => void editor.project.loadAllProjects()}
 				>
-					Retry
+					<UiMessage text={"Retry"} />
 				</Button>
 				<ImportProjectButton />
 			</div>
@@ -1177,14 +1240,21 @@ function ProjectsMigrationWarning({
 				</div>
 				<div className="min-w-0">
 					<h3 className="font-medium">
-						{failures.length === 1
-							? "One project needs recovery"
-							: `${failures.length} projects need recovery`}
+						{failures.length === 1 ? (
+							<UiMessage text={"One project needs recovery"} />
+						) : (
+							<UiMessage
+								text={"{v0} projects need recovery"}
+								values={{ v0: String(failures.length) }}
+							/>
+						)}
 					</h3>
 					<p className="mt-1 text-sm text-muted-foreground">
-						OpenCut stopped before another unsafe write. Recoverable data was
-						preserved: either the live record stayed untouched or a pre-upgrade
-						safety snapshot was saved. Other readable projects remain available.
+						<UiMessage
+							text={
+								"POCUT stopped before another unsafe write. Recoverable data was preserved: either the live record stayed untouched or a pre-upgrade safety snapshot was saved. Other readable projects remain available."
+							}
+						/>
 					</p>
 					<p className="mt-2 break-words text-xs text-muted-foreground">
 						{projectNames.join(", ")}
@@ -1197,7 +1267,7 @@ function ProjectsMigrationWarning({
 					size="lg"
 					onClick={() => void editor.project.loadAllProjects()}
 				>
-					Retry upgrade
+					<UiMessage text={"Retry upgrade"} />
 				</Button>
 				<ImportProjectButton />
 			</div>
@@ -1227,16 +1297,20 @@ function EmptyState() {
 
 	if (savedProjects.length > 0) {
 		return (
-			<div className="flex flex-col items-center justify-center gap-5 py-16 text-center">
+			<div className={styles.empty}>
 				<div className="flex flex-col items-center gap-8">
 					<HugeiconsIcon
 						icon={Search01Icon}
 						className="text-muted-foreground size-16 bg-accent/35 border rounded-md p-4"
 					/>
 					<div className="flex flex-col items-center gap-3">
-						<h3 className="text-lg font-medium">No results found</h3>
+						<h3 className="text-lg font-medium">
+							<UiMessage text={"No results found"} />
+						</h3>
 						<p className="text-muted-foreground max-w-md">
-							Your search for "{searchQuery}" did not return any results.
+							<UiMessage text={"Your search for “"} />
+							{searchQuery}
+							<UiMessage text={"” did not return any results."} />
 						</p>
 					</div>
 				</div>
@@ -1245,14 +1319,14 @@ function EmptyState() {
 					variant="outline"
 					size="lg"
 				>
-					Clear search
+					<UiMessage text={"Clear search"} />
 				</Button>
 			</div>
 		);
 	}
 
 	return (
-		<div className="flex flex-col items-center justify-center gap-6 py-16 text-center">
+		<div className={styles.empty}>
 			<div className="flex flex-col items-center gap-2">
 				<div className="bg-muted/30 flex size-16 items-center justify-center rounded-full">
 					<HugeiconsIcon
@@ -1260,16 +1334,21 @@ function EmptyState() {
 						className="text-muted-foreground size-8"
 					/>
 				</div>
-				<h3 className="text-lg font-medium">No projects yet</h3>
+				<h3 className="text-lg font-medium">
+					<UiMessage text={"No projects yet"} />
+				</h3>
 				<p className="text-muted-foreground max-w-md">
-					This account has no projects yet. Create a project, import a project
-					ZIP, or bring your existing work from Account &amp; storage.
+					<UiMessage
+						text={
+							"This account has no projects yet. Create a project, import a project ZIP, or bring your existing work from Account & storage."
+						}
+					/>
 				</p>
 			</div>
 			<div className="flex flex-wrap justify-center gap-3">
 				<Button size="lg" className="gap-2" onClick={handleCreateProject}>
 					<HugeiconsIcon icon={PlusSignIcon} />
-					Create your first project
+					<UiMessage text={"Create your first project"} />
 				</Button>
 				<ImportProjectButton />
 			</div>

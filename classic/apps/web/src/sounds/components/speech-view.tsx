@@ -1,4 +1,9 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
@@ -118,15 +123,22 @@ export function SpeechView() {
 	return (
 		<div className="space-y-4 overflow-y-auto p-4">
 			<div>
-				<h3 className="font-medium">Create a voiceover</h3>
+				<h3 className="font-medium">
+					<UiMessage text={"Create a voiceover"} />
+				</h3>
 				<p className="mt-1 text-xs text-muted-foreground">
-					English · Kokoro 82M. Runs on this device. The first use downloads
-					model files (about 90 MB for CPU or 330 MB for GPU), then reuses the
-					browser cache.
+					<UiMessage
+						text={
+							"English · Kokoro 82M. Runs on this device. The first use downloads model files (about 90 MB for CPU or 330 MB for GPU), then reuses the browser cache."
+						}
+					/>
 				</p>
 			</div>
 			<label className="block space-y-1 text-sm">
-				<span>Text ({text.length}/250)</span>
+				<span>
+					<UiMessage text={"Text ("} />
+					{text.length}/250)
+				</span>
 				<textarea
 					value={text}
 					maxLength={250}
@@ -136,7 +148,9 @@ export function SpeechView() {
 				/>
 			</label>
 			<label className="block space-y-1 text-sm">
-				<span>Voice</span>
+				<span>
+					<UiMessage text={"Voice"} />
+				</span>
 				<select
 					value={voice}
 					disabled={busy}
@@ -156,7 +170,9 @@ export function SpeechView() {
 				</select>
 			</label>
 			<label className="block space-y-1 text-sm">
-				<span>Processor</span>
+				<span>
+					<UiMessage text={"Processor"} />
+				</span>
 				<select
 					value={device}
 					disabled={busy}
@@ -169,17 +185,29 @@ export function SpeechView() {
 					}}
 					className="w-full rounded border bg-background p-2"
 				>
-					<option value="auto">GPU when supported, otherwise CPU</option>
-					<option value="wasm">CPU (compatible mode)</option>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="auto"
+					>
+						{"GPU when supported, otherwise CPU"}
+					</UiLocalized>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="wasm"
+					>
+						{"CPU (compatible mode)"}
+					</UiLocalized>
 				</select>
 			</label>
 			{busy ? (
 				<Button variant="outline" onClick={cancel}>
-					Cancel
+					<UiMessage text={"Cancel"} />
 				</Button>
 			) : (
 				<Button disabled={!text.trim() || saving} onClick={generate}>
-					Generate voiceover
+					<UiMessage text={"Generate voiceover"} />
 				</Button>
 			)}
 			{status && (
@@ -189,7 +217,7 @@ export function SpeechView() {
 			)}
 			{error && (
 				<p role="alert" className="text-sm text-destructive">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 			{result && (
@@ -206,14 +234,18 @@ export function SpeechView() {
 						{result.transcript}
 					</p>
 					<Button disabled={saving} onClick={() => void addToProject()}>
-						{saving ? "Adding…" : "Add to project media"}
+						{saving ? (
+							<UiMessage text={"Adding…"} />
+						) : (
+							<UiMessage text={"Add to project media"} />
+						)}
 					</Button>
 					<a
 						href={result.url}
 						download="voiceover.wav"
 						className="ml-3 text-sm underline"
 					>
-						Download WAV
+						<UiMessage text={"Download WAV"} />
 					</a>
 				</div>
 			)}

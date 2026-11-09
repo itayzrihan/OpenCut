@@ -79,6 +79,8 @@ const deriveRules: ElementUpdateRule[] = [
 			const nextDuration = roundMediaTime({
 				time: getTimelineDurationForSourceSpan({
 					sourceSpan: visibleSourceSpan,
+					trimStart: element.trimStart,
+					ticks: true,
 					retime: nextRetime,
 				}),
 			});
@@ -363,6 +365,8 @@ function getSourceDuration({
 		trimStart +
 		getSourceSpanAtClipTime({
 			clipTime: duration,
+			trimStart,
+			ticks: true,
 			retime,
 		}) +
 		trimEnd

@@ -1,5 +1,11 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Check,
@@ -16,7 +22,7 @@ import {
 	normalizePodcastMulticamSettings,
 	podcastMulticamDefaults,
 } from "opencut-wasm";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -420,11 +426,19 @@ export function PodcastSyncDialog({
 				selectedMic?.segments[0]?.recording.mediaId ?? draft.audioAssetId,
 			);
 			if (!video || video.type !== "video") {
-				toast.error(`${draft.name} needs a camera video`);
+				toast.error(
+					localizeClientMessage("{v0} needs a camera video", {
+						v0: String(draft.name),
+					}),
+				);
 				return null;
 			}
 			if (!audio || (audio.type !== "audio" && audio.type !== "video")) {
-				toast.error(`${draft.name} needs a microphone source`);
+				toast.error(
+					localizeClientMessage("{v0} needs a microphone source", {
+						v0: String(draft.name),
+					}),
+				);
 				return null;
 			}
 			if (
@@ -433,16 +447,27 @@ export function PodcastSyncDialog({
 				!draft.audioExplicit
 			) {
 				toast.error(
-					`${draft.name}: choose the external microphone, or explicitly select camera audio`,
+					localizeClientMessage(
+						"{v0}: choose the external microphone, or explicitly select camera audio",
+						{ v0: String(draft.name) },
+					),
 				);
 				return null;
 			}
 			if (usedVideoIds.has(video.id)) {
-				toast.error(`${video.name} is used by more than one channel`);
+				toast.error(
+					localizeClientMessage("{v0} is used by more than one channel", {
+						v0: String(video.name),
+					}),
+				);
 				return null;
 			}
 			if (mode !== "advanced" && usedAudioIds.has(audio.id)) {
-				toast.error(`${audio.name} is used by more than one channel`);
+				toast.error(
+					localizeClientMessage("{v0} is used by more than one channel", {
+						v0: String(audio.name),
+					}),
+				);
 				return null;
 			}
 			usedVideoIds.add(video.id);
@@ -706,11 +731,15 @@ export function PodcastSyncDialog({
 		>
 			<DialogContent className="max-h-[92vh] max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
 				<DialogHeader>
-					<DialogTitle>Podcast Multicam</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Podcast Multicam"} />
+					</DialogTitle>
 					<DialogDescription>
-						Sync all cameras and microphones together, detect the active
-						speaker, then apply microphone gain, limiting, noise reduction and
-						Sharpen automatically.
+						<UiMessage
+							text={
+								"Sync all cameras and microphones together, detect the active speaker, then apply microphone gain, limiting, noise reduction and Sharpen automatically."
+							}
+						/>
 					</DialogDescription>
 					<WizardSteps currentIndex={currentStepIndex} />
 				</DialogHeader>
@@ -720,13 +749,18 @@ export function PodcastSyncDialog({
 					{step === "media" ? (
 						<details className="mb-4 rounded-lg border p-3">
 							<summary className="cursor-pointer text-sm font-medium">
-								Add linked camera / microphone paths
+								<UiMessage text={"Add linked camera / microphone paths"} />
 							</summary>
 							<p className="my-2 text-xs text-muted-foreground">
-								One absolute file path per line. Recordings stay on their
-								original disk or memory card.
+								<UiMessage
+									text={
+										"One absolute file path per line. Recordings stay on their original disk or memory card."
+									}
+								/>
 							</p>
-							<Textarea
+							<UiLocalized<typeof Textarea>
+								element={Textarea}
+								messageProps={["aria-label"]}
 								aria-label="Linked source paths"
 								value={sourcePaths}
 								onChange={(e) => setSourcePaths(e.target.value)}
@@ -738,9 +772,11 @@ export function PodcastSyncDialog({
 								disabled={isImporting || !sourcePaths.trim()}
 								onClick={() => void importLinkedSources()}
 							>
-								{isImporting
-									? "Linking sources…"
-									: "Link sources without copying"}
+								{isImporting ? (
+									<UiMessage text={"Linking sources…"} />
+								) : (
+									<UiMessage text={"Link sources without copying"} />
+								)}
 							</Button>
 						</details>
 					) : null}
@@ -852,13 +888,13 @@ export function PodcastSyncDialog({
 								setResult(null);
 							}}
 						>
-							Cancel analysis
+							<UiMessage text={"Cancel analysis"} />
 						</Button>
 					) : null}
 					{step === "media" ? (
 						<>
 							<Button variant="outline" onClick={() => onOpenChange(false)}>
-								Cancel
+								<UiMessage text={"Cancel"} />
 							</Button>
 							<Button
 								onClick={() => {
@@ -869,11 +905,13 @@ export function PodcastSyncDialog({
 							>
 								{mode !== "guided" ? (
 									<>
-										<WandSparkles className="size-4" /> Auto Edit
+										<WandSparkles className="size-4" />{" "}
+										<UiMessage text={"Auto Edit"} />
 									</>
 								) : (
 									<>
-										Continue to Sync <ChevronRight className="size-4" />
+										<UiMessage text={"Continue to Sync"} />{" "}
+										<ChevronRight className="size-4" />
 									</>
 								)}
 							</Button>
@@ -886,21 +924,22 @@ export function PodcastSyncDialog({
 								onClick={() => setStep("media")}
 								disabled={isRunning}
 							>
-								<ChevronLeft className="size-4" /> Back
+								<ChevronLeft className="size-4" /> <UiMessage text={"Back"} />
 							</Button>
 							{alignment ? (
 								<Button
 									disabled={isRunning}
 									onClick={() => setStep("multicam")}
 								>
-									Continue to Multicam <ChevronRight className="size-4" />
+									<UiMessage text={"Continue to Multicam"} />{" "}
+									<ChevronRight className="size-4" />
 								</Button>
 							) : (
 								<Button
 									onClick={() => void handleRunAlignment()}
 									disabled={isRunning}
 								>
-									<Play className="size-4" /> Start Sync
+									<Play className="size-4" /> <UiMessage text={"Start Sync"} />
 								</Button>
 							)}
 						</>
@@ -912,21 +951,23 @@ export function PodcastSyncDialog({
 								onClick={() => setStep("sync")}
 								disabled={isRunning}
 							>
-								<ChevronLeft className="size-4" /> Back
+								<ChevronLeft className="size-4" /> <UiMessage text={"Back"} />
 							</Button>
 							{result ? (
 								<Button
 									disabled={isRunning}
 									onClick={() => setStep("sequence")}
 								>
-									Continue <ChevronRight className="size-4" />
+									<UiMessage text={"Continue"} />{" "}
+									<ChevronRight className="size-4" />
 								</Button>
 							) : (
 								<Button
 									onClick={() => void handleRunMulticam()}
 									disabled={isRunning}
 								>
-									<Clapperboard className="size-4" /> Analyze & Route Cameras
+									<Clapperboard className="size-4" />{" "}
+									<UiMessage text={"Analyze & Route Cameras"} />
 								</Button>
 							)}
 						</>
@@ -938,12 +979,13 @@ export function PodcastSyncDialog({
 									onClick={() => void handleCreateGuidedSequence()}
 									disabled={isRunning || !result}
 								>
-									<Clapperboard className="size-4" /> Create Editable Sequence
+									<Clapperboard className="size-4" />{" "}
+									<UiMessage text={"Create Editable Sequence"} />
 								</Button>
 							) : null}
 							{sequenceCreated ? (
 								<Button onClick={() => onOpenChange(false)}>
-									Open in Editor
+									<UiMessage text={"Open in Editor"} />
 								</Button>
 							) : null}
 						</>
@@ -1016,14 +1058,18 @@ function MediaStep({
 		<div className="space-y-5">
 			<div className="grid gap-3 md:grid-cols-[1fr_160px]">
 				<div className="space-y-1.5">
-					<Label>Sequence name</Label>
+					<Label>
+						<UiMessage text={"Sequence name"} />
+					</Label>
 					<Input
 						value={settings.sequenceName}
 						onChange={(event) => onSequenceNameChange(event.target.value)}
 					/>
 				</div>
 				<div className="space-y-1.5">
-					<Label>Number of channels</Label>
+					<Label>
+						<UiMessage text={"Number of channels"} />
+					</Label>
 					<Select
 						value={String(channels.length)}
 						onValueChange={(value) => onChannelCountChange(Number(value))}
@@ -1037,7 +1083,12 @@ function MediaStep({
 								(_, index) => index + 1,
 							).map((count) => (
 								<SelectItem key={count} value={String(count)}>
-									{count} {count === 1 ? "channel" : "channels"}
+									{count}{" "}
+									{count === 1 ? (
+										<UiMessage text={"channel"} />
+									) : (
+										<UiMessage text={"channels"} />
+									)}
 								</SelectItem>
 							))}
 						</SelectContent>
@@ -1046,21 +1097,27 @@ function MediaStep({
 			</div>
 
 			<div className="grid gap-3 md:grid-cols-3">
-				<ModeCard
+				<UiLocalized<typeof ModeCard>
+					element={ModeCard}
+					messageProps={["title", "description"]}
 					selected={mode === "quick"}
 					icon={<WandSparkles className="size-5" />}
 					title="Quick Auto Edit"
 					description="One click syncs the cameras and microphones, mutes camera audio, and cuts between speakers with 1–20 second shots."
 					onClick={() => onModeChange("quick")}
 				/>
-				<ModeCard
+				<UiLocalized<typeof ModeCard>
+					element={ModeCard}
+					messageProps={["title", "description"]}
 					selected={mode === "advanced"}
 					icon={<Mic2 className="size-5" />}
 					title="Advanced Podcast"
 					description="Join segmented wireless mics, sync different start times and route up to four microphones to shared cameras automatically."
 					onClick={() => onModeChange("advanced")}
 				/>
-				<ModeCard
+				<UiLocalized<typeof ModeCard>
+					element={ModeCard}
+					messageProps={["title", "description"]}
 					selected={mode === "guided"}
 					icon={<SlidersHorizontal className="size-5" />}
 					title="Step by Step"
@@ -1071,11 +1128,23 @@ function MediaStep({
 
 			<div className="space-y-3">
 				<div>
-					<h3 className="text-sm font-medium">Channel media</h3>
+					<h3 className="text-sm font-medium">
+						<UiMessage text={"Channel media"} />
+					</h3>
 					<p className="text-muted-foreground text-xs">
-						{mode === "advanced"
-							? "Choose cameras, then assign their wireless microphones below."
-							: "Choose one camera video and its professional microphone for every channel."}
+						{mode === "advanced" ? (
+							<UiMessage
+								text={
+									"Choose cameras, then assign their wireless microphones below."
+								}
+							/>
+						) : (
+							<UiMessage
+								text={
+									"Choose one camera video and its professional microphone for every channel."
+								}
+							/>
+						)}
 					</p>
 				</div>
 				{channels.map((channel, index) => (
@@ -1084,7 +1153,9 @@ function MediaStep({
 						className="grid gap-2 rounded-lg border p-3 md:grid-cols-[1fr_1.25fr_1.25fr]"
 					>
 						<div className="space-y-1.5">
-							<Label>Channel {index + 1}</Label>
+							<Label>
+								<UiMessage text={"Channel"} /> {index + 1}
+							</Label>
 							<Input
 								value={channel.name}
 								onChange={(event) =>
@@ -1097,7 +1168,8 @@ function MediaStep({
 						</div>
 						<div className="space-y-1.5">
 							<Label className="flex items-center gap-1.5">
-								<Video className="size-3.5" /> Camera video
+								<Video className="size-3.5" />{" "}
+								<UiMessage text={"Camera video"} />
 							</Label>
 							<Select
 								value={channel.videoAssetId}
@@ -1109,10 +1181,16 @@ function MediaStep({
 								}
 							>
 								<SelectTrigger className="w-full">
-									<SelectValue placeholder="Choose video" />
+									<UiLocalized<typeof SelectValue>
+										element={SelectValue}
+										messageProps={["placeholder"]}
+										placeholder="Choose video"
+									/>
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value={NONE_VALUE}>Choose video</SelectItem>
+									<SelectItem value={NONE_VALUE}>
+										<UiMessage text={"Choose video"} />
+									</SelectItem>
 									{videoAssets.map((asset) => (
 										<SelectItem key={asset.id} value={asset.id}>
 											{asset.name}
@@ -1123,7 +1201,8 @@ function MediaStep({
 						</div>
 						<div className={cn("space-y-1.5", mode === "advanced" && "hidden")}>
 							<Label className="flex items-center gap-1.5">
-								<Mic2 className="size-3.5" /> Professional mic
+								<Mic2 className="size-3.5" />{" "}
+								<UiMessage text={"Professional mic"} />
 							</Label>
 							<Select
 								value={channel.audioAssetId}
@@ -1135,10 +1214,16 @@ function MediaStep({
 								}
 							>
 								<SelectTrigger className="w-full">
-									<SelectValue placeholder="Choose audio" />
+									<UiLocalized<typeof SelectValue>
+										element={SelectValue}
+										messageProps={["placeholder"]}
+										placeholder="Choose audio"
+									/>
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value={NONE_VALUE}>Choose audio</SelectItem>
+									<SelectItem value={NONE_VALUE}>
+										<UiMessage text={"Choose audio"} />
+									</SelectItem>
 									{[...audioAssets]
 										.sort((a, b) => {
 											const candidates =
@@ -1155,7 +1240,14 @@ function MediaStep({
 										.map((asset) => (
 											<SelectItem key={asset.id} value={asset.id}>
 												{asset.name}
-												{asset.type === "video" ? " (camera audio)" : ""}
+												{asset.type === "video" ? (
+													<>
+														{" "}
+														<UiMessage text={"(camera audio)"} />
+													</>
+												) : (
+													""
+												)}
 											</SelectItem>
 										))}
 								</SelectContent>
@@ -1165,25 +1257,37 @@ function MediaStep({
 									.find((s) => s.videoId === channel.videoAssetId)
 									?.candidates.find((c) => c.audioId === channel.audioAssetId)
 									?.reason ??
-									(channel.audioAssetId === NONE_VALUE
-										? "Choose a microphone; no unique name match"
-										: "Camera audio selected")}
+									(channel.audioAssetId === NONE_VALUE ? (
+										<UiMessage
+											text={"Choose a microphone; no unique name match"}
+										/>
+									) : (
+										<UiMessage text={"Camera audio selected"} />
+									))}
 							</p>
 						</div>
 					</div>
 				))}
 				{assetsMissing({ videoAssets, audioAssets }) ? (
 					<p className="text-muted-foreground rounded-md border border-dashed p-3 text-xs">
-						Import camera videos and microphone recordings into Assets, then
-						reopen Podcast Multicam.
+						<UiMessage
+							text={
+								"Import camera videos and microphone recordings into Assets, then reopen Podcast Multicam."
+							}
+						/>
 					</p>
 				) : null}
 				<div className="flex items-center justify-between rounded-lg border px-3 py-2">
 					<div>
-						<Label>Keep camera microphones</Label>
+						<Label>
+							<UiMessage text={"Keep camera microphones"} />
+						</Label>
 						<p className="text-muted-foreground text-xs">
-							Keep each camera&apos;s built-in audio alongside the professional
-							mic tracks.
+							<UiMessage
+								text={
+									"Keep each camera's built-in audio alongside the professional mic tracks."
+								}
+							/>
 						</p>
 					</div>
 					<Switch
@@ -1262,18 +1366,29 @@ function SyncStep({
 	return (
 		<div className="space-y-5">
 			<div>
-				<h3 className="font-medium">Synchronization</h3>
+				<h3 className="font-medium">
+					<UiMessage text={"Synchronization"} />
+				</h3>
 				<p className="text-muted-foreground text-sm">
-					All camera and microphone recordings are analyzed together and aligned
-					to one shared timeline.
+					<UiMessage
+						text={
+							"All camera and microphone recordings are analyzed together and aligned to one shared timeline."
+						}
+					/>
 				</p>
 			</div>
 			{isRunning || auto ? <ProgressPanel progress={progress} /> : null}
 			<div className="overflow-hidden rounded-lg border">
 				<div className="grid grid-cols-[1fr_1.5fr_1.5fr] gap-3 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-					<span>Channel</span>
-					<span>Camera</span>
-					<span>Microphone</span>
+					<span>
+						<UiMessage text={"Channel"} />
+					</span>
+					<span>
+						<UiMessage text={"Camera"} />
+					</span>
+					<span>
+						<UiMessage text={"Microphone"} />
+					</span>
 				</div>
 				{channels.map((channel) => (
 					<div
@@ -1297,7 +1412,9 @@ function SyncStep({
 			</div>
 			{alignment ? (
 				<div className="space-y-2">
-					<h4 className="text-sm font-medium">Sync results</h4>
+					<h4 className="text-sm font-medium">
+						<UiMessage text={"Sync results"} />
+					</h4>
 					{alignment.advanced ? (
 						<div className="space-y-1 rounded border p-3">
 							{alignment.advanced.microphones.map((m) => {
@@ -1308,12 +1425,21 @@ function SyncStep({
 										className="flex justify-between gap-3 text-xs"
 									>
 										<span>
-											{m.name} · {m.segments.length} clips
+											{m.name} · {m.segments.length}{" "}
+											<UiMessage text={"clips"} />
 										</span>
 										<span>
-											{start >= 0
-												? `Starts at ${start.toFixed(3)}s`
-												: `Trim ${(-start).toFixed(3)}s`}
+											{start >= 0 ? (
+												<UiMessage
+													text={"Starts at {v0}s"}
+													values={{ v0: String(start.toFixed(3)) }}
+												/>
+											) : (
+												<UiMessage
+													text={"Trim {v0}s"}
+													values={{ v0: String((-start).toFixed(3)) }}
+												/>
+											)}
 										</span>
 									</div>
 								);
@@ -1322,17 +1448,23 @@ function SyncStep({
 					) : null}
 					{alignment.precisionWarnings?.map((warning) => (
 						<p key={warning} role="status" className="text-sm text-amber-600">
-							{warning}
+							<UiValue>{warning}</UiValue>
 						</p>
 					))}
 					<div className="overflow-hidden rounded-lg border">
 						<div className="grid grid-cols-3 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
-							<span>Channel</span>
-							<span>Video trim</span>
 							<span>
-								{alignment.advanced
-									? "Assigned microphones"
-									: "Audio trim / delay"}
+								<UiMessage text={"Channel"} />
+							</span>
+							<span>
+								<UiMessage text={"Video trim"} />
+							</span>
+							<span>
+								{alignment.advanced ? (
+									<UiMessage text={"Assigned microphones"} />
+								) : (
+									<UiMessage text={"Audio trim / delay"} />
+								)}
 							</span>
 						</div>
 						{channels.map((channel) => (
@@ -1342,9 +1474,25 @@ function SyncStep({
 							>
 								<span>{channel.name}</span>
 								<span>
-									{(alignment.videoDelays[channel.id] ?? 0) > 0
-										? `Starts at ${alignment.videoDelays[channel.id].toFixed(2)}s`
-										: `Trim ${(alignment.videoOffsets[channel.id] ?? 0).toFixed(2)}s`}
+									{(alignment.videoDelays[channel.id] ?? 0) > 0 ? (
+										<UiMessage
+											text={"Starts at {v0}s"}
+											values={{
+												v0: String(
+													alignment.videoDelays[channel.id].toFixed(2),
+												),
+											}}
+										/>
+									) : (
+										<UiMessage
+											text={"Trim {v0}s"}
+											values={{
+												v0: String(
+													(alignment.videoOffsets[channel.id] ?? 0).toFixed(2),
+												),
+											}}
+										/>
+									)}
 								</span>
 								<span>
 									{alignment.advanced
@@ -1361,7 +1509,7 @@ function SyncStep({
 			) : null}
 			{!alignment && !isRunning && !auto ? (
 				<Button variant="outline" onClick={() => void onRun()}>
-					<Play className="size-4" /> Run synchronization
+					<Play className="size-4" /> <UiMessage text={"Run synchronization"} />
 				</Button>
 			) : null}
 		</div>
@@ -1390,16 +1538,23 @@ function MulticamStep({
 	return (
 		<div className="space-y-5">
 			<div>
-				<h3 className="font-medium">Multicam Settings & Analysis</h3>
+				<h3 className="font-medium">
+					<UiMessage text={"Multicam Settings & Analysis"} />
+				</h3>
 				<p className="text-muted-foreground text-sm">
-					Detect who is speaking and route the active camera while suppressing
-					microphone bleed.
+					<UiMessage
+						text={
+							"Detect who is speaking and route the active camera while suppressing microphone bleed."
+						}
+					/>
 				</p>
 			</div>
 			{isRunning || auto ? <ProgressPanel progress={progress} /> : null}
 			{!auto ? (
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
-					<NumberSetting
+					<UiLocalized<typeof NumberSetting>
+						element={NumberSetting}
+						messageProps={["label"]}
 						label="Min cut (seconds)"
 						value={settings.minCutDuration}
 						min={0.5}
@@ -1410,7 +1565,9 @@ function MulticamStep({
 							onSettingsChange({ ...settings, minCutDuration })
 						}
 					/>
-					<NumberSetting
+					<UiLocalized<typeof NumberSetting>
+						element={NumberSetting}
+						messageProps={["label"]}
 						label="Max shot (seconds, 0 = off)"
 						value={settings.maxCutDuration}
 						min={0}
@@ -1421,7 +1578,9 @@ function MulticamStep({
 							onSettingsChange({ ...settings, maxCutDuration })
 						}
 					/>
-					<NumberSetting
+					<UiLocalized<typeof NumberSetting>
+						element={NumberSetting}
+						messageProps={["label"]}
 						label="Reaction shot (seconds)"
 						value={settings.reactionDuration ?? 5}
 						min={settings.minCutDuration}
@@ -1432,7 +1591,9 @@ function MulticamStep({
 							onSettingsChange({ ...settings, reactionDuration })
 						}
 					/>
-					<NumberSetting
+					<UiLocalized<typeof NumberSetting>
+						element={NumberSetting}
+						messageProps={["label"]}
 						label="Pre-roll (seconds)"
 						value={settings.preRoll}
 						min={0}
@@ -1442,7 +1603,9 @@ function MulticamStep({
 						onChange={(preRoll) => onSettingsChange({ ...settings, preRoll })}
 					/>
 					<div className="space-y-1.5">
-						<Label>Crosstalk</Label>
+						<Label>
+							<UiMessage text={"Crosstalk"} />
+						</Label>
 						<Select
 							value={settings.crosstalkBehavior}
 							disabled={isRunning || !!result}
@@ -1454,28 +1617,34 @@ function MulticamStep({
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="stay">Stay on current</SelectItem>
+								<SelectItem value="stay">
+									<UiMessage text={"Stay on current"} />
+								</SelectItem>
 								<SelectItem value="priority">
-									Lowest channel priority
+									<UiMessage text={"Lowest channel priority"} />
 								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="space-y-1.5">
-						<Label>Silence</Label>
+						<Label>
+							<UiMessage text={"Silence"} />
+						</Label>
 						<Select value={settings.silenceBehavior} disabled>
 							<SelectTrigger className="w-full">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
 								<SelectItem value="stay_on_last">
-									Stay on last speaker
+									<UiMessage text={"Stay on last speaker"} />
 								</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
 					<div className="flex items-end justify-between rounded-md border px-3 py-2">
-						<Label>Anti-bleed</Label>
+						<Label>
+							<UiMessage text={"Anti-bleed"} />
+						</Label>
 						<Switch
 							checked={settings.antiBleed}
 							disabled={isRunning || !!result}
@@ -1488,7 +1657,8 @@ function MulticamStep({
 			) : null}
 			{!result && !isRunning && !auto ? (
 				<Button variant="outline" onClick={() => void onRun()}>
-					<Clapperboard className="size-4" /> Analyze & Route Cameras
+					<Clapperboard className="size-4" />{" "}
+					<UiMessage text={"Analyze & Route Cameras"} />
 				</Button>
 			) : null}
 			{result ? <CutTimeline result={result} channels={channels} /> : null}
@@ -1509,9 +1679,12 @@ function CutTimeline({
 	return (
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
-				<h4 className="text-sm font-medium">Camera timeline</h4>
+				<h4 className="text-sm font-medium">
+					<UiMessage text={"Camera timeline"} />
+				</h4>
 				<span className="text-muted-foreground text-xs">
-					{result.summary.totalCuts} cuts · {result.duration.toFixed(1)}s
+					{result.summary.totalCuts} <UiMessage text={"cuts ·"} />{" "}
+					{result.duration.toFixed(1)}s
 				</span>
 			</div>
 			<div className="flex h-12 overflow-hidden rounded-md border bg-muted/30">
@@ -1574,12 +1747,31 @@ function SequenceStep({
 				)}
 			</div>
 			<h3 className="font-medium">
-				{created ? "Podcast multicam is ready" : "Ready to create the sequence"}
+				{created ? (
+					<UiMessage text={"Podcast multicam is ready"} />
+				) : (
+					<UiMessage text={"Ready to create the sequence"} />
+				)}
 			</h3>
 			<p className="text-muted-foreground mt-2 max-w-md text-sm">
-				{created
-					? `“${sequenceName}” is ready: synchronized cameras with enabled/disabled cuts, muted camera sound, microphone Volume +15 dB, Gain −1 dB, Hard Limiter −1 dB, noise reduction 100% and Sharpen 15%.`
-					: `${result?.summary.totalCuts ?? 0} cuts across ${channelCount} channels are ready for an editable PoCut sequence.`}
+				{created ? (
+					<UiMessage
+						text={
+							"“{v0}” is ready: synchronized cameras with enabled/disabled cuts, muted camera sound, microphone Volume +15 dB, Gain −1 dB, Hard Limiter −1 dB, noise reduction 100% and Sharpen 15%."
+						}
+						values={{ v0: String(sequenceName) }}
+					/>
+				) : (
+					<UiMessage
+						text={
+							"{v0} cuts across {v1} channels are ready for an editable POCUT sequence."
+						}
+						values={{
+							v0: String(result?.summary.totalCuts ?? 0),
+							v1: String(channelCount),
+						}}
+					/>
+				)}
 			</p>
 		</div>
 	);
@@ -1651,10 +1843,15 @@ function AdvancedMicrophoneFields({
 }) {
 	return (
 		<div className="space-y-4 mt-4 rounded-lg border p-4">
-			<h3 className="font-medium">Wireless microphone recordings</h3>
+			<h3 className="font-medium">
+				<UiMessage text={"Wireless microphone recordings"} />
+			</h3>
 			<p className="text-muted-foreground text-xs">
-				Select this session&apos;s WAV files. Recorder tokens keep the segments
-				separate. Each stream is synchronized from its own start.
+				<UiMessage
+					text={
+						"Select this session's WAV files. Recorder tokens keep the segments separate. Each stream is synchronized from its own start."
+					}
+				/>
 			</p>
 			<div className="space-y-1 max-h-40 overflow-auto">
 				{assets
@@ -1678,8 +1875,9 @@ function AdvancedMicrophoneFields({
 			</div>
 			{groups.microphones.map((m) => (
 				<div key={m.id} className="rounded border p-2 text-xs">
-					<strong>{m.name}</strong> · {m.segments.length} clips ·{" "}
-					{(m.duration / 60).toFixed(2)} min
+					<strong>{m.name}</strong> · {m.segments.length}{" "}
+					<UiMessage text={"clips ·"} /> {(m.duration / 60).toFixed(2)}{" "}
+					<UiMessage text={"min"} />
 					<div className="text-muted-foreground break-all">
 						{m.segments.map((s) => s.recording.name).join(" → ")}
 					</div>
@@ -1691,7 +1889,7 @@ function AdvancedMicrophoneFields({
 				</p>
 			))}
 			<h4 className="text-sm font-medium">
-				Microphones visible in each camera
+				<UiMessage text={"Microphones visible in each camera"} />
 			</h4>
 			{channels.map((c) => (
 				<div key={c.id} className="space-y-1">
@@ -1741,15 +1939,19 @@ function PodcastAngleFields({
 	return (
 		<div className="mt-4 space-y-3 rounded-lg border p-4">
 			<div className="flex items-center justify-between gap-3">
-				<h3 className="font-medium">Multi angle cameras</h3>
+				<h3 className="font-medium">
+					<UiMessage text={"Multi angle cameras"} />
+				</h3>
 				<Button variant="outline" size="sm" onClick={onSuggest}>
-					Use camera and mic suggestions
+					<UiMessage text={"Use camera and mic suggestions"} />
 				</Button>
 			</div>
 			<p className="text-muted-foreground text-xs">
-				Related camera names suggest an angle group. Main is preferred; the
-				alternate provides a brief change after long 15–20 second shots. No
-				Assets merge needed.
+				<UiMessage
+					text={
+						"Related camera names suggest an angle group. Main is preferred; the alternate provides a brief change after long 15–20 second shots. No Assets merge needed."
+					}
+				/>
 			</p>
 			{groups.map((g, i) => (
 				<div
@@ -1767,15 +1969,17 @@ function PodcastAngleFields({
 							variant="ghost"
 							onClick={() => onChange(groups.filter((_, j) => j !== i))}
 						>
-							Ungroup
+							<UiMessage text={"Ungroup"} />
 						</Button>
 					</div>
 					<p className="text-muted-foreground text-xs">
 						{suggestions.find((s) =>
 							s.cameraIds.every((id) => g.cameraIds.includes(id)),
-						)?.evidence ?? "Custom angle group"}
+						)?.evidence ?? <UiMessage text={"Custom angle group"} />}
 					</p>
-					<Label>Preferred main camera</Label>
+					<Label>
+						<UiMessage text={"Preferred main camera"} />
+					</Label>
 					<Select
 						value={g.preferredCameraId}
 						onValueChange={(id) =>
@@ -1801,7 +2005,7 @@ function PodcastAngleFields({
 			))}
 			<details>
 				<summary className="cursor-pointer text-xs">
-					Choose a custom multi angle group
+					<UiMessage text={"Choose a custom multi angle group"} />
 				</summary>
 				<div className="my-2 space-y-1">
 					{videos.map((a) => (
@@ -1828,7 +2032,11 @@ function PodcastAngleFields({
 					onValueChange={setPreferred}
 				>
 					<SelectTrigger>
-						<SelectValue placeholder="Main camera" />
+						<UiLocalized<typeof SelectValue>
+							element={SelectValue}
+							messageProps={["placeholder"]}
+							placeholder="Main camera"
+						/>
 					</SelectTrigger>
 					<SelectContent>
 						{selected.length ? (
@@ -1838,7 +2046,9 @@ function PodcastAngleFields({
 								</SelectItem>
 							))
 						) : (
-							<SelectItem value="none">Choose cameras first</SelectItem>
+							<SelectItem value="none">
+								<UiMessage text={"Choose cameras first"} />
+							</SelectItem>
 						)}
 					</SelectContent>
 				</Select>
@@ -1862,7 +2072,7 @@ function PodcastAngleFields({
 						setSelected([]);
 					}}
 				>
-					Add multi angle group
+					<UiMessage text={"Add multi angle group"} />
 				</Button>
 			</details>
 		</div>

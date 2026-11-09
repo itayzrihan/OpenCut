@@ -1,12 +1,19 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Focus, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticZoom } from "@/ai/automatic-zoom";
 
-export function AutomaticZoomButton({ disabled, onRunningChange }: { disabled: boolean; onRunningChange?: (running:boolean)=>void }) {
+export function AutomaticZoomButton({
+	disabled,
+	onRunningChange,
+}: {
+	disabled: boolean;
+	onRunningChange?: (running: boolean) => void;
+}) {
 	const editor = useEditor();
 	const controller = useRef<AbortController | null>(null);
 	const [running, setRunning] = useState(false);
@@ -44,11 +51,13 @@ export function AutomaticZoomButton({ disabled, onRunningChange }: { disabled: b
 	return (
 		<div className="mb-4 space-y-2 rounded-md border p-3">
 			<Button className="w-full" onClick={run} disabled={disabled || running}>
-				{running ? <Loader2 className="animate-spin" /> : <Focus />} Automatic
-				Zoom
+				{running ? <Loader2 className="animate-spin" /> : <Focus />}{" "}
+				<UiMessage text={"Automatic Zoom"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Speech-aware zooms across the video, with automatic swishes.
+				<UiMessage
+					text={"Speech-aware zooms across the video, with automatic swishes."}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -61,7 +70,7 @@ export function AutomaticZoomButton({ disabled, onRunningChange }: { disabled: b
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel zoom
+					<UiMessage text={"Cancel zoom"} />
 				</Button>
 			)}
 		</div>

@@ -114,12 +114,16 @@ export class SplitElementsCommand extends Command {
 					time: getSourceSpanAtClipTime({
 						clipTime: leftVisibleDuration,
 						retime: retimeRef,
+						trimStart: element.trimStart,
+						ticks: true,
 					}),
 				});
 				const totalSourceSpan = roundMediaTime({
 					time: getSourceSpanAtClipTime({
 						clipTime: element.duration,
 						retime: retimeRef,
+						trimStart: element.trimStart,
+						ticks: true,
 					}),
 				});
 				const rightSourceSpan = subMediaTime({

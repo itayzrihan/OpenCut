@@ -42,6 +42,12 @@ pub(crate) fn validate_engine(value: Option<&Value>) -> Result<(), String> {
     }
     Ok(())
 }
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, JsonSchema, PartialEq)]
+#[serde(rename_all = "kebab-case")]
+pub(super) enum BrowserTranscriptionModel {
+    IvritLargeV3Turbo,
+    WhisperLargeV3Turbo,
+}
 #[derive(Clone, Debug, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Job {
@@ -52,6 +58,8 @@ struct Job {
     defaults: Value,
     #[serde(default)]
     engine: Engine,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    browser_model: Option<BrowserTranscriptionModel>,
     #[serde(default)]
     external_configuration: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -99,6 +107,8 @@ enum Change {
         reference_element_ids: Option<Vec<String>>,
         #[serde(default)]
         engine: Engine,
+        #[serde(default, rename = "browserModel")]
+        browser_model: Option<BrowserTranscriptionModel>,
         #[serde(default, rename = "externalConfiguration")]
         external_configuration: Option<String>,
         #[serde(rename = "sceneId")]
@@ -169,6 +179,9 @@ fn validate_job(job: &Job) -> Result<(), String> {
         }
     } else if !job.reference_regions.is_empty() {
         return Err("Unbound transcription scope".into());
+    }
+    if job.engine == Engine::External && job.browser_model.is_some() {
+        return Err("A browser model requires local transcription".into());
     }
     if job.engine == Engine::External
         && job
@@ -480,6 +493,7 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
         Change::Start {
             reference_element_ids,
             engine,
+            browser_model,
             external_configuration,
             scene_id,
             language,
@@ -541,6 +555,7 @@ fn apply(document: &mut EditorDocument, input: Input) -> Result<Vec<String>, Cap
                     defaults,
                     total_duration,
                     engine,
+                    browser_model,
                     external_configuration,
                     reference_element_ids,
                     reference_regions,

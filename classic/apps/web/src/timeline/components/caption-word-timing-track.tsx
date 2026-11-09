@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	ContextMenu,
@@ -727,7 +731,9 @@ export function CaptionWordTimingTrack({
 
 	return (
 		<>
-			<div
+			<UiLocalized<"div">
+				element={"div"}
+				messageProps={["aria-label"]}
 				role="presentation"
 				ref={rowRef}
 				className="relative border-b border-red-500/20 bg-red-950/10"
@@ -740,7 +746,7 @@ export function CaptionWordTimingTrack({
 				aria-label="Transcript word timing track"
 			>
 				<div className="absolute inset-y-0 left-0 flex items-center px-2 text-[10px] font-medium uppercase text-red-200/70 pointer-events-none">
-					Words
+					<UiMessage text={"Words"} />
 				</div>
 				{visibleWordIndexes.map((index) => {
 					const word = words[index];
@@ -818,29 +824,31 @@ export function CaptionWordTimingTrack({
 										insertWord({ wordIndex: index, position: "before" })
 									}
 								>
-									Add word before
+									<UiMessage text={"Add word before"} />
 								</ContextMenuItem>
 								<ContextMenuItem
 									onSelect={() =>
 										insertWord({ wordIndex: index, position: "after" })
 									}
 								>
-									Add word after
+									<UiMessage text={"Add word after"} />
 								</ContextMenuItem>
 								<ContextMenuItem
 									onSelect={() =>
 										togglePunctuationExclusion({ wordIndex: index })
 									}
 								>
-									{word.excludeFromPunctuationHiding
-										? "Include in punctuation hiding"
-										: "Exclude from punctuation hiding"}
+									{word.excludeFromPunctuationHiding ? (
+										<UiMessage text={"Include in punctuation hiding"} />
+									) : (
+										<UiMessage text={"Exclude from punctuation hiding"} />
+									)}
 								</ContextMenuItem>
 								<ContextMenuItem
 									variant="destructive"
 									onSelect={() => removeWord({ wordIndex: index })}
 								>
-									Remove word
+									<UiMessage text={"Remove word"} />
 								</ContextMenuItem>
 							</ContextMenuContent>
 						</ContextMenu>
@@ -852,7 +860,9 @@ export function CaptionWordTimingTrack({
 						zoomLevel,
 					});
 					return (
-						<button
+						<UiLocalized<"button">
+							element={"button"}
+							messageProps={["title", "aria-label"]}
 							key={issue.key}
 							type="button"
 							className="absolute top-0 bottom-0 z-20 w-2 -translate-x-1/2 bg-red-500 shadow-[0_0_0_1px_rgba(255,255,255,0.55)]"
@@ -866,7 +876,7 @@ export function CaptionWordTimingTrack({
 						/>
 					);
 				})}
-			</div>
+			</UiLocalized>
 			<Dialog
 				open={wordTextEditor !== null}
 				onOpenChange={(open) => {
@@ -882,13 +892,17 @@ export function CaptionWordTimingTrack({
 					>
 						<DialogHeader>
 							<DialogTitle>
-								{wordTextEditor?.mode === "edit"
-									? "Edit transcript word"
-									: "Add transcript word"}
+								{wordTextEditor?.mode === "edit" ? (
+									<UiMessage text={"Edit transcript word"} />
+								) : (
+									<UiMessage text={"Add transcript word"} />
+								)}
 							</DialogTitle>
 						</DialogHeader>
 						<DialogBody>
-							<Input
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["aria-label"]}
 								value={wordTextEditor?.value ?? ""}
 								onChange={(event) =>
 									setWordTextEditor((current) =>
@@ -904,10 +918,14 @@ export function CaptionWordTimingTrack({
 								variant="outline"
 								onClick={() => setWordTextEditor(null)}
 							>
-								Cancel
+								<UiMessage text={"Cancel"} />
 							</Button>
 							<Button type="submit" disabled={!wordTextEditor?.value.trim()}>
-								{wordTextEditor?.mode === "edit" ? "Save" : "Add"}
+								{wordTextEditor?.mode === "edit" ? (
+									<UiMessage text={"Save"} />
+								) : (
+									<UiMessage text={"Add"} />
+								)}
 							</Button>
 						</DialogFooter>
 					</form>

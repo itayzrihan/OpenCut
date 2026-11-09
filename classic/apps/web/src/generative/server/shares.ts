@@ -27,7 +27,7 @@ export async function share({
 	const origin = publicOrigin();
 	if (!origin)
 		throw new Error(
-			"Original audio/video needs temporary HTTPS hosting. Add an exact POCAST download link or configure this OpenCut host's public HTTPS origin.",
+			"Original audio/video needs temporary HTTPS hosting. Add an exact POCAST download link or configure this POCUT host's public HTTPS origin.",
 		);
 	const token = store.id() + store.id();
 	await store.saveJson({

@@ -1,5 +1,15 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { McpInstallationSettings } from "./mcp-installation-settings";
+import {
+	readAgentModelPreference,
+	saveAgentModelPreference,
+} from "./model-preference";
+
 /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The conversation log is a focusable scroll region so keyboard users can review earlier messages. */
 
 import {
@@ -23,6 +33,7 @@ import {
 	PanelRight,
 	Paperclip,
 	Play,
+	Settings,
 	Square,
 	X,
 } from "lucide-react";
@@ -64,34 +75,46 @@ interface Entry {
 
 /** Presentation state only. The editor document and agent run live in Rust. */
 export function EditorAgentWorkspace({ children }: { children: ReactNode }) {
-	const [mode, setMode] = useState<"floating" | "docked" | "minimized">(
-		"floating",
-	);
 	if (process.env.NEXT_PUBLIC_EDITOR_AGENT === "0") return children;
 	return (
 		<div className={styles.workspace}>
 			<div className={styles.editor}>{children}</div>
-			<AgentPanel mode={mode} onMode={setMode} />
+			<AgentPanel />
 		</div>
 	);
 }
 
-function AgentPanel({
-	mode,
-	onMode,
+function clampFloatingPosition({
+	left,
+	top,
+	bounds,
 }: {
-	mode: "floating" | "docked" | "minimized";
-	onMode: (mode: "floating" | "docked" | "minimized") => void;
+	left: number;
+	top: number;
+	bounds: Pick<DOMRectReadOnly, "width" | "height">;
 }) {
+	return {
+		left: Math.max(8, Math.min(left, window.innerWidth - bounds.width - 8)),
+		top: Math.max(8, Math.min(top, window.innerHeight - bounds.height - 8)),
+	};
+}
+
+function AgentPanel() {
+	const [open, setOpen] = useState(true);
+	const [mode, setMode] = useState<"floating" | "docked">("docked");
 	const editor = useEditor();
 	const client = useRef<EditorAgentClient | null>(null);
 	const mounted = useRef(true);
 	const [connection, setConnection] = useState<AgentConnection | null>(null);
-	const [imageConnection, setImageConnection] = useState<
-		boolean | "unavailable" | null
-	>(null);
 	const [models, setModels] = useState<AgentModel[]>([]);
 	const [model, setModel] = useState("");
+	const [effortOverride, setEffortOverride] = useState("");
+	const selectedModel = models.find((item) => item.id === model);
+	const reasoningEffort = selectedModel?.reasoningEfforts?.includes(
+		effortOverride,
+	)
+		? effortOverride
+		: selectedModel?.defaultReasoningEffort;
 	const transient = useRef(
 		new Map<
 			string,
@@ -205,7 +228,7 @@ function AgentPanel({
 		}
 	};
 	const [busy, setBusy] = useState(false);
-	const [knowledgeOpen, setKnowledgeOpen] = useState(false);
+	const [settingsOpen, setSettingsOpen] = useState(false);
 	const [error, setError] = useState("");
 	const [connecting, setConnecting] = useState(false);
 	const [position, setPosition] = useState<{
@@ -220,7 +243,7 @@ function AgentPanel({
 		if (!input) return;
 		input.style.height = "auto";
 		input.style.height = `${Math.min(160, Math.max(66, input.scrollHeight))}px`;
-	}, [draft, mode, knowledgeOpen]);
+	}, [draft, mode, open, settingsOpen]);
 	const drag = useRef<{
 		x: number;
 		y: number;
@@ -301,12 +324,20 @@ function AgentPanel({
 					? `${previous}\n\n${parsed.data.text}`
 					: parsed.data.text,
 			);
-			onMode("floating");
+			setSettingsOpen(false);
+			setOpen(true);
 		};
+		const openConnections = () => {
+			setOpen(true);
+			setSettingsOpen(true);
+		};
+		window.addEventListener("opencut-agent-connections", openConnections);
 		window.addEventListener(EDITING_AGENT_DRAFT_EVENT, receiveDraft);
-		return () =>
+		return () => {
+			window.removeEventListener("opencut-agent-connections", openConnections);
 			window.removeEventListener(EDITING_AGENT_DRAFT_EVENT, receiveDraft);
-	}, [editor, onMode]);
+		};
+	}, [editor]);
 	const receive = useCallback(
 		(event: AgentClientEvent) => {
 			if (!mounted.current) return;
@@ -338,41 +369,41 @@ function AgentPanel({
 	);
 
 	const refresh = useCallback(async (signal?: AbortSignal) => {
-		const accountId = window.__opencutAccountId ?? "local";
-		const imageStatus = await fetch("/api/editor-agent/subscription-image", {
-			credentials: "same-origin",
-			cache: "no-store",
-			signal,
-			headers: { "X-OpenCut-Account": accountId },
-		})
-			.then((response) => response.json() as Promise<unknown>)
-			.catch(() => undefined);
-		if (accountId !== (window.__opencutAccountId ?? "local")) return;
-		if (mounted.current && !signal?.aborted)
-			setImageConnection(
-				z.object({ authenticated: z.boolean() }).safeParse(imageStatus).data
-					?.authenticated ?? "unavailable",
-			);
 		const status = await connectionRequest({
 			signal,
 			schema: connectionSchemas.status,
 		});
 		if (!mounted.current || signal?.aborted) return;
 		setConnection(status);
-		if (status.sharing) {
-			const result = await connectionRequest({
-				operation: "models",
-				schema: connectionSchemas.models,
-				signal,
+		window.dispatchEvent(new Event("opencut-ai-connected"));
+		const catalog = status.sharing
+			? await connectionRequest({
+					operation: "models",
+					schema: connectionSchemas.models,
+					signal,
+				})
+			: { models: [] };
+		if (!mounted.current || signal?.aborted) return;
+		const preference = readAgentModelPreference();
+		const nextModel =
+			catalog.models.find((item) => item.id === preference?.model) ??
+			catalog.models[0];
+		const effort =
+			preference?.model === nextModel?.id
+				? preference?.reasoningEffort
+				: undefined;
+		const nextEffort =
+			effort && nextModel?.reasoningEfforts?.includes(effort)
+				? effort
+				: undefined;
+		setModels(catalog.models);
+		setModel(nextModel?.id ?? "");
+		setEffortOverride(nextEffort ?? "");
+		if (nextModel)
+			saveAgentModelPreference({
+				model: nextModel.id,
+				reasoningEffort: nextEffort,
 			});
-			if (!mounted.current || signal?.aborted) return;
-			setModels(result.models);
-			setModel((old) =>
-				result.models.some((m) => m.id === old)
-					? old
-					: (result.models[0]?.id ?? ""),
-			);
-		}
 	}, []);
 	useEffect(() => {
 		mounted.current = true;
@@ -404,33 +435,32 @@ function AgentPanel({
 	useEffect(() => {
 		if (follow.current && scroll.current)
 			scroll.current.scrollTop = scroll.current.scrollHeight;
-	}, [entries, mode, snapshot]);
+	}, [entries, mode, open, settingsOpen, snapshot]);
 	useEffect(() => {
-		const clamp = () =>
-			setPosition((old) =>
-				old
-					? {
-							left: Math.max(
-								8,
-								Math.min(
-									old.left,
-									window.innerWidth - Math.min(380, window.innerWidth - 16),
-								),
-							),
-							top: Math.max(8, Math.min(old.top, window.innerHeight - 80)),
-						}
-					: null,
-			);
+		const element = panel.current;
+		if (mode !== "floating" || !open || !element) return;
+		const clamp = () => {
+			const bounds = element.getBoundingClientRect();
+			setPosition((old) => {
+				if (!old) return old;
+				const next = clampFloatingPosition({ ...old, bounds });
+				return next.left === old.left && next.top === old.top ? old : next;
+			});
+		};
+		const observer = new ResizeObserver(clamp);
+		observer.observe(element);
 		window.addEventListener("resize", clamp);
-		return () => window.removeEventListener("resize", clamp);
-	}, []);
+		return () => {
+			observer.disconnect();
+			window.removeEventListener("resize", clamp);
+		};
+	}, [mode, open]);
 	const signIn = async () => {
 		// Open during the user gesture so the authorization window is not blocked.
-		const popup = window.open(
-			"about:blank",
-			"_blank",
-			"popup,width=620,height=760",
-		);
+		const desktop = window.opencutElectron;
+		const popup = desktop?.openChatGPTSignIn
+			? null
+			: window.open("about:blank", "_blank", "popup,width=620,height=760");
 		if (popup) popup.opener = null;
 		setConnecting(true);
 		setError("");
@@ -438,16 +468,16 @@ function AgentPanel({
 		statusAbort.current?.abort();
 		statusAbort.current = controller;
 		try {
-			if (!popup)
-				throw new Error(
-					"Allow popups for OpenCut, then reconnect with ChatGPT.",
-				);
+			if (!popup && !desktop?.openChatGPTSignIn)
+				throw new Error("Allow popups for POCUT, then reconnect with ChatGPT.");
 			const result = await connectionRequest({
 				operation: "signIn",
 				signal: controller.signal,
 				schema: connectionSchemas.signIn,
 			});
-			popup.location.href = result.authorizationUrl;
+			if (desktop?.openChatGPTSignIn)
+				await desktop.openChatGPTSignIn(result.authorizationUrl);
+			else if (popup) popup.location.href = result.authorizationUrl;
 			while (Date.now() < result.expiresAt && !controller.signal.aborted) {
 				await new Promise<void>((resolve) => {
 					const timer = setTimeout(done, 1800);
@@ -486,6 +516,7 @@ function AgentPanel({
 			changingPolicy ||
 			!client.current ||
 			!model ||
+			!connection?.sharing ||
 			attachmentInFlight.current
 		)
 			return;
@@ -498,7 +529,12 @@ function AgentPanel({
 		try {
 			const selected = attachments.length ? attachments : undefined;
 			setAttachments([]);
-			await client.current.run({ text, model, attachments: selected });
+			await client.current.run({
+				text,
+				model,
+				reasoningEffort,
+				attachments: selected,
+			});
 		} catch (cause) {
 			if (mounted.current && generation.current === attempt)
 				setError(cause instanceof Error ? cause.message : "Editing run failed");
@@ -586,38 +622,36 @@ function AgentPanel({
 		event.currentTarget.setPointerCapture(event.pointerId);
 	};
 	const move = (event: PointerEvent<HTMLElement>) => {
-		if (!drag.current) return;
 		const bounds = panel.current?.getBoundingClientRect();
-		setPosition({
-			left: Math.max(
-				8,
-				Math.min(
-					window.innerWidth - (bounds?.width ?? 380) - 8,
-					drag.current.left + event.clientX - drag.current.x,
-				),
-			),
-			top: Math.max(
-				8,
-				Math.min(
-					window.innerHeight - (bounds?.height ?? 500) - 8,
-					drag.current.top + event.clientY - drag.current.y,
-				),
-			),
-		});
+		if (!drag.current || !bounds) return;
+		setPosition(
+			clampFloatingPosition({
+				left: drag.current.left + event.clientX - drag.current.x,
+				top: drag.current.top + event.clientY - drag.current.y,
+				bounds,
+			}),
+		);
 	};
 	return (
 		<>
-			{mode === "minimized" && (
-				<Button className={styles.launcher} onClick={() => onMode("floating")}>
-					<Bot /> {busy ? "Agent is editing…" : "OpenCut Agent"}
+			{!open && (
+				<Button className={styles.launcher} onClick={() => setOpen(true)}>
+					<Bot />{" "}
+					{busy ? (
+						<UiMessage text={"Agent is editing…"} />
+					) : (
+						<UiMessage text={"POCUT Agent"} />
+					)}
 				</Button>
 			)}
-			<aside
+			<UiLocalized<"aside">
+				element={"aside"}
+				messageProps={["aria-label"]}
 				ref={panel}
-				aria-label="OpenCut editing agent"
+				aria-label="POCUT editing agent"
 				data-testid="editor-agent"
 				className={`${styles.panel} ${mode === "docked" ? styles.docked : styles.floating}`}
-				hidden={mode === "minimized"}
+				hidden={!open}
 				style={
 					mode === "floating" && position
 						? {
@@ -641,107 +675,149 @@ function AgentPanel({
 					}}
 				>
 					<Bot size={17} />
-					<strong>OpenCut Agent</strong>
+					<strong>
+						<UiMessage text={"POCUT Agent"} />
+					</strong>
 					<Button
 						variant="ghost"
 						size="sm"
-						aria-pressed={knowledgeOpen}
-						onClick={() => setKnowledgeOpen(!knowledgeOpen)}
+						aria-pressed={settingsOpen}
+						onClick={() => {
+							setSettingsOpen(!settingsOpen);
+						}}
 					>
-						{knowledgeOpen ? "Chat" : "Knowledge"}
+						<Settings size={14} /> <UiMessage text={"Settings"} />
 					</Button>
-					<span className={styles.badge}>Preview</span>
-					<Button
+					<span className={styles.badge}>
+						<UiMessage text={"Preview"} />
+					</span>
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["title", "aria-label"]}
 						variant="ghost"
 						size="icon"
 						title={mode === "docked" ? "Float chat" : "Dock chat"}
 						aria-label={mode === "docked" ? "Float chat" : "Dock chat"}
-						onClick={() => onMode(mode === "docked" ? "floating" : "docked")}
+						onClick={() => setMode(mode === "docked" ? "floating" : "docked")}
 					>
 						<PanelRight />
-					</Button>
-					<Button
+					</UiLocalized>
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						aria-label="Minimize chat"
-						onClick={() => onMode("minimized")}
+						onClick={() => {
+							setSettingsOpen(false);
+							setOpen(false);
+						}}
 					>
 						<Minus />
-					</Button>
+					</UiLocalized>
 				</header>
-				<div className={styles.connection}>
-					{connection?.sharing ? (
-						<>
-							<span title={connection.identity?.email}>
-								{connection.identity?.name ??
-									connection.identity?.email ??
-									"ChatGPT connected"}
-							</span>
-							<Button
-								variant="text"
-								size="sm"
-								onClick={() => {
-									stop();
-									void connectionRequest({
-										operation: "disconnect",
-										schema: connectionSchemas.disconnect,
-									})
-										.then(() => refresh())
-										.catch((e) => setError(String(e)));
-								}}
-							>
-								Disconnect
-							</Button>
-						</>
-					) : (
-						<>
+				{open && settingsOpen && (
+					<UiLocalized<"section">
+						element={"section"}
+						messageProps={["aria-label"]}
+						className={styles.settings}
+						aria-label="Agent settings"
+					>
+						<div className={styles.connection}>
+							{connection?.sharing ? (
+								<>
+									<span title={connection.identity?.email}>
+										{connection.identity?.name ??
+											connection.identity?.email ?? (
+												<UiMessage text={"ChatGPT connected"} />
+											)}
+									</span>
+									<Button
+										variant="text"
+										size="sm"
+										onClick={() => {
+											stop();
+											void connectionRequest({
+												operation: "disconnect",
+												schema: connectionSchemas.disconnect,
+											})
+												.then(() => {
+													setEffortOverride("");
+													return refresh();
+												})
+												.catch((e) => setError(String(e)));
+										}}
+									>
+										<UiMessage text={"Disconnect"} />
+									</Button>
+								</>
+							) : (
+								<>
+									<span>
+										{connection?.connected ? (
+											<UiMessage text={"Enable ChatGPT plan usage"} />
+										) : (
+											<UiMessage text={"Connect your ChatGPT account"} />
+										)}
+									</span>
+									<Button
+										size="sm"
+										disabled={connecting}
+										onClick={() => void signIn()}
+									>
+										{connecting ? (
+											<UiMessage text={"Connecting…"} />
+										) : (
+											<UiMessage text={"Connect"} />
+										)}
+									</Button>
+								</>
+							)}
+						</div>
+						<div className={`${styles.connection} ${styles.connectionNote}`}>
 							<span>
-								{connection?.connected
-									? "Enable ChatGPT plan usage"
-									: "Connect your ChatGPT account"}
+								<UiMessage
+									text={
+										"The ChatGPT connection also powers eligible features in the AI tab. Image generation is unavailable on this connection."
+									}
+								/>
 							</span>
-							<Button
-								size="sm"
-								disabled={connecting}
-								onClick={() => void signIn()}
+							{connection?.sharing && (
+								<a href={connection.usageUrl} target="_blank" rel="noreferrer">
+									<UiMessage text={"ChatGPT usage"} />
+								</a>
+							)}
+						</div>
+						<div className={`${styles.connection} ${styles.connectionNote}`}>
+							<span>
+								<UiMessage
+									text={
+										"Claude Code runs locally and is unavailable on the public web app. Using a Claude subscription for POCUT features requires Anthropic authorization."
+									}
+								/>
+							</span>
+							<a
+								href="https://code.claude.com/docs/en/legal-and-compliance"
+								target="_blank"
+								rel="noreferrer"
 							>
-								{connecting ? "Connecting…" : "Connect"}
-							</Button>
-						</>
-					)}
-				</div>
-				<div className={styles.connection}>
-					<span>
-						{imageConnection === null
-							? "Checking image subscription…"
-							: imageConnection === "unavailable"
-								? "Image connection unavailable · retry"
-								: imageConnection
-									? "Codex images connected · image access unverified"
-									: "Codex images require a separate subscription connection"}
-					</span>
-					<a
-						href={`/api/ai/oauth/start?returnTo=${encodeURIComponent(typeof window === "undefined" ? "/" : window.location.pathname + window.location.search)}`}
-						target="_blank"
-						rel="noreferrer"
-					>
-						{imageConnection === true ? "Reconnect images" : "Connect images"}
-					</a>
-					<button
-						type="button"
-						onClick={() =>
-							void refresh().catch((cause) => setError(String(cause)))
-						}
-					>
-						Refresh
-					</button>
-				</div>
-				{knowledgeOpen && (
-					<KnowledgePanel projectId={editor.project.getActive().metadata.id} />
+								<UiMessage text={"Claude Code terms"} />
+							</a>
+						</div>
+						<McpInstallationSettings
+							key={editor.project.getActive().metadata.id}
+							projectId={editor.project.getActive().metadata.id}
+						/>
+						<KnowledgePanel
+							projectId={editor.project.getActive().metadata.id}
+						/>
+					</UiLocalized>
 				)}
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["aria-label"]}
 					ref={scroll}
-					hidden={knowledgeOpen}
+					hidden={settingsOpen}
 					className={styles.messages}
 					role="log"
 					aria-label="Editing conversation"
@@ -758,10 +834,15 @@ function AgentPanel({
 					{entries.length === 0 && (
 						<div className={styles.empty}>
 							<Bot size={28} />
-							<h2>What should change in your video?</h2>
+							<h2>
+								<UiMessage text={"What should change in your video?"} />
+							</h2>
 							<p>
-								Describe the edit. Follow the plan, inspect each action, and
-								refine the result as we work.
+								<UiMessage
+									text={
+										"Describe the edit. Follow the plan, inspect each action, and refine the result as we work."
+									}
+								/>
 							</p>
 						</div>
 					)}
@@ -770,7 +851,9 @@ function AgentPanel({
 					))}
 					{snapshot?.plan.length ? (
 						<details className={styles.plan} open>
-							<summary>Editing plan</summary>
+							<summary>
+								<UiMessage text={"Editing plan"} />
+							</summary>
 							<ol>
 								{snapshot.plan.map((step, index) => (
 									<li key={`${index}-${step.title}`} data-status={step.status}>
@@ -785,8 +868,8 @@ function AgentPanel({
 							</ol>
 						</details>
 					) : null}
-				</div>
-				{!following && !knowledgeOpen && (
+				</UiLocalized>
+				{!following && !settingsOpen && (
 					<Button
 						type="button"
 						variant="outline"
@@ -798,13 +881,15 @@ function AgentPanel({
 							scroll.current?.scrollTo({ top: scroll.current.scrollHeight });
 						}}
 					>
-						<ArrowDown size={12} /> Latest messages
+						<ArrowDown size={12} /> <UiMessage text={"Latest messages"} />
 					</Button>
 				)}
 				{(error || connection?.error) && (
 					<div className={styles.error} role="alert">
 						<span>{error || connection?.error}</span>
-						<Button
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
 							variant="ghost"
 							size="icon"
 							aria-label="Dismiss error"
@@ -814,15 +899,24 @@ function AgentPanel({
 							}}
 						>
 							<X />
-						</Button>
+						</UiLocalized>
 					</div>
 				)}
-				{snapshot?.pendingApproval && (
-					<section className={styles.approval} aria-label="Operation approval">
-						<strong>Approval required</strong>
+				{!settingsOpen && snapshot?.pendingApproval && (
+					<UiLocalized<"section">
+						element={"section"}
+						messageProps={["aria-label"]}
+						className={styles.approval}
+						aria-label="Operation approval"
+					>
+						<strong>
+							<UiMessage text={"Approval required"} />
+						</strong>
 						<p>{snapshot.pendingApproval.capabilityId}</p>
 						<details>
-							<summary>Review exact operation</summary>
+							<summary>
+								<UiMessage text={"Review exact operation"} />
+							</summary>
 							<pre>
 								{JSON.stringify(snapshot.pendingApproval.input, null, 2)}
 							</pre>
@@ -834,7 +928,7 @@ function AgentPanel({
 								onClick={() => void approve(true)}
 								disabled={busy}
 							>
-								Allow once
+								<UiMessage text={"Allow once"} />
 							</Button>
 							<Button
 								type="button"
@@ -843,35 +937,49 @@ function AgentPanel({
 								onClick={() => void approve(false)}
 								disabled={busy}
 							>
-								Deny
+								<UiMessage text={"Deny"} />
 							</Button>
 						</div>
-					</section>
+					</UiLocalized>
 				)}
-				{policy.mode === "plan" && snapshot?.phase === "completed" && (
-					<section className={styles.approval} aria-label="Proposed plan">
-						<strong>Plan ready for review</strong>
-						<p>
-							No edits were executed in Plan mode. Choose an execution mode,
-							then send your instructions to carry out this plan.
-						</p>
-						<Button
-							type="button"
-							size="sm"
-							onClick={() =>
-								void changePolicy({
-									mode: "askDestructive",
-									computerAccess: computerGranted,
-								})
-							}
-							disabled={changingPolicy}
+				{!settingsOpen &&
+					policy.mode === "plan" &&
+					snapshot?.phase === "completed" && (
+						<UiLocalized<"section">
+							element={"section"}
+							messageProps={["aria-label"]}
+							className={styles.approval}
+							aria-label="Proposed plan"
 						>
-							Use plan · confirm destructive actions
-						</Button>
-					</section>
-				)}
-				<form
-					hidden={knowledgeOpen}
+							<strong>
+								<UiMessage text={"Plan ready for review"} />
+							</strong>
+							<p>
+								<UiMessage
+									text={
+										"No edits were executed in Plan mode. Choose an execution mode, then send your instructions to carry out this plan."
+									}
+								/>
+							</p>
+							<Button
+								type="button"
+								size="sm"
+								onClick={() =>
+									void changePolicy({
+										mode: "askDestructive",
+										computerAccess: computerGranted,
+									})
+								}
+								disabled={changingPolicy}
+							>
+								<UiMessage text={"Use plan · confirm destructive actions"} />
+							</Button>
+						</UiLocalized>
+					)}
+				<UiLocalized<"form">
+					element={"form"}
+					messageProps={["aria-label"]}
+					hidden={settingsOpen}
 					className={`${styles.composer} ${dropActive ? styles.dropActive : ""}`}
 					aria-label="Chat message composer"
 					onDragOver={(event) => {
@@ -897,58 +1005,9 @@ function AgentPanel({
 						void send();
 					}}
 				>
-					<div className={styles.permissions} aria-label="Agent permissions">
-						<label>
-							Mode{" "}
-							<select
-								aria-label="Agent permission mode"
-								value={policy.mode}
-								disabled={changingPolicy}
-								onChange={(event) =>
-									void changePolicy({
-										mode: z
-											.enum(["plan", "askDestructive", "fullAccess"])
-											.parse(event.target.value),
-										computerAccess: computerGranted,
-									})
-								}
-							>
-								<option value="plan">Plan · inspect only</option>
-								<option value="askDestructive">
-									Confirm destructive actions
-								</option>
-								<option value="fullAccess">Full access</option>
-							</select>
-						</label>
-						{desktop ? (
-							<label className={styles.computerToggle}>
-								<input
-									type="checkbox"
-									checked={computerGranted}
-									disabled={changingPolicy}
-									onChange={(event) =>
-										void changePolicy({
-											mode: policy.mode,
-											computerAccess: event.target.checked,
-										})
-									}
-								/>{" "}
-								Computer access {computerGranted ? "on" : "off"}
-							</label>
-						) : (
-							<span>Editor projects only</span>
-						)}
-						<p>
-							{computerGranted
-								? policy.mode === "fullAccess"
-									? "Computer files and terminal · no individual approvals"
-									: policy.mode === "plan"
-										? "Computer files · inspection only"
-										: "Computer files and terminal · confirm changes"
-								: "Editor projects · computer access off"}
-						</p>
-					</div>
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["aria-label", "placeholder"]}
 						ref={composerInput}
 						dir={messageDirection(draft)}
 						aria-label="Message the editing agent"
@@ -977,9 +1036,18 @@ function AgentPanel({
 							}
 						}}
 					/>
-					{dropActive && <p className={styles.dropHint}>Drop to attach</p>}
+					{dropActive && (
+						<p className={styles.dropHint}>
+							<UiMessage text={"Drop to attach"} />
+						</p>
+					)}
 					{attachments.length > 0 && (
-						<div className={styles.attachments} aria-label="Attached files">
+						<UiLocalized<"div">
+							element={"div"}
+							messageProps={["aria-label"]}
+							className={styles.attachments}
+							aria-label="Attached files"
+						>
 							{attachments.map((item) => (
 								<Button
 									key={item.artifactId}
@@ -997,7 +1065,7 @@ function AgentPanel({
 									<X size={12} />
 								</Button>
 							))}
-						</div>
+						</UiLocalized>
 					)}
 					<div className={styles.controls}>
 						<input
@@ -1011,7 +1079,9 @@ function AgentPanel({
 								event.target.value = "";
 							}}
 						/>
-						<Button
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
 							type="button"
 							variant="ghost"
 							aria-label="Attach files"
@@ -1019,26 +1089,77 @@ function AgentPanel({
 							onClick={() => attachmentInput.current?.click()}
 						>
 							<Paperclip size={14} />
-						</Button>
-						<select
-							aria-label="Agent model"
-							value={model}
-							disabled={busy || !models.length}
-							onChange={(event) => setModel(event.target.value)}
-						>
-							<option value="" disabled>
-								Select model
-							</option>
-							{models.map((item) => (
-								<option key={item.id} value={item.id}>
-									{item.name}
-								</option>
-							))}
-						</select>
+						</UiLocalized>
+						<div className={styles.providerControls}>
+							<UiLocalized<"select">
+								element={"select"}
+								messageProps={["aria-label"]}
+								aria-label="Agent model"
+								value={model}
+								disabled={busy || !models.length}
+								onChange={(event) => {
+									const nextModel = event.target.value;
+									setModel(nextModel);
+									setEffortOverride("");
+									saveAgentModelPreference({ model: nextModel });
+								}}
+							>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value=""
+									disabled
+								>
+									{"Select model"}
+								</UiLocalized>
+								{models.map((item) => (
+									<option key={item.id} value={item.id}>
+										{item.name}
+									</option>
+								))}
+							</UiLocalized>
+							<label className={styles.effort}>
+								<UiMessage text={"Effort"} />
+								<UiLocalized<"select">
+									element={"select"}
+									messageProps={["aria-label"]}
+									aria-label="Reasoning effort"
+									value={reasoningEffort ?? ""}
+									disabled={busy || !selectedModel?.reasoningEfforts?.length}
+									onChange={(event) => {
+										const effort = event.target.value;
+										setEffortOverride(effort);
+										saveAgentModelPreference({
+											model,
+											reasoningEffort: effort || undefined,
+										});
+									}}
+								>
+									{!selectedModel?.defaultReasoningEffort && (
+										<UiLocalized<"option">
+											element={"option"}
+											messageProps={["children"]}
+											value=""
+										>
+											{"Default"}
+										</UiLocalized>
+									)}
+									{selectedModel?.reasoningEfforts?.map((effort) => (
+										<option key={effort} value={effort}>
+											{effort === "xhigh" ? (
+												<UiMessage text={"Extra high"} />
+											) : (
+												effort.charAt(0).toUpperCase() + effort.slice(1)
+											)}
+										</option>
+									))}
+								</UiLocalized>
+							</label>
+						</div>
 						{busy ? (
 							<Button type="button" variant="outline" size="sm" onClick={stop}>
 								<Square size={12} />
-								Stop
+								<UiMessage text={"Stop"} />
 							</Button>
 						) : (
 							snapshot?.phase === "paused" && (
@@ -1050,7 +1171,7 @@ function AgentPanel({
 									onClick={() => void send(true)}
 								>
 									<Play size={12} />
-									Resume
+									<UiMessage text={"Resume"} />
 								</Button>
 							)
 						)}
@@ -1061,39 +1182,125 @@ function AgentPanel({
 								attaching || !draft.trim() || !model || !connection?.sharing
 							}
 						>
-							{busy ? "Steer" : "Send"}
+							{busy ? (
+								<UiMessage text={"Steer"} />
+							) : (
+								<UiMessage text={"Send"} />
+							)}
 						</Button>
 					</div>
+					<UiLocalized<"div">
+						element={"div"}
+						messageProps={["aria-label"]}
+						className={styles.permissions}
+						aria-label="Agent permissions"
+					>
+						<label>
+							<UiMessage text={"Mode"} />{" "}
+							<UiLocalized<"select">
+								element={"select"}
+								messageProps={["aria-label"]}
+								aria-label="Agent permission mode"
+								value={policy.mode}
+								disabled={changingPolicy}
+								onChange={(event) =>
+									void changePolicy({
+										mode: z
+											.enum(["plan", "askDestructive", "fullAccess"])
+											.parse(event.target.value),
+										computerAccess: computerGranted,
+									})
+								}
+							>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="plan"
+								>
+									{"Plan · inspect only"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="askDestructive"
+								>
+									{"Confirm destructive actions"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="fullAccess"
+								>
+									{"Full access"}
+								</UiLocalized>
+							</UiLocalized>
+						</label>
+						{desktop && (
+							<label className={styles.computerToggle}>
+								<input
+									type="checkbox"
+									checked={computerGranted}
+									disabled={changingPolicy}
+									onChange={(event) =>
+										void changePolicy({
+											mode: policy.mode,
+											computerAccess: event.target.checked,
+										})
+									}
+								/>{" "}
+								<UiMessage text={"Computer access"} />{" "}
+								{computerGranted ? (
+									<UiMessage text={"on"} />
+								) : (
+									<UiMessage text={"off"} />
+								)}
+							</label>
+						)}
+						{computerGranted && (
+							<p>
+								{policy.mode === "fullAccess" ? (
+									<UiMessage
+										text={
+											"Computer files and terminal · no individual approvals"
+										}
+									/>
+								) : policy.mode === "plan" ? (
+									<UiMessage text={"Computer files · inspection only"} />
+								) : (
+									<UiMessage
+										text={"Computer files and terminal · confirm changes"}
+									/>
+								)}
+							</p>
+						)}
+					</UiLocalized>
 					<div className={styles.footer}>
-						<span>
-							{attaching ? (
-								"Attaching…"
-							) : (
-								<>
-									Press <kbd>Enter</kbd> to send · <kbd>Shift Enter</kbd> for a
-									new line
-								</>
-							)}
-						</span>
+						{attaching && (
+							<span>
+								<UiMessage text={"Attaching…"} />
+							</span>
+						)}
 						<span role="status">
-							{busy
-								? computerGranted
-									? "Working with computer access"
-									: policy.mode === "plan"
-										? "Planning · inspection only"
-										: "Working in this project"
-								: snapshot?.phase === "paused"
-									? "Paused · changes retained"
-									: snapshot?.phase === "failed"
-										? "Task failed · changes retained"
-										: computerGranted
-											? "Computer changes are outside editor undo"
-											: "Edits can be undone in the timeline"}
+							{busy ? (
+								computerGranted ? (
+									<UiMessage text={"Working with computer access"} />
+								) : policy.mode === "plan" ? (
+									<UiMessage text={"Planning · inspection only"} />
+								) : (
+									<UiMessage text={"Working in this project"} />
+								)
+							) : snapshot?.phase === "paused" ? (
+								<UiMessage text={"Paused · changes retained"} />
+							) : snapshot?.phase === "failed" ? (
+								<UiMessage text={"Task failed · changes retained"} />
+							) : computerGranted ? (
+								<UiMessage text={"Computer changes are outside editor undo"} />
+							) : null}
 						</span>
 						{mode === "floating" && <GripHorizontal size={12} aria-hidden />}
 					</div>
-				</form>
-			</aside>
+				</UiLocalized>
+			</UiLocalized>
 		</>
 	);
 }
@@ -1151,23 +1358,34 @@ function ComputerOperationView({
 		}
 	}
 	return (
-		<section
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
 			className={styles.computerOperation}
 			aria-label="Computer operation"
 		>
 			<strong>
-				{operation.type === "shell" ? "Terminal" : `Files · ${operation.type}`}
+				{operation.type === "shell" ? (
+					<UiMessage text={"Terminal"} />
+				) : (
+					<UiMessage
+						text={"Files · {v0}"}
+						values={{ v0: String(operation.type) }}
+					/>
+				)}
 			</strong>
 			<code dir="ltr">{operation.command ?? operation.path}</code>
 			{operation.cwd && <p dir="ltr">{operation.cwd}</p>}
 			{operation.content && (
 				<details>
-					<summary>File content</summary>
+					<summary>
+						<UiMessage text={"File content"} />
+					</summary>
 					<pre dir="auto">{operation.content}</pre>
 				</details>
 			)}
 			{display && <pre dir="auto">{display}</pre>}
-		</section>
+		</UiLocalized>
 	);
 }
 
@@ -1194,13 +1412,17 @@ function EntryView({ entry }: { entry: Entry }) {
 				</ul>
 			) : null}
 			{entry.exportUnavailable && (
-				<p>Export download is unavailable after reopening.</p>
+				<p>
+					<UiMessage text={"Export download is unavailable after reopening."} />
+				</p>
 			)}
 			{entry.export && (
 				<div>
 					{/* The exported composition owns its captions; no separate caption track is available. */}
 					{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-					<video
+					<UiLocalized<"video">
+						element={"video"}
+						messageProps={["aria-label"]}
 						aria-label="Exported video preview"
 						src={entry.export.url}
 						controls
@@ -1208,7 +1430,7 @@ function EntryView({ entry }: { entry: Entry }) {
 						className="w-full rounded-md"
 					/>
 					<a href={entry.export.url} download={entry.export.filename}>
-						Download video
+						<UiMessage text={"Download video"} />
 					</a>
 				</div>
 			)}
@@ -1225,11 +1447,22 @@ function EntryView({ entry }: { entry: Entry }) {
 					>
 						<summary>
 							<BrainCircuit size={13} />
-							{entry.review
-								? "Render review"
-								: entry.activities?.length === 1
-									? entry.activities[0].title
-									: `Reasoning summary & actions${entry.activities?.length ? ` · ${entry.activities.length}` : ""}`}
+							{entry.review ? (
+								<UiMessage text={"Render review"} />
+							) : entry.activities?.length === 1 ? (
+								entry.activities[0].title
+							) : (
+								<UiMessage
+									text={"Reasoning summary & actions{v0}"}
+									values={{
+										v0: String(
+											entry.activities?.length
+												? ` · ${entry.activities.length}`
+												: "",
+										),
+									}}
+								/>
+							)}
 						</summary>
 						{entry.summary && (
 							<div
@@ -1262,18 +1495,30 @@ function EntryView({ entry }: { entry: Entry }) {
 									/>
 									{activity.status === "running" ? (
 										entry.interrupted ? (
-											<span aria-label="Awaiting resume">Ⅱ</span>
+											<UiLocalized<"span">
+												element={"span"}
+												messageProps={["aria-label"]}
+												aria-label="Awaiting resume"
+											>
+												Ⅱ
+											</UiLocalized>
 										) : (
-											<LoaderCircle
+											<UiLocalized<typeof LoaderCircle>
+												element={LoaderCircle}
+												messageProps={["aria-label"]}
 												size={12}
 												className="animate-spin"
 												aria-label="Running"
 											/>
 										)
 									) : (
-										<span aria-label={activity.ok ? "Completed" : "Failed"}>
+										<UiLocalized<"span">
+											element={"span"}
+											messageProps={["aria-label"]}
+											aria-label={activity.ok ? "Completed" : "Failed"}
+										>
 											{activity.ok ? "✓" : "!"}
-										</span>
+										</UiLocalized>
 									)}
 								</summary>
 								<ComputerOperationView
@@ -1281,11 +1526,15 @@ function EntryView({ entry }: { entry: Entry }) {
 									output={activity.output}
 								/>
 								<details>
-									<summary>Input</summary>
+									<summary>
+										<UiMessage text={"Input"} />
+									</summary>
 									<pre>{JSON.stringify(activity.input, null, 2)}</pre>
 								</details>
 								<details>
-									<summary>Output</summary>
+									<summary>
+										<UiMessage text={"Output"} />
+									</summary>
 									<pre>{JSON.stringify(activity.output, null, 2)}</pre>
 								</details>
 							</details>
@@ -1321,12 +1570,16 @@ function EntryView({ entry }: { entry: Entry }) {
 				</ul>
 			) : null}
 			{entry.text && (
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["aria-label"]}
 					className={styles.messageActions}
 					role="group"
 					aria-label="Message actions"
 				>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						type="button"
 						variant="ghost"
 						size="icon"
@@ -1340,8 +1593,8 @@ function EntryView({ entry }: { entry: Entry }) {
 						}}
 					>
 						{copied ? <Check size={14} /> : <Copy size={14} />}
-					</Button>
-				</div>
+					</UiLocalized>
+				</UiLocalized>
 			)}
 			{copyError && (
 				<p role="alert" className={styles.error}>

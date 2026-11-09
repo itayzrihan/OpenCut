@@ -5,9 +5,13 @@ import { join } from "node:path";
 import {
 	accountsRoot,
 	accountDataRoot,
+	assertLocalOrigin,
+	localRequestOrigin,
 	requireAccount,
 } from "@/accounts/server";
 import { hostCookieSecret } from "@/accounts/host-key";
+import { buildChatGptCodexModelsFromDiscovery } from "@/ai/codex-models";
+import { AgentProviderFailure } from "../stream";
 import { ChatGPTVault, type ChatGPTConnection } from "./chatgpt-vault";
 import {
 	CHATGPT_RESOURCE,
@@ -85,6 +89,20 @@ async function hostId() {
 	if (!/^urn:uuid:[a-f0-9-]{36}$/.test(id))
 		throw new Error("ChatGPT host registration is invalid");
 	return id;
+}
+
+const localPlanMessage =
+	"ChatGPT plan usage is available on this device. Open the desktop app or a local POCUT installation.";
+
+export function requireLocalChatGPT(request: Request): Response | undefined {
+	try {
+		assertLocalOrigin(request);
+		const origin = new URL(localRequestOrigin(request));
+		if (["localhost", "127.0.0.1", "[::1]"].includes(origin.hostname)) return;
+	} catch {
+		// The local account host or browser origin rejected this request.
+	}
+	return Response.json({ error: localPlanMessage }, { status: 403 });
 }
 
 export async function chatGPTStatus() {
@@ -180,7 +198,7 @@ export async function startChatGPTSignIn() {
 					});
 				});
 				response.end(
-					"ChatGPT is connected. Return to OpenCut to continue editing.",
+					"ChatGPT is connected. Return to POCUT to continue editing.",
 				);
 			} catch (error) {
 				runtime.error =
@@ -188,7 +206,7 @@ export async function startChatGPTSignIn() {
 				response
 					.writeHead(400)
 					.end(
-						"ChatGPT sign-in could not be completed. Return to OpenCut and try again.",
+						"ChatGPT sign-in could not be completed. Return to POCUT and try again.",
 					);
 			} finally {
 				clearTimeout(timer);
@@ -332,26 +350,14 @@ export async function chatGPTModels(signal?: AbortSignal) {
 				!Array.isArray(body.models)
 			)
 				throw new Error("ChatGPT returned an invalid model catalog");
-			return body.models.flatMap((value: unknown) => {
-				if (
-					!value ||
-					typeof value !== "object" ||
-					!("slug" in value) ||
-					typeof value.slug !== "string" ||
-					!("visibility" in value) ||
-					value.visibility !== "list"
-				)
-					return [];
-				return [
-					{
-						id: value.slug,
-						name:
-							"display_name" in value && typeof value.display_name === "string"
-								? value.display_name
-								: value.slug,
-					},
-				];
-			});
+			return buildChatGptCodexModelsFromDiscovery(body).map(
+				({ id, label, reasoningEfforts, defaultReasoningEffort }) => ({
+					id,
+					name: label,
+					reasoningEfforts,
+					defaultReasoningEffort,
+				}),
+			);
 		},
 	});
 }
@@ -371,6 +377,17 @@ export async function streamChatGPTResponse({
 		return await withAccess({
 			signal: AbortSignal.any([signal, lifecycle.signal]),
 			operation: async (access, signal) => {
+				const { tools, ...requestBody } = body;
+				const toolList = Array.isArray(tools) ? tools : [];
+				const functions = toolList.filter((tool) => tool.type === "function");
+				const providerTools = toolList.filter((tool) => tool.type !== "function");
+				if (functions.length)
+					providerTools.push({
+						type: "namespace",
+						name: "opencut",
+						description: "POCUT editing tools",
+						tools: functions,
+					});
 				const upstream = await fetch(`${CHATGPT_RESOURCE}/responses`, {
 					method: "POST",
 					headers: {
@@ -378,14 +395,20 @@ export async function streamChatGPTResponse({
 						"Content-Type": "application/json",
 						Accept: "text/event-stream",
 					},
-					body: JSON.stringify({ ...body, store: false, stream: true }),
+					body: JSON.stringify({
+						...requestBody,
+						...(providerTools.length ? { tools: providerTools } : {}),
+						store: false,
+						stream: true,
+					}),
 					signal,
 				});
 				if (!upstream.ok) {
 					await upstream.body?.cancel();
-					throw new Error(
-						`ChatGPT request failed (${upstream.status}). Check your connection and ChatGPT plan usage.`,
-					);
+					throw new AgentProviderFailure({
+						message: `ChatGPT request failed (${upstream.status}). Check your connection and ChatGPT plan usage.`,
+						failure: { kind: "http", status: upstream.status },
+					});
 				}
 				if (!upstream.body) throw new Error("ChatGPT returned an empty stream");
 				const reader = upstream.body.getReader();
@@ -467,6 +490,6 @@ export async function disconnectChatGPT() {
 	});
 	runtime.error = revocationConfirmed
 		? undefined
-		: "Signed out locally; remote revocation was not confirmed. You can disconnect OpenCut in ChatGPT Settings.";
+		: "Signed out locally; remote revocation was not confirmed. You can disconnect this app in ChatGPT Settings.";
 	return { revocationConfirmed };
 }

@@ -1,3 +1,4 @@
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { memo, useMemo } from "react";
 import type { MediaTime } from "@/wasm";
 import { timelineTimeToPixels } from "@/timeline/pixel-utils";
@@ -117,7 +118,9 @@ export const AiEditTrack = memo(function AiEditTrack({
 
 	return (
 		// eslint-disable-next-line jsx-a11y/no-static-element-interactions -- virtual timeline lane is a spatial gesture surface; individual provenance layers are native buttons.
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			className="relative overflow-hidden border-b border-violet-400/20 bg-violet-950/10"
 			style={{
 				width: `${dynamicTimelineWidth}px`,
@@ -174,6 +177,6 @@ export const AiEditTrack = memo(function AiEditTrack({
 					</button>
 				);
 			})}
-		</div>
+		</UiLocalized>
 	);
 });

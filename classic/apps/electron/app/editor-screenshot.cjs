@@ -90,7 +90,7 @@ function authorizeEditorScreenshot(event, window, appUrl) {
 		event.sender !== window.webContents ||
 		event.senderFrame !== window.webContents.mainFrame
 	)
-		throw new Error("Only the owned OpenCut main frame may capture the editor");
+		throw new Error("Only the owned POCUT main frame may capture the editor");
 	const url = new URL(event.senderFrame.url);
 	if (
 		url.origin !== new URL(appUrl).origin ||

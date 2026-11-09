@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import { PlusSignIcon, RulerIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +9,7 @@ function CustomGuideOptions() {
 		<div className="flex gap-2">
 			<Button variant="outline" size="sm" className="flex-1">
 				<HugeiconsIcon icon={PlusSignIcon} />
-				Add guide line
+				<UiMessage text={"Add guide line"} />
 			</Button>
 		</div>
 	);

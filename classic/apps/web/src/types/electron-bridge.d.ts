@@ -1,5 +1,6 @@
 /** Exposed by apps/electron/app/preload.cjs — undefined outside the Electron shell. */
 interface OpenCutElectronBridge {
+	openChatGPTSignIn?(url: string): Promise<void>;
 	setComputerAccess(scope: {
 		accountId: string;
 		projectId: string;
@@ -18,7 +19,11 @@ interface OpenCutElectronBridge {
 
 	canGoBack?(): Promise<boolean>;
 	goBack?(): Promise<void>;
-	pickMediaFiles(): Promise<string[]>;
+	pickMediaFiles(labels?: {
+		title: string;
+		media: string;
+		allFiles: string;
+	}): Promise<string[]>;
 	controlEditorUi(scope: {
 		accountId: string;
 		projectId: string;

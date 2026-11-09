@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,24 +81,36 @@ function DeleteProjectDialogContent({
 				<DialogTitle>
 					{singleName ? (
 						<>
-							{"Delete '"}
+							{<UiMessage text={"Delete '"} />}
 							<span className="inline-block max-w-[300px] truncate align-bottom">
 								{singleName}
 							</span>
 							{"'?"}
 						</>
 					) : (
-						`Delete ${count} projects?`
+						<UiMessage
+							text={"Delete {v0} projects?"}
+							values={{ v0: String(count) }}
+						/>
 					)}
 				</DialogTitle>
 			</DialogHeader>
 			<DialogBody>
 				<Alert variant="destructive">
-					<AlertTitle>Warning</AlertTitle>
+					<AlertTitle>
+						<UiMessage text={"Warning"} />
+					</AlertTitle>
 					<AlertDescription>
-						This will permanently delete{" "}
-						{singleName ? `"${singleName}"` : `${count} projects`} and all
-						associated files.
+						<UiMessage text={"This will permanently delete"} />{" "}
+						{singleName ? (
+							`"${singleName}"`
+						) : (
+							<UiMessage
+								text={"{v0} projects"}
+								values={{ v0: String(count) }}
+							/>
+						)}{" "}
+						<UiMessage text={"and all associated files."} />
 					</AlertDescription>
 				</Alert>
 				<div className="flex flex-col gap-3">
@@ -102,9 +118,11 @@ function DeleteProjectDialogContent({
 						htmlFor="delete-project-confirmation"
 						className="text-xs font-semibold text-slate-500"
 					>
-						{'Type "DELETE" to confirm'}
+						{<UiMessage text={'Type "DELETE" to confirm'} />}
 					</Label>
-					<Input
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["placeholder"]}
 						id="delete-project-confirmation"
 						type="text"
 						placeholder="DELETE"
@@ -119,18 +137,20 @@ function DeleteProjectDialogContent({
 			</DialogBody>
 			<DialogFooter>
 				<Button variant="outline" onClick={() => onOpenChange(false)}>
-					Cancel
+					<UiMessage text={"Cancel"} />
 				</Button>
 				<Button
 					variant="destructive"
 					onClick={() => void handleConfirm()}
 					disabled={!isConfirmed || isConfirming}
 				>
-					{isConfirming
-						? "Deleting…"
-						: isSingle
-							? "Delete project"
-							: "Delete projects"}
+					{isConfirming ? (
+						<UiMessage text={"Deleting…"} />
+					) : isSingle ? (
+						<UiMessage text={"Delete project"} />
+					) : (
+						<UiMessage text={"Delete projects"} />
+					)}
 				</Button>
 			</DialogFooter>
 		</DialogContent>

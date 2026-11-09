@@ -1,3 +1,4 @@
+import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
 import { z } from "zod";
 import { readAgentResponse } from "@/editor-agent/stream";
 import type {
@@ -133,9 +134,9 @@ export async function requestSmartTakePlan({
 				typeof value.error === "string" ? value.error : "Connect ChatGPT first",
 			);
 		const models = z
-			.object({ models: z.array(z.object({ id: z.string().min(1) })).max(200) })
+			.object({ models: z.array(agentModelSchema).max(200) })
 			.parse(value).models;
-		const model = models[0]?.id;
+		const { model, reasoningEffort } = preferredAgentModel(models);
 		if (!model) throw new Error("No ChatGPT model is available");
 		const evidence = JSON.stringify(words);
 		const ask = async ({
@@ -154,6 +155,7 @@ export async function requestSmartTakePlan({
 				signal: controller.signal,
 				body: JSON.stringify({
 					model,
+					reasoningEffort,
 					instructions,
 					input: [{ role: "user", content: prompt }],
 					tools: [],

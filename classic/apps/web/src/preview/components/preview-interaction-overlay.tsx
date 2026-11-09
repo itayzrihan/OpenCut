@@ -1,3 +1,4 @@
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { useState } from "react";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { usePreviewInteraction } from "@/preview/hooks/use-preview-interaction";
@@ -68,7 +69,9 @@ export function PreviewInteractionOverlay() {
 
 	return (
 		<div className="absolute inset-0">
-			<div
+			<UiLocalized<"div">
+				element={"div"}
+				messageProps={["aria-label"]}
 				className="absolute inset-0 pointer-events-auto"
 				role="application"
 				aria-label="Preview canvas"

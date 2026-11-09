@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
@@ -135,7 +137,9 @@ export function EditorProvider({
 		return (
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
-					<p className="text-destructive text-sm">{error}</p>
+					<p className="text-destructive text-sm">
+						<UiValue>{error}</UiValue>
+					</p>
 				</div>
 			</div>
 		);
@@ -150,7 +154,9 @@ export function EditorProvider({
 			<div className="bg-background flex h-screen w-screen items-center justify-center">
 				<div className="flex flex-col items-center gap-4">
 					<Loader2 className="text-muted-foreground size-8 animate-spin" />
-					<p className="text-muted-foreground text-sm">Exiting project...</p>
+					<p className="text-muted-foreground text-sm">
+						<UiMessage text={"Exiting project..."} />
+					</p>
 				</div>
 			</div>
 		);
@@ -180,9 +186,13 @@ export function EditorProvider({
 								.finally(() => setTakingOwnership(false));
 						}}
 					>
-						{takingOwnership
-							? "Opening latest version…"
-							: "Take ownership and open latest saved version"}
+						{takingOwnership ? (
+							<UiMessage text={"Opening latest version…"} />
+						) : (
+							<UiMessage
+								text={"Take ownership and open latest saved version"}
+							/>
+						)}
 					</button>
 				</div>
 			)}

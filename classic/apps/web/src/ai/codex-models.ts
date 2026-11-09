@@ -7,6 +7,7 @@ export interface ChatGptCodexModel {
 	source?: "static" | "live";
 	inputModalities?: string[];
 	reasoningEfforts?: string[];
+	defaultReasoningEffort?: string;
 	contextWindow?: number;
 	contextTokens?: number;
 	maxOutputTokens?: number;
@@ -140,6 +141,10 @@ function buildChatGptCodexModelFromDiscoveryRow(
 		(model) => model.id.toLowerCase() === id.toLowerCase(),
 	);
 	const reasoningEfforts = readReasoningEfforts(row);
+	const defaultReasoningEffort =
+		readString({ row, key: "default_reasoning_level" }) ??
+		readString({ row, key: "defaultReasoningLevel" }) ??
+		readString({ row, key: "defaultReasoningEffort" });
 	const inputModalities = readStringArray({
 		row,
 		keys: ["input_modalities", "inputModalities"],
@@ -166,7 +171,11 @@ function buildChatGptCodexModelFromDiscoveryRow(
 
 	return {
 		id,
-		label: readString({ row, key: "display_name" }) ?? fallback?.label ?? id,
+		label:
+			readString({ row, key: "display_name" }) ??
+			readString({ row, key: "displayName" }) ??
+			fallback?.label ??
+			id,
 		description:
 			fallback?.description ?? "Available in your ChatGPT Codex account.",
 		...((fallback?.recommended ?? id === DEFAULT_CHATGPT_CODEX_MODEL)
@@ -176,6 +185,10 @@ function buildChatGptCodexModelFromDiscoveryRow(
 		source: "live",
 		...(inputModalities.length > 0 ? { inputModalities } : {}),
 		...(reasoningEfforts.length > 0 ? { reasoningEfforts } : {}),
+		...(defaultReasoningEffort &&
+		reasoningEfforts.includes(defaultReasoningEffort)
+			? { defaultReasoningEffort }
+			: {}),
 		...(contextTokens ? { contextTokens } : {}),
 		...(resolvedContextWindow ? { contextWindow: resolvedContextWindow } : {}),
 		...(resolvedMaxOutputTokens
@@ -192,6 +205,7 @@ function readCodexDiscoveryRows(value: unknown): unknown[] {
 }
 
 function shouldIncludeCodexDiscoveryRow(row: unknown): boolean {
+	if (readBoolean({ row, key: "hidden" })) return false;
 	const visibility = (
 		readString({ row, key: "visibility" }) ?? ""
 	).toLowerCase();
@@ -208,7 +222,10 @@ function readReasoningEfforts(row: unknown): string[] {
 	if (!isRecord(row)) {
 		return [];
 	}
-	const value = row.supported_reasoning_levels ?? row.supportedReasoningLevels;
+	const value =
+		row.supported_reasoning_levels ??
+		row.supportedReasoningLevels ??
+		row.supportedReasoningEfforts;
 	if (!Array.isArray(value)) {
 		return [];
 	}
@@ -219,7 +236,7 @@ function readReasoningEfforts(row: unknown): string[] {
 				return [entry.trim()];
 			}
 			if (isRecord(entry)) {
-				const effort = entry.effort;
+				const effort = entry.effort ?? entry.reasoningEffort;
 				return typeof effort === "string" && effort.trim()
 					? [effort.trim()]
 					: [];

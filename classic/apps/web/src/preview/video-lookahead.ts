@@ -50,6 +50,8 @@ export class VideoLookahead {
 					getSourceTimeAtClipTime({
 						clipTime: prior.node.params.duration,
 						retime: prior.node.params.retime,
+						trimStart: prior.node.params.trimStart,
+						ticks: true,
 					});
 				const start =
 					params.trimStart +

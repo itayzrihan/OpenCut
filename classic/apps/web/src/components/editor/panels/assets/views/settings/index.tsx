@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useMemo, useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import {
@@ -36,7 +40,7 @@ import { dimensionToAspectRatio } from "@/utils/geometry";
 import { formatNumberForDisplay } from "@/utils/math";
 import { OcSquarePlusIcon } from "@/components/icons";
 import type { TCanvasSize } from "@/project/types";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 
 type SettingsView = "project-info" | "background";
 
@@ -301,8 +305,12 @@ export function SettingsView() {
 					}}
 				>
 					<TabsList>
-						<TabsTrigger value="project-info">Project info</TabsTrigger>
-						<TabsTrigger value="background">Background</TabsTrigger>
+						<TabsTrigger value="project-info">
+							<UiMessage text={"Project info"} />
+						</TabsTrigger>
+						<TabsTrigger value="background">
+							<UiMessage text={"Background"} />
+						</TabsTrigger>
 					</TabsList>
 				</Tabs>
 			}
@@ -311,7 +319,9 @@ export function SettingsView() {
 				<div className="flex flex-col">
 					<Section showTopBorder={false}>
 						<SectionHeader>
-							<SectionTitle className="flex-1">Name</SectionTitle>
+							<SectionTitle className="flex-1">
+								<UiMessage text={"Name"} />
+							</SectionTitle>
 							<span className="text-sm truncate">
 								{activeProject.metadata.name}
 							</span>
@@ -319,7 +329,9 @@ export function SettingsView() {
 					</Section>
 					<Section showTopBorder={false}>
 						<SectionHeader className="justify-between">
-							<SectionTitle className="flex-1">Frame rate</SectionTitle>
+							<SectionTitle className="flex-1">
+								<UiMessage text={"Frame rate"} />
+							</SectionTitle>
 							<Select
 								value={String(
 									Math.round(frameRateToFloat(activeProject.settings.fps)),
@@ -330,7 +342,11 @@ export function SettingsView() {
 								}}
 							>
 								<SelectTrigger className="bg-transparent border-none p-1 h-auto">
-									<SelectValue placeholder="Select a frame rate" />
+									<UiLocalized<typeof SelectValue>
+										element={SelectValue}
+										messageProps={["placeholder"]}
+										placeholder="Select a frame rate"
+									/>
 								</SelectTrigger>
 								<SelectContent>
 									{FPS_PRESETS.map((preset) => (
@@ -348,7 +364,9 @@ export function SettingsView() {
 						sectionKey="settings:aspect-ratio"
 					>
 						<SectionHeader>
-							<SectionTitle className="flex-1">Aspect ratio</SectionTitle>
+							<SectionTitle className="flex-1">
+								<UiMessage text={"Aspect ratio"} />
+							</SectionTitle>
 						</SectionHeader>
 						<SectionContent className="px-2 flex flex-col gap-1 pb-2">
 							{presetItems.map((preset) => (
@@ -365,7 +383,9 @@ export function SettingsView() {
 								/>
 							))}
 							<div className="pb-2">
-								<AspectRatioItem
+								<UiLocalized<typeof AspectRatioItem>
+									element={AspectRatioItem}
+									messageProps={["label"]}
 									key="custom"
 									label="Custom"
 									previewIcon={<OcSquarePlusIcon />}
@@ -373,7 +393,9 @@ export function SettingsView() {
 									onClick={selectCustomCanvasSize}
 									uiOptions={
 										<div className=" flex items-center gap-2 text-foreground">
-											<NumberField
+											<UiLocalized<typeof NumberField>
+												element={NumberField}
+												messageProps={["aria-label"]}
 												value={widthDraft.displayValue}
 												className="w-full"
 												aria-label="Canvas width"
@@ -381,7 +403,9 @@ export function SettingsView() {
 												onChange={widthDraft.onChange}
 												onBlur={widthDraft.onBlur}
 											/>
-											<NumberField
+											<UiLocalized<typeof NumberField>
+												element={NumberField}
+												messageProps={["aria-label"]}
 												value={heightDraft.displayValue}
 												className="w-full"
 												aria-label="Canvas height"
@@ -401,11 +425,14 @@ export function SettingsView() {
 						sectionKey="settings:video-framing"
 					>
 						<SectionHeader>
-							<SectionTitle className="flex-1">Video framing</SectionTitle>
+							<SectionTitle className="flex-1">
+								<UiMessage text={"Video framing"} />
+							</SectionTitle>
 						</SectionHeader>
 						<SectionContent className="px-2 flex flex-col gap-2 pb-3">
 							<p className="px-1 text-xs text-muted-foreground">
-								Applies to {framingScopeLabel.toLowerCase()}.
+								<UiMessage text={"Applies to"} />{" "}
+								{framingScopeLabel.toLowerCase()}.
 							</p>
 							<Button
 								variant={
@@ -416,9 +443,13 @@ export function SettingsView() {
 								onClick={() => applyVideoFitMode("contain")}
 							>
 								<span className="flex flex-col items-start">
-									<span>Fit entire video</span>
+									<span>
+										<UiMessage text={"Fit entire video"} />
+									</span>
 									<span className="text-xs font-normal text-muted-foreground">
-										Keeps the complete image and may show background.
+										<UiMessage
+											text={"Keeps the complete image and may show background."}
+										/>
 									</span>
 								</span>
 							</Button>
@@ -431,9 +462,15 @@ export function SettingsView() {
 								onClick={() => applyVideoFitMode("cover")}
 							>
 								<span className="flex flex-col items-start">
-									<span>Fill frame (crop)</span>
+									<span>
+										<UiMessage text={"Fill frame (crop)"} />
+									</span>
 									<span className="text-xs font-normal text-muted-foreground">
-										Fills the canvas without stretching and crops overflow.
+										<UiMessage
+											text={
+												"Fills the canvas without stretching and crops overflow."
+											}
+										/>
 									</span>
 								</span>
 							</Button>

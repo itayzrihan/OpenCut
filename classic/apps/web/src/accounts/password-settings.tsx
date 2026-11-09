@@ -1,5 +1,11 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useState } from "react";
+import { ShieldCheck } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import brand from "@/components/landing/pocut-brand.module.css";
+import styles from "./settings.module.css";
 export function PasswordSettings() {
 	const [currentPassword, setCurrent] = useState("");
 	const [password, setPassword] = useState("");
@@ -7,7 +13,7 @@ export function PasswordSettings() {
 	const [busy, setBusy] = useState(false);
 	return (
 		<form
-			className="space-y-3 rounded-xl border p-6"
+			className={styles.card}
 			onSubmit={async (event) => {
 				event.preventDefault();
 				setBusy(true);
@@ -36,11 +42,13 @@ export function PasswordSettings() {
 				}
 			}}
 		>
-			<h2 className="text-lg font-medium">Change temporary password</h2>
-			<label className="block">
-				Current password
-				<input
-					className="block w-full rounded border bg-background p-2"
+			<h3 className={styles.heading}>
+				<ShieldCheck className="size-4 text-primary" aria-hidden="true" />
+				<UiMessage text={"Change temporary password"} />
+			</h3>
+			<label className="grid gap-2 text-sm">
+				<UiMessage text={"Current password"} />
+				<Input
 					type="password"
 					autoComplete="current-password"
 					required
@@ -48,10 +56,9 @@ export function PasswordSettings() {
 					onChange={(e) => setCurrent(e.target.value)}
 				/>
 			</label>
-			<label className="block">
-				New password (at least 12 characters)
-				<input
-					className="block w-full rounded border bg-background p-2"
+			<label className="grid gap-2 text-sm">
+				<UiMessage text={"New password (at least 12 characters)"} />
+				<Input
 					type="password"
 					autoComplete="new-password"
 					required
@@ -60,10 +67,18 @@ export function PasswordSettings() {
 					onChange={(e) => setPassword(e.target.value)}
 				/>
 			</label>
-			<button disabled={busy} className="rounded border px-3 py-2">
-				Update password
-			</button>
-			{message && <p role="status">{message}</p>}
+			<Button
+				type="submit"
+				disabled={busy}
+				className={`${brand.primary} w-fit`}
+			>
+				<UiMessage text={"Update password"} />
+			</Button>
+			{message && (
+				<p role="status" className="text-sm text-muted-foreground">
+					<UiMessage text={message} />
+				</p>
+			)}
 		</form>
 	);
 }

@@ -1,5 +1,10 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { useEditor } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
@@ -178,16 +183,19 @@ export function HyperframesExamplesLibrary({
 			<header className="flex shrink-0 items-start justify-between gap-4 border-b p-3">
 				<div>
 					<h1 className="text-sm font-semibold">
-						Catalog · HyperFrames + OpenCut
+						<UiMessage text={"Catalog · HyperFrames + POCUT"} />
 					</h1>
 					<p className="text-sm text-muted-foreground">
-						Hover to play live code. Open a card for its prompt, source and
-						timeline import.
+						<UiMessage
+							text={
+								"Hover to play live code. Open a card for its prompt, source and timeline import."
+							}
+						/>
 					</p>
 				</div>
 				{presentation === "page" && (
 					<Button variant="outline" onClick={onClose}>
-						Back to editor
+						<UiMessage text={"Back to editor"} />
 					</Button>
 				)}
 			</header>
@@ -195,7 +203,9 @@ export function HyperframesExamplesLibrary({
 				{(!isPanel || !selected) && (
 					<>
 						<div className="flex flex-wrap items-center gap-3">
-							<input
+							<UiLocalized<"input">
+								element={"input"}
+								messageProps={["aria-label", "placeholder"]}
 								className={
 									isPanel
 										? "w-full min-w-0 basis-full rounded border bg-transparent p-2"
@@ -209,7 +219,9 @@ export function HyperframesExamplesLibrary({
 									setOffset(0);
 								}}
 							/>
-							<select
+							<UiLocalized<"select">
+								element={"select"}
+								messageProps={["aria-label"]}
 								className="rounded border bg-background p-2"
 								aria-label="Reference type"
 								value={kind}
@@ -226,11 +238,35 @@ export function HyperframesExamplesLibrary({
 									}
 								}}
 							>
-								<option value="">All types</option>
-								<option value="block">Blocks</option>
-								<option value="component">Components</option>
-								<option value="example">Examples</option>
-							</select>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value=""
+								>
+									{"All types"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="block"
+								>
+									{"Blocks"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="component"
+								>
+									{"Components"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="example"
+								>
+									{"Examples"}
+								</UiLocalized>
+							</UiLocalized>
 							<label className="flex items-center gap-2 text-sm">
 								<input
 									type="checkbox"
@@ -240,10 +276,12 @@ export function HyperframesExamplesLibrary({
 										setOffset(0);
 									}}
 								/>
-								Verified only
+								<UiMessage text={"Verified only"} />
 							</label>
 							<label className="flex items-center gap-2 text-sm">
-								<input
+								<UiLocalized<"input">
+									element={"input"}
+									messageProps={["aria-label"]}
 									type="checkbox"
 									aria-label="Local semantic search"
 									checked={semantic}
@@ -252,21 +290,40 @@ export function HyperframesExamplesLibrary({
 										setOffset(0);
 									}}
 								/>
-								Semantic search · local model (33 MB once)
+								<UiMessage
+									text={"Semantic search · local model (33 MB once)"}
+								/>
 							</label>
 						</div>
 						<p className="text-xs text-muted-foreground">
-							{search
-								? `${search.totalMatches} matches · ${search.totalCatalogItems} captured · ${search.totalVerified} verified local packages`
-								: "Loading references…"}{" "}
+							{search ? (
+								<UiMessage
+									text={
+										"{v0} matches · {v1} captured · {v2} verified local packages"
+									}
+									values={{
+										v0: String(search.totalMatches),
+										v1: String(search.totalCatalogItems),
+										v2: String(search.totalVerified),
+									}}
+								/>
+							) : (
+								<UiMessage text={"Loading references…"} />
+							)}{" "}
 							·{" "}
-							{search?.searchMode === "semanticLocalBge"
-								? `Semantic search · ${search.normalizedQuery}`
-								: "Keyword search with Hebrew aliases."}
+							{search?.searchMode === "semanticLocalBge" ? (
+								<UiMessage
+									text={"Semantic search · {v0}"}
+									values={{ v0: String(search.normalizedQuery) }}
+								/>
+							) : (
+								<UiMessage text={"Keyword search with Hebrew aliases."} />
+							)}
 							{search?.fallbackReason && (
 								<span role="status">
 									{" "}
-									Semantic search unavailable: {search.fallbackReason}
+									<UiMessage text={"Semantic search unavailable:"} />{" "}
+									{search.fallbackReason}
 								</span>
 							)}
 						</p>
@@ -274,7 +331,7 @@ export function HyperframesExamplesLibrary({
 				)}
 				{error && (
 					<p role="alert" className="text-sm text-destructive">
-						{error}
+						<UiValue>{error}</UiValue>
 					</p>
 				)}
 				{progress && (
@@ -337,11 +394,13 @@ export function HyperframesExamplesLibrary({
 											</span>
 											<span className="block px-3 pb-3 pt-1 text-xs text-muted-foreground">
 												{item.kind} ·{" "}
-												{item.verified
-													? "Verified"
-													: item.reviewStatus === "excluded"
-														? "Excluded after review"
-														: "Captured — validation pending"}
+												{item.verified ? (
+													<UiMessage text={"Verified"} />
+												) : item.reviewStatus === "excluded" ? (
+													<UiMessage text={"Excluded after review"} />
+												) : (
+													<UiMessage text={"Captured — validation pending"} />
+												)}
 											</span>
 										</button>
 										{isPanel && hovered?.id === item.id && (
@@ -359,8 +418,11 @@ export function HyperframesExamplesLibrary({
 							</div>
 							{search?.totalMatches === 0 && (
 								<p className="text-sm text-muted-foreground">
-									No matching references. Try another term or include captured
-									items.
+									<UiMessage
+										text={
+											"No matching references. Try another term or include captured items."
+										}
+									/>
 								</p>
 							)}
 							<div className="flex gap-2">
@@ -370,7 +432,7 @@ export function HyperframesExamplesLibrary({
 									disabled={offset === 0}
 									onClick={() => setOffset(Math.max(0, offset - 20))}
 								>
-									Previous
+									<UiMessage text={"Previous"} />
 								</Button>
 								<Button
 									variant="outline"
@@ -381,7 +443,7 @@ export function HyperframesExamplesLibrary({
 											setOffset(search.nextOffset);
 									}}
 								>
-									Next
+									<UiMessage text={"Next"} />
 								</Button>
 							</div>
 						</div>
@@ -408,7 +470,7 @@ export function HyperframesExamplesLibrary({
 									}}
 									disabled={importing}
 								>
-									Back to catalog
+									<UiMessage text={"Back to catalog"} />
 								</Button>
 							)}
 							{search && ((!isPanel && hovered) || selected) ? (
@@ -420,11 +482,15 @@ export function HyperframesExamplesLibrary({
 								/>
 							) : (
 								<div className="flex aspect-video items-center justify-center rounded-lg border bg-muted text-sm text-muted-foreground">
-									Hover over a card to preview its live code
+									<UiMessage
+										text={"Hover over a card to preview its live code"}
+									/>
 								</div>
 							)}
 							<p className="text-xs text-muted-foreground">
-								Live HTML preview · silent · no video render required
+								<UiMessage
+									text={"Live HTML preview · silent · no video render required"}
+								/>
 							</p>
 							{selected ? (
 								<div
@@ -442,21 +508,30 @@ export function HyperframesExamplesLibrary({
 										target="_blank"
 										rel="noreferrer"
 									>
-										View pinned upstream source
+										<UiMessage text={"View pinned upstream source"} />
 									</a>
 									<p className="text-xs text-muted-foreground">
-										Validation: {selected.item.verification.status}.{" "}
+										<UiMessage text={"Validation:"} />{" "}
+										{selected.item.verification.status}.{" "}
 										{selected.item.verification.reviewNote}{" "}
 										{selected.item.verification.missingDeclaredFiles.length}{" "}
-										declared files missing.{" "}
+										<UiMessage text={"declared files missing."} />{" "}
 										{selected.item.kind === "component" &&
-											(selected.item.prepared
-												? "Includes the upstream component demo wrapper."
-												: "This component needs a composition wrapper.")}
+											(selected.item.prepared ? (
+												<UiMessage
+													text={"Includes the upstream component demo wrapper."}
+												/>
+											) : (
+												<UiMessage
+													text={"This component needs a composition wrapper."}
+												/>
+											))}
 									</p>
 									<details>
 										<summary className="cursor-pointer text-sm">
-											Variables, dependencies and licenses
+											<UiMessage
+												text={"Variables, dependencies and licenses"}
+											/>
 										</summary>
 										<pre className="overflow-auto whitespace-pre-wrap text-xs">
 											{JSON.stringify(
@@ -472,7 +547,9 @@ export function HyperframesExamplesLibrary({
 										</pre>
 									</details>
 									<div className="flex items-center justify-between">
-										<h4 className="text-sm font-medium">Prompt</h4>
+										<h4 className="text-sm font-medium">
+											<UiMessage text={"Prompt"} />
+										</h4>
 										<Button
 											size="sm"
 											variant="outline"
@@ -483,20 +560,26 @@ export function HyperframesExamplesLibrary({
 													.catch(() => setError("Could not copy the prompt"))
 											}
 										>
-											Copy prompt
+											<UiMessage text={"Copy prompt"} />
 										</Button>
 									</div>
 									<p className="whitespace-pre-wrap text-sm">{promptText}</p>
 									<p className="text-xs text-muted-foreground">
-										Prompt provenance:{" "}
-										{selected.item.prompt.status === "reconstructed"
-											? "Reconstructed by OpenCut · שוחזר על ידי OpenCut"
-											: selected.item.prompt.text
-												? selected.item.prompt.status
-												: "Suggested usage prompt · based on catalog metadata"}
+										<UiMessage text={"Prompt provenance:"} />{" "}
+										{selected.item.prompt.status === "reconstructed" ? (
+											<UiMessage text={"Reconstructed by POCUT"} />
+										) : selected.item.prompt.text ? (
+											selected.item.prompt.status
+										) : (
+											<UiMessage
+												text={
+													"Suggested usage prompt · based on catalog metadata"
+												}
+											/>
+										)}
 									</p>
 									<label className="block text-sm">
-										Adapt this reference
+										<UiMessage text={"Adapt this reference"} />
 										<textarea
 											className="mt-1 block w-full rounded border bg-transparent p-2"
 											maxLength={4000}
@@ -516,10 +599,10 @@ export function HyperframesExamplesLibrary({
 											onClose();
 										}}
 									>
-										Prepare remix in chat
+										<UiMessage text={"Prepare remix in chat"} />
 									</Button>
 									<label className="block text-sm">
-										Source file
+										<UiMessage text={"Source file"} />
 										<select
 											className="mt-1 block w-full rounded border bg-background p-2"
 											value={page?.filePath ?? ""}
@@ -529,9 +612,19 @@ export function HyperframesExamplesLibrary({
 													void readSource({ filePath: event.target.value });
 											}}
 										>
-											<option value="">Choose a text file</option>
+											<UiLocalized<"option">
+												element={"option"}
+												messageProps={["children"]}
+												value=""
+											>
+												{"Choose a text file"}
+											</UiLocalized>
 											{selected.item.prepared && (
-												<optgroup label="Prepared package">
+												<UiLocalized<"optgroup">
+													element={"optgroup"}
+													messageProps={["label"]}
+													label="Prepared package"
+												>
 													{selected.item.prepared.files.map((file) => (
 														<option
 															key={`@prepared/${file.path}`}
@@ -540,7 +633,7 @@ export function HyperframesExamplesLibrary({
 															{file.path} (prepared)
 														</option>
 													))}
-												</optgroup>
+												</UiLocalized>
 											)}
 											{selected.item.files
 												.filter((file) =>
@@ -558,27 +651,50 @@ export function HyperframesExamplesLibrary({
 									{selected.item.prepared && (
 										<div className="space-y-2 rounded border p-3">
 											<p className="text-xs text-muted-foreground">
-												Prepared package: offline rendering, deterministic
-												seeking, import and reopen passed.{" "}
-												{selected.item.prompt.status === "reconstructed"
-													? "A source and sampled-frame prompt review is available. "
-													: "Prompt review remains pending. "}
-												{selected.item.verification.status === "verified"
-													? "Verified as a local reference package. Visual review covers three sampled frames; preview your own remix before export."
-													: "Full library verification remains pending."}
+												<UiMessage
+													text={
+														"Prepared package: offline rendering, deterministic seeking, import and reopen passed."
+													}
+												/>{" "}
+												{selected.item.prompt.status === "reconstructed" ? (
+													<>
+														<UiMessage
+															text={
+																"A source and sampled-frame prompt review is available."
+															}
+														/>{" "}
+													</>
+												) : (
+													<>
+														<UiMessage
+															text={"Prompt review remains pending."}
+														/>{" "}
+													</>
+												)}
+												{selected.item.verification.status === "verified" ? (
+													<UiMessage
+														text={
+															"Verified as a local reference package. Visual review covers three sampled frames; preview your own remix before export."
+														}
+													/>
+												) : (
+													<UiMessage
+														text={"Full library verification remains pending."}
+													/>
+												)}
 											</p>
 											<Button
 												disabled={busy || importing}
 												className="h-auto min-h-9 max-w-full whitespace-normal"
 												onClick={() => void addPrepared()}
 											>
-												Add prepared example to timeline
+												<UiMessage text={"Add prepared example to timeline"} />
 											</Button>
 										</div>
 									)}
 									{busy && (
 										<p role="status" className="text-sm">
-											Checking and reading source…
+											<UiMessage text={"Checking and reading source…"} />
 										</p>
 									)}
 									{page && (
@@ -591,7 +707,8 @@ export function HyperframesExamplesLibrary({
 											</pre>
 											<div className="flex items-center gap-2">
 												<span className="text-xs">
-													Character {page.offset} of {page.totalCharacters}
+													<UiMessage text={"Character"} /> {page.offset}{" "}
+													<UiMessage text={"of"} /> {page.totalCharacters}
 												</span>
 												<Button
 													size="sm"
@@ -605,7 +722,7 @@ export function HyperframesExamplesLibrary({
 															});
 													}}
 												>
-													Read next part
+													<UiMessage text={"Read next part"} />
 												</Button>
 											</div>
 										</>
@@ -613,8 +730,11 @@ export function HyperframesExamplesLibrary({
 								</div>
 							) : (
 								<p className="text-sm text-muted-foreground">
-									Select a reference to inspect its source and validation
-									status.
+									<UiMessage
+										text={
+											"Select a reference to inspect its source and validation status."
+										}
+									/>
 								</p>
 							)}
 						</aside>
@@ -625,12 +745,14 @@ export function HyperframesExamplesLibrary({
 	);
 	if (presentation !== "dialog")
 		return (
-			<section
+			<UiLocalized<"section">
+				element={"section"}
+				messageProps={["aria-label"]}
 				aria-label="HyperFrames examples library"
 				className="flex h-full min-h-0 min-w-0 flex-col"
 			>
 				{content}
-			</section>
+			</UiLocalized>
 		);
 	return (
 		<Dialog
@@ -644,7 +766,7 @@ export function HyperframesExamplesLibrary({
 				className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col"
 			>
 				<DialogTitle className="sr-only">
-					Catalog · HyperFrames + OpenCut
+					<UiMessage text={"Catalog · HyperFrames + POCUT"} />
 				</DialogTitle>
 				{content}
 			</DialogContent>

@@ -1,4 +1,8 @@
 "use client";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { PushBrollCards } from "./push-broll-controls";
 
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
@@ -11,7 +15,11 @@ import {
 
 export function SimpleAdvancedLayersView() {
 	return (
-		<PanelView title="simple advanced layers">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="simple advanced layers"
+		>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
@@ -21,7 +29,7 @@ export function SimpleAdvancedLayersView() {
 					<SimpleAdvancedLayerItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -69,11 +77,11 @@ function SpeakerFrameBreakoutPreview({ description }: { description: string }) {
 			</div>
 			<div className="absolute left-1/2 bottom-[31%] h-[25%] w-[29%] -translate-x-1/2 rounded-t-full bg-[#efc7ad] shadow-[0_-1px_0_rgba(255,255,255,0.45)]" />
 			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
-				APPLY CUTOUT
+				<UiMessage text={"APPLY CUTOUT"} />
 			</div>
 			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
 				<p className="truncate text-[9px] leading-none text-white/90">
-					Paper Grid / Fade in-out
+					<UiMessage text={"Paper Grid / Fade in-out"} />
 				</p>
 			</div>
 		</div>
@@ -97,11 +105,11 @@ function DoublemanPreview({ description }: { description: string }) {
 		>
 			<PersonSilhouette />
 			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
-				DOUBLEMAN
+				<UiMessage text={"DOUBLEMAN"} />
 			</div>
 			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
 				<p className="truncate text-[9px] leading-none text-white/90">
-					Same size / Transparent
+					<UiMessage text={"Same size / Transparent"} />
 				</p>
 			</div>
 		</div>
@@ -114,11 +122,11 @@ function BlurBackgroundPreview({ description }: { description: string }) {
 			<div className="absolute inset-0 bg-gradient-to-br from-sky-300 via-emerald-200 to-amber-200 blur-[6px]" />
 			<PersonSilhouette />
 			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
-				BLUR BG
+				<UiMessage text={"BLUR BG"} />
 			</div>
 			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
 				<p className="truncate text-[9px] leading-none text-white/90">
-					Person sharp / Backdrop soft
+					<UiMessage text={"Person sharp / Backdrop soft"} />
 				</p>
 			</div>
 		</div>
@@ -134,11 +142,11 @@ function ColorPopPreview({ description }: { description: string }) {
 				<div className="absolute inset-x-0 bottom-0 h-[62%] rounded-t-[46%] bg-gradient-to-b from-rose-500 to-indigo-700" />
 			</div>
 			<div className="absolute left-2 top-2 rounded-full bg-black/75 px-1.5 py-0.5 text-[8px] font-medium tracking-wide text-white">
-				COLOR POP
+				<UiMessage text={"COLOR POP"} />
 			</div>
 			<div className="absolute inset-x-0 bottom-0 bg-black/60 px-1.5 py-1">
 				<p className="truncate text-[9px] leading-none text-white/90">
-					Backdrop B&amp;W / Person color
+					<UiMessage text={"Backdrop B&W / Person color"} />
 				</p>
 			</div>
 		</div>

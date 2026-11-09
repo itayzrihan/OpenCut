@@ -1705,7 +1705,7 @@ function getInsertOperationErrors({
 			operation.definitionId !== UI_ELEMENT_DEFINITION_ID
 		) {
 			errors.push(
-				"saveAsUiElement is only valid for the OpenCut UI-element graphic definition",
+				"saveAsUiElement is only valid for the POCUT UI-element graphic definition",
 			);
 		}
 	}

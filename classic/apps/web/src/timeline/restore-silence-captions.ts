@@ -38,7 +38,7 @@ const dependencies: RestoreCaptionDependencies = {
 				audioContext: context,
 			});
 			signal.throwIfAborted();
-			if (!buffer) throw new Error("לא נמצא אודיו זמין בקליפ ששוחזר");
+			if (!buffer) throw new Error("No audio is available in the restored clip");
 			return buffer;
 		} finally {
 			await context.close();
@@ -86,7 +86,7 @@ export async function fillRestoredSilenceCaptions({
 				restoration.restoredRevision
 		) {
 			throw new Error(
-				"הטיימליין השתנה מאז השחזור. הכתוביות הקיימות נשמרו ולא נוספו כתוביות חדשות.",
+				"The timeline changed after restoration. Your existing captions are intact.",
 			);
 		}
 		return { project, scene };
@@ -96,7 +96,7 @@ export async function fillRestoredSilenceCaptions({
 	const { project, scene } = assertCurrent();
 	const source = buildTimelineDocumentV2({ project, scene });
 	if (!source.valid)
-		throw new Error("לא ניתן לקרוא את הטיימליין לצורך השלמת הכתוביות");
+		throw new Error("Could not read the timeline to complete the captions");
 	const media = new Map(
 		editor.media.getAssets().map((asset) => [asset.id, asset]),
 	);
@@ -112,13 +112,13 @@ export async function fillRestoredSilenceCaptions({
 			continue;
 		}
 		onProgress?.(
-			`משלימים מלל בקטע ${intervalIndex + 1} מתוך ${restoration.restoredIntervals.length}…`,
+			`Transcribing restored section ${intervalIndex + 1} of ${restoration.restoredIntervals.length}…`,
 		);
 		const original = media.get(gap.mediaId);
 		const asset =
 			original &&
 			resolveUnifiedAnglesAudioAsset({ asset: original, mediaMap: media });
-		if (!asset) throw new Error("קובץ המקור של הקטע המשוחזר אינו זמין");
+		if (!asset) throw new Error("The source file for the restored section is unavailable");
 		let buffer = decoded.get(asset.id);
 		if (!buffer) {
 			buffer = await adapters.decode({ asset, signal });
@@ -128,7 +128,7 @@ export async function fillRestoredSilenceCaptions({
 		if (buffer.sampleRate !== SAMPLE_RATE)
 			throw new Error("Audio decoder returned an unexpected sample rate");
 		if (sourceEnd / TICKS > buffer.duration + 1 / SAMPLE_RATE)
-			throw new Error("קובץ המקור אינו מכיל את כל טווח האודיו ששוחזר");
+			throw new Error("The source file does not contain the full restored audio range");
 		const startSample = Math.max(
 			0,
 			Math.floor((sourceStart / TICKS - CONTEXT_SECONDS) * SAMPLE_RATE),
@@ -138,7 +138,7 @@ export async function fillRestoredSilenceCaptions({
 			Math.ceil((sourceEnd / TICKS + CONTEXT_SECONDS) * SAMPLE_RATE),
 		);
 		if (endSample <= startSample)
-			throw new Error("טווח האודיו המשוחזר חורג מקובץ המקור");
+			throw new Error("The restored audio range extends beyond the source file");
 		// Select a real channel: averaging opposite-polarity stereo can erase speech,
 		// while switching channel at every sample distorts the transcription input.
 		let bestChannel = 0;
@@ -166,7 +166,7 @@ export async function fillRestoredSilenceCaptions({
 		assertCurrent();
 		if (!result.words?.length && result.text.trim()) {
 			throw new Error(
-				"התמלול חזר ללא זמני מילים. הכתוביות הקיימות נשמרו; נסו שוב.",
+				"Transcription returned no word timings. Your existing captions are intact. Try again.",
 			);
 		}
 		transcripts.push({

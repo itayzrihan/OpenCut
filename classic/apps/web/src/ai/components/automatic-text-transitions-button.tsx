@@ -1,7 +1,8 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticTextTransitions } from "@/ai/automatic-text-transitions";
@@ -53,11 +54,14 @@ export function AutomaticTextTransitionsButton({
 		<div className="mb-4 space-y-2 rounded-md border p-3">
 			<Button className="w-full" onClick={run} disabled={disabled || running}>
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
-				Automatic Transitions
+				<UiMessage text={"Automatic Transitions"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Text entrances and exits in the Galya / Shemi style, with matched
-				sounds.
+				<UiMessage
+					text={
+						"Text entrances and exits in the Galya / Shemi style, with matched sounds."
+					}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -70,7 +74,7 @@ export function AutomaticTextTransitionsButton({
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel transitions
+					<UiMessage text={"Cancel transitions"} />
 				</Button>
 			)}
 		</div>

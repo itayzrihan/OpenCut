@@ -148,7 +148,23 @@ export interface SceneTracks {
 	order?: string[];
 }
 
+export type SpeedInterpolation =
+	| "hold"
+	| "linear"
+	| "easeIn"
+	| "easeOut"
+	| "easeInOut";
+
+export interface SpeedKeyframe {
+	/** Exact source ticks measured from the media origin. */
+	time: MediaTime;
+	rate: number;
+	/** Interpolation to the next keyframe. */
+	interpolation: SpeedInterpolation;
+}
+
 export interface RetimeConfig {
+	speedKeyframes?: SpeedKeyframe[];
 	rate: number;
 	maintainPitch?: boolean;
 }
@@ -185,6 +201,8 @@ export type AudioElement =
 interface BaseTimelineElement {
 	/** Absent means enabled; false bypasses picture, effects and audio. */
 	enabled?: boolean;
+	/** Reciprocal link between an audio clip and its corresponding video. */
+	linkedAudioVideoId?: string;
 	takeGroup?: { assemblyId: string; groupIndex: number };
 	id: string;
 	name: string;

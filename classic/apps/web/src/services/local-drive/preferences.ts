@@ -1,4 +1,5 @@
 import { localDriveRequest } from "./client";
+import { interfaceLocalePreference } from "@/i18n/locales";
 const MIRRORED_KEYS = "pocut-local-drive-preference-keys";
 
 export function shouldPersistPreference(key: string): boolean {
@@ -7,6 +8,7 @@ export function shouldPersistPreference(key: string): boolean {
 	return (
 		!!key &&
 		key.length <= 256 &&
+		key !== interfaceLocalePreference &&
 		!key.startsWith("pocut-local-drive-") &&
 		!key.startsWith("legacy-")
 	);

@@ -1,8 +1,14 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useId, useRef, useState } from "react";
 import { FolderOpen, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -231,7 +237,9 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 				toast.success(
 					recovery
 						? "Import recovered and saved"
-						: `${prepared.name} added to the timeline`,
+						: localizeClientMessage("{v0} added to the timeline", {
+								v0: String(prepared.name),
+							}),
 				);
 			}
 			onClose();
@@ -267,17 +275,27 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 		>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Import HyperFrames</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Import HyperFrames"} />
+					</DialogTitle>
 					<DialogDescription>
-						Add a composition as a clip alongside your footage. Choose its
-						project folder, including images, fonts and scripts.
+						<UiMessage
+							text={
+								"Add a composition as a clip alongside your footage. Choose its project folder, including images, fonts and scripts."
+							}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
 					{!recovery && pending.length > 0 && (
-						<section className="space-y-2" aria-label="Interrupted imports">
+						<UiLocalized<"section">
+							element={"section"}
+							messageProps={["aria-label"]}
+							className="space-y-2"
+							aria-label="Interrupted imports"
+						>
 							<p className="text-sm font-medium">
-								Continue an interrupted import
+								<UiMessage text={"Continue an interrupted import"} />
 							</p>
 							{pending.map((item) => {
 								const scene = editor.scenes
@@ -293,10 +311,18 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 										<div className="min-w-0 flex-1">
 											<p className="truncate text-sm">{item.name}</p>
 											<p className="text-xs text-muted-foreground">
-												{item.completed}/{item.total} files copied
-												{wrongScene
-													? ` · Open ${scene?.name ?? "the original scene"}`
-													: ""}
+												{item.completed}/{item.total}{" "}
+												<UiMessage text={"files copied"} />
+												{wrongScene ? (
+													<UiMessage
+														text={" · Open {v0}"}
+														values={{
+															v0: String(scene?.name ?? "the original scene"),
+														}}
+													/>
+												) : (
+													""
+												)}
 											</p>
 										</div>
 										<Button
@@ -305,24 +331,36 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 											aria-label={`Continue ${item.name}`}
 											onClick={() => void chooseRecovery(item.uploadToken)}
 										>
-											Continue
+											<UiMessage text={"Continue"} />
 										</Button>
 									</div>
 								);
 							})}
-						</section>
+						</UiLocalized>
 					)}
 					{recovery && (
 						<div className="space-y-2 rounded-md border p-3">
 							<p className="text-sm font-medium">
-								Continue {recovery.draft.name}
+								<UiMessage text={"Continue"} /> {recovery.draft.name}
 							</p>
 							<p className="text-xs text-muted-foreground">
 								{recovery.readyAssetIds.length}/
-								{recovery.draft.resources.length} files already copied.{" "}
-								{recovery.readyAssetIds.length < recovery.draft.resources.length
-									? "Choose the original folder to copy the remaining files."
-									: "The saved files are ready. Continue to finish the import."}
+								{recovery.draft.resources.length}{" "}
+								<UiMessage text={"files already copied."} />{" "}
+								{recovery.readyAssetIds.length <
+								recovery.draft.resources.length ? (
+									<UiMessage
+										text={
+											"Choose the original folder to copy the remaining files."
+										}
+									/>
+								) : (
+									<UiMessage
+										text={
+											"The saved files are ready. Continue to finish the import."
+										}
+									/>
+								)}
 							</p>
 							<Button
 								variant="ghost"
@@ -334,16 +372,19 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 									setError(null);
 								}}
 							>
-								Start a different import
+								<UiMessage text={"Start a different import"} />
 							</Button>
 						</div>
 					)}
 					{recoveryError && (
 						<p className="text-xs text-destructive">
-							Could not check interrupted imports: {recoveryError}
+							<UiMessage text={"Could not check interrupted imports:"} />{" "}
+							{recoveryError}
 						</p>
 					)}
-					<input
+					<UiLocalized<"input">
+						element={"input"}
+						messageProps={["aria-label"]}
 						ref={(node) => {
 							picker.current = node;
 							node?.setAttribute("webkitdirectory", "");
@@ -367,15 +408,29 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						<FolderOpen />
 						<span className="min-w-0">
 							<span className="block break-all">
-								{folder?.name ?? "Choose project folder"}
+								{folder?.name ?? <UiMessage text={"Choose project folder"} />}
 							</span>
 							{folder && (
 								<span className="mt-1 block text-xs font-normal text-muted-foreground">
-									{folder.plan.files.length} files ·{" "}
-									{folder.plan.resourceBytes < 1024 * 1024
-										? `${Math.ceil(folder.plan.resourceBytes / 1024)} KB`
-										: `${(folder.plan.resourceBytes / 1024 / 1024).toFixed(1)} MB`}{" "}
-									of media
+									{folder.plan.files.length} <UiMessage text={"files ·"} />{" "}
+									{folder.plan.resourceBytes < 1024 * 1024 ? (
+										<UiMessage
+											text={"{v0} KB"}
+											values={{
+												v0: String(Math.ceil(folder.plan.resourceBytes / 1024)),
+											}}
+										/>
+									) : (
+										<UiMessage
+											text={"{v0} MB"}
+											values={{
+												v0: String(
+													(folder.plan.resourceBytes / 1024 / 1024).toFixed(1),
+												),
+											}}
+										/>
+									)}{" "}
+									<UiMessage text={"of media"} />
 								</span>
 							)}
 						</span>
@@ -384,7 +439,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						<>
 							<div className="space-y-2">
 								<label htmlFor={`${id}-name`} className="text-sm font-medium">
-									Composition name
+									<UiMessage text={"Composition name"} />
 								</label>
 								<Input
 									id={`${id}-name`}
@@ -393,13 +448,18 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 									onChange={(event) => setCompositionName(event.target.value)}
 									aria-describedby={`${id}-name-hint`}
 								/>
-								<p id={`${id}-name-hint`} className="text-xs text-muted-foreground">
-									Shown in the composition library and timeline.
+								<p
+									id={`${id}-name-hint`}
+									className="text-xs text-muted-foreground"
+								>
+									<UiMessage
+										text={"Shown in the composition library and timeline."}
+									/>
 								</p>
 							</div>
 							<div className="space-y-2">
 								<label htmlFor={`${id}-entry`} className="text-sm font-medium">
-									Entry file
+									<UiMessage text={"Entry file"} />
 								</label>
 								<select
 									id={`${id}-entry`}
@@ -408,9 +468,14 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 									disabled={busy}
 									onChange={(event) => setEntryFile(event.target.value)}
 								>
-									<option value="" disabled>
-										Choose the main HTML file
-									</option>
+									<UiLocalized<"option">
+										element={"option"}
+										messageProps={["children"]}
+										value=""
+										disabled
+									>
+										{"Choose the main HTML file"}
+									</UiLocalized>
 									{folder.plan.entryCandidates.map((path) => (
 										<option key={path} value={path}>
 											{path}
@@ -423,7 +488,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 									htmlFor={`${id}-placement`}
 									className="text-sm font-medium"
 								>
-									Add to timeline
+									<UiMessage text={"Add to timeline"} />
 								</label>
 								<select
 									id={`${id}-placement`}
@@ -432,29 +497,52 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 									disabled={busy}
 									onChange={(event) => setPlacement(event.target.value)}
 								>
-									<option value="playhead">
-										At playhead · above existing clips
-									</option>
-									<option value="end">After existing clips</option>
-									<option value="start">From the beginning</option>
+									<UiLocalized<"option">
+										element={"option"}
+										messageProps={["children"]}
+										value="playhead"
+									>
+										{"At playhead · above existing clips"}
+									</UiLocalized>
+									<UiLocalized<"option">
+										element={"option"}
+										messageProps={["children"]}
+										value="end"
+									>
+										{"After existing clips"}
+									</UiLocalized>
+									<UiLocalized<"option">
+										element={"option"}
+										messageProps={["children"]}
+										value="start"
+									>
+										{"From the beginning"}
+									</UiLocalized>
 								</select>
 							</div>
 							<p className="text-xs text-muted-foreground">
-								Imported files are copied into this project. Embedded audio
-								follows the composition during playback and export.
+								<UiMessage
+									text={
+										"Imported files are copied into this project. Embedded audio follows the composition during playback and export."
+									}
+								/>
 							</p>
 						</>
 					)}
 					{busy && (
 						<div role="status" className="flex items-center gap-2 text-sm">
 							<Loader2 className="size-4 animate-spin" />
-							{canceling
-								? recovery
-									? "Stopping the import…"
-									: "Canceling and removing uploaded files…"
-								: progress
-									? PHASE_LABELS[progress.phase]
-									: "Reading the folder…"}
+							{canceling ? (
+								recovery ? (
+									<UiMessage text={"Stopping the import…"} />
+								) : (
+									<UiMessage text={"Canceling and removing uploaded files…"} />
+								)
+							) : progress ? (
+								PHASE_LABELS[progress.phase]
+							) : (
+								<UiMessage text={"Reading the folder…"} />
+							)}
 							{!canceling && progress?.phase === "uploading" && (
 								<span className="ml-auto tabular-nums">
 									{progress.completed}/{progress.total}
@@ -467,7 +555,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 							role="alert"
 							className="max-h-32 overflow-auto break-words text-sm text-destructive"
 						>
-							{error}
+							<UiValue>{error}</UiValue>
 						</p>
 					)}
 				</DialogBody>
@@ -477,7 +565,7 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						disabled={finishing || canceling}
 						onClick={close}
 					>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button
 						disabled={
@@ -491,7 +579,11 @@ export function HyperframesImportDialog({ onClose }: { onClose: () => void }) {
 						}
 						onClick={() => void importFolder()}
 					>
-						{recovery ? "Continue import" : "Add composition"}
+						{recovery ? (
+							<UiMessage text={"Continue import"} />
+						) : (
+							<UiMessage text={"Add composition"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

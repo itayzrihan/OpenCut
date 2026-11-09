@@ -5,7 +5,12 @@ import { join } from "node:path";
 import lockfile from "proper-lockfile";
 import { accountDataRoot, requireAccount } from "@/accounts/server";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
-import type { BrandKitLibrary } from "./types";
+import type { SharedStickerAsset } from "@/shared-library/types";
+import {
+	BRAND_IMAGE_MIME_TYPES,
+	type BrandKit,
+	type BrandKitLibrary,
+} from "./types";
 
 const host = globalThis as typeof globalThis & {
 	__brandKitQueues?: Map<string, Promise<unknown>>;
@@ -14,6 +19,46 @@ const queues = (host.__brandKitQueues ??= new Map());
 export type BrandRuntimeFactory = () => Promise<CanonicalEditorRuntime>;
 const createRuntime: BrandRuntimeFactory = async () =>
 	new (await import("opencut-editor-runtime-wasm")).CanonicalEditorRuntime();
+
+async function assertNewImagesOwned({
+	kit,
+	previous,
+}: {
+	kit: BrandKit;
+	previous?: BrandKit;
+}) {
+	const previousIds = new Set(previous?.images?.map((image) => image.assetId));
+	const newImages = kit.images?.filter(
+		(image) => !previousIds.has(image.assetId),
+	);
+	if (!newImages?.length) return;
+	const manifest = await readFile(
+		join(accountDataRoot(), "shared-library", "manifest.json"),
+		"utf8",
+	)
+		.then(
+			(value) => JSON.parse(value) as { stickerAssets?: SharedStickerAsset[] },
+		)
+		.catch((error: NodeJS.ErrnoException) => {
+			if (error.code !== "ENOENT") throw error;
+			return { stickerAssets: [] };
+		});
+	const available = new Set(
+		manifest.stickerAssets
+			?.filter(
+				(asset) =>
+					asset.storageKind === "account" &&
+					BRAND_IMAGE_MIME_TYPES.includes(asset.mimeType) &&
+					!!asset.width &&
+					!!asset.height,
+			)
+			.map((asset) => asset.id),
+	);
+	if (newImages.some((image) => !available.has(image.assetId)))
+		throw new Error(
+			"A Brand Kit image does not belong to this account or is unavailable",
+		);
+}
 
 export async function brandKitTransaction({
 	edit,
@@ -93,7 +138,11 @@ export async function brandKitTransaction({
 								"Brand Kit request identity was reused with different data",
 							);
 					} else {
-						const change = edit.change as { type?: string; kitId?: string };
+						const change = edit.change as {
+							type?: string;
+							kitId?: string;
+							kit?: { id: string };
+						};
 						runtime.invokeSync(
 							change?.type === "remove"
 								? "account.brand_kits.remove"
@@ -107,6 +156,19 @@ export async function brandKitTransaction({
 							},
 							{ requestId: edit.requestId },
 						);
+						if (change?.type === "upsert") {
+							const next = runtime.snapshot() as typeof snapshot;
+							const kit = next.account.brandKits.find(
+								(value) => value.id === change.kit?.id,
+							);
+							if (kit)
+								await assertNewImagesOwned({
+									kit,
+									previous: snapshot.account.brandKits.find(
+										(value) => value.id === kit.id,
+									),
+								});
+						}
 						runtime.invokeSync(
 							"app.state.patch",
 							{

@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import type { CSSProperties } from "react";
 import { useCallback } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -22,10 +26,17 @@ type LoopPreviewStyle = CSSProperties & {
 
 export function LoopsView() {
 	return (
-		<PanelView title="Loops">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Loops"
+		>
 			<div className="mb-3 text-xs leading-relaxed text-muted-foreground">
-				Drag a loop onto an image, video or text layer. Applying another loop
-				replaces the current loop on that layer.
+				<UiMessage
+					text={
+						"Drag a loop onto an image, video or text layer. Applying another loop replaces the current loop on that layer."
+					}
+				/>
 			</div>
 			<div
 				className="grid gap-2"
@@ -35,7 +46,7 @@ export function LoopsView() {
 					<LoopItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -48,10 +59,7 @@ function LoopItem({ preset }: { preset: LoopPreset }) {
 				const entry = editor.timeline.getElementsWithTracks({
 					elements: [selected],
 				})[0];
-				if (
-					!entry ||
-					!isLoopTargetElementType(entry.element.type)
-				) {
+				if (!entry || !isLoopTargetElementType(entry.element.type)) {
 					return [];
 				}
 				return [

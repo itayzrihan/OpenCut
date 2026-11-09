@@ -7,7 +7,7 @@ export async function GET(request: Request) {
 		await authenticateAccountNavigation(request);
 		if (!legitateClientId()) throw new Error("not configured");
 		return new Response(
-			'<!doctype html><html><head><meta charset="utf-8"><title>Connect Legitate</title></head><body><main><h1>Connect your Legitate account</h1><p>This links the signed-in OpenCut workspace to your Legitate identity.</p><form action="/api/accounts/legitate/start" method="post"><button type="submit">Continue with Legitate</button></form></main></body></html>',
+			'<!doctype html><html><head><meta charset="utf-8"><title>Connect Legitate</title></head><body><main><h1>Connect your Legitate account</h1><p>This links the signed-in POCUT workspace to your Legitate identity.</p><form action="/api/accounts/legitate/start" method="post"><button type="submit">Continue with Legitate</button></form></main></body></html>',
 			{
 				headers: {
 					"Content-Type": "text/html; charset=utf-8",
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
 			reason:
 				message === "Cross-origin request rejected"
 					? "origin_rejected"
-					: message === "Sign in to an OpenCut account first"
+					: message === "Sign in to an POCUT account first"
 						? "session_cookie_missing"
 						: message === "Session expired. Sign in again"
 							? "session_expired"
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
 				? request.headers.get("sec-fetch-site")
 				: "other",
 		});
-		return new Response("Sign in to your OpenCut workspace first.", {
+		return new Response("Sign in to your POCUT workspace first.", {
 			status: 401,
 			headers: { "Cache-Control": "no-store" },
 		});

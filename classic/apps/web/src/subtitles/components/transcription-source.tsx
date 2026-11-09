@@ -1,4 +1,9 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useState } from "react";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
@@ -21,7 +26,7 @@ import {
 	getExternalSettings,
 	type ExternalSettingsView,
 } from "@/transcription/external-client";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 export function TranscriptionSource({
 	disabled,
 	onImport,
@@ -89,7 +94,7 @@ export function TranscriptionSource({
 	return (
 		<div className="flex flex-col gap-2 rounded-lg border p-3">
 			<label className="text-sm font-medium" htmlFor="transcription-engine">
-				Transcription engine
+				<UiMessage text={"Transcription engine"} />
 			</label>
 			<Select
 				value={engine}
@@ -104,15 +109,21 @@ export function TranscriptionSource({
 					}
 				}}
 			>
-				<SelectTrigger
+				<UiLocalized<typeof SelectTrigger>
+					element={SelectTrigger}
+					messageProps={["aria-label"]}
 					id="transcription-engine"
 					aria-label="Transcription engine"
 				>
 					<SelectValue />
-				</SelectTrigger>
+				</UiLocalized>
 				<SelectContent>
-					<SelectItem value="local">Local · this device</SelectItem>
-					<SelectItem value="external">External API</SelectItem>
+					<SelectItem value="local">
+						<UiMessage text={"Local · this device"} />
+					</SelectItem>
+					<SelectItem value="external">
+						<UiMessage text={"External API"} />
+					</SelectItem>
 				</SelectContent>
 			</Select>
 			{engine === "external" ? (
@@ -123,24 +134,34 @@ export function TranscriptionSource({
 						disabled={disabled || busy}
 						onClick={() => void openSettings()}
 					>
-						API settings
+						<UiMessage text={"API settings"} />
 					</Button>
 					<p className="text-xs text-muted-foreground">
-						Audio is sent to your configured API in short sections. Provider
-						charges may apply. ChatGPT sign-in does not supply an API key.
+						<UiMessage
+							text={
+								"Audio is sent to your configured API in short sections. Provider charges may apply. ChatGPT sign-in does not supply an API key."
+							}
+						/>
 					</p>
 				</>
 			) : (
 				<p className="text-xs text-muted-foreground">
-					Audio stays on this device. The speech model downloads on first use.
+					<UiMessage
+						text={
+							"Audio stays on this device. The speech model downloads on first use."
+						}
+					/>
 				</p>
 			)}
 			<Button variant="outline" disabled={disabled || busy} onClick={onImport}>
-				Import SRT instead of transcribing
+				<UiMessage text={"Import SRT instead of transcribing"} />
 			</Button>
 			<p className="text-xs text-muted-foreground">
-				SRT replaces transcript captions and is used by Smart takes and Auto
-				Texts. Cue times are preserved; word times are estimated.
+				<UiMessage
+					text={
+						"SRT replaces transcript captions and is used by Smart takes and Auto Texts. Cue times are preserved; word times are estimated."
+					}
+				/>
 			</p>
 			<Dialog
 				open={open}
@@ -153,12 +174,16 @@ export function TranscriptionSource({
 			>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Transcription API settings</DialogTitle>
+						<DialogTitle>
+							<UiMessage text={"Transcription API settings"} />
+						</DialogTitle>
 					</DialogHeader>
 					<div className="flex flex-col gap-3">
 						<label className="text-sm" htmlFor="transcription-api-endpoint">
-							Transcriptions endpoint
-							<Input
+							<UiMessage text={"Transcriptions endpoint"} />
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["aria-label"]}
 								id="transcription-api-endpoint"
 								aria-label="Transcriptions endpoint"
 								value={config.endpoint}
@@ -169,8 +194,10 @@ export function TranscriptionSource({
 							/>
 						</label>
 						<label className="text-sm" htmlFor="transcription-api-model">
-							Model
-							<Input
+							<UiMessage text={"Model"} />
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["aria-label"]}
 								id="transcription-api-model"
 								aria-label="Transcription model"
 								value={config.model}
@@ -181,12 +208,17 @@ export function TranscriptionSource({
 							/>
 						</label>
 						<p className="text-xs text-muted-foreground">
-							Use an OpenAI-compatible model that returns word timestamps with
-							verbose_json, such as whisper-1.
+							<UiMessage
+								text={
+									"Use an OpenAI-compatible model that returns word timestamps with verbose_json, such as whisper-1."
+								}
+							/>
 						</p>
 						<label className="text-sm" htmlFor="transcription-api-key">
-							API key
-							<Input
+							<UiMessage text={"API key"} />
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["aria-label", "placeholder"]}
 								id="transcription-api-key"
 								aria-label="Transcription API key"
 								type="password"
@@ -202,18 +234,25 @@ export function TranscriptionSource({
 							/>
 						</label>
 						<p className="text-xs text-muted-foreground">
-							Stored by the server for your account, separately from project
-							files.
+							<UiMessage
+								text={
+									"Stored by the server for your account, separately from project files."
+								}
+							/>
 						</p>
 						{error && (
 							<p role="alert" className="text-sm text-red-500">
-								{error}
+								<UiValue>{error}</UiValue>
 							</p>
 						)}
 					</div>
 					<DialogFooter>
 						<Button onClick={() => void save()} disabled={busy}>
-							{busy ? "Saving…" : "Save API settings"}
+							{busy ? (
+								<UiMessage text={"Saving…"} />
+							) : (
+								<UiMessage text={"Save API settings"} />
+							)}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

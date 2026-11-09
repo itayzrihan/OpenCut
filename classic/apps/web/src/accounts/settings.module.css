@@ -1,0 +1,73 @@
+.banner,
+.card {
+	min-width: 0;
+	border: 1px solid var(--pocut-line);
+	border-radius: 14px;
+	padding: clamp(16px, 2vw, 24px);
+}
+
+.banner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	background: linear-gradient(
+		115deg,
+		var(--pocut-raised),
+		var(--pocut-panel) 65%
+	);
+}
+
+.card {
+	display: grid;
+	gap: 14px;
+	background: var(--pocut-panel);
+}
+
+.heading {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	font-weight: 650;
+}
+
+.icon,
+.identity {
+	border: 1px solid var(--pocut-line);
+	background: var(--pocut-raised);
+	color: var(--pocut-violet);
+}
+
+.icon {
+	display: grid;
+	place-items: center;
+	border-radius: 10px;
+	width: 34px;
+	height: 34px;
+	flex: none;
+}
+
+.identity {
+	border-radius: 999px;
+	padding: 5px 12px;
+	max-width: 100%;
+	overflow-wrap: anywhere;
+	font-size: 0.8rem;
+}
+
+.columns {
+	display: grid;
+	align-items: start;
+	gap: 16px;
+}
+
+.card input:is([type="radio"], [type="checkbox"]) {
+	accent-color: var(--pocut-violet);
+}
+
+@media (min-width: 1180px) {
+	.columns {
+		grid-template-columns: minmax(0, 1fr) minmax(260px, 0.48fr);
+	}
+}

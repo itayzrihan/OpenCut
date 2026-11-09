@@ -1,7 +1,8 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticWordAnimation } from "@/ai/automatic-word-animation";
@@ -57,11 +58,14 @@ export function AutomaticWordAnimationButton({
 				disabled={disabled || running}
 			>
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
-				Automatic Word Animation and Reveal
+				<UiMessage text={"Automatic Word Animation and Reveal"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Directed word animation, text placement and reveals with matched,
-				editable Earshot sounds.
+				<UiMessage
+					text={
+						"Directed word animation, text placement and reveals with matched, editable Earshot sounds."
+					}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -74,7 +78,7 @@ export function AutomaticWordAnimationButton({
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel word animation
+					<UiMessage text={"Cancel word animation"} />
 				</Button>
 			)}
 		</div>

@@ -1,7 +1,11 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
@@ -52,7 +56,12 @@ export function BackgroundsView() {
 	}, [loadLibrary]);
 
 	return (
-		<PanelView title="Backgrounds" actions={<AiBackgroundButton />}>
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Backgrounds"
+			actions={<AiBackgroundButton />}
+		>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
@@ -61,7 +70,7 @@ export function BackgroundsView() {
 					<BackgroundPresetItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -105,13 +114,21 @@ function AiBackgroundButton() {
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create AI background</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Create AI background"} />
+					</DialogTitle>
 					<DialogDescription>
-						Generate an editable OpenCut background preset from a prompt.
+						<UiMessage
+							text={
+								"Generate an editable POCUT background preset from a prompt."
+							}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["placeholder"]}
 						value={prompt}
 						onChange={(event) => setPrompt(event.target.value)}
 						placeholder="Clean cyber grid with teal highlights and subtle motion"
@@ -120,10 +137,14 @@ function AiBackgroundButton() {
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="text" onClick={() => setIsOpen(false)}>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button onClick={() => void handleGenerate()} disabled={isGenerating}>
-						{isGenerating ? "Generating..." : "Create"}
+						{isGenerating ? (
+							<UiMessage text={"Generating..."} />
+						) : (
+							<UiMessage text={"Create"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

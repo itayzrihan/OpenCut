@@ -1,7 +1,11 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEffect, useRef, useCallback, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
@@ -54,15 +58,22 @@ export function EffectsView() {
 	}, [loadLibrary]);
 
 	return (
-		<PanelView title="Effects" actions={<AiEffectButton />}>
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Effects"
+			actions={<AiEffectButton />}
+		>
 			{generatedEffects.length > 0 && (
 				<div className="mb-4 flex flex-col gap-2">
-					<p className="text-muted-foreground text-xs">AI presets</p>
+					<p className="text-muted-foreground text-xs">
+						<UiMessage text={"AI presets"} />
+					</p>
 					<GeneratedEffectsGrid presets={generatedEffects} />
 				</div>
 			)}
 			<EffectsGrid effects={effects} />
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -248,13 +259,19 @@ function AiEffectButton() {
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create AI effect</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Create AI effect"} />
+					</DialogTitle>
 					<DialogDescription>
-						Generate an editable OpenCut effect preset from a prompt.
+						<UiMessage
+							text={"Generate an editable POCUT effect preset from a prompt."}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["placeholder"]}
 						value={prompt}
 						onChange={(event) => setPrompt(event.target.value)}
 						placeholder="Subtle RGB split with scanlines and a cool blue tint"
@@ -263,10 +280,14 @@ function AiEffectButton() {
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="text" onClick={() => setIsOpen(false)}>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button onClick={() => void handleGenerate()} disabled={isGenerating}>
-						{isGenerating ? "Generating..." : "Create"}
+						{isGenerating ? (
+							<UiMessage text={"Generating..."} />
+						) : (
+							<UiMessage text={"Create"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

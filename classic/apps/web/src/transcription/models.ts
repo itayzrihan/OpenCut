@@ -11,6 +11,30 @@ export const BROWSER_WHISPER_CPU_MODEL =
 export const BROWSER_WHISPER_CPU_REVISION =
 	"af7e6de7bb1210105c8176f79236bd7c69e73002";
 
+export const BROWSER_TRANSCRIPTION_MODELS = [
+	"ivrit-large-v3-turbo",
+	"whisper-large-v3-turbo",
+] as const;
+
+export type BrowserTranscriptionModel =
+	(typeof BROWSER_TRANSCRIPTION_MODELS)[number];
+
+export const DEFAULT_BROWSER_TRANSCRIPTION_MODEL =
+	BROWSER_TRANSCRIPTION_MODELS[0];
+
+export const BROWSER_TRANSCRIPTION_LABELS: Record<
+	BrowserTranscriptionModel,
+	string
+> = {
+	"ivrit-large-v3-turbo": "ivrit.ai Large v3 Turbo",
+	"whisper-large-v3-turbo": "Whisper Large v3 Turbo",
+};
+
+export const MULTILINGUAL_WHISPER_MODEL =
+	"onnx-community/whisper-large-v3-turbo_timestamped";
+export const MULTILINGUAL_WHISPER_REVISION =
+	"b3f77bf9a8c4d5ea3415827033d1ffea7955fd9a";
+
 export const TRANSCRIPTION_MODELS: TranscriptionModel[] = [
 	{
 		id: "whisper-tiny",

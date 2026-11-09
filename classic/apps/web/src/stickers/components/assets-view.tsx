@@ -1,9 +1,13 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import Image from "next/image";
 import type { CSSProperties } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
 import {
@@ -144,7 +148,9 @@ export function StickersView() {
 		<div className="flex h-full flex-col py-2">
 			<input {...fileInputProps} />
 			<div className="flex items-center gap-2 px-2">
-				<Input
+				<UiLocalized<typeof Input>
+					element={Input}
+					messageProps={["placeholder"]}
 					size="sm"
 					variant="default"
 					placeholder="Search..."
@@ -164,7 +170,7 @@ export function StickersView() {
 				/>
 				<Button size="sm" onClick={openFilePicker}>
 					<HugeiconsIcon icon={PlusSignIcon} />
-					Add
+					<UiMessage text={"Add"} />
 				</Button>
 			</div>
 
@@ -178,10 +184,14 @@ export function StickersView() {
 					onClick={() => setSelectedCustomCategoryId(null)}
 				>
 					<HugeiconsIcon icon={HappyIcon} className="size-5" />
-					<span className="max-w-full truncate text-xs">All</span>
+					<span className="max-w-full truncate text-xs">
+						<UiMessage text={"All"} />
+					</span>
 				</button>
 				{stickerCategories.map((category) => (
-					<button
+					<UiLocalized<"button">
+						element={"button"}
+						messageProps={["title"]}
 						key={category.id}
 						type="button"
 						className={cn(
@@ -199,7 +209,7 @@ export function StickersView() {
 						<span className="text-muted-foreground text-[10px]">
 							{category.assetIds.length}
 						</span>
-					</button>
+					</UiLocalized>
 				))}
 				<Dialog
 					open={isCategoryDialogOpen}
@@ -211,20 +221,28 @@ export function StickersView() {
 							className="border-muted-foreground/30 text-muted-foreground hover:text-foreground flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-sm border border-dashed px-2 text-center"
 						>
 							<HugeiconsIcon icon={PlusSignIcon} className="size-5" />
-							<span className="text-xs">Category</span>
+							<span className="text-xs">
+								<UiMessage text={"Category"} />
+							</span>
 						</button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Create sticker category</DialogTitle>
+							<DialogTitle>
+								<UiMessage text={"Create sticker category"} />
+							</DialogTitle>
 							<DialogDescription>
-								Categories are saved in the repository manifest. A sticker can
-								be dropped into multiple categories and still remain in the main
-								sticker views.
+								<UiMessage
+									text={
+										"Categories are saved in the repository manifest. A sticker can be dropped into multiple categories and still remain in the main sticker views."
+									}
+								/>
 							</DialogDescription>
 						</DialogHeader>
 						<DialogBody>
-							<Input
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["placeholder"]}
 								placeholder="Category name"
 								value={categoryName}
 								onChange={(event) => setCategoryName(event.target.value)}
@@ -241,10 +259,10 @@ export function StickersView() {
 								variant="text"
 								onClick={() => setIsCategoryDialogOpen(false)}
 							>
-								Cancel
+								<UiMessage text={"Cancel"} />
 							</Button>
 							<Button onClick={() => void handleCreateCategory()}>
-								Create
+								<UiMessage text={"Create"} />
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -271,13 +289,17 @@ export function StickersView() {
 					variant="underline"
 					className="mt-2 flex min-h-0 flex-1 flex-col"
 				>
-					<TabsList aria-label="Sticker categories">
+					<UiLocalized<typeof TabsList>
+						element={TabsList}
+						messageProps={["aria-label"]}
+						aria-label="Sticker categories"
+					>
 						{Object.entries(STICKER_CATEGORIES).map(([key, label]) => (
 							<TabsTrigger key={key} value={key}>
 								{label}
 							</TabsTrigger>
 						))}
-					</TabsList>
+					</UiLocalized>
 					<div className="min-h-0 flex-1 overflow-y-auto px-4 pt-4">
 						<StickersContentView />
 					</div>
@@ -346,7 +368,12 @@ function CustomStickerCategoryView({
 		<div className="flex flex-col gap-3 pb-4">
 			<div className="flex items-center justify-between">
 				<span className="text-muted-foreground text-sm">
-					{items.length} {items.length === 1 ? "sticker" : "stickers"}
+					{items.length}{" "}
+					{items.length === 1 ? (
+						<UiMessage text={"sticker"} />
+					) : (
+						<UiMessage text={"stickers"} />
+					)}
 				</span>
 			</div>
 			<StickerGrid items={items} />
@@ -470,7 +497,9 @@ function EmptyView({ message }: { message: string }) {
 				className="text-muted-foreground size-10"
 			/>
 			<div className="flex flex-col gap-2 text-center">
-				<p className="text-lg font-medium">No stickers found</p>
+				<p className="text-lg font-medium">
+					<UiMessage text={"No stickers found"} />
+				</p>
 				<p className="text-muted-foreground text-sm text-balance">{message}</p>
 			</div>
 		</div>
@@ -534,7 +563,7 @@ function StickersContentView() {
 					{isRegionSearch && <RegionBanner region={regionLabel} />}
 					<div className="flex items-center justify-between">
 						<span className="text-muted-foreground text-sm">
-							{searchResults.total} results
+							{searchResults.total} <UiMessage text={"results"} />
 						</span>
 					</div>
 					<StickerGrid items={searchResults.items} />
@@ -617,7 +646,7 @@ function StickerSection({
 								size="sm"
 								className="h-auto gap-1 p-0 text-xs text-muted-foreground"
 							>
-								Clear
+								<UiMessage text={"Clear"} />
 							</Button>
 						)}
 
@@ -632,7 +661,7 @@ function StickerSection({
 									}
 								}}
 							>
-								See all
+								<UiMessage text={"See all"} />
 							</Button>
 						)}
 					</div>

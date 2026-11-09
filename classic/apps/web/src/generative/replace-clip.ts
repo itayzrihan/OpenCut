@@ -6,8 +6,12 @@ import {
 	REPLACE_IMAGE_MODEL,
 	REPLACE_MAX_REFERENCES,
 	REPLACE_VIDEO_MODEL,
-	type VideoGenerationModel,
 } from "./replace-model";
+import { nearestVideoAspect } from "./seamless-connect";
+import {
+	seamlessDurations,
+	type VideoGenerationModel,
+} from "./seamless-models";
 import type { DirectorJob, ReplaceMode, ReplaceTarget } from "./types";
 
 type ClipIdentity = Pick<ReplaceTarget, "sceneId" | "trackId" | "elementId">;
@@ -32,24 +36,6 @@ export function planReplace({
 	);
 }
 
-function nearestVideoAspect({
-	width,
-	height,
-	model,
-}: {
-	width: number;
-	height: number;
-	model: VideoGenerationModel;
-}) {
-	const distance = (ratio: string) => {
-		const [w, h] = ratio.split(":").map(Number);
-		return Math.abs(Math.log(w / h / (width / height)));
-	};
-	return [...(model.supported_aspect_ratios ?? [])].sort(
-		(a, b) => distance(a) - distance(b),
-	)[0];
-}
-
 export function replacementDuration({
 	model,
 	ticks,
@@ -57,11 +43,7 @@ export function replacementDuration({
 	model: VideoGenerationModel | undefined;
 	ticks: number;
 }) {
-	const durations = (model?.supported_durations ?? [])
-		.filter(
-			(seconds) => Number.isInteger(seconds) && seconds >= 1 && seconds <= 30,
-		)
-		.sort((a, b) => a - b);
+	const durations = seamlessDurations(model);
 	return (
 		durations.find((seconds) => seconds * TICKS_PER_SECOND >= ticks) ??
 		durations.at(-1)

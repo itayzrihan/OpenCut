@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useEditor } from "@/editor/use-editor";
+import { useInterfaceLanguage } from "@/i18n/provider";
 import type { VideoElement } from "@/timeline/types";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { canonical, fileUrl, scope, status } from "../client";
 import { prepareReplacement, replacementDuration } from "../replace-clip";
 import { REPLACE_MAX_REFERENCES, REPLACE_VIDEO_MODEL } from "../replace-model";
 import { useDirectorReviewFocus } from "../review-focus";
-import type { VideoGenerationModel } from "../replace-model";
+import type { VideoGenerationModel } from "../seamless-models";
 import type { DirectorReference, ReplaceMode } from "../types";
 
 export function ReplaceDialog({
@@ -34,6 +35,7 @@ export function ReplaceDialog({
 	clip: VideoElement;
 }) {
 	const editor = useEditor();
+	const { t } = useInterfaceLanguage();
 	const [mode, setMode] = useState<ReplaceMode>("refine");
 	const [prompt, setPrompt] = useState("");
 	const [files, setFiles] = useState<File[]>([]);
@@ -149,15 +151,15 @@ export function ReplaceDialog({
 	const total = files.length + chosen.length;
 	const projectId = editor.project.getActiveOrNull()?.metadata.id;
 	const modeLabels = {
-		refine: "Keep style and characters",
-		full: "Replace the entire scene",
+		refine: t("Keep style and characters"),
+		full: t("Replace the entire scene"),
 	};
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="max-h-[90dvh] gap-5 overflow-y-auto p-6 sm:max-w-lg">
 				<DialogHeader>
-					<DialogTitle>{"Replace clip"}</DialogTitle>
+					<DialogTitle>{t("Replace clip")}</DialogTitle>
 					<DialogDescription>
 						{clip.name} · {exactSeconds}s
 					</DialogDescription>
@@ -171,7 +173,7 @@ export function ReplaceDialog({
 				>
 					<fieldset disabled={busy} className="grid gap-2">
 						<legend className="mb-2 text-sm font-medium">
-							{"Replacement mode"}
+							{t("Replacement mode")}
 						</legend>
 						{(["refine", "full"] as const).map((value) => (
 							<label
@@ -191,15 +193,19 @@ export function ReplaceDialog({
 									<strong>{modeLabels[value]}</strong>
 									<span className="text-xs text-muted-foreground">
 										{value === "refine"
-											? "Use up to ten evenly spaced frames from this clip as references."
-											: "Describe a new scene and optionally supply reference images."}
+											? t(
+													"Use up to ten evenly spaced frames from this clip as references.",
+												)
+											: t(
+													"Describe a new scene and optionally supply reference images.",
+												)}
 									</span>
 								</span>
 							</label>
 						))}
 					</fieldset>
 					<label className="grid gap-2 text-sm">
-						{"What should happen in this clip?"}
+						{t("What should happen in this clip?")}
 						<Textarea
 							dir="auto"
 							required
@@ -215,7 +221,7 @@ export function ReplaceDialog({
 							className="grid gap-2 rounded-md border p-3 text-sm"
 						>
 							<label className="grid gap-2">
-								{"Upload reference images"}
+								{t("Upload reference images")}
 								<input
 									type="file"
 									multiple
@@ -249,7 +255,7 @@ export function ReplaceDialog({
 											)
 										}
 									>
-										{"Remove"}
+										{t("Remove")}
 									</Button>
 								</div>
 							))}
@@ -292,19 +298,19 @@ export function ReplaceDialog({
 								disabled={!prompt.trim()}
 								onClick={() => void prepare(true)}
 							>
-								{"Prepare reference image"}
+								{t("Prepare reference image")}
 							</Button>
 							<p className="text-xs text-muted-foreground">
-								{
-									"Reference images generated with Gemini use a separate OpenRouter approval. Reopen Replace to select the finished image."
-								}
+								{t(
+									"Reference images generated with Gemini use a separate OpenRouter approval. Reopen Replace to select the finished image.",
+								)}
 							</p>
 						</fieldset>
 					)}
 					<p className="text-xs text-muted-foreground">
-						{
-							"The replacement keeps the exact clip length and original audio. Other clips stay in place."
-						}
+						{t(
+							"The replacement keeps the exact clip length and original audio. Other clips stay in place.",
+						)}
 					</p>
 					{providerSeconds !== undefined && (
 						<p className="text-xs text-muted-foreground">
@@ -313,7 +319,7 @@ export function ReplaceDialog({
 					)}
 					{(error || catalogError) && (
 						<p role="alert" className="text-sm text-destructive">
-							{error || catalogError}
+							{t(error || catalogError)}
 						</p>
 					)}
 					<div className="flex flex-wrap justify-end gap-2 border-t pt-4">
@@ -322,13 +328,13 @@ export function ReplaceDialog({
 							variant="outline"
 							onClick={() => onOpenChange(false)}
 						>
-							{"Close"}
+							{t("Close")}
 						</Button>
 						<Button
 							type="submit"
 							disabled={busy || !prompt.trim() || !providerSeconds}
 						>
-							{busy ? "Preparing replacement…" : "Prepare for review"}
+							{busy ? t("Preparing replacement…") : t("Prepare for review")}
 						</Button>
 					</div>
 				</form>

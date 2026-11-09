@@ -1,4 +1,9 @@
 "use client";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
+import { useInterfaceLanguage } from "@/i18n/provider";
 import { useEffect, useRef, useState } from "react";
 import {
 	motion,
@@ -11,12 +16,12 @@ import {
 import { Check, ChevronUp, X, Loader2, AlertCircle } from "lucide-react";
 import { batchEditIsLocked } from "opencut-wasm";
 import type { BatchState } from "./types";
-import { automationView } from "./progress-view";
+import { automationView, batchStatusLabels } from "./progress-view";
 const stageNames: Record<string, string> = {
 	preflight: "Check source, font & model",
 	framing: "Vertical frame · face & body",
 	silence: "Remove silences · 0.3s",
-	"auto-texts": "Hebrew Auto Texts · correct & arrange",
+	"auto-texts": "Auto Texts · correct & arrange",
 	finish: "Caption style & edge feather",
 	zoom: "Automatic Zoom",
 	transitions: "Automatic Transitions",
@@ -43,6 +48,7 @@ export function AutomationProgress({
 	onOpenBatch: () => void;
 	onCancel: (input: { id: string; projectId?: string }) => Promise<void>;
 }) {
+	const { t } = useInterfaceLanguage();
 	const [expanded, setExpanded] = useState(false);
 	const [openedAt] = useState(() => Date.now());
 	const [dismissed, setDismissed] = useState("");
@@ -128,7 +134,9 @@ export function AutomationProgress({
 
 	if (!visible) return null;
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			className="pointer-events-none fixed inset-0 z-[240]"
 			aria-label="Automation activity"
 		>
@@ -154,26 +162,46 @@ export function AutomationProgress({
 					>
 						<header className="p-4 pb-2 flex items-start justify-between gap-3">
 							<div>
-								<h2 className="text-sm font-semibold">Background edits</h2>
+								<h2 className="text-sm font-semibold">
+									<UiMessage text={"Background edits"} />
+								</h2>
 								<p className="text-xs text-muted-foreground mt-1">
-									{ready}/{totalVideos} videos ready
-									{waiting > 0 ? ` · ${waiting} waiting in queue` : ""}
-									{stopped > ready
-										? ` · ${stopped - ready} stopped`
-										: ""} · {completed}/{stages.length} stages in this video
+									{ready}/{totalVideos} <UiMessage text={"videos ready"} />
+									{waiting > 0 ? (
+										<UiMessage
+											text={" · {v0} waiting in queue"}
+											values={{ v0: String(waiting) }}
+										/>
+									) : (
+										""
+									)}
+									{stopped > ready ? (
+										<UiMessage
+											text={" · {v0} stopped"}
+											values={{ v0: String(stopped - ready) }}
+										/>
+									) : (
+										""
+									)}{" "}
+									· {completed}/{stages.length}{" "}
+									<UiMessage text={"stages in this video"} />
 								</p>
 							</div>
-							<button
+							<UiLocalized<"button">
+								element={"button"}
+								messageProps={["aria-label"]}
 								aria-label="Collapse automation details"
 								className="p-1 rounded hover:bg-accent"
 								onClick={() => setExpanded(false)}
 							>
 								<X size={16} />
-							</button>
+							</UiLocalized>
 						</header>
 						<div className="px-4 pb-3 space-y-2 max-h-56 overflow-y-auto">
 							{entries.length > 1 && (
-								<select
+								<UiLocalized<"select">
+									element={"select"}
+									messageProps={["aria-label"]}
 									aria-label="Background project"
 									className="w-full text-xs bg-background border rounded p-1"
 									value={run && job ? `${run.id}:${job.projectId}` : ""}
@@ -184,10 +212,10 @@ export function AutomationProgress({
 											key={`${r.id}:${j.projectId}`}
 											value={`${r.id}:${j.projectId}`}
 										>
-											{j.name} · {j.status}
+											{j.name} · {t(batchStatusLabels[j.status])}
 										</option>
 									))}
-								</select>
+								</UiLocalized>
 							)}
 
 							<p className="text-xs font-medium truncate">{job?.fileName}</p>
@@ -195,7 +223,7 @@ export function AutomationProgress({
 								role="status"
 								className="text-xs text-muted-foreground leading-relaxed"
 							>
-								{message}
+								{t(message)}
 							</p>
 							<ol className="space-y-2 pt-1">
 								{stages.map((stage, i) => (
@@ -215,10 +243,10 @@ export function AutomationProgress({
 										) : (
 											<span className="w-[13px] text-center">·</span>
 										)}
-										<span>{stageNames[stage] ?? stage}</span>
+										<span>{t(stageNames[stage] ?? stage)}</span>
 										{i === completed && active && job?.status === "running" && (
 											<span className="ml-auto text-[10px] text-primary">
-												Working
+												<UiMessage text={"Working"} />
 											</span>
 										)}
 									</li>
@@ -227,7 +255,7 @@ export function AutomationProgress({
 						</div>
 						<footer className="border-t px-4 py-2 flex justify-between gap-3 text-xs">
 							<button className="underline" onClick={onOpenBatch}>
-								All videos & controls
+								<UiMessage text={"All videos & controls"} />
 							</button>
 							{job && run && batchEditIsLocked({ status: job.status }) && (
 								<button
@@ -236,15 +264,22 @@ export function AutomationProgress({
 										void onCancel({ id: run.id, projectId: job.projectId })
 									}
 								>
-									{job.cancelRequested ? "Cancelling..." : "Cancel editing"}
+									{job.cancelRequested ? (
+										<UiMessage text={"Cancelling..."} />
+									) : (
+										<UiMessage text={"Cancel editing"} />
+									)}
 								</button>
 							)}
 
 							<span className="text-muted-foreground">
-								{percent}% of stages complete
+								{percent}
+								<UiMessage text={"% of stages complete"} />
 							</span>
 							{!active && (
-								<button onClick={() => setDismissed(key!)}>Dismiss</button>
+								<button onClick={() => setDismissed(key!)}>
+									<UiMessage text={"Dismiss"} />
+								</button>
 							)}
 						</footer>
 					</motion.section>
@@ -390,24 +425,37 @@ export function AutomationProgress({
 				</span>
 				<span className="min-w-0 flex-1">
 					<span className="flex items-center gap-1 text-xs font-semibold">
-						{active
-							? `${ready}/${totalVideos} ready`
-							: error
-								? "Needs review"
-								: "Ready for review"}
+						{active ? (
+							<UiMessage
+								text={"{v0}/{v1} ready"}
+								values={{ v0: String(ready), v1: String(totalVideos) }}
+							/>
+						) : error ? (
+							<UiMessage text={"Needs review"} />
+						) : (
+							<UiMessage text={"Ready for review"} />
+						)}
 						<ChevronUp size={12} className={expanded ? "rotate-180" : ""} />
 					</span>
 					<span className="block truncate text-[11px] text-muted-foreground mt-1">
-						{active
-							? activityMessage
-							: `${ready} completed · ${stopped - ready} stopped`}
+						{active ? (
+							activityMessage
+						) : (
+							<UiMessage
+								text={"{v0} completed · {v1} stopped"}
+								values={{ v0: String(ready), v1: String(stopped - ready) }}
+							/>
+						)}
 					</span>
 				</span>
 			</motion.button>
 			<span id="automation-drag-help" className="sr-only">
-				Drag to reposition. Arrow keys move the control. Enter opens progress
-				details.
+				<UiMessage
+					text={
+						"Drag to reposition. Arrow keys move the control. Enter opens progress details."
+					}
+				/>
 			</span>
-		</div>
+		</UiLocalized>
 	);
 }

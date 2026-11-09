@@ -51,7 +51,7 @@ export async function restoreSelectedSilence({
 	// The commit below rejects a scene/revision change instead of widening the edit.
 	const preview = previewRestoreSilence({ editor, selection });
 	if (!preview)
-		throw new Error("בחרו קליפים צמודים מאותו סרטון שיש ביניהם זמן מקור שנמחק");
+		throw new Error("Select adjacent clips from the same video with a removed source interval between them");
 	await editor.command.enableCanonical();
 	const parsed = parseTimelineDocumentV2({ text: preview.sourceJson });
 	const value = parsed.value;
@@ -68,7 +68,7 @@ export async function restoreSelectedSilence({
 				buildTimelineDocumentV2({ project, scene }).baseRevision !==
 					preview.baseRevision
 			)
-				throw new Error("הטיימליין השתנה. בחרו שוב את הקליפים.");
+				throw new Error("The timeline changed. Select the clips again.");
 			editor.scenes.setScenes({
 				scenes: updateSceneInArray({
 					scenes: editor.scenes.getScenes(),

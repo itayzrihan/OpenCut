@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import {
 	Profiler,
 	useCallback,
@@ -830,7 +831,7 @@ function PreviewCanvas({
 												height: viewport.sceneHeight,
 											}}
 										>
-											Exporting · preview paused
+											<UiMessage text={"Exporting · preview paused"} />
 										</div>
 									)}
 									<PreviewOverlayLayer
@@ -853,9 +854,11 @@ function PreviewCanvas({
 											className="absolute bottom-3 left-1/2 z-10 flex max-w-full -translate-x-1/2 items-center gap-2 rounded-md border bg-background/95 px-3 py-2 text-xs text-foreground shadow-sm"
 										>
 											<span>
-												{previewFailed
-													? "Preview could not be rendered."
-													: "Preparing preview…"}
+												{previewFailed ? (
+													<UiMessage text={"Preview could not be rendered."} />
+												) : (
+													<UiMessage text={"Preparing preview…"} />
+												)}
 											</span>
 											{previewFailed && (
 												<Button
@@ -868,7 +871,7 @@ function PreviewCanvas({
 														scheduleRender("retry");
 													}}
 												>
-													Retry preview
+													<UiMessage text={"Retry preview"} />
 												</Button>
 											)}
 										</div>

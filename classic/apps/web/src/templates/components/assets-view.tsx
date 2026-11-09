@@ -1,8 +1,13 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useState } from "react";
 import { Check, LoaderCircle, Sparkles } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { useEditor } from "@/editor/use-editor";
@@ -52,35 +57,52 @@ export function TemplatesView() {
 					rangeEndSeconds: deterministic.rangeEndSeconds,
 				});
 			} catch (error) {
-				console.warn("Template AI completion failed; using safe fallback", error);
+				console.warn(
+					"Template AI completion failed; using safe fallback",
+					error,
+				);
 				placements = normalizeBreakoutPlacements({
 					placements: [],
 					rangeStartSeconds: deterministic.rangeStartSeconds,
 					rangeEndSeconds: deterministic.rangeEndSeconds,
 				});
-					toast.warning("AI completion was unavailable; a safe breakout position was used");
+				toast.warning(
+					"AI completion was unavailable; a safe breakout position was used",
+				);
 			}
 			const applied = await applyBreakoutPlacements({
 				editor,
 				target: deterministic.target,
 				placements,
-				onProgress: (message) => toast.loading(message, { id: "template-apply" }),
+				onProgress: (message) =>
+					toast.loading(message, { id: "template-apply" }),
 			});
 			toast.success(
-				`${PAPER_GRID_EDITORIAL_TEMPLATE.name} applied · ${applied} breakout ${applied === 1 ? "moment" : "moments"}`,
+				localizeClientMessage("{v0} applied · {v1} breakout {v2}", {
+					v0: String(PAPER_GRID_EDITORIAL_TEMPLATE.name),
+					v1: String(applied),
+					v2: String(applied === 1 ? "moment" : "moments"),
+				}),
 				{ id: "template-apply" },
 			);
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : "Template application failed", {
-				id: "template-apply",
-			});
+			toast.error(
+				error instanceof Error ? error.message : "Template application failed",
+				{
+					id: "template-apply",
+				},
+			);
 		} finally {
 			setIsApplying(false);
 		}
 	};
 
 	return (
-		<PanelView title="Templates">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Templates"
+		>
 			<div
 				className="grid gap-2 pb-3"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
@@ -100,7 +122,7 @@ export function TemplatesView() {
 						<div className="absolute left-1/2 bottom-[31%] h-[25%] w-[29%] -translate-x-1/2 rounded-t-full bg-[#efc7ad] shadow-[0_-1px_0_rgba(255,255,255,0.5)]" />
 						<div className="absolute left-[20%] top-0 h-full w-[3px] bg-white shadow-[0_0_8px_3px_rgba(255,255,255,0.75)]" />
 						<div className="absolute right-2 top-2 rounded-full bg-black/75 px-2 py-1 text-[9px] font-semibold tracking-wide text-white">
-							95% CODE · 5% AI
+							<UiMessage text={"95% CODE · 5% AI"} />
 						</div>
 					</div>
 					<div className="flex items-start justify-between gap-1 p-1">
@@ -121,7 +143,14 @@ export function TemplatesView() {
 					</div>
 				</button>
 				<div className="hidden rounded-md border border-primary/20 bg-primary/5 p-3 text-xs leading-relaxed text-muted-foreground">
-						<strong className="text-foreground">Programmatic pass:</strong> opening reveal, edge feather, captions, RTL checklist, timing-safe layers, and reusable motion are applied locally. OpenAI completes only the reference-driven proof-stage details and Speaker Frame Breakout timing.
+					<strong className="text-foreground">
+						<UiMessage text={"Programmatic pass:"} />
+					</strong>{" "}
+					<UiMessage
+						text={
+							"opening reveal, edge feather, captions, RTL checklist, timing-safe layers, and reusable motion are applied locally. OpenAI completes only the reference-driven proof-stage details and Speaker Frame Breakout timing."
+						}
+					/>
 				</div>
 				<Button
 					variant="outline"
@@ -129,9 +158,13 @@ export function TemplatesView() {
 					disabled={isApplying}
 					onClick={() => void applyTemplate()}
 				>
-					{isApplying ? "Applying template…" : "Apply to imported video"}
+					{isApplying ? (
+						<UiMessage text={"Applying template…"} />
+					) : (
+						<UiMessage text={"Apply to imported video"} />
+					)}
 				</Button>
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }

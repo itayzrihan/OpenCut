@@ -1,3 +1,4 @@
+import { localizeClientMessage } from "@/i18n/client-messages";
 import { startOperationTiming } from "@/diagnostics/operation";
 import { canonicalMediaBindings } from "@/core/canonical-classic-session";
 import { localDriveRequest } from "@/services/local-drive/client";
@@ -34,7 +35,7 @@ import {
 } from "@/core/editor-ownership";
 import { batchWriteHeaders } from "@/batch/write-token";
 import { browserEditorSessionId } from "@/editor-agent/session-identity";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { generateUUID } from "@/utils/id";
 import { UpdateProjectSettingsCommand } from "@/commands/project";
 import { DEFAULT_BACKGROUND_COLOR } from "@/background/color";
@@ -703,7 +704,9 @@ export class ProjectManager {
 				atomicBundle,
 				// The local media index observes this machine's sources. Its file
 				// availability and relink receipts must supersede archived bindings.
-				localMediaBindings: canonicalMediaBindings(this.editor.media.getAssets()),
+				localMediaBindings: canonicalMediaBindings(
+					this.editor.media.getAssets(),
+				),
 				persistInitial: canAcquire,
 				persistSession: async (capture) => {
 					if (this.editorSession !== session || this.sessionOwnershipLost)
@@ -1028,7 +1031,11 @@ export class ProjectManager {
 
 		for (const file of files) {
 			if (!isSupportedFontFile({ file })) {
-				toast.error(`Unsupported font type: ${file.name}`);
+				toast.error(
+					localizeClientMessage("Unsupported font type: {v0}", {
+						v0: String(file.name),
+					}),
+				);
 				continue;
 			}
 
@@ -1036,7 +1043,11 @@ export class ProjectManager {
 				size: file.size,
 			});
 			if (!storageCheck.canStore) {
-				toast.error(`Not enough browser storage for ${file.name}`);
+				toast.error(
+					localizeClientMessage("Not enough browser storage for {v0}", {
+						v0: String(file.name),
+					}),
+				);
 				continue;
 			}
 
@@ -1075,12 +1086,17 @@ export class ProjectManager {
 			} catch (error) {
 				URL.revokeObjectURL(objectUrl);
 				console.error("Failed to import font:", error);
-				toast.error(`Failed to import ${file.name}`, {
-					description:
-						error instanceof Error
-							? error.message
-							: "The font could not be loaded",
-				});
+				toast.error(
+					localizeClientMessage("Failed to import {v0}", {
+						v0: String(file.name),
+					}),
+					{
+						description:
+							error instanceof Error
+								? error.message
+								: "The font could not be loaded",
+					},
+				);
 			}
 		}
 

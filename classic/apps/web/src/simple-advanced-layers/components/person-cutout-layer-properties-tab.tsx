@@ -1,7 +1,12 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	Section,
 	SectionContent,
@@ -27,9 +32,7 @@ import {
 	useBackgroundRemovalStatus,
 } from "@/services/background-removal";
 import { getDisplayTracks } from "@/timeline";
-import {
-	getSpeakerFrameSourceBindings,
-} from "@/simple-advanced-layers/speaker-frame-breakout";
+import { getSpeakerFrameSourceBindings } from "@/simple-advanced-layers/speaker-frame-breakout";
 import type { EffectElement } from "@/timeline/types";
 import {
 	buildPersonCutoutLayerLegacySourceSignatures,
@@ -110,13 +113,16 @@ export function PersonCutoutLayerPropertiesTab({
 		mediaAssets: editor.media.getAssets(),
 		settings: persistedSettings,
 	});
-	const persistedLegacySignatures = buildPersonCutoutLayerLegacySourceSignatures({
-		layer: element,
-		bindings: persistedBindings,
-		mediaAssets: editor.media.getAssets(),
-		settings: persistedSettings,
-		maxTrackIndexShift: scene ? getDisplayTracks({ tracks: scene.tracks }).length : 0,
-	});
+	const persistedLegacySignatures =
+		buildPersonCutoutLayerLegacySourceSignatures({
+			layer: element,
+			bindings: persistedBindings,
+			mediaAssets: editor.media.getAssets(),
+			settings: persistedSettings,
+			maxTrackIndexShift: scene
+				? getDisplayTracks({ tracks: scene.tracks }).length
+				: 0,
+		});
 	const isAppliedAndCurrent = isPersonCutoutLayerAppliedAndCurrent({
 		layer: element,
 		signature: persistedSignature,
@@ -135,13 +141,8 @@ export function PersonCutoutLayerPropertiesTab({
 
 	const updateNumber = ({ key, value }: { key: string; value: number }) =>
 		setDraft((current) => ({ ...current, [key]: value }));
-	const draftNumber = ({
-		key,
-		fallback,
-	}: {
-		key: string;
-		fallback: number;
-	}) => readDraftNumber({ params: draft, key, fallback });
+	const draftNumber = ({ key, fallback }: { key: string; fallback: number }) =>
+		readDraftNumber({ params: draft, key, fallback });
 	const backgroundMode = String(draft.backgroundMode ?? "remove");
 
 	const apply = async () => {
@@ -158,13 +159,26 @@ export function PersonCutoutLayerPropertiesTab({
 				signal: controller.signal,
 				onProgress: setProgress,
 			});
-			toast.success(`${element.name} ready · ${result.preparedFrames} cached mattes`);
+			toast.success(
+				localizeClientMessage("{v0} ready · {v1} cached mattes", {
+					v0: String(element.name),
+					v1: String(result.preparedFrames),
+				}),
+			);
 		} catch (error) {
 			if (error instanceof DOMException && error.name === "AbortError") {
-				toast.info(`${element.name} Apply cancelled`);
+				toast.info(
+					localizeClientMessage("{v0} Apply cancelled", {
+						v0: String(element.name),
+					}),
+				);
 			} else {
 				toast.error(
-					error instanceof Error ? error.message : `Failed to apply ${element.name}`,
+					error instanceof Error
+						? error.message
+						: localizeClientMessage("Failed to apply {v0}", {
+								v0: String(element.name),
+							}),
 				);
 			}
 		} finally {
@@ -193,7 +207,7 @@ export function PersonCutoutLayerPropertiesTab({
 							size="sm"
 							onClick={() => applyController.current?.abort()}
 						>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</Button>
 					) : (
 						<>
@@ -205,18 +219,20 @@ export function PersonCutoutLayerPropertiesTab({
 									setDraft(buildPersonCutoutLayerDraftParams({ element }))
 								}
 							>
-								Reset
+								<UiMessage text={"Reset"} />
 							</Button>
 							<Button
 								size="sm"
 								disabled={!applyRequired || persistedBindings.length === 0}
 								onClick={() => void apply()}
 							>
-								{!applyRequired && persistedSettings.matteApplied
-									? "Applied"
-									: persistedSettings.matteApplied
-										? "Reapply"
-										: "Apply"}
+								{!applyRequired && persistedSettings.matteApplied ? (
+									<UiMessage text={"Applied"} />
+								) : persistedSettings.matteApplied ? (
+									<UiMessage text={"Reapply"} />
+								) : (
+									<UiMessage text={"Apply"} />
+								)}
 							</Button>
 						</>
 					)}
@@ -225,13 +241,18 @@ export function PersonCutoutLayerPropertiesTab({
 
 			<Section showTopBorder={false} sectionKey={`${element.id}:pcl-status`}>
 				<SectionHeader>
-					<SectionTitle>Prepared effect</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Prepared effect"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
 						<p className="text-xs leading-relaxed text-muted-foreground">
-							The layer binds to the nearest visible video underneath it.
-							Background removal runs only when you press Apply.
+							<UiMessage
+								text={
+									"The layer binds to the nearest visible video underneath it. Background removal runs only when you press Apply."
+								}
+							/>
 						</p>
 						<SmartLayerStatus
 							hasSource={persistedBindings.length > 0}
@@ -243,7 +264,9 @@ export function PersonCutoutLayerPropertiesTab({
 						{isApplying && progress && (
 							<div className="flex flex-col gap-1.5">
 								<div className="flex justify-between text-xs text-muted-foreground">
-									<span>Preparing person mattes</span>
+									<span>
+										<UiMessage text={"Preparing person mattes"} />
+									</span>
 									<span>
 										{progress.completedFrames}/{progress.totalFrames}
 									</span>
@@ -254,7 +277,9 @@ export function PersonCutoutLayerPropertiesTab({
 						{modelStatus.state === "loading" && !isApplying && (
 							<div className="flex flex-col gap-1.5">
 								<div className="flex justify-between text-xs text-muted-foreground">
-									<span>Loading local model</span>
+									<span>
+										<UiMessage text={"Loading local model"} />
+									</span>
 									<span>{modelStatus.progress}%</span>
 								</div>
 								<Progress value={modelStatus.progress} />
@@ -272,7 +297,7 @@ export function PersonCutoutLayerPropertiesTab({
 										void backgroundRemovalService.retry().catch(() => undefined)
 									}
 								>
-									Retry model
+									<UiMessage text={"Retry model"} />
 								</Button>
 							</div>
 						)}
@@ -282,11 +307,17 @@ export function PersonCutoutLayerPropertiesTab({
 
 			<Section sectionKey={`${element.id}:pcl-look`}>
 				<SectionHeader>
-					<SectionTitle>Look</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Look"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<SectionField label="Background">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Background"
+						>
 							<Select
 								value={backgroundMode}
 								onValueChange={(value) =>
@@ -298,14 +329,22 @@ export function PersonCutoutLayerPropertiesTab({
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="remove">Transparent (Doubleman)</SelectItem>
-									<SelectItem value="blur">Blurred</SelectItem>
-									<SelectItem value="grayscale">Black &amp; white</SelectItem>
+									<SelectItem value="remove">
+										<UiMessage text={"Transparent (Doubleman)"} />
+									</SelectItem>
+									<SelectItem value="blur">
+										<UiMessage text={"Blurred"} />
+									</SelectItem>
+									<SelectItem value="grayscale">
+										<UiMessage text={"Black & white"} />
+									</SelectItem>
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 						{backgroundMode === "blur" && (
-							<NumberSlider
+							<UiLocalized<typeof NumberSlider>
+								element={NumberSlider}
+								messageProps={["label"]}
 								label="Background blur strength"
 								value={draftNumber({
 									key: "backgroundBlurStrength",
@@ -327,28 +366,38 @@ export function PersonCutoutLayerPropertiesTab({
 
 			<Section sectionKey={`${element.id}:pcl-fade`}>
 				<SectionHeader>
-					<SectionTitle>Fade</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Fade"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Fade in"
 							value={draftNumber({ key: "fadeInDuration", fallback: 0.35 })}
 							min={0}
 							max={2}
 							step={0.05}
 							format={(value) => `${value.toFixed(2)} s`}
-							onChange={(value) => updateNumber({ key: "fadeInDuration", value })}
+							onChange={(value) =>
+								updateNumber({ key: "fadeInDuration", value })
+							}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Fade out"
 							value={draftNumber({ key: "fadeOutDuration", fallback: 0.35 })}
 							min={0}
 							max={2}
 							step={0.05}
 							format={(value) => `${value.toFixed(2)} s`}
-							onChange={(value) => updateNumber({ key: "fadeOutDuration", value })}
+							onChange={(value) =>
+								updateNumber({ key: "fadeOutDuration", value })
+							}
 							disabled={isApplying}
 						/>
 					</SectionFields>
@@ -357,11 +406,17 @@ export function PersonCutoutLayerPropertiesTab({
 
 			<Section sectionKey={`${element.id}:pcl-matte`}>
 				<SectionHeader>
-					<SectionTitle>Person matte</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Person matte"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<SectionField label="Quality">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Quality"
+						>
 							<Select
 								value={String(draft.matteQuality ?? "precise")}
 								onValueChange={(matteQuality) =>
@@ -373,23 +428,35 @@ export function PersonCutoutLayerPropertiesTab({
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="fast">Fast · 256px</SelectItem>
-									<SelectItem value="balanced">Balanced · 384px</SelectItem>
-									<SelectItem value="precise">Precise · 512px</SelectItem>
+									<SelectItem value="fast">
+										<UiMessage text={"Fast · 256px"} />
+									</SelectItem>
+									<SelectItem value="balanced">
+										<UiMessage text={"Balanced · 384px"} />
+									</SelectItem>
+									<SelectItem value="precise">
+										<UiMessage text={"Precise · 512px"} />
+									</SelectItem>
 								</SelectContent>
 							</Select>
-						</SectionField>
-						<NumberSlider
+						</UiLocalized>
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Mask threshold"
 							value={draftNumber({ key: "maskThreshold", fallback: 0.5 })}
 							min={0.05}
 							max={0.95}
 							step={0.01}
 							format={(value) => `${Math.round(value * 100)}%`}
-							onChange={(value) => updateNumber({ key: "maskThreshold", value })}
+							onChange={(value) =>
+								updateNumber({ key: "maskThreshold", value })
+							}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Edge detail"
 							value={draftNumber({ key: "edgeContrast", fallback: 1 })}
 							min={0.5}
@@ -399,7 +466,9 @@ export function PersonCutoutLayerPropertiesTab({
 							onChange={(value) => updateNumber({ key: "edgeContrast", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Edge feather"
 							value={draftNumber({ key: "edgeFeather", fallback: 0.5 })}
 							min={0}
@@ -409,7 +478,9 @@ export function PersonCutoutLayerPropertiesTab({
 							onChange={(value) => updateNumber({ key: "edgeFeather", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Temporal stability"
 							value={draftNumber({
 								key: "temporalSmoothing",
@@ -419,7 +490,9 @@ export function PersonCutoutLayerPropertiesTab({
 							max={0.85}
 							step={0.01}
 							format={(value) => `${Math.round(value * 100)}%`}
-							onChange={(value) => updateNumber({ key: "temporalSmoothing", value })}
+							onChange={(value) =>
+								updateNumber({ key: "temporalSmoothing", value })
+							}
 							disabled={isApplying}
 						/>
 					</SectionFields>
@@ -445,34 +518,43 @@ function SmartLayerStatus({
 	if (!hasSource) {
 		return (
 			<p className="text-xs text-destructive">
-				No visible video is located below this layer.
+				<UiMessage text={"No visible video is located below this layer."} />
 			</p>
 		);
 	}
 	if (isDirty) {
 		return (
 			<p className="text-xs text-amber-500">
-				Settings changed · press Reapply to commit the new look.
+				<UiMessage
+					text={"Settings changed · press Reapply to commit the new look."}
+				/>
 			</p>
 		);
 	}
 	if (!isAppliedAndCurrent) {
 		return (
 			<p className="text-xs text-amber-500">
-				Apply required · the layer range or source has changed.
+				<UiMessage
+					text={"Apply required · the layer range or source has changed."}
+				/>
 			</p>
 		);
 	}
 	if (!hasPreparedOutput) {
 		return (
 			<p className="text-xs text-emerald-500">
-				Ready; mattes will restore automatically during preview and export.
+				<UiMessage
+					text={
+						"Ready; mattes will restore automatically during preview and export."
+					}
+				/>
 			</p>
 		);
 	}
 	return (
 		<p className="text-xs text-emerald-500">
-			Ready for smooth playback{backend ? ` · ${backend.toUpperCase()}` : ""}
+			<UiMessage text={"Ready for smooth playback"} />
+			{backend ? ` · ${backend.toUpperCase()}` : ""}
 		</p>
 	);
 }

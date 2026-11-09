@@ -1,7 +1,11 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- Private authenticated artifact previews must retain same-origin cookies and original bytes. */
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	Send,
 	Paperclip,
@@ -17,10 +21,15 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
+import { useDirectorReviewFocus } from "../review-focus";
+import { insertSeamless, planSeamless } from "../seamless-connect";
 import { applyReplacement, planReplace } from "../replace-clip";
 import { TICKS_PER_SECOND } from "@/wasm";
-import { useDirectorReviewFocus } from "../review-focus";
 import { directorReply } from "../chat-response";
+import { directorPrompt } from "../direction-prompt";
+import { directorJobProgress } from "../job-progress";
+import { useInterfaceLanguage } from "@/i18n/provider";
+import { CHATGPT_STORYBOARD_LABEL } from "../storyboard-model";
 import { imageObservation, videoObservations } from "../vision";
 import { aiClientFetch } from "@/ai/client-transport";
 import {
@@ -45,15 +54,12 @@ const empty: DirectorDocument = {
 	jobs: [],
 };
 const labels: Record<string, string> = {
-	review: "מוכן לאישור",
-	submitting: "שולח פעם אחת",
-	pending: "בתור אצל הספק",
-	processing: "בהפקה",
-	ready: "מוכן",
-	rejected: "נדחה",
-	error: "נדרשת בדיקה",
-	uncertain: "שליחה לא ודאית",
-	session_expired: "יש לחדש גישה עם PIN",
+	review: "Ready for approval",
+	ready: "Ready",
+	rejected: "Rejected",
+	error: "Needs review",
+	uncertain: "Submission unconfirmed",
+	session_expired: "Unlock with your PIN",
 };
 function error(e: unknown) {
 	toast.error(e instanceof Error ? e.message : "Director operation failed");
@@ -66,7 +72,7 @@ export function GenerativeView() {
 		<DirectorWorkspace key={projectId} projectId={projectId} />
 	) : (
 		<div className="p-6 text-sm text-muted-foreground">
-			Open a project to start directing.
+			<UiMessage text={"Open a project to start directing."} />
 		</div>
 	);
 }
@@ -81,7 +87,6 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		[settings, setSettings] = useState(false),
 		[review, setReview] = useState<DirectorJob | null>(null),
 		[model, setModel] = useState("bytedance/seedance-2.5"),
-		[imageModel, setImageModel] = useState("google/gemini-2.5-flash-image"),
 		[duration, setDuration] = useState(8),
 		[resolution, setResolution] = useState("480p"),
 		[aspect, setAspect] = useState("9:16"),
@@ -193,7 +198,9 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 				typeof data.durationSeconds === "number"
 			) {
 				if (data.durationSeconds > 30)
-					toast.info("הדיבוב ארוך מ־30 שניות. יש לפצל אותו לפני ההפקה.");
+					toast.info(
+						"The voice track is longer than 30 seconds. Split it before generating.",
+					);
 				else setDuration(Math.max(4, Math.ceil(data.durationSeconds)));
 			}
 			if (
@@ -294,40 +301,30 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 			/* Conversational questions are valid before a direction is ready. */
 		}
 	}
-	async function prepare(kind: "video" | "storyboard") {
+	async function prepareVideo() {
 		if (!projectId) return;
 		const originalScope = scope(editor);
-		const parsed = JSON.parse(direction);
-		if (!parsed || typeof parsed !== "object")
-			throw new Error("Save a structured JSON directing proposal first");
 		const snapshot = canonical({ editor: editor });
-		let prompt = direction;
-		if (kind === "storyboard") {
-			if (typeof parsed.storyboard_prompt !== "string")
-				throw new Error("Direction needs storyboard_prompt");
-			prompt = parsed.storyboard_prompt;
-		} else {
-			prompt = JSON.stringify({
-				...parsed,
-				priority_instructions: snapshot.instructions,
-				original_transcript: transcript || parsed.spoken_script,
-			});
-		}
+		const prompt = directorPrompt({
+			kind: "video",
+			direction,
+			transcript,
+			instructions: snapshot.instructions,
+			aspectRatio: aspect,
+		});
 		const result = await api<{ job: DirectorJob }>({
 			projectId: projectId,
 			action: "prepare",
 			data: {
 				request: {
 					projectId,
-					kind,
-					model: kind === "video" ? model : imageModel,
+					kind: "video",
+					model,
 					prompt,
-					...(kind === "video"
-						? { duration, resolution, aspectRatio: aspect }
-						: {}),
-					referenceIds: snapshot.document.references
-						.filter((r) => kind === "video" || r.kind === "image")
-						.map((r) => r.id),
+					duration,
+					resolution,
+					aspectRatio: aspect,
+					referenceIds: snapshot.document.references.map((r) => r.id),
 					httpsReferences: https,
 				},
 			},
@@ -391,50 +388,62 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 	if (!projectId)
 		return (
 			<div className="p-6 text-sm text-muted-foreground">
-				Open a project to start directing.
+				<UiMessage text={"Open a project to start directing."} />
 			</div>
 		);
 	return (
 		<div
 			className="flex h-full flex-col bg-background"
 			data-testid="generative-view"
-			dir="rtl"
 		>
 			<header className="flex items-center justify-between border-b p-3">
 				<div>
 					<h2 className="flex items-center gap-2 font-semibold">
 						<Clapperboard size={18} />
-						The Director
+						<UiMessage text={"The Director"} />
 					</h2>
 					<p className="text-xs text-muted-foreground">
-						Generative · מהשיחה אל הסצנה
+						<UiMessage text={"Generative Studio"} />
 					</p>
 				</div>
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label"]}
 					size="icon"
 					variant="ghost"
 					aria-label="OpenRouter settings"
 					onClick={() => setSettings(true)}
 				>
 					<Settings size={16} />
-				</Button>
+				</UiLocalized>
 			</header>
 			<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
 				<div className="flex items-center justify-between rounded-lg border p-2 text-xs">
 					<span>
-						{remote?.configured
-							? remote.sessionSeconds > 0
-								? `גישה פעילה · ${Math.ceil(remote.sessionSeconds / 60)} דק׳`
-								: `כספת נעולה · אישור PIN לכל הפקה`
-							: "יש להגדיר OpenRouter API key"}
+						{remote?.configured ? (
+							remote.sessionSeconds > 0 ? (
+								<UiMessage
+									text={"Unlocked · {v0} min"}
+									values={{ v0: String(Math.ceil(remote.sessionSeconds / 60)) }}
+								/>
+							) : (
+								<UiMessage
+									text={"Vault locked · PIN required for each generation"}
+								/>
+							)
+						) : (
+							<UiMessage text={"Set an OpenRouter key to generate video"} />
+						)}
 					</span>
 					<Button size="sm" variant="ghost" onClick={() => setSettings(true)}>
-						<Lock size={12} /> הגדרות
+						<Lock size={12} /> <UiMessage text={"Settings"} />
 					</Button>
 				</div>
 				{!oauth.status?.authenticated && (
 					<Button variant="outline" onClick={() => void oauth.login()}>
-						התחברות ל־AI לתכנון הבימוי
+						<UiMessage
+							text={"Connect ChatGPT to The Director through the Agent"}
+						/>
 					</Button>
 				)}
 				<div className="space-y-3" aria-live="polite">
@@ -444,15 +453,41 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							className={`whitespace-pre-wrap break-words rounded-lg p-3 text-sm ${m.role === "user" ? "bg-secondary" : "border bg-card"}`}
 						>
 							<strong className="mb-1 block text-xs text-muted-foreground">
-								{m.role === "user" ? "אתה" : "The Director"}
+								{m.role === "user" ? (
+									<UiMessage text={"You"} />
+								) : (
+									<UiMessage text={"The Director"} />
+								)}
 							</strong>
 							{m.text}
+							{m.role === "assistant" && (
+								<Button
+									size="sm"
+									variant="ghost"
+									className="mt-2 block"
+									disabled={busy}
+									onClick={() =>
+										void action(async () => {
+											canonical({
+												editor,
+												change: { type: "direction", text: m.text },
+											});
+											directionDirty.current = false;
+											setDirection(m.text);
+										})
+									}
+								>
+									<UiMessage text={"Use this reply as direction"} />
+								</Button>
+							)}
 						</article>
 					))}
 				</div>
 				<section>
 					<div className="mb-2 flex justify-between text-sm font-medium">
-						<span>רפרנסים וקבצים</span>
+						<span>
+							<UiMessage text={"References and files"} />
+						</span>
 						<div className="flex gap-1">
 							<Button
 								size="sm"
@@ -463,7 +498,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 								}}
 							>
 								<Paperclip size={13} />
-								קבצים
+								<UiMessage text={"Files"} />
 							</Button>
 							<Button
 								size="sm"
@@ -473,7 +508,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 									uploadRef.current?.click();
 								}}
 							>
-								סטוריבורד
+								<UiMessage text={"Storyboard"} />
 							</Button>
 						</div>
 					</div>
@@ -511,7 +546,9 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 										controls
 										src={fileUrl({ projectId: projectId, id: r.id })}
 									>
-										<track
+										<UiLocalized<"track">
+											element={"track"}
+											messageProps={["label"]}
 											kind="captions"
 											label="Captions not supplied"
 											srcLang="und"
@@ -523,7 +560,9 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 										controls
 										src={fileUrl({ projectId: projectId, id: r.id })}
 									>
-										<track
+										<UiLocalized<"track">
+											element={"track"}
+											messageProps={["label"]}
 											kind="captions"
 											label="Captions not supplied"
 											srcLang="und"
@@ -531,11 +570,19 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 									</video>
 								)}
 								<p className="truncate text-xs" title={r.name}>
-									{r.storyboard ? "סטוריבורד · " : ""}
+									{r.storyboard ? (
+										<>
+											<UiMessage text={"Storyboard ·"} />{" "}
+										</>
+									) : (
+										""
+									)}
 									{r.name}
 								</p>
 								{r.kind !== "image" && !remote?.publicOrigin && (
-									<input
+									<UiLocalized<"input">
+										element={"input"}
+										messageProps={["placeholder"]}
 										className="w-full rounded border bg-background p-1 text-xs"
 										dir="ltr"
 										aria-label={`HTTPS link for ${r.name}`}
@@ -553,7 +600,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 										disabled={busy}
 										onClick={() => void action(() => transcribe(r))}
 									>
-										תמלול מקומי
+										<UiMessage text={"Local transcription"} />
 									</Button>
 								)}
 								<Button
@@ -574,15 +621,20 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 						))}
 					</div>
 					<p className="mt-2 text-xs text-muted-foreground">
-						אודיו/וידאו מועברים לספק בקישור HTTPS זמני, נגיש למחזיק בקישור.
-						עד100MB לקובץ.
+						<UiMessage
+							text={
+								"Audio and video are shared with the provider through a temporary HTTPS link. Anyone with the link can access it. Up to 100 MB per file."
+							}
+						/>
 					</p>
 				</section>
 				<details>
 					<summary className="cursor-pointer text-sm">
-						תמלול המלל המקורי
+						<UiMessage text={"Source transcript"} />
 					</summary>
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["aria-label", "placeholder"]}
 						aria-label="Original spoken script"
 						value={transcript}
 						onChange={(e) => {
@@ -597,12 +649,14 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							});
 							refresh();
 						}}
-						placeholder="תמלול מלא; ההקלטה המקורית היא המקור הקובע"
+						placeholder="Full transcript. Use the source recording as the reference."
 					/>
 				</details>
 				<section className="space-y-2 rounded-lg border p-3">
 					<div className="flex gap-2">
-						<select
+						<UiLocalized<"select">
+							element={"select"}
+							messageProps={["aria-label"]}
 							className="min-w-0 flex-1 rounded border bg-background p-1 text-xs"
 							aria-label="Video model"
 							value={model}
@@ -613,8 +667,10 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 									{m.name ?? m.id}
 								</option>
 							))}
-						</select>
-						<input
+						</UiLocalized>
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label"]}
 							className="w-16 rounded border bg-background p-1"
 							type="number"
 							aria-label="Duration seconds"
@@ -625,7 +681,9 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 						/>
 					</div>
 					<div className="flex gap-2">
-						<select
+						<UiLocalized<"select">
+							element={"select"}
+							messageProps={["aria-label"]}
 							className="rounded border bg-background p-1 text-xs"
 							aria-label="Resolution"
 							value={resolution}
@@ -633,8 +691,10 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 						>
 							<option>480p</option>
 							<option>720p</option>
-						</select>
-						<select
+						</UiLocalized>
+						<UiLocalized<"select">
+							element={"select"}
+							messageProps={["aria-label"]}
 							className="rounded border bg-background p-1 text-xs"
 							aria-label="Aspect ratio"
 							value={aspect}
@@ -643,15 +703,17 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							{["9:16", "16:9", "1:1", "4:3", "3:4", "21:9"].map((x) => (
 								<option key={x}>{x}</option>
 							))}
-						</select>
+						</UiLocalized>
 					</div>
-					<label className="block text-xs" htmlFor="director-json-prompt">
-						בימוי JSON — הטקסט המדויק
-						<Textarea
-							className="mt-1 min-h-36 font-mono text-xs"
-							dir="ltr"
-							id="director-json-prompt"
-							aria-label="Director JSON prompt"
+					<label className="block text-xs" htmlFor="director-prompt">
+						<UiMessage text={"Direction"} />
+						<UiLocalized<typeof Textarea>
+							element={Textarea}
+							messageProps={["placeholder"]}
+							className="mt-1 min-h-36 text-xs"
+							dir="auto"
+							id="director-prompt"
+							placeholder="Write or paste direction as plain text, Markdown or JSON"
 							value={direction}
 							onChange={(e) => {
 								directionDirty.current = true;
@@ -669,29 +731,23 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							}}
 						/>
 					</label>
-					<input
-						className="w-full rounded border bg-background p-1 text-xs"
-						aria-label="Storyboard image model"
-						value={imageModel}
-						onChange={(e) => setImageModel(e.target.value)}
-					/>
+					<p className="text-xs text-muted-foreground">
+						<UiMessage
+							text={
+								"The Agent connection to ChatGPT supports text direction. You can upload an existing image as a storyboard."
+							}
+						/>
+					</p>
 					<div className="flex flex-wrap gap-2">
-						<Button
-							variant="outline"
-							disabled={busy || !direction}
-							onClick={() => void action(() => prepare("storyboard"))}
-						>
-							הכנת סטוריבורד לאישור
-						</Button>
 						<Button
 							disabled={
 								busy ||
-								!direction ||
+								!direction.trim() ||
 								!document.references.some((r) => r.storyboard)
 							}
-							onClick={() => void action(() => prepare("video"))}
+							onClick={() => void action(() => prepareVideo())}
 						>
-							הכנת סרטון לאישור
+							<UiMessage text={"Prepare video for approval"} />
 						</Button>
 					</div>
 				</section>
@@ -700,29 +756,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 						key={j.id}
 						className="space-y-2 rounded-lg border p-3 text-sm"
 					>
-						<div className="flex justify-between">
-							<strong>
-								{j.replacement
-									? "Replace clip"
-									: j.referenceImage
-										? "Replacement reference image"
-										: j.kind === "video"
-											? "וידאו"
-											: "סטוריבורד"}
-							</strong>
-							<span>{labels[j.status] ?? j.status}</span>
-						</div>
-						<p className="text-xs text-muted-foreground">{j.message}</p>
-						{["pending", "processing", "submitting"].includes(j.status) && (
-							<div className="flex items-center gap-2">
-								<Loader2 className="animate-spin" size={15} />
-								<span className="text-xs">
-									{j.submittedAt
-										? `${Math.floor((now - j.submittedAt) / 60000)} דקות מאז הקבלה`
-										: "ממתינים לתשובת הספק"}
-								</span>
-							</div>
-						)}
+						<DirectorJobHeading job={j} now={now} />
 						{j.output &&
 							(j.kind === "video" ? (
 								<video
@@ -730,25 +764,32 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 									className="max-h-64 w-full rounded"
 									src={fileUrl({ projectId: projectId, id: j.output.id })}
 								>
-									<track
+									<UiLocalized<"track">
+										element={"track"}
+										messageProps={["label"]}
 										kind="captions"
 										label="Captions not supplied"
 										srcLang="und"
 									/>
 								</video>
 							) : (
-								<img
+								<UiLocalized<"img">
+									element={"img"}
+									messageProps={["alt"]}
 									className="max-h-64 w-full object-contain"
 									alt="Generated physical storyboard"
 									src={fileUrl({ projectId: projectId, id: j.output.id })}
 								/>
 							))}
 						{j.cost !== undefined && (
-							<p className="text-xs">עלות בפועל: ${j.cost.toFixed(4)}</p>
+							<p className="text-xs">
+								<UiMessage text={"Actual cost $"} />
+								{j.cost.toFixed(4)}
+							</p>
 						)}
 						{j.status === "review" && (
 							<Button size="sm" onClick={() => setReview(j)}>
-								סקירה ואישור
+								<UiMessage text={"Review and approve"} />
 							</Button>
 						)}
 						{j.output && (
@@ -767,10 +808,10 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 								}
 							>
 								<Download size={13} />
-								הורדה
+								<UiMessage text={"Download"} />
 							</Button>
 						)}
-						{j.replacement && j.status === "ready" && (
+						{(j.seamless || j.replacement) && j.status === "ready" && (
 							<Button
 								size="sm"
 								variant="outline"
@@ -783,12 +824,16 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 											throw new Error(
 												"Wait for the generated video to appear in Media",
 											);
-										if (applyReplacement({ editor, job: j, mediaId }))
-											toast.success("Clip replaced at its original duration");
+										const input = { editor, job: j, mediaId };
+										const inserted = j.replacement ? applyReplacement(input) : insertSeamless(input);
+										if (inserted)
+											toast.success(
+												j.replacement ? "Clip replaced at its original duration" : "Seamless Connect inserted on the timeline",
+											);
 									})
 								}
 							>
-								Apply replacement
+								{j.replacement ? <UiMessage text={"Apply replacement"} /> : <UiMessage text={"Insert at original cut"} />}
 							</Button>
 						)}
 					</section>
@@ -801,15 +846,19 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					void action(chat);
 				}}
 			>
-				<Textarea
+				<UiLocalized<typeof Textarea>
+					element={Textarea}
+					messageProps={["aria-label", "placeholder"]}
 					maxLength={12000}
 					aria-label="Message The Director"
-					placeholder="תאר מה אנחנו הולכים לראות…"
+					placeholder="Describe what you want to see…"
 					value={text}
 					onChange={(e) => setText(e.target.value)}
 					className="max-h-32 min-h-16"
 				/>
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label"]}
 					type="submit"
 					size="icon"
 					aria-label="Send to The Director"
@@ -820,10 +869,12 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					) : (
 						<Send size={16} />
 					)}
-				</Button>
+				</UiLocalized>
 			</form>
 			{settings && (
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["aria-label"]}
 					className="absolute inset-0 z-30 flex items-center justify-center bg-background/95 p-5"
 					role="dialog"
 					aria-modal="true"
@@ -836,7 +887,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							const pin = pinRef.current?.value ?? "",
 								apiKey = keyRef.current?.value;
 							if (!remote?.configured && pin !== confirmPinRef.current?.value) {
-								toast.error("אימות ה־PIN אינו תואם");
+								toast.error("The PIN entries do not match");
 								return;
 							}
 							if (confirmPinRef.current) confirmPinRef.current.value = "";
@@ -855,13 +906,20 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							});
 						}}
 					>
-						<h3 className="font-semibold">OpenRouter · כספת מוצפנת</h3>
+						<h3 className="font-semibold">
+							<UiMessage text={"OpenRouter · Encrypted vault"} />
+						</h3>
 						<p className="text-xs text-muted-foreground">
-							המפתח נשמר מוצפן בשרת החשבון. רק אתה מזין PIN ומאשר כל יצירה
-							בתשלום; בדיקות והורדות חינמיות זמינות15דקות מההזנה.
+							<UiMessage
+								text={
+									"Your key is encrypted on the account server. Enter your PIN to approve each paid generation. Free checks and downloads stay available for 15 minutes after unlocking."
+								}
+							/>
 						</p>
 						{!remote?.configured && (
-							<input
+							<UiLocalized<"input">
+								element={"input"}
+								messageProps={["aria-label", "placeholder"]}
 								className="w-full rounded border bg-background p-2"
 								ref={keyRef}
 								type="password"
@@ -871,7 +929,9 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 								required
 							/>
 						)}
-						<input
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label", "placeholder"]}
 							className="w-full rounded border bg-background p-2"
 							ref={pinRef}
 							type="password"
@@ -879,11 +939,13 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 							inputMode="numeric"
 							autoComplete="off"
 							aria-label="Vault PIN"
-							placeholder="PIN של6–16 ספרות"
+							placeholder="PIN with 6–16 digits"
 							required
 						/>
 						{!remote?.configured && (
-							<input
+							<UiLocalized<"input">
+								element={"input"}
+								messageProps={["aria-label", "placeholder"]}
 								className="w-full rounded border bg-background p-2"
 								ref={confirmPinRef}
 								type="password"
@@ -891,21 +953,23 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 								inputMode="numeric"
 								autoComplete="off"
 								aria-label="Confirm vault PIN"
-								placeholder="אימות ה־PIN"
+								placeholder="Confirm PIN"
 								required
 							/>
 						)}
 						<Button type="submit" disabled={busy}>
-							{remote?.configured
-								? "חידוש גישה לבדיקות חינמיות"
-								: "שמירת מפתח מוצפן"}
+							{remote?.configured ? (
+								<UiMessage text={"Unlock for free checks"} />
+							) : (
+								<UiMessage text={"Save encrypted key"} />
+							)}
 						</Button>
 						<Button
 							type="button"
 							variant="ghost"
 							onClick={() => setSettings(false)}
 						>
-							סגירה
+							<UiMessage text={"Close"} />
 						</Button>
 						{remote?.sessionSeconds ? (
 							<Button
@@ -918,11 +982,11 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 									})
 								}
 							>
-								נעילה
+								<UiMessage text={"Lock"} />
 							</Button>
 						) : null}
 					</form>
-				</div>
+				</UiLocalized>
 			)}
 			{review && (
 				<ReviewDialog
@@ -934,6 +998,46 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 				/>
 			)}
 		</div>
+	);
+}
+function DirectorJobHeading({ job, now }: { job: DirectorJob; now: number }) {
+	const { t } = useInterfaceLanguage();
+	const progress = directorJobProgress({ job, now, t });
+	return (
+		<>
+			<div className="flex flex-wrap justify-between gap-2">
+				<strong>
+					{job.replacement ? (
+						<UiMessage text={"Replace clip"} />
+					) : job.referenceImage ? (
+						<UiMessage text={"Replacement reference image"} />
+					) : job.seamless ? (
+						"Seamless Connect"
+					) : job.kind === "video" ? (
+						<UiMessage text={"Video"} />
+					) : (
+						<UiMessage text={"Storyboard"} />
+					)}
+				</strong>
+				<span role="status" className="inline-flex items-center gap-2">
+					{progress && (
+						<Loader2 aria-hidden="true" className="animate-spin" size={15} />
+					)}
+					{progress?.label ?? t(labels[job.status] ?? job.status)}
+				</span>
+			</div>
+			{job.provider === "chatgpt" && (
+				<p className="text-xs text-muted-foreground">
+					{CHATGPT_STORYBOARD_LABEL}
+				</p>
+			)}
+			{progress?.detail && (
+				<p className="text-xs tabular-nums">{progress.detail}</p>
+			)}
+			{!progress && (
+				<p className="text-xs text-muted-foreground">{job.message}</p>
+			)}
+		</>
 	);
 }
 function ReviewDialog({
@@ -951,21 +1055,23 @@ function ReviewDialog({
 }) {
 	const editor = useEditor();
 	const pin = useRef<HTMLInputElement>(null);
+	const chatgpt = job.provider === "chatgpt";
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			className="absolute inset-0 z-30 flex flex-col bg-background"
 			role="dialog"
 			aria-modal="true"
-			aria-label="Review paid generation"
+			aria-label={
+				chatgpt ? "Review ChatGPT storyboard" : "Review paid generation"
+			}
 		>
 			<div className="flex justify-between border-b p-3">
 				<h3 className="font-semibold">
-					אישור יצירה אחת ·{" "}
-					{job.replacement
-						? "Replace clip"
-						: job.referenceImage
-							? "Replacement reference image"
-							: job.kind}
+					<UiMessage text={"Approve one generation ·"} />{" "}
+					{job.replacement ? <UiMessage text={"Replace clip"} /> : job.referenceImage
+						? <UiMessage text={"Replacement reference image"} /> : job.kind}
 				</h3>
 				<Button variant="ghost" size="icon" onClick={close}>
 					<X size={16} />
@@ -973,21 +1079,39 @@ function ReviewDialog({
 			</div>
 			<div className="flex-1 space-y-3 overflow-y-auto p-3">
 				<p className="text-xs">
-					{job.model} · {job.duration ?? ""}s · {job.resolution} ·{" "}
-					{job.aspectRatio}
+					{chatgpt ? (
+						<UiMessage
+							text={"{v0} · adapter model "}
+							values={{ v0: String(CHATGPT_STORYBOARD_LABEL) }}
+						/>
+					) : (
+						<>
+							<UiMessage text={"OpenRouter ·"} />{" "}
+						</>
+					)}
+					{job.model}
+					{job.kind === "video" &&
+						` · ${job.duration}s · ${job.resolution} · ${job.aspectRatio}`}
 				</p>
 				{job.replacement && (
 					<p className="text-xs">
-						Timeline duration ·{" "}
-						{Number(
-							(job.replacement.durationTicks / TICKS_PER_SECOND).toFixed(5),
-						)}
-						s
+						<UiMessage text={"Timeline duration"} /> · {Number((job.replacement.durationTicks / TICKS_PER_SECOND).toFixed(5))}s
 					</p>
 				)}
 				<p className="rounded border p-2 text-sm">
-					יצירה בתשלום. הספק מחייב לפי השימוש; אין הצעת מחיר קבועה מאומתת. אישור
-					זה ישלח בקשה אחת בלבד.
+					{chatgpt ? (
+						<UiMessage
+							text={
+								"Image generation through the Agent connection is unavailable. You can upload an existing storyboard image."
+							}
+						/>
+					) : (
+						<UiMessage
+							text={
+								"OpenRouter charges for this generation. The final price can vary. Approval submits one request."
+							}
+						/>
+					)}
 				</p>
 				<div className="grid grid-cols-2 gap-2">
 					{job.references.map((r) => (
@@ -1004,7 +1128,9 @@ function ReviewDialog({
 									controls
 									src={fileUrl({ projectId: projectId, id: r.id })}
 								>
-									<track
+									<UiLocalized<"track">
+										element={"track"}
+										messageProps={["label"]}
 										kind="captions"
 										label="Captions not supplied"
 										srcLang="und"
@@ -1016,7 +1142,9 @@ function ReviewDialog({
 									className="max-h-40 w-full"
 									src={fileUrl({ projectId: projectId, id: r.id })}
 								>
-									<track
+									<UiLocalized<"track">
+										element={"track"}
+										messageProps={["label"]}
 										kind="captions"
 										label="Captions not supplied"
 										srcLang="und"
@@ -1024,7 +1152,13 @@ function ReviewDialog({
 								</video>
 							)}
 							<span className="text-xs">
-								{r.storyboard ? "סטוריבורד · " : ""}
+								{r.storyboard ? (
+									<>
+										<UiMessage text={"Storyboard ·"} />{" "}
+									</>
+								) : (
+									""
+								)}
 								{r.name}
 							</span>
 						</div>
@@ -1032,37 +1166,44 @@ function ReviewDialog({
 				</div>
 				<pre
 					className="whitespace-pre-wrap break-words rounded border p-2 text-xs"
-					dir="ltr"
+					dir="auto"
 				>
 					{job.prompt}
 				</pre>
 				<p className="break-all text-[10px]" dir="ltr">
-					SHA256: {job.digest}
+					<UiMessage text={"SHA256:"} /> {job.digest}
 				</p>
 			</div>
 			<form
 				className="space-y-2 border-t p-3"
 				onSubmit={(e) => {
 					e.preventDefault();
+					if (chatgpt) return;
 					const value = pin.current?.value;
 					if (pin.current) pin.current.value = "";
 					void run(async () => {
-						if (
-							job.replacement &&
-							(scope(editor).projectId !== job.projectId ||
-								planReplace({ editor, target: job.replacement }).anchor !==
-									job.replacement.anchor)
-						)
-							throw new Error(
-								"The selected clip changed. Prepare the replacement again.",
-							);
+						if (job.replacement && (
+							scope(editor).projectId !== job.projectId ||
+							planReplace({ editor, target: job.replacement }).anchor !== job.replacement.anchor
+						))
+							throw new Error("The selected clip changed. Prepare the replacement again.");
+						if (job.seamless) {
+							const { anchor, ...target } = job.seamless;
+							if (
+								scope(editor).projectId !== job.projectId ||
+								planSeamless({ editor, target }).anchor !== anchor
+							)
+								throw new Error(
+									"The source clips changed. Prepare the connection again.",
+								);
+						}
 						await api({
 							projectId: projectId,
 							action: "approve",
 							data: {
 								id: job.id,
 								digest: job.digest,
-								pin: value,
+								...(chatgpt ? {} : { pin: value }),
 								confirmed: true,
 							},
 						});
@@ -1070,21 +1211,29 @@ function ReviewDialog({
 					});
 				}}
 			>
-				<input
-					className="w-full rounded border bg-background p-2"
-					aria-label="PIN for this paid request"
-					ref={pin}
-					type="password"
-					inputMode="numeric"
-					pattern="[0-9]{6,16}"
-					autoComplete="off"
-					placeholder="PIN לאישור הבקשה הזאת"
-					required
-				/>
+				{!chatgpt && (
+					<UiLocalized<"input">
+						element={"input"}
+						messageProps={["aria-label", "placeholder"]}
+						className="w-full rounded border bg-background p-2"
+						aria-label="PIN for this paid request"
+						ref={pin}
+						type="password"
+						inputMode="numeric"
+						pattern="[0-9]{6,16}"
+						autoComplete="off"
+						placeholder="PIN to approve this request"
+						required
+					/>
+				)}
 				<div className="flex gap-2">
-					<Button type="submit" disabled={busy}>
+					<Button type="submit" disabled={busy || chatgpt}>
 						<Check size={14} />
-						אישור ויצירה בתשלום
+						{chatgpt ? (
+							<UiMessage text={"Approve and generate in ChatGPT"} />
+						) : (
+							<UiMessage text={"Approve and generate"} />
+						)}
 					</Button>
 					<Button
 						type="button"
@@ -1101,13 +1250,13 @@ function ReviewDialog({
 							})
 						}
 					>
-						Reject · דחייה
+						<UiMessage text={"Reject"} />
 					</Button>
 				</div>
 				<p className="text-xs text-muted-foreground">
-					הסוכן אינו מאשר בשמך. אין ניסיון נוסף בתשלום אוטומטי.
+					<UiMessage text={"Each approval submits one generation request."} />
 				</p>
 			</form>
-		</div>
+		</UiLocalized>
 	);
 }

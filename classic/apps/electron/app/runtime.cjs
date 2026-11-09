@@ -70,7 +70,7 @@ async function waitForHttp({
 		try {
 			const response = await request(url, { redirect: "manual" });
 			if (response.status >= 200 && response.status < 500) return;
-			lastError = new Error(`OpenCut returned HTTP ${response.status}.`);
+			lastError = new Error(`POCUT returned HTTP ${response.status}.`);
 		} catch (error) {
 			lastError = error;
 		}
@@ -80,7 +80,7 @@ async function waitForHttp({
 
 	const detail =
 		lastError instanceof Error ? ` Last error: ${lastError.message}` : "";
-	throw new Error(`OpenCut did not start within ${timeoutMs}ms.${detail}`);
+	throw new Error(`POCUT did not start within ${timeoutMs}ms.${detail}`);
 }
 
 module.exports = {

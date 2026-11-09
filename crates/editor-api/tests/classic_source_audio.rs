@@ -129,6 +129,185 @@ fn input(state: &Value, action: &str) -> Value {
     json!({"projectId":"classic-project","expectedRevision":state["revision"],"sceneId":"main-scene","trackId":"video-track","elementId":"item-2","action":action})
 }
 
+fn timeline(state: &Value) -> &Value {
+    &state["project"]["classic"]["document"]["scenes"][0]["tracks"]
+}
+
+#[tokio::test]
+async fn dialogue_split_places_aligned_stems_on_adjacent_tracks_with_one_undo() {
+    let runtime = attached(fixture()).await;
+    let extracted = call(
+        &runtime,
+        AUDIO,
+        input(&read(&runtime).await, "extractLinked"),
+    )
+    .await;
+    let background_track = &extracted["audioTrackId"];
+    let background_clip = &extracted["audioElementId"];
+    call(
+        &runtime,
+        "timeline.classic.tracks.layout",
+        json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":read(&runtime).await["revision"],"change":{"type":"reorder","trackId":background_track,"toIndex":1}}),
+    ).await;
+    let original = read(&runtime).await;
+    let transaction = runtime.begin_atomic().unwrap();
+    call(
+        &runtime,
+        "media.classic.register",
+        json!({"projectId":"classic-project","expectedRevision":original["revision"],"assets":[
+            {"id":"background","name":"Music + effects","type":"audio","duration":12.5},
+            {"id":"speech","name":"Speech","type":"audio","duration":12.5},
+            {"id":"short","name":"Short stem","type":"audio","duration":1.0}
+        ]}),
+    )
+    .await;
+    let registered = read(&runtime).await;
+    let mut request = input(&registered, "splitDialogueStems");
+    request["trackId"] = background_track.clone();
+    request["elementId"] = background_clip.clone();
+    request["mediaId"] = json!("background");
+    request["sourceOffset"] = json!(0);
+    for invalid_id in ["absent", "short", "background"] {
+        request["dialogueMediaId"] = json!(invalid_id);
+        assert!(
+            runtime
+                .registry()
+                .invoke(AUDIO, InvocationContext::default(), request.clone())
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&runtime).await, registered);
+    }
+    request["dialogueMediaId"] = json!("speech");
+    let split = call(&runtime, AUDIO, request).await;
+    runtime
+        .commit_atomic(transaction, "Split dialogue")
+        .unwrap();
+
+    let edited = read(&runtime).await;
+    let tracks = timeline(&edited);
+    assert_eq!(
+        tracks["order"],
+        json!([
+            "titles",
+            split["audioTrackId"],
+            background_track,
+            "video-track"
+        ])
+    );
+    let dialogue = &tracks["audio"][0]["elements"][0];
+    let background = &tracks["audio"][1]["elements"][0];
+    assert_eq!(dialogue["id"], split["audioElementId"]);
+    assert_eq!(dialogue["mediaId"], "speech");
+    assert_eq!(dialogue["name"], "Speech");
+    assert_eq!(background["id"], *background_clip);
+    assert_eq!(background["mediaId"], "background");
+    assert_eq!(background["name"], "Music + effects");
+    assert_eq!(background["linkedAudioVideoId"], "item-2");
+    assert!(dialogue.get("linkedAudioVideoId").is_none());
+    for field in [
+        "startTime",
+        "duration",
+        "trimStart",
+        "trimEnd",
+        "retime",
+        "params",
+    ] {
+        assert_eq!(dialogue[field], background[field]);
+    }
+    assert_eq!(background["duration"], 1_200_000);
+    assert_eq!(dialogue["sourceDuration"], 1_500_000);
+    assert!(background["params"].get("audioSyncOffset").is_none());
+    assert_ne!(
+        dialogue["animations"]["volume"]["keys"][0]["id"],
+        background["animations"]["volume"]["keys"][0]["id"]
+    );
+    assert_eq!(tracks["main"], timeline(&original)["main"]);
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], original["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], edited["project"]);
+}
+
+#[tokio::test]
+async fn linked_source_audio_moves_trims_splits_and_can_be_unlinked_without_touching_media() {
+    let mut classic = fixture();
+    classic["mediaAssets"].as_array_mut().unwrap().push(
+        json!({"id":"mrx-background","name":"Music and effects","type":"audio","duration":8.0}),
+    );
+    let runtime = attached(classic).await;
+    let original = read(&runtime).await;
+    let split = call(&runtime, AUDIO, input(&original, "extractLinked")).await;
+    let audio_id = split["audioElementId"].as_str().unwrap();
+    let audio_track = split["audioTrackId"].as_str().unwrap();
+    let separated = read(&runtime).await;
+    assert_eq!(
+        timeline(&separated)["main"]["elements"][0]["linkedAudioVideoId"],
+        audio_id
+    );
+    assert_eq!(
+        timeline(&separated)["audio"][0]["elements"][0]["linkedAudioVideoId"],
+        "item-2"
+    );
+    assert_eq!(
+        timeline(&separated)["main"]["elements"][0]["isSourceAudioEnabled"],
+        false
+    );
+    call(&runtime, "timeline.classic.elements.move", json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":separated["revision"],"moves":[{"sourceTrackId":"video-track","targetTrackId":"video-track","elementId":"item-2","newStartTime":240000}]})).await;
+    let moved = read(&runtime).await;
+    assert_eq!(
+        timeline(&moved)["audio"][0]["elements"][0]["startTime"],
+        240000
+    );
+    call(&runtime, "timeline.classic.elements.update", json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":moved["revision"],"updates":[{"trackId":"video-track","elementId":"item-2","patch":{"duration":120000}}]})).await;
+    let trimmed = read(&runtime).await;
+    assert_eq!(
+        timeline(&trimmed)["audio"][0]["elements"][0]["duration"],
+        120000
+    );
+    let mut stem = input(&trimmed, "replaceWithStem");
+    stem["trackId"] = json!(audio_track);
+    stem["elementId"] = json!(audio_id);
+    stem["mediaId"] = json!("mrx-background");
+    stem["sourceOffset"] = json!(0);
+    call(&runtime, AUDIO, stem).await;
+    let processed = read(&runtime).await;
+    assert_eq!(
+        timeline(&processed)["audio"][0]["elements"][0]["mediaId"],
+        "mrx-background"
+    );
+    assert_eq!(
+        timeline(&processed)["audio"][0]["elements"][0]["startTime"],
+        240000
+    );
+    assert_eq!(
+        timeline(&processed)["audio"][0]["elements"][0]["linkedAudioVideoId"],
+        "item-2"
+    );
+    call(&runtime, "timeline.classic.elements.split", json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":processed["revision"],"elements":[{"trackId":"video-track","elementId":"item-2"}],"splitTime":300000})).await;
+    let cut = read(&runtime).await;
+    let video_right = &timeline(&cut)["main"]["elements"][1];
+    let audio_right = &timeline(&cut)["audio"][0]["elements"][1];
+    assert_eq!(video_right["linkedAudioVideoId"], audio_right["id"]);
+    assert_eq!(audio_right["linkedAudioVideoId"], video_right["id"]);
+    assert_eq!(audio_right["startTime"], 300000);
+    call(&runtime, AUDIO, input(&cut, "unlink")).await;
+    let unlinked = read(&runtime).await;
+    assert!(
+        timeline(&unlinked)["audio"][0]["elements"][0]
+            .get("linkedAudioVideoId")
+            .is_none()
+    );
+    assert_eq!(
+        timeline(&unlinked)["audio"][0]["elements"][0]["mediaId"],
+        "mrx-background"
+    );
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], cut["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], unlinked["project"]);
+}
+
 #[tokio::test]
 async fn extraction_preserves_source_and_volume_curves_with_independent_ids_and_durable_history() {
     let runtime = attached(fixture()).await;

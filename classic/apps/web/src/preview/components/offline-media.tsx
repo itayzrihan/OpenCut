@@ -1,4 +1,9 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useState } from "react";
 import { ProjectMediaPullPanel } from "@/peer-sync/project-panel";
 import {
@@ -48,29 +53,49 @@ export function OfflineMediaPanel() {
 				onClick={() => setOpen(!open)}
 				aria-expanded={open}
 			>
-				{missing.length
-					? `${missing.length} source file(s) offline — Link missing files`
-					: "Media links — undo relink"}
+				{missing.length ? (
+					<UiMessage
+						text={"{v0} source file(s) offline — Link missing files"}
+						values={{ v0: String(missing.length) }}
+					/>
+				) : (
+					<UiMessage text={"Media links — undo relink"} />
+				)}
 			</button>
 			{open && (
 				<div className="max-h-64 space-y-3 overflow-auto pt-2">
-					{!!missing.length && <ProjectMediaPullPanel key={projectId} editor={editor} projectId={projectId} />}
+					{!!missing.length && (
+						<ProjectMediaPullPanel
+							key={projectId}
+							editor={editor}
+							projectId={projectId}
+						/>
+					)}
 					<p>
-						All cuts, effects and timing are retained. You can keep editing.
-						Paste the full path to the original file on this computer to restore
-						playback and export.
+						<UiMessage
+							text={
+								"All cuts, effects and timing are retained. You can keep editing. Paste the full path to the original file on this computer to restore playback and export."
+							}
+						/>
 					</p>
 					{relevant.map((asset) => (
 						<div key={asset.id} className="space-y-1">
 							<div className="font-medium">
-								{asset.name} {asset.missing ? "(Media offline)" : "(Linked)"}
+								{asset.name}{" "}
+								{asset.missing ? (
+									<UiMessage text={"(Media offline)"} />
+								) : (
+									<UiMessage text={"(Linked)"} />
+								)}
 							</div>
 							<div className="break-all text-muted-foreground">
 								{asset.sourcePath || asset.fileName}
 							</div>
 							{asset.missing && (
 								<div className="flex gap-2">
-									<input
+									<UiLocalized<"input">
+										element={"input"}
+										messageProps={["placeholder"]}
 										aria-label={`Source path for ${asset.name}`}
 										className="min-w-0 flex-1 rounded border bg-background p-1"
 										value={paths[asset.id] ?? ""}
@@ -88,7 +113,7 @@ export function OfflineMediaPanel() {
 											})
 										}
 									>
-										Link file
+										<UiMessage text={"Link file"} />
 									</button>
 								</div>
 							)}
@@ -100,14 +125,14 @@ export function OfflineMediaPanel() {
 										void link({ id: asset.id, source: "", undo: true })
 									}
 								>
-									Undo last relink
+									<UiMessage text={"Undo last relink"} />
 								</button>
 							)}
 						</div>
 					))}
 					{error && (
 						<p role="alert" className="text-red-500">
-							{error}
+							<UiValue>{error}</UiValue>
 						</p>
 					)}
 				</div>

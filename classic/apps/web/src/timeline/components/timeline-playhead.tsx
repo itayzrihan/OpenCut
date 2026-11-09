@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { useRef } from "react";
 import { useContainerSize } from "@/hooks/use-container-size";
 import { TIMELINE_INDICATOR_LINE_WIDTH_PX } from "@/timeline";
@@ -91,7 +92,9 @@ export function TimelinePlayhead({
 	};
 
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			ref={playheadRef}
 			role="slider"
 			aria-label="Timeline playhead"
@@ -111,12 +114,14 @@ export function TimelinePlayhead({
 		>
 			<div className="bg-primary pointer-events-none absolute left-0 h-full w-0.5" />
 
-			<button
+			<UiLocalized<"button">
+				element={"button"}
+				messageProps={["aria-label"]}
 				type="button"
 				aria-label="Drag playhead"
 				className={`pointer-events-auto absolute top-1 left-1/2 size-3 -translate-x-1/2 transform cursor-col-resize rounded-full border-2 shadow-xs ${isSnappingToPlayhead ? "bg-primary border-primary" : "bg-primary border-primary/50"}`}
 				onMouseDown={handlePlayheadMouseDown}
 			/>
-		</div>
+		</UiLocalized>
 	);
 }

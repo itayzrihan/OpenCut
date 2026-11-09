@@ -1,10 +1,11 @@
 /** Browser inference/decoding task. Only the canonical registry creates output scenes. */
+import { localizeClientMessage } from "@/i18n/client-messages";
 import type { EditorCore } from "@/core";
 import type { PodcastOptions } from "./podcast-types";
 import { requestPodcastPlan } from "./podcast-plan";
 import { consumePodcastEditorialDraft } from "./podcast-editorial";
 import { podcastPlanCacheKey, savePodcastPlan } from "./podcast-plan-cache";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { ZERO_MEDIA_TIME } from "@/wasm";
 import { IndexedAudioCheckpoints } from "@/timeline/smart-takes/audio-checkpoints";
 const tasks = new WeakMap<EditorCore, PodcastTask>();
@@ -270,11 +271,16 @@ class PodcastTask {
 				outputCount: videos.length,
 				stage: `${videos.length} sequences created`,
 			});
-			toast.success(`${videos.length} podcast sequences created`, {
-				description:
-					"The full episode is preserved. Open sequences from Media; right-click a clip for available alternatives.",
-				action: { label: "Undo", onClick: () => editor.command.undo() },
-			});
+			toast.success(
+				localizeClientMessage("{v0} podcast sequences created", {
+					v0: String(videos.length),
+				}),
+				{
+					description:
+						"The full episode is preserved. Open sequences from Media; right-click a clip for available alternatives.",
+					action: { label: "Undo", onClick: () => editor.command.undo() },
+				},
+			);
 		} catch (error) {
 			const message = error instanceof Error ? error.message : String(error);
 			this.update({

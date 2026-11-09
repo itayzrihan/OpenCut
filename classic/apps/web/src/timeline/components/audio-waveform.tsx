@@ -50,7 +50,7 @@ function getRetimeSignature(retime?: RetimeConfig) {
 	if (!retime) {
 		return "none";
 	}
-	return `${retime.rate}:${retime.maintainPitch ? 1 : 0}`;
+	return JSON.stringify(retime);
 }
 
 function sampleGainAtClipTime({

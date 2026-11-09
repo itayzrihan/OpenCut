@@ -1,6 +1,6 @@
 import { Command, type CommandResult } from "@/commands/base-command";
 import { EditorCore } from "@/core";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { MediaAsset } from "@/media/types";
 import { generateUUID } from "@/utils/id";
 import { storageService } from "@/services/storage/service";

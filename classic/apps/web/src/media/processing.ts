@@ -1,4 +1,5 @@
-import { toast } from "sonner";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import { toast } from "@/i18n/toast";
 import { getMediaTypeFromFile } from "@/media/media-utils";
 import type { MediaAsset } from "@/media/types";
 import type { LocalDriveMediaRecord } from "@/services/local-drive/types";
@@ -83,7 +84,11 @@ export async function processMediaAssets({
 		const fileType = getMediaTypeFromFile({ file });
 
 		if (!fileType) {
-			toast.error(`Unsupported file type: ${file.name}`);
+			toast.error(
+				localizeClientMessage("Unsupported file type: {v0}", {
+					v0: String(file.name),
+				}),
+			);
 			continue;
 		}
 
@@ -94,10 +99,15 @@ export async function processMediaAssets({
 				preserveLink: false,
 			}) === "sourcePathRequired"
 		) {
-			toast.error(`Use the drive picker for ${file.name}`, {
-				description:
-					"Files larger than 1 GB are linked to their original path. Use the Import button so PoCut can retain that path.",
-			});
+			toast.error(
+				localizeClientMessage("Use the drive picker for {v0}", {
+					v0: String(file.name),
+				}),
+				{
+					description:
+						"Files larger than 1 GB are linked to their original path. Use the Import button so POCUT can retain that path.",
+				},
+			);
 			continue;
 		}
 
@@ -131,19 +141,29 @@ export async function processMediaAssets({
 					thumbnailUrl = videoData.thumbnailUrl ?? undefined;
 
 					if (!videoData.canDecode) {
-						toast.error(`Can't preview ${file.name}`, {
-							description: getUnsupportedVideoDescription({
-								codec: videoData.codec,
+						toast.error(
+							localizeClientMessage("Can't preview {v0}", {
+								v0: String(file.name),
 							}),
-						});
+							{
+								description: getUnsupportedVideoDescription({
+									codec: videoData.codec,
+								}),
+							},
+						);
 					}
 				} catch (error) {
 					const message =
 						error instanceof Error ? error.message : "Could not process video";
 
-					toast.error(`Couldn't process ${file.name}`, {
-						description: message,
-					});
+					toast.error(
+						localizeClientMessage("Couldn't process {v0}", {
+							v0: String(file.name),
+						}),
+						{
+							description: message,
+						},
+					);
 				}
 			} else if (fileType === "audio") {
 				duration = await getMediaDuration({ file });
@@ -175,7 +195,11 @@ export async function processMediaAssets({
 			}
 		} catch (error) {
 			console.error("Error processing file:", file.name, error);
-			toast.error(`Failed to process ${file.name}`);
+			toast.error(
+				localizeClientMessage("Failed to process {v0}", {
+					v0: String(file.name),
+				}),
+			);
 			URL.revokeObjectURL(url);
 		}
 	}
@@ -220,9 +244,16 @@ export async function processLocalDriveMedia({
 				hasAudio = video.hasAudio;
 				thumbnailUrl = video.thumbnailUrl ?? undefined;
 				if (!video.canDecode) {
-					toast.error(`Can't preview ${record.name}`, {
-						description: getUnsupportedVideoDescription({ codec: video.codec }),
-					});
+					toast.error(
+						localizeClientMessage("Can't preview {v0}", {
+							v0: String(record.name),
+						}),
+						{
+							description: getUnsupportedVideoDescription({
+								codec: video.codec,
+							}),
+						},
+					);
 				}
 			} else {
 				duration = await getMediaDuration({ url, mimeType: record.mimeType });
@@ -239,7 +270,11 @@ export async function processLocalDriveMedia({
 			});
 		} catch (error) {
 			console.error("Error processing drive media:", record.name, error);
-			toast.error(`Failed to process ${record.name}`);
+			toast.error(
+				localizeClientMessage("Failed to process {v0}", {
+					v0: String(record.name),
+				}),
+			);
 			await localDriveRequest({
 				operation: "media.delete",
 				payload: { projectId, id: record.id },

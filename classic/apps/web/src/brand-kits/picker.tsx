@@ -1,8 +1,10 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { Message as UiMessage } from "@/i18n/message";
 import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { brandKitRequest } from "./client";
-import type { BrandKit } from "./types";
+import { BRAND_KITS_HREF, type BrandKit } from "./types";
 export function BrandKitPicker({
 	value,
 	onChange,
@@ -34,8 +36,10 @@ export function BrandKitPicker({
 	return (
 		<div className="space-y-2 rounded-lg border p-3">
 			<label className="block text-sm font-medium" htmlFor={selectId}>
-				Brand Kit{" "}
-				<span className="font-normal text-muted-foreground">· optional</span>
+				<UiMessage text={"Brand Kit"} />{" "}
+				<span className="font-normal text-muted-foreground">
+					<UiMessage text={"· optional"} />
+				</span>
 			</label>
 			<select
 				id={selectId}
@@ -45,9 +49,11 @@ export function BrandKitPicker({
 				onChange={(event) => onChange(event.target.value || undefined)}
 			>
 				<option value="">
-					{loading
-						? "Loading Brand Kits…"
-						: "No Brand Kit · default editing style"}
+					{loading ? (
+						<UiMessage text={"Loading Brand Kits…"} />
+					) : (
+						<UiMessage text={"No Brand Kit · default editing style"} />
+					)}
 				</option>
 				{kits.map((kit) => (
 					<option key={kit.id} value={kit.id}>
@@ -56,15 +62,18 @@ export function BrandKitPicker({
 				))}
 			</select>
 			<p className="text-xs text-muted-foreground">
-				Apply your logo, palette, fonts and closing phrase. Brand sounds follow
-				the finishing steps you enable.{" "}
+				<UiMessage
+					text={
+						"Apply your logo, palette, fonts and closing phrase. Brand sounds follow the finishing steps you enable."
+					}
+				/>{" "}
 				<Link
 					className="underline"
-					href="/brand-kits"
+					href={BRAND_KITS_HREF}
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					Manage Brand Kits
+					<UiMessage text={"Manage Brand Kits"} />
 				</Link>
 				{" · "}
 				<button
@@ -80,17 +89,21 @@ export function BrandKitPicker({
 							.finally(() => setLoading(false));
 					}}
 				>
-					Refresh
+					<UiMessage text={"Refresh"} />
 				</button>
 			</p>
 			{error && (
 				<p role="alert" className="text-xs text-destructive">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 			{value && !loading && !kits.some((kit) => kit.id === value) && (
 				<p role="alert" className="text-xs text-destructive">
-					This kit is unavailable. Choose another kit or no Brand Kit.
+					<UiMessage
+						text={
+							"This kit is unavailable. Choose another kit or no Brand Kit."
+						}
+					/>
 				</p>
 			)}
 		</div>

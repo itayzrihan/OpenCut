@@ -1,9 +1,11 @@
-import { type NextRequest } from "next/server";
-import { completeOpenAIAuthorization } from "@/ai/server/openai-codex-oauth";
-
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-	const { response } = await completeOpenAIAuthorization({ request });
-	return response;
+export function GET() {
+	return Response.json(
+		{
+			error:
+				"The separate Codex sign-in was retired. Connect ChatGPT in the POCUT Agent.",
+		},
+		{ status: 410, headers: { "Cache-Control": "no-store" } },
+	);
 }

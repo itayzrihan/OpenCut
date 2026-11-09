@@ -129,7 +129,7 @@ export function accountsRoot() {
 }
 export function requireAccount() {
 	const account = accountScope.getStore();
-	if (!account) throw new Error("Sign in to an OpenCut account first");
+	if (!account) throw new Error("Sign in to an POCUT account first");
 	return account;
 }
 export function accountDataRoot() {
@@ -499,7 +499,7 @@ export async function authenticateAccountNavigation(
 
 async function readAccountSession(request: Request): Promise<LocalAccount> {
 	const token = readToken(request);
-	if (!token) throw new Error("Sign in to an OpenCut account first");
+	if (!token) throw new Error("Sign in to an POCUT account first");
 	const session = await readFile(sessionPath(token), "utf8").then(
 		(text) => JSON.parse(text) as Session & { account: LocalAccount },
 	);

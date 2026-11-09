@@ -1,6 +1,7 @@
 "use client";
+import { localizeClientMessage } from "@/i18n/client-messages";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 
 // Scheduling belongs to the client. Its local host performs streaming disk I/O;
 // no central service or remote compute is needed while the application is open.
@@ -44,7 +45,11 @@ export function BackgroundSnapshots() {
 			} catch (error) {
 				const message = error instanceof Error ? error.message : String(error);
 				if (!cancelled && message !== lastError)
-					toast.error(`Automatic storage check: ${message}`);
+					toast.error(
+						localizeClientMessage("Automatic storage check: {v0}", {
+							v0: String(message),
+						}),
+					);
 				lastError = message;
 			} finally {
 				pending = false;

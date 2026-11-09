@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import Link from "next/link";
 import { RiDiscordFill, RiTwitterXLine } from "react-icons/ri";
 import { FaGithub } from "react-icons/fa6";
@@ -22,6 +23,7 @@ const links: CategoryLinks = {
 		{ label: "Blog", href: "/blog" },
 		{ label: "Privacy", href: "/privacy" },
 		{ label: "Terms of use", href: "/terms" },
+		{ label: "Accessibility", href: "/accessibility" },
 	],
 	company: [
 		{ label: "Contributors", href: "/contributors" },
@@ -41,15 +43,18 @@ export function Footer() {
 						<div className="mb-4 flex items-center justify-start gap-2">
 							<Image
 								src={DEFAULT_LOGO_URL}
-								alt="OpenCut"
+								alt="POCUT"
 								width={24}
 								height={24}
-								className="invert dark:invert-0"
 							/>
-							<span className="text-lg font-bold">OpenCut</span>
+							<span className="text-lg font-bold">POCUT</span>
 						</div>
 						<p className="text-muted-foreground mb-5 text-sm md:text-left">
-							The privacy-first video editor that feels simple to use.
+							<UiMessage
+								text={
+									"The privacy-first video editor that feels simple to use."
+								}
+							/>
 						</p>
 						<div className="flex justify-start gap-3">
 							<Link
@@ -114,7 +119,8 @@ export function Footer() {
 				<div className="flex flex-col items-start justify-between gap-4 pt-2 md:flex-row">
 					<div className="text-muted-foreground flex items-center gap-4 text-sm">
 						<span>
-							© {new Date().getFullYear()} OpenCut, All Rights Reserved
+							© {new Date().getFullYear()}{" "}
+							<UiMessage text={"POCUT, All Rights Reserved"} />
 						</span>
 					</div>
 				</div>

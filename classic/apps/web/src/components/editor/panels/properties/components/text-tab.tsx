@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import {
@@ -72,11 +73,14 @@ export function TextTab({
 					disabled={targets.length === 0}
 				>
 					<WandSparkles className="size-4" />
-					Auto-fit text lines
+					<UiMessage text={"Auto-fit text lines"} />
 				</Button>
 				<p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-					Reflows the current text to the layer and video width. Future size
-					changes stay responsive.
+					<UiMessage
+						text={
+							"Reflows the current text to the layer and video width. Future size changes stay responsive."
+						}
+					/>
 				</p>
 			</div>
 			<ElementParamsTab

@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GitHubContributeSection } from "@/components/gitHub-contribute-section";
@@ -7,13 +8,13 @@ import { EXTERNAL_TOOLS } from "@/site/external-tools";
 import { BasePage } from "../base-page";
 
 export const metadata: Metadata = {
-	title: "Contributors - OpenCut",
+	title: "Contributors - POCUT",
 	description:
-		"Meet the amazing people who contribute to OpenCut, the free and open-source video editor.",
+		"Meet the amazing people who contribute to POCUT, the free and open-source video editor.",
 	openGraph: {
-		title: "Contributors - OpenCut",
+		title: "Contributors - POCUT",
 		description:
-			"Meet the amazing people who contribute to OpenCut, the free and open-source video editor.",
+			"Meet the amazing people who contribute to POCUT, the free and open-source video editor.",
 		type: "website",
 	},
 };
@@ -69,12 +70,20 @@ export default async function ContributorsPage() {
 
 	return (
 		<BasePage
-			title="Contributors"
-			description="Meet the amazing people who contribute to OpenCut, the free and open-source video editor."
+			title={<UiMessage text="Contributors" />}
+			description={
+				<UiMessage text="Meet the amazing people who contribute to POCUT, the free and open-source video editor." />
+			}
 		>
 			<div className="-mt-4 flex items-center justify-center gap-8 text-sm">
-				<StatItem value={contributors.length} label="contributors" />
-				<StatItem value={totalContributions} label="contributions" />
+				<StatItem
+					value={contributors.length}
+					label={<UiMessage text="contributors" />}
+				/>
+				<StatItem
+					value={totalContributions}
+					label={<UiMessage text="contributions" />}
+				/>
 			</div>
 
 			<div className="mx-auto flex max-w-6xl flex-col gap-20">
@@ -86,15 +95,17 @@ export default async function ContributorsPage() {
 				)}
 				<ExternalToolsSection />
 				<GitHubContributeSection
-					title="Join the community"
-					description="OpenCut is built by developers like you. Every contribution, no matter how small, helps make video editing more accessible for everyone."
+					title={<UiMessage text="Join the community" />}
+					description={
+						<UiMessage text="POCUT is built by developers like you. Every contribution, no matter how small, helps make video editing more accessible for everyone." />
+					}
 				/>
 			</div>
 		</BasePage>
 	);
 }
 
-function StatItem({ value, label }: { value: number; label: string }) {
+function StatItem({ value, label }: { value: number; label: React.ReactNode }) {
 	return (
 		<div className="flex items-center gap-2">
 			<div className="bg-foreground size-2 rounded-full" />
@@ -112,9 +123,11 @@ function TopContributorsSection({
 	return (
 		<div className="flex flex-col gap-10">
 			<div className="flex flex-col gap-2 text-center">
-				<h2 className="text-2xl font-semibold">Top contributors</h2>
+				<h2 className="text-2xl font-semibold">
+					<UiMessage text={"Top contributors"} />
+				</h2>
 				<p className="text-muted-foreground">
-					Leading the way in contributions
+					<UiMessage text={"Leading the way in contributions"} />
 				</p>
 			</div>
 
@@ -150,7 +163,9 @@ function TopContributorCard({ contributor }: { contributor: Contributor }) {
 						<h3 className="text-xl font-semibold">{contributor.login}</h3>
 						<div className="flex items-center justify-center gap-2">
 							<span className="font-medium">{contributor.contributions}</span>
-							<span className="text-muted-foreground">contributions</span>
+							<span className="text-muted-foreground">
+								<UiMessage text={"contributions"} />
+							</span>
 						</div>
 					</div>
 				</CardContent>
@@ -167,9 +182,11 @@ function AllContributorsSection({
 	return (
 		<div className="flex flex-col gap-12">
 			<div className="flex flex-col gap-2 text-center">
-				<h2 className="text-2xl font-semibold">All contributors</h2>
+				<h2 className="text-2xl font-semibold">
+					<UiMessage text={"All contributors"} />
+				</h2>
 				<p className="text-muted-foreground">
-					Everyone who makes OpenCut better
+					<UiMessage text={"Everyone who makes POCUT better"} />
 				</p>
 			</div>
 
@@ -210,8 +227,12 @@ function ExternalToolsSection() {
 	return (
 		<div className="flex flex-col gap-10">
 			<div className="flex flex-col gap-2 text-center">
-				<h2 className="text-2xl font-semibold">External tools</h2>
-				<p className="text-muted-foreground">Tools we use to build OpenCut</p>
+				<h2 className="text-2xl font-semibold">
+					<UiMessage text={"External tools"} />
+				</h2>
+				<p className="text-muted-foreground">
+					<UiMessage text={"Tools we use to build POCUT"} />
+				</p>
 			</div>
 
 			<div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 sm:grid-cols-2">

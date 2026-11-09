@@ -49,7 +49,19 @@ export type ClassicTrackChange =
 export interface ClassicSourceAudioChange {
 	trackId: string;
 	elementId: string;
-	action: "extract" | "recover" | "toggle";
+	action:
+		| "extract"
+		| "extractLinked"
+		| "recover"
+		| "toggle"
+		| "link"
+		| "unlink"
+		| "replaceWithStem"
+		| "splitDialogueStems";
+	audioElementId?: string;
+	mediaId?: string;
+	dialogueMediaId?: string;
+	sourceOffset?: number;
 }
 
 export type ClassicElementControlChange =

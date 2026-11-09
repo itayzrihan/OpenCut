@@ -1,7 +1,8 @@
 import {
-	getSourceSpanAtClipTime,
+	getClipTimeAtSourceTime,
+	getSourceTimeAtClipTime,
 	getTimelineDurationForSourceSpan,
-} from "@/retime";
+} from "@/retime/resolve";
 import {
 	addMediaTime,
 	clampMediaTime,
@@ -80,7 +81,7 @@ export function computeGroupResize({
 
 	// Snap the drag delta to a frame exactly once, then derive every patch
 	// field from that single snapped value. This keeps the invariant
-	// `trimStart + duration*rate + trimEnd == sourceDuration` exact: the same
+	// `trimStart + visible source span + trimEnd == sourceDuration` exact: the same
 	// delta is added on one side of the element and removed from the other,
 	// so the rounding cancels by construction. Per-field rounding (the old
 	// approach) couldn't preserve this because the individual rounds don't
@@ -122,10 +123,21 @@ function buildResizeUpdate({
 	side: ResizeSide;
 	deltaTime: MediaTime;
 }): GroupResizeUpdate {
-	const sourceDelta = getSourceDeltaForClipDelta({
-		member,
-		clipDelta: deltaTime,
-	});
+	const edge = side === "left" ? 0 : member.duration;
+	const sourceDelta = member.retime?.speedKeyframes?.length
+		? subMediaTime({
+				a: getVisibleSourceSpanForDuration({
+					member,
+					duration: edge + deltaTime,
+				}),
+				b: getVisibleSourceSpanForDuration({ member, duration: edge }),
+			})
+		: roundMediaTime({
+				time: getSourceTimeAtClipTime({
+					clipTime: deltaTime,
+					retime: member.retime,
+				}),
+			});
 
 	if (side === "left") {
 		return {
@@ -180,22 +192,17 @@ function getMinimumAllowedDeltaTime({
 		return leftNeighborFloor;
 	}
 
-	const maximumSourceExtension = subMediaTime({
-		a: getDurationForVisibleSourceSpan({
-			member,
-			sourceSpan: addMediaTime({
-				a: getVisibleSourceSpanForDuration({
-					member,
-					duration: member.duration,
-				}),
-				b: member.trimStart,
-			}),
+	const sourceStartFloor = roundMediaTime({
+		time: getClipTimeAtSourceTime({
+			sourceTime: -member.trimStart,
+			trimStart: member.trimStart,
+			retime: member.retime,
+			ticks: true,
 		}),
-		b: member.duration,
 	});
 	return maxMediaTime({
 		a: leftNeighborFloor,
-		b: subMediaTime({ a: ZERO_MEDIA_TIME, b: maximumSourceExtension }),
+		b: sourceStartFloor,
 	});
 }
 
@@ -240,44 +247,18 @@ function getMaximumAllowedDeltaTime({
 		: minMediaTime({ a: rightNeighborCeiling, b: sourceDurationCeiling });
 }
 
-function getSourceDeltaForClipDelta({
-	member,
-	clipDelta,
-}: {
-	member: GroupResizeMember;
-	clipDelta: MediaTime;
-}): MediaTime {
-	if (!member.retime) {
-		return clipDelta;
-	}
-
-	const sourceDelta =
-		clipDelta >= 0
-			? getSourceSpanAtClipTime({
-					clipTime: clipDelta,
-					retime: member.retime,
-				})
-			: -getSourceSpanAtClipTime({
-					clipTime: Math.abs(clipDelta),
-					retime: member.retime,
-				});
-	return roundMediaTime({ time: sourceDelta });
-}
-
 function getVisibleSourceSpanForDuration({
 	member,
 	duration,
 }: {
 	member: GroupResizeMember;
-	duration: MediaTime;
+	duration: number;
 }): MediaTime {
-	if (!member.retime) {
-		return duration;
-	}
-
 	return roundMediaTime({
-		time: getSourceSpanAtClipTime({
+		time: getSourceTimeAtClipTime({
 			clipTime: duration,
+			trimStart: member.trimStart,
+			ticks: true,
 			retime: member.retime,
 		}),
 	});
@@ -297,6 +278,8 @@ function getDurationForVisibleSourceSpan({
 	return roundMediaTime({
 		time: getTimelineDurationForSourceSpan({
 			sourceSpan,
+			trimStart: member.trimStart,
+			ticks: true,
 			retime: member.retime,
 		}),
 	});

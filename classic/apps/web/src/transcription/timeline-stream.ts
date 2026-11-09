@@ -10,6 +10,8 @@ import { hasVariableAudioGain } from "@/timeline/audio-state";
 import {
 	BROWSER_WHISPER_REVISION,
 	BROWSER_WHISPER_CPU_REVISION,
+	MULTILINGUAL_WHISPER_REVISION,
+	type BrowserTranscriptionModel,
 } from "./models";
 import { reuseAudioContext } from "./overlap-reader";
 import { transcribeAudioWindows } from "./windows";
@@ -23,6 +25,7 @@ import type {
 
 type TimelineInput = {
 	engine?: import("./job").TranscriptionEngine;
+	browserModel?: BrowserTranscriptionModel;
 	externalConfiguration?: string | null;
 	onChunk?: (chunk: import("./windows").TranscriptionWindow) => Promise<void>;
 	completedChunks?: Record<string, import("./types").TranscriptionWord[]>;
@@ -178,7 +181,10 @@ async function checkpointStore(input: TimelineInput) {
 		version: 2,
 		engine: input.engine ?? "local",
 		externalConfiguration: input.externalConfiguration,
-		models: [BROWSER_WHISPER_REVISION, BROWSER_WHISPER_CPU_REVISION],
+		models:
+			input.browserModel === "whisper-large-v3-turbo"
+				? [MULTILINGUAL_WHISPER_REVISION]
+				: [BROWSER_WHISPER_REVISION, BROWSER_WHISPER_CPU_REVISION],
 		account,
 		language: input.language,
 		tracks: input.tracks,

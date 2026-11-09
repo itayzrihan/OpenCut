@@ -1,7 +1,8 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticSoundEffects } from "@/ai/automatic-sound-effects";
@@ -57,11 +58,14 @@ export function AutomaticSoundEffectsButton({
 				disabled={disabled || running}
 			>
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
-				Automatic Sound Effects
+				<UiMessage text={"Automatic Sound Effects"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Earshot sounds directed for the edit, with editable code, pitch,
-				duration and echo.
+				<UiMessage
+					text={
+						"Earshot sounds directed for the edit, with editable code, pitch, duration and echo."
+					}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -74,7 +78,7 @@ export function AutomaticSoundEffectsButton({
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel sound direction
+					<UiMessage text={"Cancel sound direction"} />
 				</Button>
 			)}
 		</div>

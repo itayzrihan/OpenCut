@@ -3,7 +3,7 @@ use super::classic_track_layout::{ClassicTrackType, LayoutChange, apply_layout};
 use super::*;
 use serde_json::json;
 
-#[derive(Deserialize, JsonSchema)]
+#[derive(Clone, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct Move {
     source_track_id: String,
@@ -57,7 +57,7 @@ pub(super) fn register_classic_move(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.move",
         "Move Classic clips in exact ticks",
-        "Atomically move explicit sourceTrackId/elementId clips to compatible targetTrackId tracks at newStartTime (nonnegative safe integer ticks, 120000/second). Optional createTracks supplies fresh globally unique id, type and display index; creations run in ascending index order. Every target is validated before publishing; duplicate clip moves are rejected. Retains IDs, source media, trim, retime, word runs, animation, linked audio and extension fields. Linked clips move only when explicitly included. Allows overlaps; does not ripple other clips. Updates generated caption transcript timing and reconciles manual text ownership. Does not regenerate caption visual layout; use caption layout workflow when reflow is required. Returns target references for selection/readback. Revision checks, dry run, idempotent retries, cancellation, atomic transactions and undo/redo are supported; no filesystem or network effects.",
+        "Atomically move explicit sourceTrackId/elementId clips to compatible targetTrackId tracks at newStartTime (nonnegative safe integer ticks, 120000/second). Optional createTracks supplies fresh globally unique id, type and display index; creations run in ascending index order. Every target is validated before publishing; duplicate clip moves are rejected. Retains IDs, source media, trim, retime, word runs, animation, linked audio and extension fields. Reciprocal audio/video partners receive the same movement delta even when omitted from the input. Allows overlaps; does not ripple other clips. Updates generated caption transcript timing and reconciles manual text ownership. Does not regenerate caption visual layout; use caption layout workflow when reflow is required. Returns target references for selection/readback. Revision checks, dry run, idempotent retries, cancellation, atomic transactions and undo/redo are supported; no filesystem or network effects.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -148,7 +148,38 @@ fn apply(
     let mut moved = Vec::new();
     let mut ids = HashSet::new();
     let mut refs = Vec::new();
-    for m in &input.moves {
+    let mut moves = input.moves.clone();
+    for requested in &input.moves {
+        let Some((_, source)) = classic_source_audio::find_clip(&before, &requested.element_id)
+        else {
+            continue;
+        };
+        let Some((track, other)) = classic_source_audio::peer(&before, source) else {
+            continue;
+        };
+        let start = source["startTime"].as_i64().unwrap();
+        let peer_start = other["startTime"].as_i64().unwrap();
+        let new_start_time = requested
+            .new_start_time
+            .checked_sub(start)
+            .and_then(|delta| peer_start.checked_add(delta))
+            .ok_or_else(|| invalid("Linked move exceeds safe ticks"))?;
+        let element_id = other["id"].as_str().unwrap();
+        if let Some(explicit) = input.moves.iter().find(|m| m.element_id == element_id) {
+            if explicit.new_start_time != new_start_time {
+                return Err(invalid("Linked audio and video must move together"));
+            }
+        } else {
+            let track_id = track["id"].as_str().unwrap().to_owned();
+            moves.push(Move {
+                source_track_id: track_id.clone(),
+                target_track_id: track_id,
+                element_id: element_id.to_owned(),
+                new_start_time,
+            });
+        }
+    }
+    for m in &moves {
         if context.cancellation.is_cancelled() {
             return Err(CapabilityError::Failed("operation was cancelled".into()));
         }

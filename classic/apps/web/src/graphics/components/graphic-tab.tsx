@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { useRef } from "react";
 import { useElementPlayhead } from "@/components/editor/panels/properties/hooks/use-element-playhead";
 import {
@@ -197,7 +198,9 @@ function StrokeSection({
 					</Button>
 				}
 			>
-				<SectionTitle>Stroke</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Stroke"} />
+				</SectionTitle>
 			</SectionHeader>
 			<SectionContent
 				className={cn(!isStrokeEnabled && "pointer-events-none opacity-50")}

@@ -27,6 +27,8 @@ struct Recipe {
     sound_effects: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     brand_kit_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    browser_model: Option<classic_transcription::BrowserTranscriptionModel>,
 }
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]

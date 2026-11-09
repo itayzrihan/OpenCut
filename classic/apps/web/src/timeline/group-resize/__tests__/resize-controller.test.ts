@@ -10,11 +10,6 @@ mock.module("@/timeline", () => ({
 mock.module("@/timeline/animation-snap-points", () => ({
 	getAnimationKeyframeSnapPointsForTimeline: () => [],
 }));
-mock.module("@/retime", () => ({
-	getSourceSpanAtClipTime: ({ clipTime }: { clipTime: number }) => clipTime,
-	getTimelineDurationForSourceSpan: ({ sourceSpan }: { sourceSpan: number }) =>
-		sourceSpan,
-}));
 const { ResizeController } =
 	await import("../../controllers/resize-controller");
 import type { GroupResizeUpdate } from "../types";
@@ -192,4 +187,36 @@ describe("main-track trim gesture", () => {
 			}
 		});
 	}
+});
+
+test("right trim on a speed ramp removes the correct source tail", async () => {
+	const { computeGroupResize } = await import("../compute-resize");
+	const result = computeGroupResize({
+		side: "right",
+		fps: { numerator: 25, denominator: 1 },
+		deltaTime: t(-2),
+		members: [
+			{
+				trackId: "main",
+				elementId: "ramp",
+				startTime: t(0),
+				duration: t(6),
+				trimStart: t(2),
+				trimEnd: t(1),
+				sourceDuration: t(11),
+				leftNeighborBound: null,
+				rightNeighborBound: null,
+				retime: {
+					rate: 1,
+					speedKeyframes: [
+						{ time: t(2), rate: 1, interpolation: "hold" },
+						{ time: t(6), rate: 2, interpolation: "linear" },
+					],
+				},
+			},
+		],
+	});
+	expect(result.updates[0].patch.duration).toBe(t(4));
+	expect(result.updates[0].patch.trimStart).toBe(t(2));
+	expect(result.updates[0].patch.trimEnd).toBe(t(5));
 });

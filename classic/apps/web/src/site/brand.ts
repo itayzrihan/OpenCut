@@ -1,13 +1,13 @@
 export const SITE_URL = "https://opencut.app";
 
 export const SITE_INFO = {
-	title: "OpenCut",
+	title: "POCUT",
 	description:
-		"A simple but powerful video editor that gets the job done. In your browser.",
+		"An AI video editing workspace for turning raw footage into a finished cut.",
 	url: SITE_URL,
-	openGraphImage: "/open-graph/default.jpg",
-	twitterImage: "/open-graph/default.jpg",
-	favicon: "/favicon.ico",
+	openGraphImage: "/pocut/first-light.webp",
+	twitterImage: "/pocut/first-light.webp",
+	favicon: "/pocut/mark.svg",
 };
 
-export const DEFAULT_LOGO_URL = "/logos/opencut/svg/logo.svg";
+export const DEFAULT_LOGO_URL = SITE_INFO.favicon;

@@ -1,5 +1,10 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	Loader2,
@@ -264,13 +269,26 @@ function HyperframesLayersInspector({
 	return (
 		<Section collapsible sectionKey={`${assetId}:hyperframes-layers`}>
 			<SectionHeader>
-				<SectionTitle>Composition layers</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Composition layers"} />
+				</SectionTitle>
 			</SectionHeader>
 			<SectionContent className="flex flex-col gap-3">
 				<p className="text-muted-foreground text-xs">
-					{manifest
-						? `${manifest.layers.length} ${manifest.layers.length === 1 ? "layer" : "layers"} · ${seconds(manifest.durationSeconds)} · times within the source composition`
-						: "See the layers and timing inside this composition."}
+					{manifest ? (
+						<UiMessage
+							text={"{v0} {v1} · {v2} · times within the source composition"}
+							values={{
+								v0: String(manifest.layers.length),
+								v1: String(manifest.layers.length === 1 ? "layer" : "layers"),
+								v2: String(seconds(manifest.durationSeconds)),
+							}}
+						/>
+					) : (
+						<UiMessage
+							text={"See the layers and timing inside this composition."}
+						/>
+					)}
 				</p>
 				<div className="flex items-center gap-2">
 					<Button
@@ -280,11 +298,13 @@ function HyperframesLayersInspector({
 						onClick={() => void analyze()}
 					>
 						{busy && <Loader2 className="animate-spin" />}
-						{busy
-							? "Reading layers…"
-							: manifest
-								? "Refresh layers"
-								: "Read layers"}
+						{busy ? (
+							<UiMessage text={"Reading layers…"} />
+						) : manifest ? (
+							<UiMessage text={"Refresh layers"} />
+						) : (
+							<UiMessage text={"Read layers"} />
+						)}
 					</Button>
 					{busy && (
 						<Button
@@ -292,30 +312,32 @@ function HyperframesLayersInspector({
 							size="sm"
 							onClick={() => operation.current?.abort()}
 						>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</Button>
 					)}
 				</div>
 				{error && (
 					<p role="alert" className="text-destructive text-xs break-words">
-						{error}
+						<UiValue>{error}</UiValue>
 					</p>
 				)}
 				{saving && (
 					<p role="status" className="text-muted-foreground text-xs">
-						Checking layer changes…{" "}
+						<UiMessage text={"Checking layer changes…"} />{" "}
 						<button
 							type="button"
 							className="underline"
 							onClick={() => operation.current?.abort()}
 						>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</button>
 					</p>
 				)}
 				{manifest && (
 					<>
-						<input
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label", "placeholder"]}
 							aria-label="Find composition layers"
 							placeholder="Find a layer or file…"
 							value={query}
@@ -325,7 +347,9 @@ function HyperframesLayersInspector({
 							}}
 							className="border-input bg-background h-8 w-full rounded-md border px-2 text-xs"
 						/>
-						<div
+						<UiLocalized<"div">
+							element={"div"}
+							messageProps={["aria-label"]}
 							className="max-h-96 overflow-y-auto rounded-md border"
 							aria-label="Composition layer list"
 						>
@@ -357,31 +381,40 @@ function HyperframesLayersInspector({
 							))}
 							{!matches.length && (
 								<p className="text-muted-foreground p-3 text-xs">
-									{query.trim()
-										? "No matching layers."
-										: "No timed layers reported by this composition."}
+									{query.trim() ? (
+										<UiMessage text={"No matching layers."} />
+									) : (
+										<UiMessage
+											text={"No timed layers reported by this composition."}
+										/>
+									)}
 								</p>
 							)}
-						</div>
+						</UiLocalized>
 						{matches.length > limit && (
 							<Button
 								variant="ghost"
 								size="sm"
 								onClick={() => setLimit((value) => value + 100)}
 							>
-								Show more ({matches.length - limit} remaining)
+								<UiMessage text={"Show more ("} />
+								{matches.length - limit} <UiMessage text={"remaining)"} />
 							</Button>
 						)}
 						{manifest.layers.some((layer) => layer.kind === "audio") && (
 							<p className="text-muted-foreground text-xs">
-								Embedded audio follows this clip during playback and export.
-								Layer opacity changes visuals only.
+								<UiMessage
+									text={
+										"Embedded audio follows this clip during playback and export. Layer opacity changes visuals only."
+									}
+								/>
 							</p>
 						)}
 						{manifest.diagnostics.length > 0 && (
 							<details className="text-muted-foreground text-xs">
 								<summary className="cursor-pointer">
-									Layer details need attention ({manifest.diagnostics.length})
+									<UiMessage text={"Layer details need attention ("} />
+									{manifest.diagnostics.length})
 								</summary>
 								<ul className="mt-2 list-disc space-y-1 pl-4">
 									{manifest.diagnostics.map((message, index) => (
@@ -463,7 +496,7 @@ function LayerRow({
 				)}
 			</summary>
 			<label className="flex items-center gap-2 px-3 pb-3 text-xs">
-				Start in source (s)
+				<UiMessage text={"Start in source (s)"} />
 				<input
 					key={layer.startSeconds}
 					type="number"
@@ -491,7 +524,7 @@ function LayerRow({
 			{control?.editable && (
 				<div className="flex items-center gap-2 px-3 pb-3 text-xs">
 					<label className="flex items-center gap-2">
-						Opacity
+						<UiMessage text={"Opacity"} />
 						<input
 							key={opacity}
 							type="number"
@@ -525,42 +558,66 @@ function LayerRow({
 						disabled={disabled || opacity === 1}
 						onClick={() => onOpacity(1)}
 					>
-						Reset
+						<UiMessage text={"Reset"} />
 					</Button>
 				</div>
 			)}
 			<dl className="text-muted-foreground grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 break-all px-3 pb-3 text-xs">
-				<dt>Type</dt>
+				<dt>
+					<UiMessage text={"Type"} />
+				</dt>
 				<dd className="capitalize">{layer.kind}</dd>
-				<dt>Source file</dt>
-				<dd>{layer.file ?? "Unresolved"}</dd>
+				<dt>
+					<UiMessage text={"Source file"} />
+				</dt>
+				<dd>{layer.file ?? <UiMessage text={"Unresolved"} />}</dd>
 				{layer.elementId && (
 					<>
-						<dt>Element</dt>
+						<dt>
+							<UiMessage text={"Element"} />
+						</dt>
 						<dd>{layer.elementId}</dd>
 					</>
 				)}
 				{layer.resourcePath && (
 					<>
-						<dt>Media</dt>
+						<dt>
+							<UiMessage text={"Media"} />
+						</dt>
 						<dd>{layer.resourcePath}</dd>
 					</>
 				)}
-				<dt>Track</dt>
+				<dt>
+					<UiMessage text={"Track"} />
+				</dt>
 				<dd>{layer.trackIndex}</dd>
-				<dt>Time range</dt>
+				<dt>
+					<UiMessage text={"Time range"} />
+				</dt>
 				<dd>
 					{seconds(layer.startSeconds)}–
 					{seconds(layer.startSeconds + layer.durationSeconds)}
 				</dd>
 				{layer.media && (
 					<>
-						<dt>Media offset</dt>
+						<dt>
+							<UiMessage text={"Media offset"} />
+						</dt>
 						<dd>{seconds(layer.playbackStartSeconds)}</dd>
-						<dt>Speed</dt>
+						<dt>
+							<UiMessage text={"Speed"} />
+						</dt>
 						<dd>{layer.playbackRate}×</dd>
-						<dt>Authored mute</dt>
-						<dd>{layer.media.muted ? "Muted" : "Unmuted"}</dd>
+						<dt>
+							<UiMessage text={"Authored mute"} />
+						</dt>
+						<dd>
+							{layer.media.muted ? (
+								<UiMessage text={"Muted"} />
+							) : (
+								<UiMessage text={"Unmuted"} />
+							)}
+						</dd>
 					</>
 				)}
 			</dl>
@@ -572,7 +629,7 @@ function LayerRow({
 					onClick={onSource}
 					aria-label={`Edit source for layer ${label}`}
 				>
-					Edit layer source
+					<UiMessage text={"Edit layer source"} />
 				</Button>
 			</div>
 		</details>

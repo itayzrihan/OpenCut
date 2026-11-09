@@ -73,7 +73,7 @@ export function buildCustomAiEffectParams({
 		}),
 		status: "hosted",
 		renderHint:
-			"Stored as an AI-requested custom edit. Supported v1 effect templates render through OpenCut shader passes; unknown specs remain editable metadata.",
+			"Stored as an AI-requested custom edit. Supported v1 effect templates render through POCUT shader passes; unknown specs remain editable metadata.",
 	};
 }
 
@@ -618,7 +618,7 @@ export const customAiEffectDefinition: EffectDefinition = {
 			label: "Render Hint",
 			type: "text",
 			default:
-				"Stored as an AI-requested custom edit. Supported v1 effect templates render through OpenCut shader passes; unknown specs remain editable metadata.",
+				"Stored as an AI-requested custom edit. Supported v1 effect templates render through POCUT shader passes; unknown specs remain editable metadata.",
 			keyframable: false,
 		},
 	],

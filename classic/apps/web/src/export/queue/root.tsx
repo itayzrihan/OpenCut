@@ -1,10 +1,12 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AccountGate } from "@/accounts/gate";
 import { BatchEditRoot } from "@/batch/root";
+import { legalRoutes } from "@/legal/documents";
 const View = dynamic(() => import("./view"), { ssr: false });
 export function RenderQueueRoot({ children }: { children: React.ReactNode }) {
 	const [open, setOpen] = useState(false);
@@ -16,14 +18,21 @@ export function RenderQueueRoot({ children }: { children: React.ReactNode }) {
 	}, []);
 	// The isolated host worker authenticates only its bounded renderer APIs.
 	// It must not hydrate account preferences, batch tasks or editable projects.
-	if (path === "/render-worker") return children;
+	if (
+		path === "/render-worker" ||
+		path === "/" ||
+		Object.values(legalRoutes).some(({ href }) => href === path)
+	)
+		return children;
 	return (
 		<AccountGate>
 			<BatchEditRoot>
 				{children}
 				<Dialog open={open} onOpenChange={setOpen}>
 					<DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-						<DialogTitle className="sr-only">Render Queue</DialogTitle>
+						<DialogTitle className="sr-only">
+							<UiMessage text={"Render Queue"} />
+						</DialogTitle>
 						{open && <View />}
 					</DialogContent>
 				</Dialog>

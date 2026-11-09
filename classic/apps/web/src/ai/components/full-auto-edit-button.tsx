@@ -1,4 +1,7 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
+import { BrowserTranscriptionPicker } from "@/transcription/browser-model-picker";
+import { DEFAULT_BROWSER_TRANSCRIPTION_MODEL } from "@/transcription/models";
 import { BrandKitPicker } from "@/brand-kits/picker";
 import { useState } from "react";
 import { Loader2, WandSparkles } from "lucide-react";
@@ -7,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
+	DialogBody,
 	DialogHeader,
 	DialogTitle,
 	DialogFooter,
@@ -14,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { useEditor } from "@/editor/use-editor";
 import { type FullAutoOptions } from "@/ai/full-auto-edit";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { useBatchEdit } from "@/batch/provider";
 import { sceneActions, type SceneAction } from "@/batch/scene-jobs";
 import { findSceneCheckpoint } from "@/batch/scene-checkpoint";
@@ -63,6 +67,7 @@ export function FullAutoEditButton({
 		wordAnimation: false,
 		music: false,
 		soundEffects: false,
+		browserModel: DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
 	});
 	const run = async (resume = false) => {
 		if (running) return;
@@ -102,15 +107,23 @@ export function FullAutoEditButton({
 					onClick={() => (resumable ? void run(true) : setOpen(true))}
 				>
 					<WandSparkles />{" "}
-					{resumable
-						? `Resume Full Auto Edit · stage ${previousJob.completedStages + 1}`
-						: "Full Auto Edit"}
+					{resumable ? (
+						<UiMessage
+							text={"Resume Full Auto Edit · stage {v0}"}
+							values={{ v0: String(previousJob.completedStages + 1) }}
+						/>
+					) : (
+						<UiMessage text={"Full Auto Edit"} />
+					)}
 				</Button>
 			)}
 			{!hideTrigger && (
 				<p className="text-xs text-muted-foreground">
-					Vertical framing, smart silence removal, complete Hebrew Auto Texts
-					and finishing.
+					<UiMessage
+						text={
+							"Vertical framing, smart silence removal, Auto Texts and finishing."
+						}
+					/>
 				</p>
 			)}
 			<Dialog
@@ -123,6 +136,7 @@ export function FullAutoEditButton({
 				}}
 			>
 				<DialogContent
+					className="flex max-h-[90dvh] flex-col overflow-hidden"
 					onEscapeKeyDown={(event) => {
 						if (running) event.preventDefault();
 					}}
@@ -133,14 +147,31 @@ export function FullAutoEditButton({
 					<DialogHeader>
 						<DialogTitle>
 							{sceneActions.find(([id]) => id === action)?.[1]} ·{" "}
-							{sceneIds?.length ?? 1} סצנות
+							{sceneIds?.length ?? 1}{" "}
+							{sceneIds && sceneIds.length > 1 ? (
+								<UiMessage text={"scenes"} />
+							) : (
+								<UiMessage text={"scene"} />
+							)}
 						</DialogTitle>
 						<DialogDescription>
-							כל סצנה תעובד בתור. התוצאה תישמר כסצנה חדשה; המקור והכתוביות
-							יישארו ללא שינוי. אפשר להמשיך לעבוד ולעבור בין סצנות.
+							<UiMessage
+								text={
+									"Each scene is processed in the queue. Results are saved as new scenes. You can keep working and switch between scenes."
+								}
+							/>
 						</DialogDescription>
 					</DialogHeader>
-					<div className="space-y-3">
+					<DialogBody className="min-h-0 overflow-y-auto">
+						{(action === "full-auto" || action === "auto-texts") && (
+							<BrowserTranscriptionPicker
+								value={options.browserModel}
+								disabled={running}
+								onChange={(browserModel) =>
+									setOptions((previous) => ({ ...previous, browserModel }))
+								}
+							/>
+						)}
 						<BrandKitPicker
 							value={options.brandKitId}
 							disabled={running}
@@ -173,19 +204,28 @@ export function FullAutoEditButton({
 								</label>
 							))}
 						<p className="text-xs text-muted-foreground">
-							Hebrew · configured speech engine · 1 row · Smart audio cut ·
-							protect speech ·{" "}
-							{options.brandKitId ? "Brand Kit fonts" : "Assistant bold"} · fade
-							60% / 25%. Local face/body framing uses five source samples per
-							source; no cloud AI is used for centering. Uncertain subjects use
-							centered vertical cover automatically; editing continues.
+							<UiMessage
+								text={
+									"Single-row captions · Smart audio cut · protect speech ·"
+								}
+							/>{" "}
+							{options.brandKitId ? (
+								<UiMessage text={"Brand Kit fonts"} />
+							) : (
+								<UiMessage text={"Assistant bold"} />
+							)}{" "}
+							<UiMessage
+								text={
+									"· fade 60% / 25%. Local face/body framing uses five source samples per source; no cloud AI is used for centering. Uncertain subjects use centered vertical cover automatically; editing continues."
+								}
+							/>
 						</p>
 						{status && (
 							<p role="status" className="text-sm whitespace-pre-wrap">
 								{status}
 							</p>
 						)}
-					</div>
+					</DialogBody>
 					<DialogFooter>
 						<Button
 							variant="outline"
@@ -195,10 +235,11 @@ export function FullAutoEditButton({
 								onClose?.();
 							}}
 						>
-							Close
+							<UiMessage text={"Close"} />
 						</Button>
 						<Button disabled={running} onClick={() => void run()}>
-							{running && <Loader2 className="animate-spin" />}שלח לתור
+							{running && <Loader2 className="animate-spin" />}{" "}
+							<UiMessage text={"Add to queue"} />
 						</Button>
 					</DialogFooter>
 				</DialogContent>

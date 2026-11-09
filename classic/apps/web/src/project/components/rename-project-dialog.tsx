@@ -1,3 +1,7 @@
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
@@ -35,12 +39,18 @@ export function RenameProjectDialog({
 		<Dialog open={isOpen} onOpenChange={handleOpenChange}>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Rename project</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Rename project"} />
+					</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="gap-3">
-					<Label>New name</Label>
-					<Input
+					<Label>
+						<UiMessage text={"New name"} />
+					</Label>
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["placeholder"]}
 						value={name}
 						onChange={(e) => setName(e.target.value)}
 						onKeyDown={(e) => {
@@ -62,9 +72,11 @@ export function RenameProjectDialog({
 							onOpenChange(false);
 						}}
 					>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
-					<Button onClick={() => onConfirm(name)}>Rename</Button>
+					<Button onClick={() => onConfirm(name)}>
+						<UiMessage text={"Rename"} />
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

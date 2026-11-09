@@ -13,6 +13,7 @@ import {
 	renderNoiseReducedWindow,
 } from "@/media/noise-reduction";
 import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
+import { streamPitchPreserved } from "@/retime/pitch-stream";
 import {
 	hasVariableAudioGain,
 	resolveEffectiveAudioGain,
@@ -23,7 +24,6 @@ import { TICKS_PER_SECOND } from "@/wasm";
 import { checkExportDiskSpace } from "./scratch";
 import { PcmFile } from "./pcm-file";
 import type { AudioScratch } from "./audio-scratch";
-import { streamPitchPreserved } from "./pitch-stream";
 import { exportSourceWindows } from "./audio-source-windows";
 
 export const EXPORT_AUDIO_RATE = 44100;
@@ -381,6 +381,7 @@ export async function prepareExportAudio({
 					if (
 						!hasAudioProcessing(clip.timelineElement.params) &&
 						clip.retime?.maintainPitch &&
+						!clip.retime.speedKeyframes?.length &&
 						Math.abs(clip.retime.rate - 1) > 1e-6
 					) {
 						let first = 0;
@@ -421,18 +422,22 @@ export async function prepareExportAudio({
 									getSourceTimeAtClipTime({
 										clipTime: offset,
 										retime: clip.retime,
+										trimStart: clip.curveTrimStart ?? clip.trimStart,
 									});
 								const end =
 									clip.trimStart +
 									getSourceTimeAtClipTime({
 										clipTime: offset + count / EXPORT_AUDIO_RATE,
 										retime: clip.retime,
+										trimStart: clip.curveTrimStart ?? clip.trimStart,
 									});
 								const decoded = await readSource(start, end);
 								const stretched = await renderRetimedBuffer({
 									audioContext: context,
 									sourceBuffer: decoded.buffer,
 									trimStart: decoded.trimStart,
+									curveTrimStart: clip.curveTrimStart ?? clip.trimStart,
+									clipTimeOffset: offset,
 									clipDuration: count / EXPORT_AUDIO_RATE,
 									retime: clip.retime,
 									maintainPitch: clip.retime?.maintainPitch,

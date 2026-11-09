@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import {
 	createContext,
 	useContext,
@@ -236,7 +237,7 @@ export function HyperframesTimelineRows({
 							}}
 							title={entry.message}
 						>
-							{labels ? "Layers" : entry.message}
+							{labels ? <UiMessage text={"Layers"} /> : entry.message}
 						</div>
 					);
 				const { clip, row } = entry;

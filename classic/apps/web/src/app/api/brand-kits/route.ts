@@ -16,7 +16,7 @@ export const POST = withAccount(async (request: Request) => {
 	try {
 		const body = JSON.parse(
 			new TextDecoder().decode(
-				await readBoundedBody({ request, maximumBytes: 160000 }),
+				await readBoundedBody({ request, maximumBytes: 256000 }),
 			),
 		);
 		if (

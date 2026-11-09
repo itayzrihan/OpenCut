@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
+import { includeLinkedAudioVideo } from "@/timeline/audio-separation";
 import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import {
 	addMediaTime,
@@ -238,7 +239,10 @@ export class ResizeController {
 			track.id === tracks.main.id || this.config.rippleEditingEnabled;
 		const members = buildResizeMembers({
 			tracks,
-			selectedElements: activeSelection,
+			selectedElements: includeLinkedAudioVideo({
+				tracks,
+				elements: activeSelection,
+			}),
 			allowRightNeighborOverlap: rippleInsertion,
 		});
 		if (members.length === 0) return;

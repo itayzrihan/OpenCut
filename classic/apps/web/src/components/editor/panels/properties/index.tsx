@@ -1,5 +1,8 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
+import { useInterfaceLanguage } from "@/i18n/provider";
+import { interfaceDirection } from "@/i18n/locales";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +40,9 @@ import {
 } from "./bulk-selection";
 
 export function PropertiesPanel() {
+	const { t, locale } = useInterfaceLanguage();
+	const tabTooltipSide =
+		interfaceDirection(locale) === "rtl" ? "left" : "right";
 	const editor = useEditor();
 	useEditorTimelineScenes((e) => e.scenes.getActiveSceneOrNull());
 	const mediaAssets = useEditorMedia((e) => e.media.getAssets());
@@ -76,7 +82,7 @@ export function PropertiesPanel() {
 			return (
 				<div className="panel bg-background flex h-full flex-col items-center justify-center overflow-hidden rounded-sm border">
 					<p className="text-muted-foreground text-sm">
-						{selectedElements.length} elements selected
+						{selectedElements.length} <UiMessage text={"elements selected"} />
 					</p>
 				</div>
 			);
@@ -118,7 +124,7 @@ export function PropertiesPanel() {
 												tabId: tab.id,
 											})
 										}
-										aria-label={tab.label}
+										aria-label={t(tab.label)}
 										className={cn(
 											"shrink-0",
 											"h-8 w-8",
@@ -128,16 +134,29 @@ export function PropertiesPanel() {
 										{tab.icon}
 									</Button>
 								</TooltipTrigger>
-								<TooltipContent side="right">{tab.label}</TooltipContent>
+								<TooltipContent side={tabTooltipSide}>
+									{t(tab.label)}
+								</TooltipContent>
 							</Tooltip>
 						))}
 					</div>
 				</TooltipProvider>
 				<ScrollArea className="flex-1 scrollbar-hidden">
 					<div className="border-b px-3 py-2 text-muted-foreground text-xs">
-						{selectedTextWordCount > 0
-							? `${selectedTextWordCount} words selected`
-							: `${selectedElements.length} ${firstElement.type} elements selected`}
+						{selectedTextWordCount > 0 ? (
+							<UiMessage
+								text={"{v0} words selected"}
+								values={{ v0: String(selectedTextWordCount) }}
+							/>
+						) : (
+							<UiMessage
+								text={"{v0} {v1} elements selected"}
+								values={{
+									v0: String(selectedElements.length),
+									v1: String(firstElement.type),
+								}}
+							/>
+						)}
 					</div>
 					{activeTab.content({ trackId, elementsWithTracks, textScope })}
 				</ScrollArea>
@@ -188,7 +207,7 @@ export function PropertiesPanel() {
 											tabId: tab.id,
 										})
 									}
-									aria-label={tab.label}
+									aria-label={t(tab.label)}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -198,7 +217,9 @@ export function PropertiesPanel() {
 									{tab.icon}
 								</Button>
 							</TooltipTrigger>
-							<TooltipContent side="right">{tab.label}</TooltipContent>
+							<TooltipContent side={tabTooltipSide}>
+								{t(tab.label)}
+							</TooltipContent>
 						</Tooltip>
 					))}
 				</div>
@@ -215,11 +236,16 @@ export function PropertiesPanel() {
 						(element.enabled === false ||
 							("hidden" in track && track.hidden)) && (
 							<p role="status" className="mt-2 text-amber-500">
-								{element.enabled === false
-									? "This clip is disabled."
-									: "This track is hidden."}{" "}
-								Changes are saved but will not appear in the preview. Click the
-								visible video in the preview to edit it.
+								{element.enabled === false ? (
+									<UiMessage text={"This clip is disabled."} />
+								) : (
+									<UiMessage text={"This track is hidden."} />
+								)}{" "}
+								<UiMessage
+									text={
+										"Changes are saved but will not appear in the preview. Click the visible video in the preview to edit it."
+									}
+								/>
 							</p>
 						)}
 				</div>
@@ -359,13 +385,17 @@ function TextScopeBar({
 		return (
 			<div className="sticky top-0 z-10 border-b bg-background/95 px-3 py-2 backdrop-blur">
 				<div className="flex items-center gap-2">
-					<span className="text-muted-foreground text-xs">Scope</span>
+					<span className="text-muted-foreground text-xs">
+						<UiMessage text={"Scope"} />
+					</span>
 					<Select value="word" disabled>
 						<SelectTrigger className="h-8 min-w-28">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="word">Word</SelectItem>
+							<SelectItem value="word">
+								<UiMessage text={"Word"} />
+							</SelectItem>
 						</SelectContent>
 					</Select>
 					<div className="text-muted-foreground min-w-0 flex-1 truncate text-xs">
@@ -379,7 +409,9 @@ function TextScopeBar({
 	return (
 		<div className="sticky top-0 z-10 border-b bg-background/95 px-3 py-2 backdrop-blur">
 			<div className="flex items-center gap-2">
-				<span className="text-muted-foreground text-xs">Scope</span>
+				<span className="text-muted-foreground text-xs">
+					<UiMessage text={"Scope"} />
+				</span>
 				<Select
 					value={mode}
 					onValueChange={(value) =>
@@ -390,9 +422,15 @@ function TextScopeBar({
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="layer">Layer</SelectItem>
-						<SelectItem value="row">Row</SelectItem>
-						<SelectItem value="word">Word</SelectItem>
+						<SelectItem value="layer">
+							<UiMessage text={"Layer"} />
+						</SelectItem>
+						<SelectItem value="row">
+							<UiMessage text={"Row"} />
+						</SelectItem>
+						<SelectItem value="word">
+							<UiMessage text={"Word"} />
+						</SelectItem>
 					</SelectContent>
 				</Select>
 				{mode === "row" && (
@@ -420,7 +458,15 @@ function TextScopeBar({
 						<SelectContent>
 							{wordRuns.map((word) => (
 								<SelectItem key={word.id} value={word.id}>
-									{`Row ${word.lineIndex + 1}: ${word.text}`}
+									{
+										<UiMessage
+											text={"Row {v0}: {v1}"}
+											values={{
+												v0: String(word.lineIndex + 1),
+												v1: String(word.text),
+											}}
+										/>
+									}
 								</SelectItem>
 							))}
 						</SelectContent>

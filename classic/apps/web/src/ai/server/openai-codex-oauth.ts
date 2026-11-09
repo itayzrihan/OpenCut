@@ -179,7 +179,7 @@ export async function completeOpenAIAuthorization({
 				request,
 				status: "error",
 				message:
-					"OpenAI redirected to the app callback directly. Restart login so OpenCut can use the Codex loopback callback.",
+					"OpenAI redirected to the app callback directly. Restart login so POCUT can use the Codex loopback callback.",
 			}).toString(),
 			302,
 		),
@@ -362,6 +362,14 @@ export function clearOpenAICredentials({
 	clearCookie({ response, name: LEGACY_OAUTH_TOKEN_COOKIE });
 }
 
+export class CodexResponseHttpError extends Error {
+	readonly status: number;
+	constructor({ status, message }: { status: number; message: string }) {
+		super(message);
+		this.status = status;
+	}
+}
+
 export async function forwardCodexResponsesRequest({
 	credentials,
 	body,
@@ -415,9 +423,10 @@ export async function forwardCodexResponsesRequest({
 				lastUnsupportedModelMessage = `${model}: ${message}`;
 				continue;
 			}
-			throw new Error(
-				`OpenAI Codex request failed (${response.status}) with ${model}: ${message}`,
-			);
+			throw new CodexResponseHttpError({
+				status: response.status,
+				message: `OpenAI Codex request failed (${response.status}) with ${model}: ${message}`,
+			});
 		}
 
 		if (isEventStreamResponse(response)) {
@@ -1795,7 +1804,7 @@ function accountBoundOAuthValue({
 	value: string;
 }): string {
 	const accountSession = request.cookies.get("opencut-account")?.value;
-	if (!accountSession) throw new Error("Sign in to an OpenCut account first");
+	if (!accountSession) throw new Error("Sign in to an POCUT account first");
 	return JSON.stringify([requireAccount().id, accountSession, value]);
 }
 

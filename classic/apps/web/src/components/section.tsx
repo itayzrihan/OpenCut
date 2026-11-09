@@ -1,3 +1,4 @@
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { createContext, useContext, useEffect, useState } from "react";
 import { cn } from "@/utils/ui";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -120,14 +121,16 @@ export function SectionHeader({
 			<div className="flex items-center">
 				{trailing}
 				{isCollapsible && (
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						aria-label={isOpen ? "Collapse section" : "Expand section"}
 						onClick={handleClick}
 					>
 						{chevronIcon}
-					</Button>
+					</UiLocalized>
 				)}
 			</div>
 		) : null;

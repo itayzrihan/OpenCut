@@ -25,6 +25,41 @@
       ],
       "timeoutMs": 480000
     },
+    "batch-transcription-ui": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/batch/server.test.ts",
+        "src/core/__tests__/canonical-transcription.test.ts",
+        "src/ai/__tests__/full-auto-edit-resume.test.ts",
+        "src/services/transcription/worker.test.ts",
+        "src/transcription/windows.test.ts",
+        "--jobs=1",
+        "--timeout=120000"
+      ],
+      "timeoutMs": 180000
+    },
+    "pocut-interface-locales": {
+      "command": [
+        "node",
+        "--disable-warning=MODULE_TYPELESS_PACKAGE_JSON",
+        "classic/scripts/verify-ui-locales.mjs"
+      ],
+      "timeoutMs": 120000
+    },
+    "brand-kits-workspace": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/brand-kits/server.test.ts",
+        "src/ai/__tests__/full-auto-edit-resume.test.ts",
+        "src/batch/server.test.ts",
+        "src/batch/worker.test.ts",
+        "--jobs=1",
+        "--timeout=120000"
+      ],
+      "timeoutMs": 180000
+    },
     "transcription-sources": {
       "command": [
         "node",
@@ -452,7 +487,48 @@
         "classic/scripts/verify-peer-media.mjs"
       ],
       "timeoutMs": 1200000
+    },
+    "director-storyboard": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/generative/server/provider.test.ts",
+        "src/generative/result-import.test.ts",
+        "src/editor-agent/__tests__/subscription-image.test.ts",
+        "src/ai/__tests__/openai-codex-oauth.test.ts",
+        "--jobs=1",
+        "--report=.local/director-storyboard-qa/configured"
+      ],
+      "timeoutMs": 180000
+    },
+    "classic-export-audio-parity": {
+      "command": [
+        "node", "--input-type=module", "--eval",
+        "process.env.OPENCUT_STREAM_EXPORT_TEST = '1'; process.argv.splice(1, 0, 'classic/scripts/test-web.mjs'); await import('./classic/scripts/test-web.mjs');",
+        "--",
+        "src/export/__tests__/streaming-browser.test.ts",
+        "src/retime/__tests__/audio-handles.test.ts",
+        "--jobs=1", "--timeout=360000"
+      ],
+      "timeoutMs": 420000
+    },
+    "classic-split-playhead": {
+      "command": [
+        "node", "classic/scripts/test-web.mjs",
+        "src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "--jobs=1", "--timeout=240000"
+      ],
+      "timeoutMs": 300000
+    },
+    "classic-linked-audio": {
+      "command": [
+        "cargo", "test", "--locked", "-p", "opencut-editor-api", "--test", "classic_source_audio", "--jobs", "1", "--", "--test-threads=1"
+      ],
+      "timeoutMs": 600000
     }
   },
-  "mode": "coordinate"
+  "mode": "coordinate",
+  "capture": {
+    "enabled": false
+  }
 }

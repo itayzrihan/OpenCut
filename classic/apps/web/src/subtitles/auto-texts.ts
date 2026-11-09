@@ -16,6 +16,7 @@ import {
 	applyCaptionRowRearrangement,
 } from "./caption-ai";
 import { applyAndArrangeAllTextTransitions } from "@/transitions";
+import type { BrowserTranscriptionModel } from "@/transcription/models";
 import type { TranscriptionLanguage } from "@/transcription/types";
 
 type CaptionRecipeOptions = {
@@ -24,6 +25,7 @@ type CaptionRecipeOptions = {
 	onProgress: (s: string) => void;
 	settings: CaptionLayoutSettings;
 	language: TranscriptionLanguage;
+	browserModel?: BrowserTranscriptionModel;
 	/** Reuse a saved transcript when resuming preparation. */
 	resumeTranscript?: boolean;
 };
@@ -45,6 +47,7 @@ async function runCaptionRecipe({
 	onProgress,
 	settings,
 	language,
+	browserModel,
 	resumeTranscript = false,
 	transcriptOnly,
 }: CaptionRecipeOptions & { transcriptOnly: boolean }) {
@@ -66,19 +69,29 @@ async function runCaptionRecipe({
 	};
 	const cancel = () => editor.transcription.cancel();
 	try {
+		const jobs = editor.project.getActive().transcriptionJobs;
 		const savedSource = resumeTranscript
 			? findCaptionSourceTrack({
 					tracks: editor.scenes.getActiveScene().tracks,
 				})?.captionSource
 			: undefined;
+		const matchingCompletedJob =
+			!browserModel ||
+			jobs?.some(
+				(job) =>
+					job.id === savedSource?.sourceId &&
+					job.sceneId === sceneId &&
+					job.browserModel === browserModel &&
+					job.language === language &&
+					job.status === "complete",
+			);
 		if (
-			!editor.project
-				.getActive()
-				.transcriptionJobs?.some(
-					(j) =>
-						j.sceneId === sceneId &&
-						(j.status === "running" || j.status === "paused"),
-				) &&
+			matchingCompletedJob &&
+			!jobs?.some(
+				(job) =>
+					job.sceneId === sceneId &&
+					(job.status === "running" || job.status === "paused"),
+			) &&
 			savedSource?.words.some((word) => word.source?.type !== "text-layer")
 		) {
 			onProgress("Continuing from the saved transcript…");
@@ -91,7 +104,7 @@ async function runCaptionRecipe({
 			});
 			signal.addEventListener("abort", cancel, { once: true });
 			const state = await editor.transcription
-				.start({ language, settings })
+				.start({ language, settings, ...(browserModel && { browserModel }) })
 				.finally(() => {
 					unsubscribe();
 					signal.removeEventListener("abort", cancel);

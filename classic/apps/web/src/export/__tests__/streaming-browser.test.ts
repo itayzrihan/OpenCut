@@ -96,6 +96,9 @@ test.skipIf(process.env.OPENCUT_STREAM_EXPORT_TEST !== "1")(
 				expect(row.error).toBeLessThan(0.00001);
 				expect(row.oldFirst).toBe(row.newFirst);
 				expect(row.oldTail).toBe(row.newTail);
+				expect(row.newFirst).toBeGreaterThanOrEqual(0);
+				expect(row.newFirst).toBeLessThan(441);
+				expect(row.frames - 1 - row.newTail).toBeLessThan(1323);
 			}
 
 			const parity = await page.evaluate(async () =>
@@ -109,6 +112,15 @@ test.skipIf(process.env.OPENCUT_STREAM_EXPORT_TEST !== "1")(
 				// Independent Web Audio resamplers and nonlinear denoising are not bit-identical.
 				expect(row.rms).toBeLessThan(0.003);
 				expect(row.seam).toBeLessThan(0.02);
+			}
+			const encodedSpeech = await page.evaluate(async () =>
+				(await import(`${location.origin}/fixture.js`)).encodedAudioParity(),
+			);
+			console.log("encoded retimed speech", JSON.stringify(encodedSpeech));
+			for (const row of encodedSpeech) {
+				expect(row.reference).toBeGreaterThan(0.1);
+				expect(row.encoded / row.reference).toBeGreaterThan(0.8);
+				expect(row.coverage).toBeGreaterThan(0.98);
 			}
 			const disk = await page.evaluate(async () =>
 				(await import(`${location.origin}/fixture.js`)).diskAndVideo(),

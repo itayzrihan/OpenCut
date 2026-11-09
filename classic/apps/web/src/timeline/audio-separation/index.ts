@@ -1,5 +1,56 @@
 import type { MediaAsset } from "@/media/types";
-import type { TimelineElement, AudioElement, VideoElement } from "../types";
+import type {
+	TimelineElement,
+	AudioElement,
+	VideoElement,
+	SceneTracks,
+} from "../types";
+
+type ElementRef = { trackId: string; elementId: string };
+
+export function linkedAudioVideoPeer({
+	tracks,
+	element,
+}: {
+	tracks: SceneTracks;
+	element: TimelineElement;
+}) {
+	if (
+		!element.linkedAudioVideoId ||
+		(element.type !== "video" && element.type !== "audio")
+	)
+		return;
+	for (const track of [tracks.main, ...tracks.overlay, ...tracks.audio]) {
+		const peer = track.elements.find(
+			(clip) => clip.id === element.linkedAudioVideoId,
+		);
+		if (
+			peer?.linkedAudioVideoId === element.id &&
+			peer.type === (element.type === "video" ? "audio" : "video")
+		)
+			return { trackId: track.id, elementId: peer.id };
+	}
+}
+
+export function includeLinkedAudioVideo({
+	tracks,
+	elements,
+}: {
+	tracks: SceneTracks;
+	elements: readonly ElementRef[];
+}): ElementRef[] {
+	const expanded = [...elements];
+	for (const { trackId, elementId } of elements) {
+		const track = [tracks.main, ...tracks.overlay, ...tracks.audio].find(
+			(entry) => entry.id === trackId,
+		);
+		const element = track?.elements.find((clip) => clip.id === elementId);
+		const peer = element && linkedAudioVideoPeer({ tracks, element });
+		if (peer && !expanded.some((ref) => ref.elementId === peer.elementId))
+			expanded.push(peer);
+	}
+	return expanded;
+}
 
 type MediaAudioState = Pick<MediaAsset, "hasAudio">;
 
@@ -69,8 +120,8 @@ export function getSourceAudioActionLabel({
 	element,
 }: {
 	element: VideoElement;
-}): "Extract audio" | "Recover audio" {
+}): "Separate audio from video" | "Recover audio" {
 	return isSourceAudioSeparated({ element })
 		? "Recover audio"
-		: "Extract audio";
+		: "Separate audio from video";
 }

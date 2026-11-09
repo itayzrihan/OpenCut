@@ -68,7 +68,7 @@ export async function handleDeviceLogin({
 	// on direct loopback access. No caller can select a different account/home.
 	if (request.headers.get("X-OpenCut-Account") !== account)
 		return NextResponse.json(
-			{ error: "Reload your OpenCut account before signing in." },
+			{ error: "Reload your POCUT account before signing in." },
 			{ status: 403 },
 		);
 	if (Number(request.headers.get("content-length")) > 1000)

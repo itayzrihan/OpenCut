@@ -264,3 +264,62 @@ async fn excessive_typing_segments_reject_without_changing_text_or_audio() {
     );
     assert_eq!(r.snapshot().unwrap(), before);
 }
+
+#[tokio::test]
+async fn speed_ramp_preserves_source_bounds_through_split_and_history() {
+    let runtime = setup().await;
+    let before = read(&runtime).await;
+    let ramp = json!({"rate": 1.25, "speedKeyframes": [
+        {"time": 480000, "rate": 1, "interpolation": "easeIn"},
+        {"time": 1980000, "rate": 2, "interpolation": "linear"}
+    ]});
+    let patch = |retime: &Value| {
+        input(
+            &runtime,
+            json!([{"trackId":"video-track","elementId":"item-2","patch":{"retime":retime}}]),
+        )
+    };
+    let mut invalid = ramp.clone();
+    invalid["speedKeyframes"][1]["time"] = json!(480000);
+    assert!(
+        runtime
+            .registry()
+            .invoke(
+                "timeline.classic.elements.update",
+                InvocationContext::default(),
+                patch(&invalid)
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(read(&runtime).await, before);
+    call(&runtime, "timeline.classic.elements.update", patch(&ramp)).await;
+    let ramped = read(&runtime).await;
+    let clip = &ramped["main"]["elements"][0];
+    assert_eq!(clip["retime"], ramp);
+    assert_eq!(clip["duration"], 1125000);
+    assert_eq!(clip["trimStart"], 480000);
+    assert_eq!(clip["trimEnd"], 240000);
+
+    call(
+        &runtime,
+        "timeline.classic.elements.split",
+        json!({
+            "projectId":"classic-project","sceneId":"main-scene",
+            "expectedRevision":runtime.snapshot().unwrap().revision,
+            "splitTime":562500,"elements":[{"trackId":"video-track","elementId":"item-2"}]
+        }),
+    )
+    .await;
+    let split = read(&runtime).await;
+    let clips = split["main"]["elements"].as_array().unwrap();
+    assert_eq!(clips[0]["trimEnd"], 1130625);
+    assert_eq!(clips[1]["trimStart"], 1089375);
+    assert!(clips.iter().all(|clip| clip["retime"] == ramp));
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await, ramped);
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await, before);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await, ramped);
+}

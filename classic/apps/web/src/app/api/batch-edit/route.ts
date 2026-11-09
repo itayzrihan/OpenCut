@@ -1,6 +1,7 @@
 import { withAccount } from "@/accounts/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { BROWSER_TRANSCRIPTION_MODELS } from "@/transcription/models";
 import { basename } from "node:path";
 import {
 	assertLocalDriveRequest,
@@ -25,6 +26,7 @@ const options = z
 		wordAnimation: z.boolean(),
 		music: z.boolean(),
 		soundEffects: z.boolean().default(false),
+		browserModel: z.enum(BROWSER_TRANSCRIPTION_MODELS).optional(),
 		brandKitId: z
 			.string()
 			.min(1)

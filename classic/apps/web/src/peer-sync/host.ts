@@ -95,7 +95,7 @@ async function ensureConnected({
 		const url = configuredRelayUrl();
 		if (!url)
 			throw new Error(
-				"The device relay is not configured on this OpenCut host",
+				"The device relay is not configured on this POCUT host",
 			);
 		const proof = await peerIdentityProof(),
 			identity = await peerDeviceIdentity(),

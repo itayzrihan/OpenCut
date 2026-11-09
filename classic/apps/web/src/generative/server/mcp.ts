@@ -94,7 +94,7 @@ export async function mcpRequest({
 			throw new Error("operationId already belongs to a different request");
 		if (old.state !== "complete")
 			throw new Error(
-				"Operation is pending or interrupted. Inspect existing OpenCut references/reviews before retrying; no paid call was made.",
+				"Operation is pending or interrupted. Inspect existing POCUT references/reviews before retrying; no paid call was made.",
 			);
 		return { ...old.result, revision: i.expectedRevision };
 	}

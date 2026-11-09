@@ -1,7 +1,11 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { EffectElement } from "@/timeline";
 import { TICKS_PER_SECOND } from "@/wasm";
 
@@ -39,7 +43,9 @@ export function PushBrollCards() {
 							className={`absolute inset-x-2 h-8 rounded bg-slate-400 ${edge === "top" ? "bottom-2" : "top-2"}`}
 						/>
 					</div>
-					<span>B-roll from {edge}</span>
+					<span>
+						<UiMessage text={"B-roll from"} /> {edge}
+					</span>
 				</Button>
 			))}
 		</>
@@ -67,22 +73,37 @@ export function PushBrollProperties({
 	return (
 		<div className="space-y-4 p-3">
 			<p>
-				The main video moves as this scene slides in. Content is centered and
-				cropped to the band; dialogue continues.
+				<UiMessage
+					text={
+						"The main video moves as this scene slides in. Content is centered and cropped to the band; dialogue continues."
+					}
+				/>
 			</p>
 			<label className="block">
-				Edge
+				<UiMessage text={"Edge"} />
 				<select
 					className="ml-2 bg-background"
 					value={String(element.params.edge)}
 					onChange={(e) => update({ edge: e.target.value })}
 				>
-					<option value="top">Top</option>
-					<option value="bottom">Bottom</option>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="top"
+					>
+						{"Top"}
+					</UiLocalized>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="bottom"
+					>
+						{"Bottom"}
+					</UiLocalized>
 				</select>
 			</label>
 			<label className="block">
-				Screen area (%)
+				<UiMessage text={"Screen area (%)"} />
 				<input
 					className="ml-2 w-20 bg-background"
 					type="number"
@@ -97,7 +118,7 @@ export function PushBrollProperties({
 				/>
 			</label>
 			<label className="block">
-				Entry / exit (seconds)
+				<UiMessage text={"Entry / exit (seconds)"} />
 				<input
 					className="ml-2 w-20 bg-background"
 					type="number"
@@ -119,12 +140,14 @@ export function PushBrollProperties({
 						.catch((e: Error) => toast.error(e.message));
 				}}
 			>
-				Edit B-roll scene
+				<UiMessage text={"Edit B-roll scene"} />
 			</Button>
 			<p className="text-xs text-muted-foreground">
-				Add video, backgrounds, HyperFrames, text or captions. Use the Scenes
-				list to return to the main scene. An empty scene leaves the main video
-				in place.
+				<UiMessage
+					text={
+						"Add video, backgrounds, HyperFrames, text or captions. Use the Scenes list to return to the main scene. An empty scene leaves the main video in place."
+					}
+				/>
 			</p>
 		</div>
 	);

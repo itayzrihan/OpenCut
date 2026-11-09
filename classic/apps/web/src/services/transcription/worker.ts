@@ -14,6 +14,11 @@ import {
 	BROWSER_WHISPER_REVISION,
 	BROWSER_WHISPER_CPU_MODEL,
 	BROWSER_WHISPER_CPU_REVISION,
+	BROWSER_TRANSCRIPTION_LABELS,
+	DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
+	MULTILINGUAL_WHISPER_MODEL,
+	MULTILINGUAL_WHISPER_REVISION,
+	type BrowserTranscriptionModel,
 } from "@/transcription/models";
 import {
 	DEFAULT_CHUNK_LENGTH_SECONDS,
@@ -24,8 +29,10 @@ import { boundWhisperGpuOutputs } from "./gpu-lifetime";
 export type WorkerMessage = {
 	audio: Float32Array;
 	language: string;
+	browserModel?: BrowserTranscriptionModel;
 	lowMemory?: boolean;
 	keepAlive?: boolean;
+	recovery?: boolean;
 };
 export type WorkerResponse =
 	| { type: "progress"; progress: TranscriptionProgress }
@@ -55,23 +62,44 @@ const report = ({
 let resident: AutomaticSpeechRecognitionPipeline | undefined;
 
 self.onmessage = async ({
-	data: { audio, language, lowMemory = false, keepAlive = false },
+	data: {
+		audio,
+		language,
+		browserModel = DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
+		lowMemory = false,
+		keepAlive = false,
+		recovery = false,
+	},
 }: MessageEvent<WorkerMessage>) => {
 	let transcriber: AutomaticSpeechRecognitionPipeline | undefined;
 	let device: "webgpu" | "wasm" = "wasm";
 	let phase = "loading-model";
+	const multilingual = browserModel === "whisper-large-v3-turbo";
 	const loadingFiles = new Map<string, string>();
 	try {
 		const adapter = await navigator.gpu?.requestAdapter().catch(() => null);
 		device = adapter?.features.has("shader-f16") ? "webgpu" : "wasm";
+		const modelLabel = BROWSER_TRANSCRIPTION_LABELS[browserModel];
+		const modelId = multilingual
+			? MULTILINGUAL_WHISPER_MODEL
+			: device === "webgpu"
+				? BROWSER_WHISPER_MODEL
+				: BROWSER_WHISPER_CPU_MODEL;
+		const revision = multilingual
+			? MULTILINGUAL_WHISPER_REVISION
+			: device === "webgpu"
+				? BROWSER_WHISPER_REVISION
+				: BROWSER_WHISPER_CPU_REVISION;
+		const requestedLanguage =
+			language === "auto" ? (multilingual ? undefined : "he") : language;
 		const label =
 			device === "webgpu"
-				? `GPU · WebGPU${lowMemory ? " · reduced-memory model" : ""}`
+				? `GPU · WebGPU${!multilingual && lowMemory ? " · reduced-memory model" : ""}`
 				: "CPU · WebAssembly (WebGPU fp16 unavailable; slower)";
 		report({
 			status: "loading-model",
 			progress: 0,
-			message: `Loading ivrit-ai Large v3 Turbo on your ${label}. ${lowMemory && device === "webgpu" ? "Quantized weights total approximately 760 MB" : "First download is approximately 1.6 GB"}…`,
+			message: `Loading ${modelLabel} on your ${label}. The browser caches the model after the first download…`,
 		});
 		const files = new Map<string, { loaded: number; total: number }>();
 		let lastReport = 0;
@@ -79,20 +107,19 @@ self.onmessage = async ({
 			resident ??
 			((await pipeline<"automatic-speech-recognition">(
 				"automatic-speech-recognition",
-				device === "webgpu" ? BROWSER_WHISPER_MODEL : BROWSER_WHISPER_CPU_MODEL,
+				modelId,
 				{
-					revision:
-						device === "webgpu"
-							? BROWSER_WHISPER_REVISION
-							: BROWSER_WHISPER_CPU_REVISION,
+					revision,
 					device,
 					dtype:
-						device === "webgpu"
-							? {
-									encoder_model: lowMemory ? "q4" : "fp16",
-									decoder_model_merged: "q4",
-								}
-							: "q8",
+						device === "wasm"
+							? "q8"
+							: multilingual
+								? "q4f16"
+								: {
+										encoder_model: lowMemory ? "q4" : "fp16",
+										decoder_model_merged: "q4",
+									},
 					progress_callback: (info) => {
 						if (info.status === "download" || info.status === "done")
 							loadingFiles.set(info.file, info.status);
@@ -109,7 +136,7 @@ self.onmessage = async ({
 						report({
 							status: "loading-model",
 							progress: total ? (100 * loaded) / total : 0,
-							message: `Loading ivrit-ai on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
+							message: `Loading ${modelLabel} on your ${label} · ${Math.round(loaded / 1e6)} / ${Math.round(total / 1e6)} MB · downloaded weights are cached in this browser`,
 						});
 					},
 				},
@@ -142,7 +169,7 @@ self.onmessage = async ({
 		const output = await transcriber(audio, {
 			chunk_length_s: DEFAULT_CHUNK_LENGTH_SECONDS,
 			stride_length_s: DEFAULT_STRIDE_SECONDS,
-			language: language === "auto" ? "he" : language,
+			language: requestedLanguage,
 			task: "transcribe",
 			return_timestamps: "word",
 			streamer,
@@ -171,21 +198,26 @@ self.onmessage = async ({
 				];
 			},
 		);
-		if (result.text.trim() && !words.length)
+		const unaligned =
+			words.length > 0 && words.every((word) => word.end <= word.start);
+		if (!recovery && result.text.trim() && !words.length)
 			throw new Error(
 				"The browser model did not return timed words. Captions were not changed.",
 			);
-		if (words.length && words.every((word) => word.end <= word.start))
+		if (!recovery && unaligned)
 			throw new Error(
 				"The browser model could not align the words to the audio. Captions were not changed.",
 			);
+		// A short recovery pass can yield text with no usable timing. Keep the
+		// successful primary transcript and merge only timed recovery words.
+		const timedWords = unaligned ? [] : words;
 		self.postMessage({
 			type: "complete",
 			result: {
-				text: result.text,
-				words,
-				segments: words,
-				language: language === "auto" ? "he" : language,
+				text: recovery && !timedWords.length ? "" : result.text,
+				words: timedWords,
+				segments: timedWords,
+				language: requestedLanguage ?? "auto",
 			},
 		} satisfies WorkerResponse);
 	} catch (error) {
@@ -194,7 +226,7 @@ self.onmessage = async ({
 			/array\s*buffer allocation failed|out of memory|memory access out of bounds|failed to allocate|cannot allocate|allocation failed/i.test(
 				detail,
 			);
-		if (memoryFailure && device === "webgpu" && !lowMemory) {
+		if (memoryFailure && device === "webgpu" && !multilingual && !lowMemory) {
 			// Transfer ownership back, then let the service terminate this worker.
 			// A failed pipeline load may retain sessions we cannot dispose directly.
 			// Never load the fallback alongside those sessions or clone the audio.
@@ -208,7 +240,7 @@ self.onmessage = async ({
 			type: "error",
 			diagnostic: `${phase}; ${device}; lowMemory=${lowMemory}; audioSeconds=${audio.length / 16000}; files=${JSON.stringify([...loadingFiles])}\n${error instanceof Error ? error.stack : String(error)}`,
 			error: memoryFailure
-				? `Browser transcription ran out of memory${lowMemory ? " even with the reduced-memory model" : " using the CPU model"}. ${phase === "loading-model" ? "Model loading failed before transcription started. Save your work, close this editor tab and reopen the project in a new tab to release browser memory, then retry." : "Save your work and reopen the editor to release browser memory, or retry with a shorter timeline."}${device === "wasm" ? " A browser with WebGPU and fp16 support can use the GPU instead." : ""} (${detail})`
+				? `Browser transcription ran out of memory${device === "wasm" ? " using the CPU model" : !multilingual && lowMemory ? " even with the reduced-memory model" : ""}. ${phase === "loading-model" ? "Model loading failed before transcription started. Save your work, close this editor tab and reopen the project in a new tab to release browser memory, then retry." : "Save your work and reopen the editor to release browser memory, or retry with a shorter timeline."}${device === "wasm" ? " A browser with WebGPU and fp16 support can use the GPU instead." : ""} (${detail})`
 				: `Browser transcription failed: ${detail}. Check model download access and browser GPU support, then retry.`,
 		} satisfies WorkerResponse);
 	} finally {

@@ -1,7 +1,11 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Code2, Loader2, Play, Plus, Square } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEditor } from "@/editor/use-editor";
@@ -65,29 +69,45 @@ export function EarshotLibrary() {
 	return (
 		<div className="flex h-full min-h-0 flex-col gap-3" data-earshot-library>
 			<p className="text-muted-foreground text-xs">
-				{EARSHOT_SOUNDS.length} editable code sounds · drag into the timeline or
-				add at the playhead.
+				{EARSHOT_SOUNDS.length}{" "}
+				<UiMessage
+					text={
+						"editable code sounds · drag into the timeline or add at the playhead."
+					}
+				/>
 			</p>
-			<Input
+			<UiLocalized<typeof Input>
+				element={Input}
+				messageProps={["aria-label", "placeholder"]}
 				aria-label="Search Earshot sounds"
 				placeholder="Search code sounds…"
 				value={query}
 				onChange={(e) => setQuery(e.target.value)}
 			/>
-			<select
+			<UiLocalized<"select">
+				element={"select"}
+				messageProps={["aria-label"]}
 				aria-label="Earshot category"
 				className="bg-input rounded border px-2 py-1 text-xs"
 				value={category}
 				onChange={(e) => setCategory(e.target.value)}
 			>
-				<option value="">All categories</option>
+				<UiLocalized<"option">
+					element={"option"}
+					messageProps={["children"]}
+					value=""
+				>
+					{"All categories"}
+				</UiLocalized>
 				{categories.map((c) => (
 					<option key={c} value={c}>
 						{c.replaceAll("_", " ")}
 					</option>
 				))}
-			</select>
-			<div
+			</UiLocalized>
+			<UiLocalized<"div">
+				element={"div"}
+				messageProps={["aria-label"]}
 				className="min-h-0 flex-1 overflow-y-auto"
 				role="list"
 				aria-label="Earshot code sounds"
@@ -140,7 +160,8 @@ export function EarshotLibrary() {
 							</p>
 							<div className="text-muted-foreground flex items-center gap-2 text-[10px]">
 								<span className="flex items-center gap-1 text-violet-400">
-									<Code2 className="size-3" /> Code · Editable
+									<Code2 className="size-3" />{" "}
+									<UiMessage text={"Code · Editable"} />
 								</span>
 								<span>{sound.duration.toFixed(2)}s</span>
 							</div>
@@ -174,12 +195,14 @@ export function EarshotLibrary() {
 				))}
 				{!sounds.length && (
 					<p className="text-muted-foreground py-4 text-sm">
-						No matching code sounds.
+						<UiMessage text={"No matching code sounds."} />
 					</p>
 				)}
-			</div>
+			</UiLocalized>
 			<p className="text-muted-foreground text-[10px]">
-				Earshot · MIT · includes credited CC0-derived recipes.
+				<UiMessage
+					text={"Earshot · MIT · includes credited CC0-derived recipes."}
+				/>
 			</p>
 		</div>
 	);

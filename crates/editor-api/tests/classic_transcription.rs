@@ -55,6 +55,53 @@ fn captions(s: &Value) -> usize {
 fn section(index: usize) -> Value {
     json!({"type":"append","index":index,"words":[{"text":format!("word-{index}"),"start":index as f64*60.0+1.0,"end":index as f64*60.0+2.0}]})
 }
+
+#[tokio::test]
+async fn selected_browser_model_is_saved_and_restored_with_its_job() {
+    let r = setup().await;
+    let before = state(&r).await;
+    let old = job(&before);
+    call(
+        &r,
+        CAP,
+        json!({
+            "projectId": "classic-project",
+            "expectedRevision": before["revision"],
+            "jobId": "multilingual-job",
+            "change": {
+                "type": "start",
+                "engine": "local",
+                "browserModel": "whisper-large-v3-turbo",
+                "sceneId": "main-scene",
+                "language": "auto",
+                "settings": old["settings"],
+                "defaults": old["defaults"],
+                "totalDuration": old["totalDuration"]
+            }
+        }),
+    )
+    .await;
+    let saved = state(&r).await;
+    let classic = &saved["project"]["classic"];
+    let jobs = &classic["document"]["transcriptionJobs"];
+    assert_eq!(jobs[0]["status"], "superseded");
+    assert!(jobs[0].get("browserModel").is_none());
+    assert_eq!(jobs[1]["browserModel"], "whisper-large-v3-turbo");
+    assert_eq!(jobs[1]["language"], "auto");
+
+    let restored = OpenCutRuntime::default();
+    call(
+        &restored,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    assert_eq!(
+        state(&restored).await["project"]["classic"]["document"]["transcriptionJobs"],
+        *jobs
+    );
+}
+
 #[tokio::test]
 async fn chunks_publish_immediately_and_replay_without_duplicate_cues() {
     let r = setup().await;

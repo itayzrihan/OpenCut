@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { UploadIcon } from "@hugeicons/core-free-icons";
 
@@ -40,9 +41,16 @@ export function MediaDragOverlay({
 
 			<div className="space-y-2">
 				<p className="text-muted-foreground max-w-sm text-xs">
-					{isProcessing
-						? `Processing your files (${progress}%)`
-						: "Drag and drop videos, photos, and audio files here"}
+					{isProcessing ? (
+						<UiMessage
+							text={"Processing your files ({v0}%)"}
+							values={{ v0: String(progress) }}
+						/>
+					) : (
+						<UiMessage
+							text={"Drag and drop videos, photos, and audio files here"}
+						/>
+					)}
 				</p>
 			</div>
 

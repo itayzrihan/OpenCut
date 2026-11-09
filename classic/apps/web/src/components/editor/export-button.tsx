@@ -1,5 +1,11 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEffect, useState, useRef } from "react";
 import { TransitionTopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -19,7 +25,7 @@ import {
 	type ExportResult,
 } from "@/export";
 import { downloadBlob } from "@/utils/browser";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	Check,
 	Copy,
@@ -53,7 +59,9 @@ export function ExportButton() {
 
 	return (
 		<div className="flex items-center gap-1">
-			<Button
+			<UiLocalized<typeof Button>
+				element={Button}
+				messageProps={["aria-label", "title"]}
 				variant="ghost"
 				size="icon"
 				aria-label="Open Render Queue"
@@ -61,7 +69,7 @@ export function ExportButton() {
 				onClick={openRenderQueue}
 			>
 				<ListVideo />
-			</Button>
+			</UiLocalized>
 			<Popover
 				open={isExportPopoverOpen}
 				onOpenChange={(open) => handlePopoverOpenChange({ open })}
@@ -70,7 +78,7 @@ export function ExportButton() {
 					<button
 						type="button"
 						className={cn(
-							"flex items-center gap-1.5 rounded-md bg-[#38BDF8] px-[0.12rem] py-[0.12rem] text-white",
+							"flex items-center rounded-lg border border-primary/55 bg-primary font-semibold text-primary-foreground outline-none enabled:hover:bg-primary/85 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
 							hasProject ? "cursor-pointer" : "cursor-not-allowed opacity-50",
 						)}
 						onClick={
@@ -84,15 +92,11 @@ export function ExportButton() {
 							}
 						}}
 					>
-						<div className="relative flex items-center gap-1.5 rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7] px-4 py-1 shadow-[0_1px_3px_0px_rgba(0,0,0,0.65)]">
-							<HugeiconsIcon
-								icon={TransitionTopIcon}
-								className="z-50 size-3.5"
-							/>
-							<span className="z-50 text-[0.875rem]">Export</span>
-							<div className="absolute top-0 left-0 z-10 flex size-full items-center justify-center rounded-[0.6rem] bg-linear-to-t from-white/0 to-white/50">
-								<div className="absolute top-[0.08rem] z-50 h-[calc(100%-2px)] w-[calc(100%-2px)] rounded-[0.6rem] bg-linear-270 from-[#2567EC] to-[#37B6F7]"></div>
-							</div>
+						<div className="relative flex min-h-8 items-center gap-1.5 px-3">
+							<HugeiconsIcon icon={TransitionTopIcon} className="size-3.5" />
+							<span className="text-sm">
+								<UiMessage text={"Export"} />
+							</span>
 						</div>
 					</button>
 				</PopoverTrigger>
@@ -258,7 +262,12 @@ function ExportPopover({
 		readyFormat: ExportFormat;
 	}) => {
 		const filename = `${activeProject.metadata.name}${getExportFileExtension({ format: readyFormat })}`;
-		if (result.savedFileName) toast.success(`Saved ${result.savedFileName}`);
+		if (result.savedFileName)
+			toast.success(
+				localizeClientMessage("Saved {v0}", {
+					v0: String(result.savedFileName),
+				}),
+			);
 		else if (result.file) downloadBlob({ blob: result.file, filename });
 		else if (result.buffer)
 			downloadBuffer({
@@ -293,7 +302,11 @@ function ExportPopover({
 				<>
 					<div className="flex items-center justify-between p-3 border-b">
 						<h3 className="font-medium text-sm">
-							{isExporting ? "Exporting project" : "Export project"}
+							{isExporting ? (
+								<UiMessage text={"Exporting project"} />
+							) : (
+								<UiMessage text={"Export project"} />
+							)}
 						</h3>
 					</div>
 
@@ -322,7 +335,9 @@ function ExportPopover({
 									/>
 									{plan && <ExportPlanSummary plan={plan} />}
 									{checkingEncoder && (
-										<p className="text-xs">Checking encoder support…</p>
+										<p className="text-xs">
+											<UiMessage text={"Checking encoder support…"} />
+										</p>
 									)}
 									{(planError || encoderError) && (
 										<p role="alert" className="text-xs text-destructive">
@@ -343,11 +358,18 @@ function ExportPopover({
 										className="w-full gap-2"
 									>
 										<ListPlus className="size-4" />
-										{isQueueing ? "Adding snapshot…" : "Add to Render Queue"}
+										{isQueueing ? (
+											<UiMessage text={"Adding snapshot…"} />
+										) : (
+											<UiMessage text={"Add to Render Queue"} />
+										)}
 									</Button>
 									<p className="text-xs text-muted-foreground">
-										Renders this scene as it is now. Continue editing while the
-										queue runs in its own window.
+										<UiMessage
+											text={
+												"Renders this scene as it is now. Continue editing while the queue runs in its own window."
+											}
+										/>
 									</p>
 									<Button
 										onClick={handleExport}
@@ -358,7 +380,7 @@ function ExportPopover({
 										className="w-full gap-2"
 									>
 										<Download className="size-4" />
-										Export
+										<UiMessage text={"Export"} />
 									</Button>
 								</div>
 							</>
@@ -367,9 +389,13 @@ function ExportPopover({
 						{!isExporting && hasReadyExport && (
 							<div className="space-y-3 p-3">
 								<div>
-									<p className="text-sm font-medium">Export ready</p>
+									<p className="text-sm font-medium">
+										<UiMessage text={"Export ready"} />
+									</p>
 									<p className="text-muted-foreground mt-1 text-xs">
-										Your rendered file is ready for download.
+										<UiMessage
+											text={"Your rendered file is ready for download."}
+										/>
 									</p>
 								</div>
 								<Button
@@ -377,7 +403,7 @@ function ExportPopover({
 									className="w-full gap-2"
 								>
 									<Download className="size-4" />
-									Download export
+									<UiMessage text={"Download export"} />
 								</Button>
 							</div>
 						)}
@@ -387,7 +413,7 @@ function ExportPopover({
 								<div className="flex flex-col gap-2">
 									<div className="flex items-center justify-between text-center">
 										<p className="text-muted-foreground text-sm">
-											{exportState.phase ?? "Exporting"} ·{" "}
+											{exportState.phase ?? <UiMessage text={"Exporting"} />} ·{" "}
 											{(progress * 100).toFixed(1)}%
 										</p>
 										<p className="text-muted-foreground text-sm">100%</p>
@@ -400,7 +426,7 @@ function ExportPopover({
 									className="w-full rounded-md"
 									onClick={handleCancel}
 								>
-									Cancel
+									<UiMessage text={"Cancel"} />
 								</Button>
 							</div>
 						)}
@@ -429,8 +455,12 @@ function ExportError({
 	return (
 		<div className="space-y-4 p-3">
 			<div className="flex flex-col gap-1.5">
-				<p className="text-destructive text-sm font-medium">Export failed</p>
-				<p className="text-muted-foreground text-xs">{error}</p>
+				<p className="text-destructive text-sm font-medium">
+					<UiMessage text={"Export failed"} />
+				</p>
+				<p className="text-muted-foreground text-xs">
+					<UiValue>{error}</UiValue>
+				</p>
 			</div>
 
 			<div className="flex gap-2">
@@ -441,7 +471,7 @@ function ExportError({
 					onClick={handleCopy}
 				>
 					{copied ? <Check className="text-constructive" /> : <Copy />}
-					Copy
+					<UiMessage text={"Copy"} />
 				</Button>
 				<Button
 					variant="outline"
@@ -450,7 +480,7 @@ function ExportError({
 					onClick={onRetry}
 				>
 					<RotateCcw />
-					Retry
+					<UiMessage text={"Retry"} />
 				</Button>
 			</div>
 		</div>

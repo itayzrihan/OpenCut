@@ -4,6 +4,7 @@ import type {
 	TranscriptionResult,
 	TranscriptionProgress,
 } from "@/transcription/types";
+import type { BrowserTranscriptionModel } from "@/transcription/models";
 import type { WorkerMessage, WorkerResponse } from "./worker";
 
 export function assertBrowserTranscriptionAvailable() {
@@ -21,11 +22,13 @@ export class TranscriptionService {
 	async transcribe({
 		audioData,
 		language = "auto",
+		browserModel,
 		signal,
 		onProgress,
 	}: {
 		audioData: Float32Array;
 		language?: TranscriptionLanguage;
+		browserModel?: BrowserTranscriptionModel;
 		signal?: AbortSignal;
 		onProgress?: (progress: TranscriptionProgress) => void;
 	}): Promise<TranscriptionResult> {
@@ -46,6 +49,7 @@ export class TranscriptionService {
 				this.run({
 					audioData,
 					language,
+					browserModel,
 					signal: controller.signal,
 					onProgress,
 					account,
@@ -75,13 +79,16 @@ export class TranscriptionService {
 	/** One model, one bounded PCM window, one GPU lease for the complete job. */
 	async withChunkSession<T>({
 		signal,
+		browserModel,
 		run,
 	}: {
 		signal: AbortSignal;
+		browserModel?: BrowserTranscriptionModel;
 		run: (
 			transcribe: (input: {
 				load: () => Promise<Float32Array>;
 				language: TranscriptionLanguage;
+				recovery?: boolean;
 				onProgress?: (progress: TranscriptionProgress) => void;
 			}) => Promise<TranscriptionResult>,
 			signal: AbortSignal,
@@ -101,57 +108,62 @@ export class TranscriptionService {
 		let windowsSinceRestart = 0;
 		const execute = async () => {
 			try {
-				const result = await run(async ({ load, language, onProgress }) => {
-					for (let attempt = 0; ; attempt++) {
-						combined.throwIfAborted();
-						changed();
-						combined.throwIfAborted();
-						// Bound ONNX/driver allocator lifetime even when tensors are disposed.
-						// Cached model weights are reloaded only after the old worker exits.
-						if (windowsSinceRestart >= 8) {
-							worker?.terminate();
-							worker = undefined;
-							windowsSinceRestart = 0;
-						}
-						const audioData = await load();
-						if (audioData.length > 90 * 16000)
-							throw new Error(
-								"Transcription window exceeds the bounded memory limit",
-							);
-						combined.throwIfAborted();
-						worker ??= new Worker(new URL("./worker.ts", import.meta.url), {
-							type: "module",
-						});
-						try {
-							const result = await this.run({
-								audioData,
-								language,
-								signal: combined,
-								account,
-								onProgress,
-								lowMemory: true,
-								residentWorker: worker,
-							});
-							windowsSinceRestart++;
-							return result;
-						} catch (error) {
-							worker.terminate();
-							worker = undefined;
+				const result = await run(
+					async ({ load, language, onProgress, recovery }) => {
+						for (let attempt = 0; ; attempt++) {
 							combined.throwIfAborted();
-							if (
-								attempt ||
-								!/memory|allocat|worker|device.*lost/i.test(String(error))
-							)
-								throw error;
-							onProgress?.({
-								status: "transcribing",
-								progress: 0,
-								message:
-									"Restarting the audio worker; completed sections are saved…",
+							changed();
+							combined.throwIfAborted();
+							// Bound ONNX/driver allocator lifetime even when tensors are disposed.
+							// Cached model weights are reloaded only after the old worker exits.
+							if (windowsSinceRestart >= 8) {
+								worker?.terminate();
+								worker = undefined;
+								windowsSinceRestart = 0;
+							}
+							const audioData = await load();
+							if (audioData.length > 90 * 16000)
+								throw new Error(
+									"Transcription window exceeds the bounded memory limit",
+								);
+							combined.throwIfAborted();
+							worker ??= new Worker(new URL("./worker.ts", import.meta.url), {
+								type: "module",
 							});
+							try {
+								const result = await this.run({
+									audioData,
+									language,
+									browserModel,
+									signal: combined,
+									account,
+									onProgress,
+									lowMemory: true,
+									recovery,
+									residentWorker: worker,
+								});
+								windowsSinceRestart++;
+								return result;
+							} catch (error) {
+								worker.terminate();
+								worker = undefined;
+								combined.throwIfAborted();
+								if (
+									attempt ||
+									!/memory|allocat|worker|device.*lost/i.test(String(error))
+								)
+									throw error;
+								onProgress?.({
+									status: "transcribing",
+									progress: 0,
+									message:
+										"Restarting the audio worker; completed sections are saved…",
+								});
+							}
 						}
-					}
-				}, combined);
+					},
+					combined,
+				);
 				changed();
 				combined.throwIfAborted();
 				return result;
@@ -176,18 +188,22 @@ export class TranscriptionService {
 	private run({
 		audioData,
 		language,
+		browserModel,
 		signal,
 		onProgress,
 		account,
 		lowMemory = false,
+		recovery,
 		residentWorker,
 	}: {
 		audioData: Float32Array;
 		language: TranscriptionLanguage;
+		browserModel?: BrowserTranscriptionModel;
 		signal: AbortSignal;
 		onProgress?: (progress: TranscriptionProgress) => void;
 		account: string | null;
 		lowMemory?: boolean;
+		recovery?: boolean;
 		residentWorker?: Worker;
 	}): Promise<TranscriptionResult> {
 		signal.throwIfAborted();
@@ -288,10 +304,12 @@ export class TranscriptionService {
 							this.run({
 								audioData: data.audio,
 								language,
+								browserModel,
 								signal,
 								onProgress,
 								account,
 								lowMemory: true,
+								recovery,
 							}),
 						);
 					} catch (error) {
@@ -311,7 +329,9 @@ export class TranscriptionService {
 					{
 						audio: audioData,
 						language,
+						browserModel,
 						lowMemory,
+						...(recovery ? { recovery: true } : {}),
 						...(residentWorker ? { keepAlive: true } : {}),
 					} satisfies WorkerMessage,
 					[audioData.buffer],

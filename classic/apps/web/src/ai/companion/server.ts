@@ -59,7 +59,7 @@ export function createCompanionServer({
 				"Cache-Control": "no-store",
 			});
 			return res.end(
-				"<!doctype html><title>OpenCut AI</title><h1>OpenAI sign-in did not complete</h1><p>Return to OpenCut and select Connect this device to try again.</p>",
+				"<!doctype html><title>POCUT AI</title><h1>OpenAI sign-in did not complete</h1><p>Return to POCUT and select Connect this device to try again.</p>",
 			);
 		}
 		const callback =
@@ -89,7 +89,7 @@ export function createCompanionServer({
 			)
 				return fail({
 					status: 401,
-					error: "This OpenCut account is not paired with this device",
+					error: "This POCUT account is not paired with this device",
 				});
 			const allowed =
 				req.method === "GET"

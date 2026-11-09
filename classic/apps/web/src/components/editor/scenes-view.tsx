@@ -1,5 +1,7 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import { Message as UiMessage } from "@/i18n/message";
 import {
 	Sheet,
 	SheetContent,
@@ -28,7 +30,7 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { canDeleteScene, getMainScene } from "@/timeline/scenes";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { useEditor } from "@/editor/use-editor";
 import { exportSceneToPremiereXml } from "@/export/premiere-xml";
 
@@ -106,7 +108,11 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 				fps: project.settings.fps,
 				canvasSize: project.settings.canvasSize,
 			});
-			toast.success(`Exported “${scene.name}” for Premiere Pro`);
+			toast.success(
+				localizeClientMessage("Exported “{v0}” for Premiere Pro", {
+					v0: String(scene.name),
+				}),
+			);
 		} catch (error) {
 			toast.error(
 				error instanceof Error ? error.message : "Premiere XML export failed",
@@ -125,12 +131,21 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 			<SheetContent>
 				<SheetHeader>
 					<SheetTitle>
-						{isSelectMode ? `Select scenes (${selectedScenes.size})` : "Scenes"}
+						{isSelectMode ? (
+							<UiMessage
+								text={"Select scenes ({v0})"}
+								values={{ v0: String(selectedScenes.size) }}
+							/>
+						) : (
+							<UiMessage text={"Scenes"} />
+						)}
 					</SheetTitle>
 					<SheetDescription>
-						{isSelectMode
-							? "Select scenes to delete"
-							: "Switch between scenes in your project"}
+						{isSelectMode ? (
+							<UiMessage text={"Select scenes to delete"} />
+						) : (
+							<UiMessage text={"Switch between scenes in your project"} />
+						)}
 					</SheetDescription>
 				</SheetHeader>
 				<div className="flex flex-col gap-4 py-4">
@@ -142,7 +157,11 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 							onClick={handleSelectMode}
 						>
 							<ListCheck />
-							{isSelectMode ? "Cancel" : "Select"}
+							{isSelectMode ? (
+								<UiMessage text={"Cancel"} />
+							) : (
+								<UiMessage text={"Select"} />
+							)}
 						</Button>
 						{isSelectMode && (
 							<DeleteDialog
@@ -157,7 +176,8 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 										size="sm"
 									>
 										<Trash2 />
-										Delete ({selectedScenes.size})
+										<UiMessage text={"Delete ("} />
+										{selectedScenes.size})
 									</Button>
 								}
 							/>
@@ -165,7 +185,7 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 					</div>
 					{scenes.length === 0 ? (
 						<div className="text-muted-foreground text-sm">
-							No scenes available
+							<UiMessage text={"No scenes available"} />
 						</div>
 					) : (
 						<div className="space-y-2">
@@ -196,10 +216,12 @@ export function ScenesView({ children }: { children: React.ReactNode }) {
 									</ContextMenuTrigger>
 									<ContextMenuContent className="w-56">
 										<ContextMenuItem
-											onClick={() => handlePremiereExport({ sceneId: scene.id })}
+											onClick={() =>
+												handlePremiereExport({ sceneId: scene.id })
+											}
 										>
 											<FileOutput className="size-4" />
-											Export Premiere Pro XML
+											<UiMessage text={"Export Premiere Pro XML"} />
 										</ContextMenuItem>
 									</ContextMenuContent>
 								</ContextMenu>
@@ -235,22 +257,26 @@ function DeleteDialog({
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Delete Scenes</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Delete Scenes"} />
+					</DialogTitle>
 					<DialogDescription>
-						Are you sure you want to delete {count} scene
-						{count === 1 ? "" : "s"}? This action cannot be undone.
+						<UiMessage text={"Are you sure you want to delete"} /> {count}{" "}
+						<UiMessage text={"scene"} />
+						{count === 1 ? "" : "s"}
+						<UiMessage text={"? This action cannot be undone."} />
 					</DialogDescription>
 				</DialogHeader>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => setOpen(false)}>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button
 						variant="destructive"
 						onClick={handleDelete}
 						disabled={disabled}
 					>
-						Delete
+						<UiMessage text={"Delete"} />
 					</Button>
 				</DialogFooter>
 			</DialogContent>

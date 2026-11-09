@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 const endpoint = "/api/editor-agent/hyperframes-catalog-preview";
 type Lease = {
@@ -172,8 +173,8 @@ export function CatalogLivePreview({
 			)}
 			{lease?.missingFiles?.length ? (
 				<div className="absolute inset-x-0 top-0 bg-black/85 p-2 text-xs text-amber-200">
-					Partial preview: the upstream source is missing{" "}
-					{lease.missingFiles.length} media files.
+					<UiMessage text={"Partial preview: the upstream source is missing"} />{" "}
+					{lease.missingFiles.length} <UiMessage text={"media files."} />
 				</div>
 			) : null}
 			{status && (

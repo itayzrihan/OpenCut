@@ -7,7 +7,7 @@ interface BasePageProps {
 	className?: string;
 	mainClassName?: string;
 	maxWidth?: "3xl" | "6xl" | "full";
-	title?: string;
+	title?: React.ReactNode;
 	description?: React.ReactNode;
 	action?: React.ReactNode;
 }

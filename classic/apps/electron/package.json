@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "com.opencut.electron",
-    "productName": "OpenCut",
+    "productName": "POCUT",
     "asar": true,
     "npmRebuild": false,
     "directories": {
@@ -42,7 +42,7 @@
         "to": "app-server/apps/web/public"
       }
     ],
-    "icon": "../web/public/icons/ms-icon-310x310.png",
+    "icon": "../web/public/pocut/mark.png",
     "win": {
       "target": "nsis"
     },
@@ -57,6 +57,6 @@
       "target": "AppImage",
       "category": "AudioVideo"
     },
-    "artifactName": "OpenCut-Electron-${version}-${os}-${arch}.${ext}"
+    "artifactName": "POCUT-Electron-${version}-${os}-${arch}.${ext}"
   }
 }

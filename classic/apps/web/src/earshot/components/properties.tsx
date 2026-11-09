@@ -1,7 +1,11 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useId, useRef, useState } from "react";
 import { Code2, Loader2, Play } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEditor } from "@/editor/use-editor";
@@ -128,14 +132,17 @@ export function EarshotProperties({
 		<div className="space-y-4 p-4" data-earshot-properties>
 			<div>
 				<h3 className="flex items-center gap-2 text-sm font-medium">
-					<Code2 className="size-4 text-violet-400" /> Earshot · Editable code
+					<Code2 className="size-4 text-violet-400" />{" "}
+					<UiMessage text={"Earshot · Editable code"} />
 				</h3>
 				<p className="text-muted-foreground mt-1 text-xs">{draft.presetId}</p>
 			</div>
 			<div className="grid grid-cols-2 gap-3">
 				<label htmlFor={`${controlId}-duration`} className="space-y-1 text-xs">
-					Duration (s)
-					<Input
+					<UiMessage text={"Duration (s)"} />
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["aria-label"]}
 						id={`${controlId}-duration`}
 						aria-label="Code sound duration"
 						type="number"
@@ -147,8 +154,10 @@ export function EarshotProperties({
 					/>
 				</label>
 				<label htmlFor={`${controlId}-seed`} className="space-y-1 text-xs">
-					Seed
-					<Input
+					<UiMessage text={"Seed"} />
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["aria-label"]}
 						id={`${controlId}-seed`}
 						aria-label="Code sound seed"
 						type="number"
@@ -160,8 +169,10 @@ export function EarshotProperties({
 					/>
 				</label>
 				<label htmlFor={`${controlId}-apex`} className="space-y-1 text-xs">
-					Peak time (s)
-					<Input
+					<UiMessage text={"Peak time (s)"} />
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["aria-label", "placeholder"]}
 						id={`${controlId}-apex`}
 						aria-label="Code sound apex"
 						type="number"
@@ -178,8 +189,10 @@ export function EarshotProperties({
 					/>
 				</label>
 				<label htmlFor={`${controlId}-pitch`} className="space-y-1 text-xs">
-					Pitch (note / Hz)
-					<Input
+					<UiMessage text={"Pitch (note / Hz)"} />
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["aria-label", "placeholder"]}
 						id={`${controlId}-pitch`}
 						aria-label="Code sound pitch"
 						value={draft.pitch ?? ""}
@@ -200,7 +213,9 @@ export function EarshotProperties({
 				</label>
 			</div>
 			<fieldset className="space-y-2 rounded border p-3">
-				<legend className="px-1 text-xs">Echo</legend>
+				<legend className="px-1 text-xs">
+					<UiMessage text={"Echo"} />
+				</legend>
 				<label className="flex items-center gap-2 text-xs">
 					<input
 						type="checkbox"
@@ -213,7 +228,7 @@ export function EarshotProperties({
 							})
 						}
 					/>{" "}
-					Enable echo
+					<UiMessage text={"Enable echo"} />
 				</label>
 				{draft.echo && (
 					<div className="grid grid-cols-3 gap-2">
@@ -244,17 +259,20 @@ export function EarshotProperties({
 					</div>
 				)}
 				<p className="text-muted-foreground text-[10px]">
-					Echo stays inside the clip duration. Extend the duration for a longer
-					tail.
+					<UiMessage
+						text={
+							"Echo stays inside the clip duration. Extend the duration for a longer tail."
+						}
+					/>
 				</p>
 			</fieldset>
 			<details>
 				<summary className="cursor-pointer text-xs font-medium">
-					Recipe parameters
+					<UiMessage text={"Recipe parameters"} />
 				</summary>
 				<details className="mt-2">
 					<summary className="text-muted-foreground text-xs">
-						Original parameter values
+						<UiMessage text={"Original parameter values"} />
 					</summary>
 					<pre className="max-h-48 overflow-auto text-[10px]">
 						{JSON.stringify(sound?.parameters ?? {}, null, 2)}
@@ -268,13 +286,16 @@ export function EarshotProperties({
 					onChange={(e) => setParameters(e.target.value)}
 				/>
 				<p className="text-muted-foreground text-[10px]">
-					Numeric overrides for the recipe’s parameters. Unspecified values keep
-					the original sound.
+					<UiMessage
+						text={
+							"Numeric overrides for the recipe’s parameters. Unspecified values keep the original sound."
+						}
+					/>
 				</p>
 			</details>
 			<details>
 				<summary className="cursor-pointer text-xs font-medium">
-					Edit Python recipe
+					<UiMessage text={"Edit Python recipe"} />
 				</summary>
 				<Button
 					variant="outline"
@@ -286,12 +307,14 @@ export function EarshotProperties({
 						setStatus("Editable recipe loaded. Preview before applying.");
 					}}
 				>
-					Customize this sound
+					<UiMessage text={"Customize this sound"} />
 				</Button>
 				<p className="text-muted-foreground my-2 text-xs">
-					Define render(params, r) and return mono or stereo NumPy samples at 48
-					kHz. r is the seeded NumPy random generator. Earshot DSP modules are
-					available. Leave empty to use the original bank recipe.
+					<UiMessage
+						text={
+							"Define render(params, r) and return mono or stereo NumPy samples at 48 kHz. r is the seeded NumPy random generator. Earshot DSP modules are available. Leave empty to use the original bank recipe."
+						}
+					/>
 				</p>
 				<textarea
 					aria-label="Earshot Python recipe"
@@ -304,7 +327,7 @@ export function EarshotProperties({
 				/>
 				<details className="mt-2">
 					<summary className="cursor-pointer text-xs">
-						Upstream source reference
+						<UiMessage text={"Upstream source reference"} />
 					</summary>
 					<Button
 						size="sm"
@@ -312,7 +335,7 @@ export function EarshotProperties({
 						disabled={busy}
 						onClick={() => void loadReference()}
 					>
-						Read {sound?.sourcePath}
+						<UiMessage text={"Read"} /> {sound?.sourcePath}
 					</Button>
 					{reference && (
 						<pre className="max-h-80 overflow-auto whitespace-pre text-[10px]">
@@ -328,10 +351,11 @@ export function EarshotProperties({
 					disabled={busy}
 					onClick={() => void run(false)}
 				>
-					<Play /> Preview
+					<Play /> <UiMessage text={"Preview"} />
 				</Button>
 				<Button size="sm" disabled={busy} onClick={() => void run(true)}>
-					{busy && <Loader2 className="animate-spin" />}Apply changes
+					{busy && <Loader2 className="animate-spin" />}
+					<UiMessage text={"Apply changes"} />
 				</Button>
 				{busy && (
 					<Button
@@ -343,7 +367,7 @@ export function EarshotProperties({
 							setStatus("Cancelled.");
 						}}
 					>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 				)}
 			</div>

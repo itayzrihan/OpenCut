@@ -1,3 +1,9 @@
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { TranscriptionSource } from "./transcription-source";
 import { Button } from "@/components/ui/button";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -85,7 +91,7 @@ import {
 	CAPTION_ACCENT_COLORS,
 	CAPTION_WORD_ANIMATIONS,
 } from "@/text/caption-presets";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { SpellCheck2, WandSparkles, Zap } from "lucide-react";
 import { runAutoTexts } from "@/subtitles/auto-texts";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
@@ -638,9 +644,14 @@ export function Captions() {
 			editor.command.execute({
 				command: new TracksSnapshotCommand({ before, after }),
 			});
-			toast.success(`Corrected ${corrected.changedCount} transcript words`, {
-				description: result.summary,
-			});
+			toast.success(
+				localizeClientMessage("Corrected {v0} transcript words", {
+					v0: String(corrected.changedCount),
+				}),
+				{
+					description: result.summary,
+				},
+			);
 		} catch (error) {
 			if (error instanceof DOMException && error.name === "AbortError") return;
 			toast.error(
@@ -753,7 +764,9 @@ export function Captions() {
 				0,
 			);
 			toast.success(
-				`Message optimized · removed ${removedSeconds.toFixed(1)}s`,
+				localizeClientMessage("Message optimized · removed {v0}s", {
+					v0: String(removedSeconds.toFixed(1)),
+				}),
 				{ description: result.summary },
 			);
 		} catch (error) {
@@ -835,9 +848,14 @@ export function Captions() {
 				command: new TracksSnapshotCommand({ before, after }),
 			});
 			setCaptionSettings(nextSettings);
-			toast.success(`Codex rearranged ${rowBreaks.length} caption rows`, {
-				description: result.summary,
-			});
+			toast.success(
+				localizeClientMessage("Codex rearranged {v0} caption rows", {
+					v0: String(rowBreaks.length),
+				}),
+				{
+					description: result.summary,
+				},
+			);
 		} catch (error) {
 			if (error instanceof DOMException && error.name === "AbortError") return;
 			toast.error(
@@ -903,7 +921,10 @@ export function Captions() {
 		dispatch({ type: "start", step: "Reading subtitle file..." });
 		try {
 			if (file.name.toLowerCase().endsWith(".srt")) {
-				await editor.transcription.importSrt({ file, settings: captionSettings });
+				await editor.transcription.importSrt({
+					file,
+					settings: captionSettings,
+				});
 				dispatch({ type: "succeed", warnings: [] });
 				toast.success("SRT imported as the active transcript");
 				return;
@@ -986,298 +1007,222 @@ export function Captions() {
 
 	return (
 		<>
-			<PanelView
-			title="Captions"
-			contentClassName="px-0 flex flex-col h-full"
-			actions={
-				<TooltipProvider>
-					<div className="flex items-center gap-1.5">
-						{!isProcessing &&
-							activeDiagnostics.map((diagnostic) => (
-								<Tooltip key={diagnostic.id}>
-									<TooltipTrigger asChild>
-										<Button
-											variant={DIAGNOSTIC_BUTTON_VARIANT[diagnostic.severity]}
-											size="icon"
-											aria-label={diagnostic.message}
-										>
-											<HugeiconsIcon icon={AlertCircleIcon} size={16} />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>{diagnostic.message}</TooltipContent>
-								</Tooltip>
-							))}
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							onClick={handleImportClick}
-							disabled={isProcessing}
-							className="items-center justify-center gap-1.5"
-						>
-							<HugeiconsIcon icon={CloudUploadIcon} />
-							Import
-						</Button>
-					</div>
-				</TooltipProvider>
-			}
-			ref={containerRef}
-		>
-			<input
-				ref={fileInputRef}
-				type="file"
-				accept=".srt,.ass"
-				className="hidden"
-				onChange={(event) => void handleFileChange({ event })}
-			/>
-			<Section
-				showTopBorder={false}
-				showBottomBorder={false}
-				className="flex-1"
+			<UiLocalized<typeof PanelView>
+				element={PanelView}
+				messageProps={["title"]}
+				title="Captions"
+				contentClassName="px-0 flex flex-col h-full"
+				actions={
+					<TooltipProvider>
+						<div className="flex items-center gap-1.5">
+							{!isProcessing &&
+								activeDiagnostics.map((diagnostic) => (
+									<Tooltip key={diagnostic.id}>
+										<TooltipTrigger asChild>
+											<Button
+												variant={DIAGNOSTIC_BUTTON_VARIANT[diagnostic.severity]}
+												size="icon"
+												aria-label={diagnostic.message}
+											>
+												<HugeiconsIcon icon={AlertCircleIcon} size={16} />
+											</Button>
+										</TooltipTrigger>
+										<TooltipContent>{diagnostic.message}</TooltipContent>
+									</Tooltip>
+								))}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={handleImportClick}
+								disabled={isProcessing}
+								className="items-center justify-center gap-1.5"
+							>
+								<HugeiconsIcon icon={CloudUploadIcon} />
+								<UiMessage text={"Import"} />
+							</Button>
+						</div>
+					</TooltipProvider>
+				}
+				ref={containerRef}
 			>
-				<SectionContent className="flex flex-col gap-4 h-full pt-1">
-					<TranscriptionSource
-						disabled={isProcessing || autoTextsStep !== null}
-						onImport={handleImportClick}
-					/>
-					<SectionFields>
-						<SectionField label="Language">
-							<Select
-								value={selectedLanguage}
-								onValueChange={(value) => handleLanguageChange({ value })}
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept=".srt,.ass"
+					className="hidden"
+					onChange={(event) => void handleFileChange({ event })}
+				/>
+				<Section
+					showTopBorder={false}
+					showBottomBorder={false}
+					className="flex-1"
+				>
+					<SectionContent className="flex flex-col gap-4 h-full pt-1">
+						<TranscriptionSource
+							disabled={isProcessing || autoTextsStep !== null}
+							onImport={handleImportClick}
+						/>
+						<SectionFields>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Language"
 							>
-								<SelectTrigger>
-									<SelectValue placeholder="Select a language" />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="auto">Auto detect</SelectItem>
-									{TRANSCRIPTION_LANGUAGES.map((language) => (
-										<SelectItem key={language.code} value={language.code}>
-											{language.name}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</SectionField>
-						<SectionField label="Words per row">
-							<Input
-								type="number"
-								min={1}
-								max={12}
-								size="sm"
-								value={captionSettings.wordsPerRow}
-								onChange={(event) =>
-									updateCaptionSetting({
-										key: "wordsPerRow",
-										value: event.target.value,
-									})
-								}
-							/>
-						</SectionField>
-						<SectionField label="Rows">
-							<Input
-								type="number"
-								min={1}
-								max={4}
-								size="sm"
-								value={captionSettings.rows}
-								onChange={(event) =>
-									updateCaptionSetting({
-										key: "rows",
-										value: event.target.value,
-									})
-								}
-							/>
-						</SectionField>
-						<SectionField label="In padding %">
-							<Input
-								type="number"
-								min={0}
-								max={100}
-								step={1}
-								size="sm"
-								value={captionSettings.inPaddingPercent}
-								onChange={(event) =>
-									updateCaptionSetting({
-										key: "inPaddingPercent",
-										value: event.target.value,
-									})
-								}
-							/>
-						</SectionField>
-						<SectionField label="Out padding %">
-							<Input
-								type="number"
-								min={0}
-								max={100}
-								step={1}
-								size="sm"
-								value={captionSettings.outPaddingPercent}
-								onChange={(event) =>
-									updateCaptionSetting({
-										key: "outPaddingPercent",
-										value: event.target.value,
-									})
-								}
-							/>
-						</SectionField>
-						<SectionField label="Bottom fade out %">
-							<Input
-								type="number"
-								min={0}
-								max={100}
-								step={1}
-								size="sm"
-								value={
-									captionSettings.bottomFadeOutPercent ??
-									DEFAULT_CAPTION_LAYOUT.bottomFadeOutPercent
-								}
-								aria-label="Caption bottom fade out percentage"
-								onChange={(event) =>
-									updateCaptionSetting({
-										key: "bottomFadeOutPercent",
-										value: event.target.value,
-									})
-								}
-							/>
-						</SectionField>
-						<SectionField label="Hide punctuation (keep ?)">
-							<Switch
-								checked={captionSettings.hidePunctuation}
-								onCheckedChange={(checked) =>
-									updateCaptionSettings({
-										patch: { hidePunctuation: checked },
-									})
-								}
-								aria-label="Hide punctuation"
-							/>
-						</SectionField>
-						<SectionField label="Placement">
-							<Select
-								value={captionSettings.placementMode}
-								onValueChange={(value) =>
-									updateCaptionSetting({
-										key: "placementMode",
-										value,
-									})
-								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="grid">Grid</SelectItem>
-									<SelectItem value="manual">Manual X/Y</SelectItem>
-								</SelectContent>
-							</Select>
-						</SectionField>
-						{captionSettings.placementMode === "grid" ? (
-							<SectionField
-								label={`Grid position (${placementGrid.columns}x${placementGrid.rows})`}
-							>
-								<div
-									className="grid gap-1"
-									style={{
-										gridTemplateColumns: `repeat(${placementGrid.columns}, minmax(0, 1fr))`,
-									}}
-								>
-									{Array.from({ length: placementGrid.rows }).flatMap(
-										(_, rowIndex) =>
-											Array.from({ length: placementGrid.columns }).map(
-												(__, columnIndex) => {
-													const isSelected =
-														selectedGridCell.columnIndex === columnIndex &&
-														selectedGridCell.rowIndex === rowIndex;
-													return (
-														<button
-															key={`${columnIndex}:${rowIndex}`}
-															type="button"
-															aria-label={`Place captions at column ${columnIndex + 1}, row ${rowIndex + 1}`}
-															className={`border-border bg-input hover:bg-accent focus-visible:ring-ring flex h-7 items-center justify-center rounded-sm border outline-none focus-visible:ring-2 ${
-																isSelected ? "border-primary bg-primary/15" : ""
-															}`}
-															onClick={() =>
-																updateCaptionGridCell({
-																	columnIndex,
-																	rowIndex,
-																})
-															}
-														>
-															<span
-																className={`size-1.5 rounded-full ${
-																	isSelected
-																		? "bg-primary"
-																		: "bg-muted-foreground/35"
-																}`}
-															/>
-														</button>
-													);
-												},
-											),
-									)}
-								</div>
-							</SectionField>
-						) : (
-							<SectionField label="Manual X/Y">
-								<div className="grid grid-cols-2 gap-2">
-									<Input
-										type="number"
-										step={1}
-										size="sm"
-										value={captionSettings.manualPositionX}
-										aria-label="Caption X position"
-										onChange={(event) =>
-											updateCaptionSetting({
-												key: "manualPositionX",
-												value: event.target.value,
-											})
-										}
-									/>
-									<Input
-										type="number"
-										step={1}
-										size="sm"
-										value={captionSettings.manualPositionY}
-										aria-label="Caption Y position"
-										onChange={(event) =>
-											updateCaptionSetting({
-												key: "manualPositionY",
-												value: event.target.value,
-											})
-										}
-									/>
-								</div>
-							</SectionField>
-						)}
-						<SectionField label="Timing">
-							<Select
-								value={captionSettings.revealMode}
-								onValueChange={(value) =>
-									updateCaptionSetting({
-										key: "revealMode",
-										value,
-									})
-								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{CAPTION_REVEAL_MODES.map((mode) => (
-										<SelectItem key={mode.value} value={mode.value}>
-											{mode.label}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</SectionField>
-						{usesTransitionIn(captionSettings.revealMode) && (
-							<SectionField label="Transition in">
 								<Select
-									value={captionSettings.transitionIn}
+									value={selectedLanguage}
+									onValueChange={(value) => handleLanguageChange({ value })}
+								>
+									<SelectTrigger>
+										<UiLocalized<typeof SelectValue>
+											element={SelectValue}
+											messageProps={["placeholder"]}
+											placeholder="Select a language"
+										/>
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="auto">
+											<UiMessage text={"Auto detect"} />
+										</SelectItem>
+										{TRANSCRIPTION_LANGUAGES.map((language) => (
+											<SelectItem key={language.code} value={language.code}>
+												{language.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Words per row"
+							>
+								<Input
+									type="number"
+									min={1}
+									max={12}
+									size="sm"
+									value={captionSettings.wordsPerRow}
+									onChange={(event) =>
+										updateCaptionSetting({
+											key: "wordsPerRow",
+											value: event.target.value,
+										})
+									}
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Rows"
+							>
+								<Input
+									type="number"
+									min={1}
+									max={4}
+									size="sm"
+									value={captionSettings.rows}
+									onChange={(event) =>
+										updateCaptionSetting({
+											key: "rows",
+											value: event.target.value,
+										})
+									}
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="In padding %"
+							>
+								<Input
+									type="number"
+									min={0}
+									max={100}
+									step={1}
+									size="sm"
+									value={captionSettings.inPaddingPercent}
+									onChange={(event) =>
+										updateCaptionSetting({
+											key: "inPaddingPercent",
+											value: event.target.value,
+										})
+									}
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Out padding %"
+							>
+								<Input
+									type="number"
+									min={0}
+									max={100}
+									step={1}
+									size="sm"
+									value={captionSettings.outPaddingPercent}
+									onChange={(event) =>
+										updateCaptionSetting({
+											key: "outPaddingPercent",
+											value: event.target.value,
+										})
+									}
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Bottom fade out %"
+							>
+								<UiLocalized<typeof Input>
+									element={Input}
+									messageProps={["aria-label"]}
+									type="number"
+									min={0}
+									max={100}
+									step={1}
+									size="sm"
+									value={
+										captionSettings.bottomFadeOutPercent ??
+										DEFAULT_CAPTION_LAYOUT.bottomFadeOutPercent
+									}
+									aria-label="Caption bottom fade out percentage"
+									onChange={(event) =>
+										updateCaptionSetting({
+											key: "bottomFadeOutPercent",
+											value: event.target.value,
+										})
+									}
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Hide punctuation (keep ?)"
+							>
+								<UiLocalized<typeof Switch>
+									element={Switch}
+									messageProps={["aria-label"]}
+									checked={captionSettings.hidePunctuation}
+									onCheckedChange={(checked) =>
+										updateCaptionSettings({
+											patch: { hidePunctuation: checked },
+										})
+									}
+									aria-label="Hide punctuation"
+								/>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Placement"
+							>
+								<Select
+									value={captionSettings.placementMode}
 									onValueChange={(value) =>
 										updateCaptionSetting({
-											key: "transitionIn",
+											key: "placementMode",
 											value,
 										})
 									}
@@ -1286,280 +1231,497 @@ export function Captions() {
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										{CAPTION_TRANSITION_IN_OPTIONS.map((option) => (
-											<SelectItem key={option.value} value={option.value}>
-												{option.label}
+										<SelectItem value="grid">
+											<UiMessage text={"Grid"} />
+										</SelectItem>
+										<SelectItem value="manual">
+											<UiMessage text={"Manual X/Y"} />
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</UiLocalized>
+							{captionSettings.placementMode === "grid" ? (
+								<SectionField
+									label={`Grid position (${placementGrid.columns}x${placementGrid.rows})`}
+								>
+									<div
+										className="grid gap-1"
+										style={{
+											gridTemplateColumns: `repeat(${placementGrid.columns}, minmax(0, 1fr))`,
+										}}
+									>
+										{Array.from({ length: placementGrid.rows }).flatMap(
+											(_, rowIndex) =>
+												Array.from({ length: placementGrid.columns }).map(
+													(__, columnIndex) => {
+														const isSelected =
+															selectedGridCell.columnIndex === columnIndex &&
+															selectedGridCell.rowIndex === rowIndex;
+														return (
+															<button
+																key={`${columnIndex}:${rowIndex}`}
+																type="button"
+																aria-label={`Place captions at column ${columnIndex + 1}, row ${rowIndex + 1}`}
+																className={`border-border bg-input hover:bg-accent focus-visible:ring-ring flex h-7 items-center justify-center rounded-sm border outline-none focus-visible:ring-2 ${
+																	isSelected
+																		? "border-primary bg-primary/15"
+																		: ""
+																}`}
+																onClick={() =>
+																	updateCaptionGridCell({
+																		columnIndex,
+																		rowIndex,
+																	})
+																}
+															>
+																<span
+																	className={`size-1.5 rounded-full ${
+																		isSelected
+																			? "bg-primary"
+																			: "bg-muted-foreground/35"
+																	}`}
+																/>
+															</button>
+														);
+													},
+												),
+										)}
+									</div>
+								</SectionField>
+							) : (
+								<UiLocalized<typeof SectionField>
+									element={SectionField}
+									messageProps={["label"]}
+									label="Manual X/Y"
+								>
+									<div className="grid grid-cols-2 gap-2">
+										<UiLocalized<typeof Input>
+											element={Input}
+											messageProps={["aria-label"]}
+											type="number"
+											step={1}
+											size="sm"
+											value={captionSettings.manualPositionX}
+											aria-label="Caption X position"
+											onChange={(event) =>
+												updateCaptionSetting({
+													key: "manualPositionX",
+													value: event.target.value,
+												})
+											}
+										/>
+										<UiLocalized<typeof Input>
+											element={Input}
+											messageProps={["aria-label"]}
+											type="number"
+											step={1}
+											size="sm"
+											value={captionSettings.manualPositionY}
+											aria-label="Caption Y position"
+											onChange={(event) =>
+												updateCaptionSetting({
+													key: "manualPositionY",
+													value: event.target.value,
+												})
+											}
+										/>
+									</div>
+								</UiLocalized>
+							)}
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Timing"
+							>
+								<Select
+									value={captionSettings.revealMode}
+									onValueChange={(value) =>
+										updateCaptionSetting({
+											key: "revealMode",
+											value,
+										})
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{CAPTION_REVEAL_MODES.map((mode) => (
+											<SelectItem key={mode.value} value={mode.value}>
+												{mode.label}
 											</SelectItem>
 										))}
 									</SelectContent>
 								</Select>
-							</SectionField>
-						)}
-						{savedPresets.length > 0 && (
-							<SectionField label="Saved presets">
-								<div className="scrollbar-thin flex max-w-full gap-2 overflow-x-auto pb-1">
-									{savedPresets.map((preset) => (
-										<ContextMenu key={preset.id}>
-											<ContextMenuTrigger asChild>
-												<button
-													type="button"
-													className="bg-accent hover:bg-accent/80 focus-visible:ring-ring flex size-16 shrink-0 items-center justify-center rounded-md border px-1 text-center text-[0.68rem] leading-tight outline-none focus-visible:ring-2"
-													title={preset.name}
-													onClick={() => loadPreset({ presetId: preset.id })}
-												>
-													<span className="line-clamp-3 break-words">
-														{preset.name}
-													</span>
-												</button>
-											</ContextMenuTrigger>
-											<ContextMenuContent>
-												<ContextMenuItem
-													onSelect={() =>
-														void renamePreset({ presetId: preset.id })
-													}
-												>
-													Rename
-												</ContextMenuItem>
-											</ContextMenuContent>
-										</ContextMenu>
-									))}
-								</div>
-							</SectionField>
-						)}
-						<SectionField label="Word animation">
-							<Select
-								value={captionSettings.wordAnimationId}
-								onValueChange={(value) =>
-									value === "none"
-										? updateCaptionSettings({
-												patch: {
-													wordAnimationId: value,
-													revealMode: "determined-by-preset",
-													transitionIn: "none",
-												},
-											})
-										: updateCaptionSetting({
-												key: "wordAnimationId",
+							</UiLocalized>
+							{usesTransitionIn(captionSettings.revealMode) && (
+								<UiLocalized<typeof SectionField>
+									element={SectionField}
+									messageProps={["label"]}
+									label="Transition in"
+								>
+									<Select
+										value={captionSettings.transitionIn}
+										onValueChange={(value) =>
+											updateCaptionSetting({
+												key: "transitionIn",
 												value,
 											})
-								}
+										}
+									>
+										<SelectTrigger>
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent>
+											{CAPTION_TRANSITION_IN_OPTIONS.map((option) => (
+												<SelectItem key={option.value} value={option.value}>
+													{option.label}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</UiLocalized>
+							)}
+							{savedPresets.length > 0 && (
+								<UiLocalized<typeof SectionField>
+									element={SectionField}
+									messageProps={["label"]}
+									label="Saved presets"
+								>
+									<div className="scrollbar-thin flex max-w-full gap-2 overflow-x-auto pb-1">
+										{savedPresets.map((preset) => (
+											<ContextMenu key={preset.id}>
+												<ContextMenuTrigger asChild>
+													<button
+														type="button"
+														className="bg-accent hover:bg-accent/80 focus-visible:ring-ring flex size-16 shrink-0 items-center justify-center rounded-md border px-1 text-center text-[0.68rem] leading-tight outline-none focus-visible:ring-2"
+														title={preset.name}
+														onClick={() => loadPreset({ presetId: preset.id })}
+													>
+														<span className="line-clamp-3 break-words">
+															{preset.name}
+														</span>
+													</button>
+												</ContextMenuTrigger>
+												<ContextMenuContent>
+													<ContextMenuItem
+														onSelect={() =>
+															void renamePreset({ presetId: preset.id })
+														}
+													>
+														<UiMessage text={"Rename"} />
+													</ContextMenuItem>
+												</ContextMenuContent>
+											</ContextMenu>
+										))}
+									</div>
+								</UiLocalized>
+							)}
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Word animation"
 							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{CAPTION_WORD_ANIMATIONS.map((animation) => (
-										<SelectItem key={animation.id} value={animation.id}>
-											{animation.name}
+								<Select
+									value={captionSettings.wordAnimationId}
+									onValueChange={(value) =>
+										value === "none"
+											? updateCaptionSettings({
+													patch: {
+														wordAnimationId: value,
+														revealMode: "determined-by-preset",
+														transitionIn: "none",
+													},
+												})
+											: updateCaptionSetting({
+													key: "wordAnimationId",
+													value,
+												})
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{CAPTION_WORD_ANIMATIONS.map((animation) => (
+											<SelectItem key={animation.id} value={animation.id}>
+												{animation.name}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Accent"
+							>
+								<Select
+									value={captionSettings.accentColor}
+									onValueChange={(value) =>
+										updateCaptionSetting({
+											key: "accentColor",
+											value,
+										})
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{CAPTION_ACCENT_COLORS.map((color) => (
+											<SelectItem key={color.value} value={color.value}>
+												{color.label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</UiLocalized>
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Direction"
+							>
+								<Select
+									value={captionSettings.wordDirection}
+									onValueChange={(value) =>
+										updateCaptionSetting({
+											key: "wordDirection",
+											value,
+										})
+									}
+								>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="auto">
+											<UiMessage text={"Auto"} />
 										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</SectionField>
-						<SectionField label="Accent">
-							<Select
-								value={captionSettings.accentColor}
-								onValueChange={(value) =>
-									updateCaptionSetting({
-										key: "accentColor",
-										value,
-									})
-								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									{CAPTION_ACCENT_COLORS.map((color) => (
-										<SelectItem key={color.value} value={color.value}>
-											{color.label}
+										<SelectItem value="rtl">
+											<UiMessage text={"Right to left"} />
 										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</SectionField>
-						<SectionField label="Direction">
-							<Select
-								value={captionSettings.wordDirection}
-								onValueChange={(value) =>
-									updateCaptionSetting({
-										key: "wordDirection",
-										value,
-									})
-								}
-							>
-								<SelectTrigger>
-									<SelectValue />
-								</SelectTrigger>
-								<SelectContent>
-									<SelectItem value="auto">Auto</SelectItem>
-									<SelectItem value="rtl">Right to left</SelectItem>
-									<SelectItem value="ltr">Left to right</SelectItem>
-								</SelectContent>
-							</Select>
-						</SectionField>
-					</SectionFields>
+										<SelectItem value="ltr">
+											<UiMessage text={"Left to right"} />
+										</SelectItem>
+									</SelectContent>
+								</Select>
+							</UiLocalized>
+						</SectionFields>
 
-					<Button
-						type="button"
-						variant="outline"
-						className="w-full"
-						onClick={() => void saveCurrentPreset()}
-						disabled={isProcessing || autoTextsStep !== null}
-					>
-						Save preset
-					</Button>
-					<Button
-						type="button"
-						variant="outline"
-						className="w-full"
-						onClick={applyCaptionSettings}
-						disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
-					>
-						Apply caption layout
-					</Button>
-					<div className="grid grid-cols-2 gap-2">
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => void handleCorrectTranscript()}
-							disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
-							className="min-w-0 gap-1.5"
-						>
-							{aiAction === "correcting" ? (
-								<Spinner className="size-4" />
-							) : (
-								<SpellCheck2 className="size-4" />
-							)}
-							<span className="truncate">
-								{aiAction === "correcting" ? "Correcting..." : "Codex correct"}
-							</span>
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => void handleOptimizeMessage()}
-							disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
-							className="min-w-0 gap-1.5"
-						>
-							{aiAction === "optimizing" ? (
-								<Spinner className="size-4" />
-							) : (
-								<WandSparkles className="size-4" />
-							)}
-							<span className="truncate">
-								{aiAction === "optimizing"
-									? "Optimizing..."
-									: "Tighten message"}
-							</span>
-						</Button>
-					</div>
-					<Button
-						type="button"
-						variant="outline"
-						className="w-full"
-						onClick={() => void handleRearrangeRows()}
-						disabled={isProcessing || autoTextsStep !== null || !hasGeneratedCaptions}
-					>
-						{aiAction === "rearranging" && <Spinner className="mr-1" />}
-						{aiAction === "rearranging"
-							? "Rearranging rows..."
-							: "Codex Rearrange Rows"}
-					</Button>
-					<div className="mt-auto flex w-full flex-col gap-2">
-						<Button
-							type="button"
 							className="w-full"
-							onClick={() => {
-								if (isTranscriptionProcessing) {
-									editor.transcription.cancel();
-									return;
-								}
-								void handleGenerateTranscript();
-							}}
-							disabled={
-								isLocalProcessing ||
-								autoTextsStep !== null ||
-								transcriptionState.task.status === "cancelling" ||
-								(!isTranscriptionProcessing && activeDiagnostics.length > 0)
-							}
+							onClick={() => void saveCurrentPreset()}
+							disabled={isProcessing || autoTextsStep !== null}
 						>
-							{isProcessing && <Spinner className="mr-1" />}
-							{isTranscriptionProcessing
-								? transcriptionState.task.status === "cancelling"
-									? "Cancelling..."
-									: "Cancel transcription"
-								: isLocalProcessing
-									? processing.step
-									: "Generate transcript"}
+							<UiMessage text={"Save preset"} />
 						</Button>
-						{isTranscriptionProcessing && <p role="status" className="text-xs text-muted-foreground break-words">{getTranscriptionStep({ phase: transcriptionState.task.phase })}</p>}
-						<p className="text-xs text-muted-foreground">
-							Completed sections are saved automatically with either transcription engine.
-						</p>
 						<Button
 							type="button"
 							variant="outline"
-							className="w-full gap-1.5"
-							onClick={() => void handleAutoTexts()}
+							className="w-full"
+							onClick={applyCaptionSettings}
 							disabled={
-								isProcessing ||
-								autoTextsStep !== null ||
-								activeDiagnostics.length > 0
+								isProcessing || autoTextsStep !== null || !hasGeneratedCaptions
 							}
-							title="Generate transcript, Codex-correct it, Codex-rearrange rows, then arrange all text transitions"
 						>
-							{autoTextsStep ? (
-								<Spinner className="size-4" />
-							) : (
-								<Zap className="size-4" />
-							)}
-							<span className="truncate">
-								{autoTextsStep ?? "Auto Texts"}
-							</span>
+							<UiMessage text={"Apply caption layout"} />
 						</Button>
-					</div>
-					{error && (
-						<div className="bg-destructive/10 border-destructive/20 rounded-md border p-3">
-							<p className="text-destructive text-sm">{error}</p>
+						<div className="grid grid-cols-2 gap-2">
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => void handleCorrectTranscript()}
+								disabled={
+									isProcessing ||
+									autoTextsStep !== null ||
+									!hasGeneratedCaptions
+								}
+								className="min-w-0 gap-1.5"
+							>
+								{aiAction === "correcting" ? (
+									<Spinner className="size-4" />
+								) : (
+									<SpellCheck2 className="size-4" />
+								)}
+								<span className="truncate">
+									{aiAction === "correcting" ? (
+										<UiMessage text={"Correcting..."} />
+									) : (
+										<UiMessage text={"Codex correct"} />
+									)}
+								</span>
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								onClick={() => void handleOptimizeMessage()}
+								disabled={
+									isProcessing ||
+									autoTextsStep !== null ||
+									!hasGeneratedCaptions
+								}
+								className="min-w-0 gap-1.5"
+							>
+								{aiAction === "optimizing" ? (
+									<Spinner className="size-4" />
+								) : (
+									<WandSparkles className="size-4" />
+								)}
+								<span className="truncate">
+									{aiAction === "optimizing" ? (
+										<UiMessage text={"Optimizing..."} />
+									) : (
+										<UiMessage text={"Tighten message"} />
+									)}
+								</span>
+							</Button>
 						</div>
-					)}
-					{warnings.length > 0 && (
-						<div className="rounded-md border border-amber-500/20 bg-amber-500/10 p-3">
-							<ul className="space-y-1 text-sm text-amber-700">
-								{warnings.map((warning) => (
-									<li key={warning}>{warning}</li>
-								))}
-							</ul>
+						<Button
+							type="button"
+							variant="outline"
+							className="w-full"
+							onClick={() => void handleRearrangeRows()}
+							disabled={
+								isProcessing || autoTextsStep !== null || !hasGeneratedCaptions
+							}
+						>
+							{aiAction === "rearranging" && <Spinner className="mr-1" />}
+							{aiAction === "rearranging" ? (
+								<UiMessage text={"Rearranging rows..."} />
+							) : (
+								<UiMessage text={"Codex Rearrange Rows"} />
+							)}
+						</Button>
+						<div className="mt-auto flex w-full flex-col gap-2">
+							<Button
+								type="button"
+								className="w-full"
+								onClick={() => {
+									if (isTranscriptionProcessing) {
+										editor.transcription.cancel();
+										return;
+									}
+									void handleGenerateTranscript();
+								}}
+								disabled={
+									isLocalProcessing ||
+									autoTextsStep !== null ||
+									transcriptionState.task.status === "cancelling" ||
+									(!isTranscriptionProcessing && activeDiagnostics.length > 0)
+								}
+							>
+								{isProcessing && <Spinner className="mr-1" />}
+								{isTranscriptionProcessing ? (
+									transcriptionState.task.status === "cancelling" ? (
+										<UiMessage text={"Cancelling..."} />
+									) : (
+										<UiMessage text={"Cancel transcription"} />
+									)
+								) : isLocalProcessing ? (
+									processing.step
+								) : (
+									<UiMessage text={"Generate transcript"} />
+								)}
+							</Button>
+							{isTranscriptionProcessing && (
+								<p
+									role="status"
+									className="text-xs text-muted-foreground break-words"
+								>
+									{getTranscriptionStep({
+										phase: transcriptionState.task.phase,
+									})}
+								</p>
+							)}
+							<p className="text-xs text-muted-foreground">
+								<UiMessage
+									text={
+										"Completed sections are saved automatically with either transcription engine."
+									}
+								/>
+							</p>
+							<UiLocalized<typeof Button>
+								element={Button}
+								messageProps={["title"]}
+								type="button"
+								variant="outline"
+								className="w-full gap-1.5"
+								onClick={() => void handleAutoTexts()}
+								disabled={
+									isProcessing ||
+									autoTextsStep !== null ||
+									activeDiagnostics.length > 0
+								}
+								title="Generate transcript, Codex-correct it, Codex-rearrange rows, then arrange all text transitions"
+							>
+								{autoTextsStep ? (
+									<Spinner className="size-4" />
+								) : (
+									<Zap className="size-4" />
+								)}
+								<span className="truncate">
+									{autoTextsStep ?? <UiMessage text={"Auto Texts"} />}
+								</span>
+							</UiLocalized>
 						</div>
-					)}
-				</SectionContent>
-			</Section>
-			</PanelView>
-			<Dialog open={presetNameDialogOpen} onOpenChange={setPresetNameDialogOpen}>
-			<DialogContent>
-				<DialogHeader>
-					<DialogTitle>Save Preset</DialogTitle>
-				</DialogHeader>
-				<Input
-					placeholder="Enter preset name"
-					value={presetNameInput}
-					onChange={(e) => setPresetNameInput(e.target.value)}
-					onKeyDown={(e) => {
-						if (e.key === "Enter") {
-							void handleSavePresetWithName();
-						}
-					}}
-				/>
-				<DialogFooter>
-					<Button variant="outline" onClick={() => setPresetNameDialogOpen(false)}>
-						Cancel
-					</Button>
-					<Button onClick={() => void handleSavePresetWithName()}>
-						Save
-					</Button>
-				</DialogFooter>
-			</DialogContent>
+						{error && (
+							<div className="bg-destructive/10 border-destructive/20 rounded-md border p-3">
+								<p className="text-destructive text-sm">
+									<UiValue>{error}</UiValue>
+								</p>
+							</div>
+						)}
+						{warnings.length > 0 && (
+							<div className="rounded-md border border-amber-500/20 bg-amber-500/10 p-3">
+								<ul className="space-y-1 text-sm text-amber-700">
+									{warnings.map((warning) => (
+										<li key={warning}>
+											<UiValue>{warning}</UiValue>
+										</li>
+									))}
+								</ul>
+							</div>
+						)}
+					</SectionContent>
+				</Section>
+			</UiLocalized>
+			<Dialog
+				open={presetNameDialogOpen}
+				onOpenChange={setPresetNameDialogOpen}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>
+							<UiMessage text={"Save Preset"} />
+						</DialogTitle>
+					</DialogHeader>
+					<UiLocalized<typeof Input>
+						element={Input}
+						messageProps={["placeholder"]}
+						placeholder="Enter preset name"
+						value={presetNameInput}
+						onChange={(e) => setPresetNameInput(e.target.value)}
+						onKeyDown={(e) => {
+							if (e.key === "Enter") {
+								void handleSavePresetWithName();
+							}
+						}}
+					/>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setPresetNameDialogOpen(false)}
+						>
+							<UiMessage text={"Cancel"} />
+						</Button>
+						<Button onClick={() => void handleSavePresetWithName()}>
+							<UiMessage text={"Save"} />
+						</Button>
+					</DialogFooter>
+				</DialogContent>
 			</Dialog>
 		</>
 	);

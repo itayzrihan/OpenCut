@@ -139,6 +139,7 @@ export async function renderNoiseReducedWindow({
 	signal?: AbortSignal;
 	clip: {
 		trimStart: number;
+		curveTrimStart?: number;
 		duration: number;
 		retime?: RetimeConfig;
 		timelineElement?: AudioCapableElement;
@@ -160,12 +161,21 @@ export async function renderNoiseReducedWindow({
 		clip.duration,
 		offset + duration + (limiting ? lookAheadMs / 1000 + 0.001 : 0),
 	);
+	const curveTrimStart = clip.curveTrimStart ?? clip.trimStart;
 	const sourceStart =
 		clip.trimStart +
-		getSourceTimeAtClipTime({ clipTime: start, retime: clip.retime });
+		getSourceTimeAtClipTime({
+			clipTime: start,
+			retime: clip.retime,
+			trimStart: curveTrimStart,
+		});
 	const sourceEnd =
 		clip.trimStart +
-		getSourceTimeAtClipTime({ clipTime: end, retime: clip.retime });
+		getSourceTimeAtClipTime({
+			clipTime: end,
+			retime: clip.retime,
+			trimStart: curveTrimStart,
+		});
 	const decoded = await readSource(sourceStart, sourceEnd);
 	signal?.throwIfAborted();
 	if (!decoded) return null;
@@ -173,6 +183,8 @@ export async function renderNoiseReducedWindow({
 		audioContext,
 		sourceBuffer: decoded.buffer,
 		trimStart: decoded.trimStart,
+		curveTrimStart,
+		clipTimeOffset: start,
 		clipDuration: end - start,
 		retime: clip.retime,
 		maintainPitch: clip.retime?.maintainPitch === true,

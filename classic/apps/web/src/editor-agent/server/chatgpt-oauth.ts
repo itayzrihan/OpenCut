@@ -60,7 +60,7 @@ export function prepareSignIn({
 	url.search = new URLSearchParams({
 		client_id: attempt.clientId,
 		ext_agent_host_id: hostId,
-		...(saved.clientId ? {} : { agent_name_hint: "OpenCut" }),
+		...(saved.clientId ? {} : { agent_name_hint: "POCUT" }),
 		response_type: "code",
 		redirect_uri: redirectUri,
 		scope:

@@ -117,5 +117,11 @@ export function mapRetimeToTimelineScale({
 	return {
 		...retime,
 		rate: mappedRate,
+		...(retime?.speedKeyframes && {
+			speedKeyframes: retime.speedKeyframes.map((key) => ({
+				...key,
+				rate: key.rate * safeTimelineScale,
+			})),
+		}),
 	};
 }

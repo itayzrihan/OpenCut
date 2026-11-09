@@ -1,4 +1,5 @@
-import { toast } from "sonner";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import { toast } from "@/i18n/toast";
 import { create } from "zustand";
 import { sharedLibraryService } from "./service";
 import type {
@@ -123,7 +124,10 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 			}));
 			if (imported.length > 0) {
 				toast.success(
-					`Added ${imported.length} ${imported.length === 1 ? "sound" : "sounds"}`,
+					localizeClientMessage("Added {v0} {v1}", {
+						v0: String(imported.length),
+						v1: String(imported.length === 1 ? "sound" : "sounds"),
+					}),
 				);
 			}
 			return imported;
@@ -194,7 +198,10 @@ export const useSharedLibraryStore = create<SharedLibraryStore>((set) => ({
 			}));
 			if (imported.length > 0) {
 				toast.success(
-					`Added ${imported.length} ${imported.length === 1 ? "sticker" : "stickers"}`,
+					localizeClientMessage("Added {v0} {v1}", {
+						v0: String(imported.length),
+						v1: String(imported.length === 1 ? "sticker" : "stickers"),
+					}),
 				);
 			}
 			return imported;

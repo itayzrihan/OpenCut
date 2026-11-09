@@ -146,6 +146,7 @@ fn apply(document: &mut EditorDocument, input: &Replace) -> Result<Vec<String>, 
         clip["isSourceAudioEnabled"] != false && original.get("hasAudio") != Some(&json!(false));
     let mut changed = vec![target.element_id.clone()];
     if preserve_audio {
+        let linked = !clip[classic_source_audio::LINK].is_null();
         let muted = track["muted"] == true;
         changed.extend(classic_source_audio::preserve_for_video_replacement(
             document,
@@ -153,6 +154,7 @@ fn apply(document: &mut EditorDocument, input: &Replace) -> Result<Vec<String>, 
             &target.scene_id,
             &target.track_id,
             &target.element_id,
+            linked,
             muted,
         )?);
     }

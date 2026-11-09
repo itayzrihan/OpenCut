@@ -1,6 +1,10 @@
 "use client";
 
 import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import {
 	memo,
 	useCallback,
 	useEffect,
@@ -75,11 +79,21 @@ export function SoundsView() {
 			<Tabs defaultValue="sound-effects" className="flex h-full flex-col">
 				<div className="px-3 pt-4 pb-0">
 					<TabsList>
-						<TabsTrigger value="sound-effects">Sound effects</TabsTrigger>
-						<TabsTrigger value="music">Music</TabsTrigger>
-						<TabsTrigger value="online">Online</TabsTrigger>
-						<TabsTrigger value="saved">Saved</TabsTrigger>
-						<TabsTrigger value="speech">Voiceover</TabsTrigger>
+						<TabsTrigger value="sound-effects">
+							<UiMessage text={"Sound effects"} />
+						</TabsTrigger>
+						<TabsTrigger value="music">
+							<UiMessage text={"Music"} />
+						</TabsTrigger>
+						<TabsTrigger value="online">
+							<UiMessage text={"Online"} />
+						</TabsTrigger>
+						<TabsTrigger value="saved">
+							<UiMessage text={"Saved"} />
+						</TabsTrigger>
+						<TabsTrigger value="speech">
+							<UiMessage text={"Voiceover"} />
+						</TabsTrigger>
 					</TabsList>
 				</div>
 				<Separator className="my-4" />
@@ -94,12 +108,18 @@ export function SoundsView() {
 						defaultValue="files"
 						className="flex min-h-0 flex-1 flex-col gap-3"
 					>
-						<TabsList aria-label="Sound effect source">
-							<TabsTrigger value="files">Audio files</TabsTrigger>
-							<TabsTrigger value="code">
-								Code · Earshot {EARSHOT_SOUNDS.length}
+						<UiLocalized<typeof TabsList>
+							element={TabsList}
+							messageProps={["aria-label"]}
+							aria-label="Sound effect source"
+						>
+							<TabsTrigger value="files">
+								<UiMessage text={"Audio files"} />
 							</TabsTrigger>
-						</TabsList>
+							<TabsTrigger value="code">
+								<UiMessage text={"Code · Earshot"} /> {EARSHOT_SOUNDS.length}
+							</TabsTrigger>
+						</UiLocalized>
 						<TabsContent value="files" className="flex min-h-0 flex-1 flex-col">
 							<SharedAudioFolderView folder="sfx" />
 						</TabsContent>
@@ -312,37 +332,60 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				<div className="min-w-0">
 					<p className="text-sm font-medium">{folderLabel}</p>
 					<p className="text-muted-foreground text-xs">
-						Global sounds are available in every account. Your uploads stay in
-						your account.
+						<UiMessage
+							text={
+								"Global sounds are available in every account. Your uploads stay in your account."
+							}
+						/>
 					</p>
 				</div>
 				<Button size="sm" onClick={openFilePicker}>
 					<HugeiconsIcon icon={PlusSignIcon} />
-					Add
+					<UiMessage text={"Add"} />
 				</Button>
 			</div>
 
 			<div className="flex flex-col gap-2">
-				<Input
+				<UiLocalized<typeof Input>
+					element={Input}
+					messageProps={["aria-label", "placeholder"]}
 					aria-label="Search library audio"
 					placeholder="Search sounds, music or creator"
 					value={search}
 					onChange={(event) => setSearch(event.target.value)}
 				/>
-				<select
+				<UiLocalized<"select">
+					element={"select"}
+					messageProps={["aria-label"]}
 					aria-label="Commercial license filter"
 					className="bg-background rounded border p-2 text-xs"
 					value={licenseFilter}
 					onChange={(event) => setLicenseFilter(event.target.value)}
 				>
-					<option value="all">All licenses</option>
-					<option value="commercial-use-verified">
-						Commercial use verified
-					</option>
-					<option value="needs-review">Commercial license needs review</option>
-				</select>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="all"
+					>
+						{"All licenses"}
+					</UiLocalized>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="commercial-use-verified"
+					>
+						{"Commercial use verified"}
+					</UiLocalized>
+					<UiLocalized<"option">
+						element={"option"}
+						messageProps={["children"]}
+						value="needs-review"
+					>
+						{"Commercial license needs review"}
+					</UiLocalized>
+				</UiLocalized>
 				<span className="text-muted-foreground text-xs">
-					{displayedAssets.length} sounds
+					{displayedAssets.length} <UiMessage text={"sounds"} />
 				</span>
 			</div>
 			<div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hidden">
@@ -358,13 +401,17 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 						icon={folder === "music" ? MusicNote03Icon : Folder03Icon}
 						className="size-5"
 					/>
-					<span className="max-w-full truncate text-xs">All</span>
+					<span className="max-w-full truncate text-xs">
+						<UiMessage text={"All"} />
+					</span>
 					<span className="text-muted-foreground text-[10px]">
 						{folderAssets.length}
 					</span>
 				</button>
 				{scopedCategories.map((category) => (
-					<button
+					<UiLocalized<"button">
+						element={"button"}
+						messageProps={["title"]}
 						key={category.id}
 						type="button"
 						className={cn(
@@ -382,7 +429,7 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 						<span className="text-muted-foreground text-[10px]">
 							{category.assetIds.length}
 						</span>
-					</button>
+					</UiLocalized>
 				))}
 				<Dialog
 					open={isCategoryDialogOpen}
@@ -394,19 +441,28 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 							className="border-muted-foreground/30 text-muted-foreground hover:text-foreground flex size-20 shrink-0 flex-col items-center justify-center gap-1 rounded-sm border border-dashed px-2 text-center"
 						>
 							<HugeiconsIcon icon={PlusSignIcon} className="size-5" />
-							<span className="text-xs">Category</span>
+							<span className="text-xs">
+								<UiMessage text={"Category"} />
+							</span>
 						</button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Create category</DialogTitle>
+							<DialogTitle>
+								<UiMessage text={"Create category"} />
+							</DialogTitle>
 							<DialogDescription>
-								Categories are saved in your account library and can contain the
-								same file in many places.
+								<UiMessage
+									text={
+										"Categories are saved in your account library and can contain the same file in many places."
+									}
+								/>
 							</DialogDescription>
 						</DialogHeader>
 						<DialogBody>
-							<Input
+							<UiLocalized<typeof Input>
+								element={Input}
+								messageProps={["placeholder"]}
 								placeholder="Category name"
 								value={categoryName}
 								onChange={(event) => setCategoryName(event.target.value)}
@@ -423,10 +479,10 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 								variant="text"
 								onClick={() => setIsCategoryDialogOpen(false)}
 							>
-								Cancel
+								<UiMessage text={"Cancel"} />
 							</Button>
 							<Button onClick={() => void handleCreateCategory()}>
-								Create
+								<UiMessage text={"Create"} />
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -438,7 +494,9 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 				className="relative min-h-0 flex-1 overflow-hidden"
 			>
 				{isLoading && folderAssets.length === 0 ? (
-					<p>Loading shared sounds...</p>
+					<p>
+						<UiMessage text={"Loading shared sounds..."} />
+					</p>
 				) : displayedAssets.length ? (
 					<List
 						key={`${folder}:${selectedCategoryId}:${licenseFilter}:${search}`}
@@ -456,7 +514,7 @@ function SharedAudioFolderView({ folder }: { folder: SharedAudioFolder }) {
 					/>
 				) : (
 					<p className="text-muted-foreground py-8 text-center text-sm">
-						No sounds match these filters.
+						<UiMessage text={"No sounds match these filters."} />
 					</p>
 				)}
 			</div>
@@ -555,14 +613,27 @@ const SharedAudioItem = memo(function SharedAudioItem({
 						className="text-muted-foreground block truncate text-[10px]"
 						title={asset.license?.note}
 					>
-						{asset.visibility === "global" ? "Global · " : ""}
-						{asset.license?.status === "commercial-use-verified"
-							? `${asset.license.licenseId} · Commercial use verified`
-							: "Commercial license needs review"}
+						{asset.visibility === "global" ? (
+							<>
+								<UiMessage text={"Global ·"} />{" "}
+							</>
+						) : (
+							""
+						)}
+						{asset.license?.status === "commercial-use-verified" ? (
+							<UiMessage
+								text={"{v0} · Commercial use verified"}
+								values={{ v0: String(asset.license.licenseId) }}
+							/>
+						) : (
+							<UiMessage text={"Commercial license needs review"} />
+						)}
 					</span>
 				</div>
 			</button>
-			<Button
+			<UiLocalized<typeof Button>
+				element={Button}
+				messageProps={["title"]}
 				variant="text"
 				size="icon"
 				className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
@@ -573,7 +644,7 @@ const SharedAudioItem = memo(function SharedAudioItem({
 				title="Add to timeline"
 			>
 				<HugeiconsIcon icon={PlusSignIcon} />
-			</Button>
+			</UiLocalized>
 			{asset.license?.sourcePage && (
 				<a
 					href={asset.license.sourcePage}
@@ -581,12 +652,14 @@ const SharedAudioItem = memo(function SharedAudioItem({
 					rel="noreferrer"
 					className="text-muted-foreground text-xs underline"
 				>
-					Source
+					<UiMessage text={"Source"} />
 				</a>
 			)}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["title"]}
 						variant="text"
 						size="icon"
 						className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
@@ -599,7 +672,7 @@ const SharedAudioItem = memo(function SharedAudioItem({
 						}
 					>
 						<HugeiconsIcon icon={Menu02Icon} />
-					</Button>
+					</UiLocalized>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
 					<DropdownMenuItem
@@ -608,7 +681,7 @@ const SharedAudioItem = memo(function SharedAudioItem({
 							setIsRenameOpen(true);
 						}}
 					>
-						Rename
+						<UiMessage text={"Rename"} />
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onSelect={() =>
@@ -625,10 +698,15 @@ const SharedAudioItem = memo(function SharedAudioItem({
 			<Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Rename sound</DialogTitle>
+						<DialogTitle>
+							<UiMessage text={"Rename sound"} />
+						</DialogTitle>
 						<DialogDescription>
-							The stable sound ID stays unchanged, so presets and timeline clips
-							continue to resolve this file.
+							<UiMessage
+								text={
+									"The stable sound ID stays unchanged, so presets and timeline clips continue to resolve this file."
+								}
+							/>
 						</DialogDescription>
 					</DialogHeader>
 					<DialogBody>
@@ -645,9 +723,11 @@ const SharedAudioItem = memo(function SharedAudioItem({
 					</DialogBody>
 					<DialogFooter>
 						<Button variant="text" onClick={() => setIsRenameOpen(false)}>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</Button>
-						<Button onClick={() => void handleRename()}>Rename</Button>
+						<Button onClick={() => void handleRename()}>
+							<UiMessage text={"Rename"} />
+						</Button>
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
@@ -769,7 +849,7 @@ function VirtualSoundRow({
 				className="text-muted-foreground flex items-center justify-center text-sm"
 				style={style as CSSProperties}
 			>
-				Loading more sounds...
+				<UiMessage text={"Loading more sounds..."} />
 			</div>
 		) : null;
 	}
@@ -940,7 +1020,9 @@ function SoundEffectsView() {
 	return (
 		<div className="mt-1 flex h-full flex-col gap-5">
 			<div className="flex items-center gap-3">
-				<Input
+				<UiLocalized<typeof Input>
+					element={Input}
+					messageProps={["placeholder"]}
 					placeholder="Search sound effects"
 					className="w-full"
 					containerClassName="w-full"
@@ -966,12 +1048,16 @@ function SoundEffectsView() {
 							checked={showCommercialOnly}
 							onCheckedChange={() => toggleCommercialFilter()}
 						>
-							Show only commercially licensed
+							<UiMessage text={"Show only commercially licensed"} />
 						</DropdownMenuCheckboxItem>
 						<div className="text-muted-foreground px-2 py-1.5 text-xs">
-							{showCommercialOnly
-								? "Only showing sounds licensed for commercial use"
-								: "Showing all sounds regardless of license"}
+							{showCommercialOnly ? (
+								<UiMessage
+									text={"Only showing sounds licensed for commercial use"}
+								/>
+							) : (
+								<UiMessage text={"Showing all sounds regardless of license"} />
+							)}
 						</div>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -979,9 +1065,13 @@ function SoundEffectsView() {
 
 			<div className="relative h-full overflow-hidden">
 				{isLoading && !searchQuery ? (
-					<div className="text-muted-foreground text-sm">Loading sounds...</div>
+					<div className="text-muted-foreground text-sm">
+						<UiMessage text={"Loading sounds..."} />
+					</div>
 				) : isSearching && searchQuery ? (
-					<div className="text-muted-foreground text-sm">Searching...</div>
+					<div className="text-muted-foreground text-sm">
+						<UiMessage text={"Searching..."} />
+					</div>
 				) : displayedSounds.length > 0 ? (
 					<VirtualSoundList
 						sounds={displayedSounds}
@@ -996,7 +1086,11 @@ function SoundEffectsView() {
 					/>
 				) : (
 					<div className="text-muted-foreground text-sm">
-						{searchQuery ? "No sounds found" : "No sounds available"}
+						{searchQuery ? (
+							<UiMessage text={"No sounds found"} />
+						) : (
+							<UiMessage text={"No sounds available"} />
+						)}
 					</div>
 				)}
 			</div>
@@ -1063,7 +1157,7 @@ function SavedSoundsView() {
 		return (
 			<div className="flex h-full items-center justify-center">
 				<div className="text-muted-foreground text-sm">
-					Loading saved sounds...
+					<UiMessage text={"Loading saved sounds..."} />
 				</div>
 			</div>
 		);
@@ -1073,7 +1167,7 @@ function SavedSoundsView() {
 		return (
 			<div className="flex h-full items-center justify-center">
 				<div className="text-destructive text-sm">
-					Error: {savedSoundsError}
+					<UiMessage text={"Error:"} /> {savedSoundsError}
 				</div>
 			</div>
 		);
@@ -1087,9 +1181,13 @@ function SavedSoundsView() {
 					className="text-muted-foreground size-10"
 				/>
 				<div className="flex flex-col gap-2 text-center">
-					<p className="text-lg font-medium">No saved sounds</p>
+					<p className="text-lg font-medium">
+						<UiMessage text={"No saved sounds"} />
+					</p>
 					<p className="text-muted-foreground text-sm text-balance">
-						Click the heart icon on any sound to save it here
+						<UiMessage
+							text={"Click the heart icon on any sound to save it here"}
+						/>
 					</p>
 				</div>
 			</div>
@@ -1100,8 +1198,12 @@ function SavedSoundsView() {
 		<div className="mt-1 flex h-full flex-col gap-5">
 			<div className="flex items-center justify-between">
 				<p className="text-muted-foreground text-sm">
-					{savedSounds.length} saved{" "}
-					{savedSounds.length === 1 ? "sound" : "sounds"}
+					{savedSounds.length} <UiMessage text={"saved"} />{" "}
+					{savedSounds.length === 1 ? (
+						<UiMessage text={"sound"} />
+					) : (
+						<UiMessage text={"sounds"} />
+					)}
 				</p>
 				<Dialog open={showClearDialog} onOpenChange={setShowClearDialog}>
 					<DialogTrigger asChild>
@@ -1110,20 +1212,27 @@ function SavedSoundsView() {
 							size="sm"
 							className="text-muted-foreground hover:text-destructive h-auto !opacity-100"
 						>
-							Clear all
+							<UiMessage text={"Clear all"} />
 						</Button>
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Clear all saved sounds?</DialogTitle>
+							<DialogTitle>
+								<UiMessage text={"Clear all saved sounds?"} />
+							</DialogTitle>
 							<DialogDescription>
-								This will permanently remove all {savedSounds.length} saved
-								sounds from your collection. This action cannot be undone.
+								<UiMessage text={"This will permanently remove all"} />{" "}
+								{savedSounds.length}{" "}
+								<UiMessage
+									text={
+										"saved sounds from your collection. This action cannot be undone."
+									}
+								/>
 							</DialogDescription>
 						</DialogHeader>
 						<DialogFooter>
 							<Button variant="text" onClick={() => setShowClearDialog(false)}>
-								Cancel
+								<UiMessage text={"Cancel"} />
 							</Button>
 							<Button
 								variant="destructive"
@@ -1135,7 +1244,7 @@ function SavedSoundsView() {
 									setShowClearDialog(false);
 								}}
 							>
-								Clear all sounds
+								<UiMessage text={"Clear all sounds"} />
 							</Button>
 						</DialogFooter>
 					</DialogContent>
@@ -1215,7 +1324,9 @@ const AudioItem = memo(function AudioItem({
 			</button>
 
 			<div className="flex items-center gap-3 pr-2">
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["title"]}
 					variant="text"
 					size="icon"
 					className="text-muted-foreground hover:text-foreground w-auto !opacity-100"
@@ -1223,8 +1334,10 @@ const AudioItem = memo(function AudioItem({
 					title="Add to timeline"
 				>
 					<HugeiconsIcon icon={PlusSignIcon} />
-				</Button>
-				<Button
+				</UiLocalized>
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["title"]}
 					variant="text"
 					size="icon"
 					className={`hover:text-foreground w-auto !opacity-100 ${
@@ -1239,7 +1352,7 @@ const AudioItem = memo(function AudioItem({
 						icon={FavouriteIcon}
 						className={`${isSaved ? "fill-current" : ""}`}
 					/>
-				</Button>
+				</UiLocalized>
 			</div>
 		</div>
 	);

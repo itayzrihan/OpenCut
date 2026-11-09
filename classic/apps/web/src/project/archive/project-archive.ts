@@ -159,7 +159,7 @@ function projectArchiveFileName({
 }): string {
 	return `${safeFileName({
 		name: projectName,
-		fallback: "OpenCut project",
+		fallback: "POCUT project",
 	})}${PROJECT_ARCHIVE_EXTENSION}`;
 }
 
@@ -502,7 +502,7 @@ function reviveProject({ value }: { value: unknown }): TProject {
 		!project.metadata.name ||
 		!Array.isArray(project.scenes)
 	) {
-		throw new Error("Invalid OpenCut project archive");
+		throw new Error("Invalid POCUT project archive");
 	}
 
 	return {
@@ -535,7 +535,7 @@ async function readRequiredFile({
 }): Promise<File> {
 	const entry = entries.get(path);
 	if (!entry) {
-		throw new Error(`Invalid OpenCut project archive: missing ${path}`);
+		throw new Error(`Invalid POCUT project archive: missing ${path}`);
 	}
 
 	return new File([entry.blob], fileName, {
@@ -849,18 +849,18 @@ export async function importProjectArchive({
 	const entries = await readZipEntries({ blob: file });
 	const manifestEntry = entries.get(MANIFEST_PATH);
 	if (!manifestEntry) {
-		throw new Error("Invalid OpenCut project archive: missing manifest");
+		throw new Error("Invalid POCUT project archive: missing manifest");
 	}
 
 	const manifestValue = await manifestEntry.json();
 	if (!isArchiveManifest(manifestValue)) {
-		throw new Error("Invalid OpenCut project archive");
+		throw new Error("Invalid POCUT project archive");
 	}
 	const manifest = manifestValue;
 
 	const projectEntry = entries.get(manifest.project.path);
 	if (!projectEntry) {
-		throw new Error("Invalid OpenCut project archive: missing project");
+		throw new Error("Invalid POCUT project archive: missing project");
 	}
 
 	const sourceProject = reviveProject({ value: await projectEntry.json() });

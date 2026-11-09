@@ -283,7 +283,7 @@ export async function generateUiElementPreset({
 }): Promise<Omit<GeneratedUiElementPreset, "id" | "createdAt" | "updatedAt">> {
 	const value = await requestPresetJson({
 		system: [
-			"You create one reusable OpenCut minimal product-UI motion asset as JSON only.",
+			"You create one reusable POCUT minimal product-UI motion asset as JSON only.",
 			"Return name, description, category, keywords, whenToUse, template, label, secondary, items, accent, background, foreground, progress, count, intensity, defaultDurationSeconds, animationStyle, animationInEnd, animationOutStart, animationStrength, and eventAt.",
 			`template must be one of: ${MINIMAL_PRODUCT_UI_TEMPLATES.join(", ")}.`,
 			`category must be one of: ${UI_ELEMENT_CATEGORIES.join(", ")}.`,

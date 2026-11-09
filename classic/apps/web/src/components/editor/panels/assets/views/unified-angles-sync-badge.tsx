@@ -1,4 +1,8 @@
 "use client";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { LoaderCircle } from "lucide-react";
 import type { MediaAsset } from "@/media/types";
 import { unifiedAnglesSyncStatus } from "@/media/unified-angles";
@@ -22,12 +26,14 @@ export function UnifiedAnglesSyncBadge({ item }: { item: MediaAsset }) {
 	const readOnly = editor.project.getSessionReadOnlyReason();
 	if (status === "synced")
 		return (
-			<span
+			<UiLocalized<"span">
+				element={"span"}
+				messageProps={["title"]}
 				className="block text-[11px] font-medium text-emerald-500"
 				title="Camera angles are synchronized by audio"
 			>
-				Audio synced
-			</span>
+				<UiMessage text={"Audio synced"} />
+			</UiLocalized>
 		);
 	const interrupted =
 		task?.status === "cancelled" || (task?.status === "running" && !running);
@@ -79,7 +85,9 @@ export function UnifiedAnglesSyncBadge({ item }: { item: MediaAsset }) {
 				</span>
 			</span>
 			{running && (
-				<span
+				<UiLocalized<"span">
+					element={"span"}
+					messageProps={["aria-label"]}
 					role="progressbar"
 					aria-label="Audio synchronization progress"
 					aria-valuemin={0}
@@ -91,7 +99,7 @@ export function UnifiedAnglesSyncBadge({ item }: { item: MediaAsset }) {
 						className="block h-full bg-amber-500"
 						style={{ width: `${(task?.progress ?? 0) * 100}%` }}
 					/>
-				</span>
+				</UiLocalized>
 			)}
 		</button>
 	);

@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BasePage } from "@/app/base-page";
@@ -6,25 +7,32 @@ import { getPosts } from "@/blog/query";
 import type { Post } from "@/blog/types";
 
 export const metadata: Metadata = {
-	title: "Blog - OpenCut",
+	title: "Blog - POCUT",
 	description:
-		"Read the latest news and updates about OpenCut, the free and open-source video editor.",
+		"Read the latest news and updates about POCUT, the free and open-source video editor.",
 	openGraph: {
-		title: "Blog - OpenCut",
+		title: "Blog - POCUT",
 		description:
-			"Read the latest news and updates about OpenCut, the free and open-source video editor.",
+			"Read the latest news and updates about POCUT, the free and open-source video editor.",
 		type: "website",
 	},
 };
 
 export default async function BlogPage() {
 	const data = await getPosts().catch(() => null);
-	if (!data || !data.posts) return <div>No posts yet</div>;
+	if (!data || !data.posts)
+		return (
+			<div>
+				<UiMessage text={"No posts yet"} />
+			</div>
+		);
 
 	return (
 		<BasePage
-			title="Blog"
-			description="Read the latest news and updates about OpenCut, the free and open-source video editor."
+			title={<UiMessage text="Blog" />}
+			description={
+				<UiMessage text="Read the latest news and updates about POCUT, the free and open-source video editor." />
+			}
 		>
 			<div className="flex flex-col">
 				{data.posts.map((post) => (

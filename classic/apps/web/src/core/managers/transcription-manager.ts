@@ -19,6 +19,7 @@ import * as OpenCutWasm from "opencut-wasm";
 import type { AgentTaskEvent, AgentTaskState } from "opencut-wasm";
 
 import { DEFAULTS } from "@/timeline/defaults";
+import type { BrowserTranscriptionModel } from "@/transcription/models";
 import type { TranscriptionJob } from "@/transcription/job";
 const CAPTION_LAYER_COUNT = 2;
 
@@ -96,13 +97,15 @@ export class TranscriptionManager {
 	start(
 		input: Parameters<TranscriptionManager["run"]>[0] = {},
 	): Promise<TranscriptionTaskState> {
-		const referenceKey = JSON.stringify(
-			[
+		const referenceKey = JSON.stringify({
+			language: input.resumeJob?.language ?? input.language ?? "auto",
+			browserModel: input.resumeJob?.browserModel ?? input.browserModel,
+			references: [
 				...(input.resumeJob
 					? (input.resumeJob.referenceElementIds ?? [])
 					: (input.referenceElementIds ?? [])),
 			].sort(),
-		);
+		});
 		if (this.runningPromise) {
 			if (this.runningReference !== referenceKey)
 				throw new Error(
@@ -123,11 +126,13 @@ export class TranscriptionManager {
 
 	private async run({
 		language = "auto",
+		browserModel: selectedBrowserModel,
 		settings = DEFAULT_CAPTION_LAYOUT,
 		resumeJob,
 		referenceElementIds,
 	}: {
 		language?: TranscriptionLanguage;
+		browserModel?: BrowserTranscriptionModel;
 		settings?: CaptionLayoutSettings;
 		resumeJob?: TranscriptionJob;
 		referenceElementIds?: string[];
@@ -164,8 +169,10 @@ export class TranscriptionManager {
 		const abortController = new AbortController();
 		this.abortController = abortController;
 		try {
+			const browserModel = resumeJob?.browserModel ?? selectedBrowserModel;
 			const request = {
 				language,
+				browserModel,
 				signal: abortController.signal,
 				onProgress: (
 					progress: import("@/transcription/types").TranscriptionProgress,
@@ -194,7 +201,7 @@ export class TranscriptionManager {
 			let job: TranscriptionJob | undefined;
 			const engine =
 				resumeJob?.engine ??
-				this.editor.project.getActive().transcriptionEngine ??
+				(browserModel ? "local" : this.editor.project.getActive().transcriptionEngine) ??
 				"local";
 			if (this.dependencies.transcribeTimeline) {
 				job =
@@ -208,6 +215,7 @@ export class TranscriptionManager {
 									JSON.stringify([...(referenceElementIds ?? [])].sort()) &&
 								j.language === language &&
 								(j.engine ?? "local") === engine &&
+								j.browserModel === browserModel &&
 								(j.status === "running" || j.status === "paused"),
 						);
 				let jobId = job?.id ?? taskId;
@@ -250,6 +258,7 @@ export class TranscriptionManager {
 								type: "start",
 								referenceElementIds,
 								engine,
+								browserModel,
 								externalConfiguration,
 								sceneId: scene.id,
 								language,
@@ -369,7 +378,7 @@ export class TranscriptionManager {
 			} else {
 				if (referenceElementIds?.length)
 					throw new Error(
-						"Reload OpenCut to transcribe the selected timeline reference safely",
+						"Reload POCUT to transcribe the selected timeline reference safely",
 					);
 				const audioBlob = await this.dependencies.extractAudio(timeline);
 				this.throwIfCancelled();

@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useMemo, useState } from "react";
 import { Section, SectionContent, SectionField } from "@/components/section";
 import { Button } from "@/components/ui/button";
@@ -207,7 +211,9 @@ export function TextPlacementTab({
 			<Section sectionKey={`${element.id}:placement`}>
 				<SectionContent className="pt-4">
 					<p className="text-muted-foreground text-sm">
-						Select one text layer to edit scoped placement.
+						<UiMessage
+							text={"Select one text layer to edit scoped placement."}
+						/>
 					</p>
 				</SectionContent>
 			</Section>
@@ -220,8 +226,11 @@ export function TextPlacementTab({
 				<div className="flex flex-col gap-3.5">
 					{hasMixedPlacement && (
 						<p className="border-caution/20 bg-caution/10 text-caution rounded-sm border px-2.5 py-2 text-xs">
-							Mixed placement values. The next placement change applies to all
-							selected text layers.
+							<UiMessage
+								text={
+									"Mixed placement values. The next placement change applies to all selected text layers."
+								}
+							/>
 						</p>
 					)}
 					<SectionField label={`Grid position (${grid.columns}x${grid.rows})`}>
@@ -267,7 +276,11 @@ export function TextPlacementTab({
 						</div>
 					</SectionField>
 
-					<SectionField label="Exact center X/Y">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Exact center X/Y"
+					>
 						<div className="grid grid-cols-2 gap-2">
 							<Input
 								type="number"
@@ -300,9 +313,13 @@ export function TextPlacementTab({
 								}
 							/>
 						</div>
-					</SectionField>
+					</UiLocalized>
 					{canUseLineArrangement && (
-						<SectionField label="Line positions">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Line positions"
+						>
 							<div className="flex flex-col gap-2">
 								{lineArrangement?.lineIndexes.map((lineIndex, index) => {
 									const line = lineArrangement.lines[index] ?? { x: 0, y: 0 };
@@ -312,7 +329,7 @@ export function TextPlacementTab({
 											className="grid grid-cols-[3.5rem_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2"
 										>
 											<span className="text-muted-foreground text-xs">
-												Line {index + 1}
+												<UiMessage text={"Line"} /> {index + 1}
 											</span>
 											<Input
 												type="number"
@@ -348,10 +365,14 @@ export function TextPlacementTab({
 									);
 								})}
 							</div>
-						</SectionField>
+						</UiLocalized>
 					)}
 					{canUseLineArrangement && (
-						<SectionField label="Line position presets">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Line position presets"
+						>
 							<div className="flex flex-col gap-2">
 								<div className="flex gap-2">
 									<Select
@@ -360,12 +381,17 @@ export function TextPlacementTab({
 										disabled={presets.length === 0}
 									>
 										<SelectTrigger className="min-w-0 flex-1">
-											<SelectValue placeholder="Apply preset" />
+											<UiLocalized<typeof SelectValue>
+												element={SelectValue}
+												messageProps={["placeholder"]}
+												placeholder="Apply preset"
+											/>
 										</SelectTrigger>
 										<SelectContent>
 											{presets.map((preset) => (
 												<SelectItem key={preset.id} value={preset.id}>
-													{preset.lines.length} lines - {preset.name}
+													{preset.lines.length} <UiMessage text={"lines -"} />{" "}
+													{preset.name}
 												</SelectItem>
 											))}
 										</SelectContent>
@@ -382,7 +408,7 @@ export function TextPlacementTab({
 											setSelectedPresetId("");
 										}}
 									>
-										Delete
+										<UiMessage text={"Delete"} />
 									</Button>
 								</div>
 								<div className="flex gap-2">
@@ -398,11 +424,11 @@ export function TextPlacementTab({
 										disabled={!presetName.trim()}
 										onClick={saveArrangement}
 									>
-										Save
+										<UiMessage text={"Save"} />
 									</Button>
 								</div>
 							</div>
-						</SectionField>
+						</UiLocalized>
 					)}
 				</div>
 			</SectionContent>

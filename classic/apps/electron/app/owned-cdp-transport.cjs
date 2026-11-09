@@ -44,10 +44,10 @@ async function createOwnedCdpTransport(webContents, { appOrigin }) {
 		webContents.isDestroyed() ||
 		new URL(webContents.getURL()).origin !== appOrigin
 	)
-		throw new Error("The owned OpenCut window is unavailable");
+		throw new Error("The owned POCUT window is unavailable");
 	const debuggerApi = webContents.debugger;
 	if (debuggerApi.isAttached())
-		throw new Error("The OpenCut debugger is already in use");
+		throw new Error("The POCUT debugger is already in use");
 	debuggerApi.attach("1.3");
 	const token = randomBytes(32).toString("hex");
 	const sessionId = `opencut-${randomBytes(16).toString("hex")}`;
@@ -102,7 +102,7 @@ async function createOwnedCdpTransport(webContents, { appOrigin }) {
 		const targetInfo = {
 			targetId: actualTarget.targetId,
 			type: "page",
-			title: "OpenCut",
+			title: "POCUT",
 			url: webContents.getURL(),
 			attached: true,
 			canAccessOpener: false,
@@ -117,7 +117,7 @@ async function createOwnedCdpTransport(webContents, { appOrigin }) {
 			)
 				throw new Error("The owned window changed");
 			if (requestedSession && requestedSession !== sessionId)
-				throw new Error("Unknown OpenCut session");
+				throw new Error("Unknown POCUT session");
 			if (!requestedSession) {
 				if (method === "Browser.getVersion") return version;
 				if (
@@ -139,7 +139,7 @@ async function createOwnedCdpTransport(webContents, { appOrigin }) {
 					}
 					return {};
 				}
-				throw new Error("Browser-wide CDP is unavailable in OpenCut");
+				throw new Error("Browser-wide CDP is unavailable in POCUT");
 			}
 			// Deliberately do not attach to child targets. The renderer's main page
 			// alone is enough for editor controls and compositor screenshots.

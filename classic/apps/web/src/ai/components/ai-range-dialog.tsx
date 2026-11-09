@@ -1,7 +1,11 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -256,9 +260,21 @@ export function AiRangeDialog() {
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && close()}>
 			<DialogContent className="flex max-h-[86vh] max-w-3xl grid-rows-none flex-col overflow-hidden p-0">
 				<DialogHeader className="shrink-0">
-					<DialogTitle>AI range edit</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"AI range edit"} />
+					</DialogTitle>
 					<DialogDescription>
-						{range ? `${range.startTime} - ${range.endTime} ticks` : ""}
+						{range ? (
+							<UiMessage
+								text={"{v0} - {v1} ticks"}
+								values={{
+									v0: String(range.startTime),
+									v1: String(range.endTime),
+								}}
+							/>
+						) : (
+							""
+						)}
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="min-h-0 flex-1 overflow-y-auto">
@@ -271,11 +287,17 @@ export function AiRangeDialog() {
 						}}
 					>
 						<TabsList>
-							<TabsTrigger value="free">Free form</TabsTrigger>
-							<TabsTrigger value="layers">Per layer</TabsTrigger>
+							<TabsTrigger value="free">
+								<UiMessage text={"Free form"} />
+							</TabsTrigger>
+							<TabsTrigger value="layers">
+								<UiMessage text={"Per layer"} />
+							</TabsTrigger>
 						</TabsList>
 						<TabsContent value="free" className="mt-3 px-0">
-							<Textarea
+							<UiLocalized<typeof Textarea>
+								element={Textarea}
+								messageProps={["placeholder"]}
 								value={freePrompt}
 								onChange={(event) => setFreePrompt(event.target.value)}
 								placeholder="Describe what should happen in this range"
@@ -286,7 +308,7 @@ export function AiRangeDialog() {
 							<div className="flex flex-col gap-2">
 								{layersInRange.length === 0 ? (
 									<div className="text-muted-foreground rounded-sm border p-3 text-sm">
-										No layers overlap this range.
+										<UiMessage text={"No layers overlap this range."} />
 									</div>
 								) : (
 									layersInRange.map((layer) => (
@@ -302,7 +324,9 @@ export function AiRangeDialog() {
 													{layer.type}
 												</div>
 											</div>
-											<Textarea
+											<UiLocalized<typeof Textarea>
+												element={Textarea}
+												messageProps={["placeholder"]}
 												value={layerPrompts[layer.id] ?? ""}
 												onChange={(event) =>
 													setLayerPrompts((previous) => ({
@@ -340,11 +364,15 @@ export function AiRangeDialog() {
 				</DialogBody>
 				<DialogFooter className="shrink-0">
 					<Button variant="outline" onClick={close}>
-						Close
+						<UiMessage text={"Close"} />
 					</Button>
 					<Button onClick={isRunning ? handleCancel : handleSubmit}>
 						{isRunning ? <X className="size-4" /> : <Send className="size-4" />}
-						{isRunning ? "Cancel" : "Send"}
+						{isRunning ? (
+							<UiMessage text={"Cancel"} />
+						) : (
+							<UiMessage text={"Send"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

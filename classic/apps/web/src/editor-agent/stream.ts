@@ -185,7 +185,7 @@ export async function readAgentResponse({
 			if (process.env.NODE_ENV === "development") {
 				// Transport-shape counts only: never log prompt, output, tokens,
 				// reasoning or encrypted provider continuation data.
-				console.debug("OpenCut response stream shape", {
+				console.debug("POCUT response stream shape", {
 					...shape,
 					completedItems: result.output.length,
 				});

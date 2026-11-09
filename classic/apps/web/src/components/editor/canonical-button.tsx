@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useRef } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button, type ButtonProps } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import {

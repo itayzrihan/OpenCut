@@ -1,10 +1,16 @@
 "use client";
 
-import { ReplaceDialog } from "@/generative/components/replace-dialog";
-
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEarshotBuffer } from "@/earshot/use-buffer";
 import { earshotSourceKey } from "@/earshot/audio";
 import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
+import { ReplaceDialog } from "@/generative/components/replace-dialog";
+import { SeamlessConnectDialog } from "@/generative/components/seamless-connect-control";
+import { getSeamlessPair, type SeamlessPair } from "@/generative/seamless-connect";
 
 import {
 	previewRestoreSilence,
@@ -74,7 +80,9 @@ import type {
 import { mediaSupportsAudio } from "@/media/media-utils";
 import {
 	canToggleSourceAudio,
+	canExtractSourceAudio,
 	getSourceAudioActionLabel,
+	linkedAudioVideoPeer,
 } from "@/timeline/audio-separation";
 import {
 	buildCompactWaveformGainSamplesFromState,
@@ -136,11 +144,11 @@ import {
 import { UI_ELEMENT_GRAPHIC_ID } from "@/graphics/definitions/ui-element";
 import { UiElementTimelineMarkers } from "@/ui-elements/components/timeline-markers";
 import { useTimelineStore } from "@/timeline/timeline-store";
-import { CopyPlus, Import, Repeat2, X } from "lucide-react";
+import { Clapperboard, CopyPlus, Import, Repeat2, X } from "lucide-react";
 import { isParallaxStoryElement } from "@/parallax-story-teller/model";
 import { InsertSelectionIntoCanvasCommand } from "@/commands/parallax/insert-selection-into-canvas";
 import type { InsertSelectionMode } from "@/parallax-story-teller/insert-selection";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { getDisplayTrackIds } from "@/timeline/track-order";
 import {
 	getAnimationsWithoutAppliedLoop,
@@ -295,8 +303,10 @@ function TimelineElementComponent({
 	isDropTarget = false,
 	isExpanded,
 }: TimelineElementProps) {
+	const editor = useEditor();
 	const [replaceOpen, setReplaceOpen] = useState(false);
 	const [replaceStarted, setReplaceStarted] = useState(false);
+	const [seamlessPair, setSeamlessPair] = useState<SeamlessPair | null>(null);
 	const mediaAsset = useEditorMediaAsset({
 		mediaId: hasMediaId(element) ? element.mediaId : null,
 	});
@@ -365,6 +375,36 @@ function TimelineElementComponent({
 						}}
 					>
 						<SmartTakeBadge element={element} />
+						{canExtractSourceAudio(element, mediaAsset) &&
+							(isSelected || elementWidth >= 90) && (
+								<UiLocalized<"button">
+									element={"button"}
+									messageProps={["title", "aria-label"]}
+									type="button"
+									title="Separate audio from video"
+									aria-label="Separate audio from video"
+									className="absolute right-1 top-1 z-20 rounded bg-black/75 p-1 text-white hover:bg-black focus-visible:outline"
+									onMouseDown={(event) => event.stopPropagation()}
+									onClick={(event) => {
+										event.stopPropagation();
+										try {
+											editor.command.editClassicSourceAudio({
+												trackId: track.id,
+												elementId: element.id,
+												action: "extractLinked",
+											});
+										} catch (error) {
+											toast.error(
+												error instanceof Error
+													? error.message
+													: "Audio split failed",
+											);
+										}
+									}}
+								>
+									<HugeiconsIcon icon={ScissorIcon} size={13} />
+								</UiLocalized>
+							)}
 						{needsKeyframeSurface ? (
 							<TimelineElementKeyframeSurface
 								element={element}
@@ -412,16 +452,21 @@ function TimelineElementComponent({
 							setReplaceStarted(true);
 							setReplaceOpen(true);
 						}}
+						onSeamlessConnect={setSeamlessPair}
 					/>
 				</ContextMenuContent>
 			</ContextMenu>
-			{replaceStarted && element.type === "video" && (
-				<ReplaceDialog
-					open={replaceOpen}
-					onOpenChange={setReplaceOpen}
-					trackId={track.id}
-					clip={element}
+			{seamlessPair && (
+				<SeamlessConnectDialog
+					{...seamlessPair}
+					open
+					onOpenChange={(open) => {
+						if (!open) setSeamlessPair(null);
+					}}
 				/>
+			)}
+			{replaceStarted && element.type === "video" && (
+				<ReplaceDialog open={replaceOpen} onOpenChange={setReplaceOpen} trackId={track.id} clip={element} />
 			)}
 		</PixelsPerSecondContext.Provider>
 	);
@@ -653,12 +698,14 @@ function TimelineElementMenuContent({
 	mediaAsset,
 	isExpanded,
 	onReplace,
+	onSeamlessConnect,
 }: {
 	element: TimelineElementType;
 	trackId: string;
 	mediaAsset: MediaAsset | null;
 	isExpanded: boolean;
 	onReplace: () => void;
+	onSeamlessConnect: (pair: SeamlessPair) => void;
 }) {
 	const editor = useEditor();
 	const allMediaAssets = useEditorMedia((currentEditor) =>
@@ -687,6 +734,12 @@ function TimelineElementMenuContent({
 			selectedElement.trackId === trackId &&
 			selectedElement.elementId === element.id,
 	);
+	const seamlessPair =
+		isCurrentElementSelected && selectedElementCount === 2
+			? getSeamlessPair(
+					editor.timeline.getElementsWithTracks({ elements: selectedElements }),
+				)
+			: null;
 	const canRestoreSilence = useMemo(() => {
 		if (!activeScene || !isCurrentElementSelected || element.type !== "video")
 			return false;
@@ -868,6 +921,21 @@ function TimelineElementMenuContent({
 		);
 	};
 	const isMuted = canElementHaveAudio(element) && isElementMuted({ element });
+	const audioVideoPeer =
+		activeScene &&
+		linkedAudioVideoPeer({ tracks: activeScene.tracks, element });
+	const selectedPair =
+		isCurrentElementSelected && selectedElements.length === 2
+			? editor.timeline.getElementsWithTracks({ elements: selectedElements })
+			: [];
+	const linkVideo = selectedPair.find((item) => item.element.type === "video");
+	const linkAudio = selectedPair.find((item) => item.element.type === "audio");
+	const canLink =
+		linkVideo &&
+		linkAudio &&
+		!audioVideoPeer &&
+		linkVideo.element.startTime === linkAudio.element.startTime &&
+		linkVideo.element.duration === linkAudio.element.duration;
 	const canToggleCurrentSourceAudio =
 		selectedElementCount === 1 &&
 		isCurrentElementSelected &&
@@ -893,7 +961,7 @@ function TimelineElementMenuContent({
 				action="split"
 				icon={<HugeiconsIcon icon={ScissorIcon} />}
 			>
-				Split
+				<UiMessage text={"Split"} />
 			</ActionMenuItem>
 			<SmartTakeMenu element={element} />
 			<CopyMenuItem />
@@ -905,27 +973,27 @@ function TimelineElementMenuContent({
 								editor,
 								selection: selectedElements,
 							});
-							toast.success("השקטים שבין הקליפים שנבחרו הוחזרו", {
-								description: `הוחזרו ${(result.restoredDuration / 120000).toFixed(2)} שניות בין הקליפים בלבד. הקצוות החיצוניים נשמרו.`,
+							toast.success("Silence restored between the selected clips", {
+								description: `Restored ${(result.restoredDuration / 120000).toFixed(2)} seconds between the clips.`,
 							});
 							const { canFillRestoredCaptions, fillRestoredSilenceCaptions } =
 								await import("@/timeline/restore-silence-captions");
 							if (canFillRestoredCaptions(editor)) {
-								toast("להשלים גם את המלל בקטעים שהוחזרו?", {
+								toast("Transcribe the restored sections?", {
 									description:
-										"המילים החסרות יתווספו בסגנון הכתוביות הסמוכות, כולל האנימציות והמעברים.",
+										"New words will use the nearby caption styles, animations and transitions.",
 									duration: Infinity,
-									cancel: { label: "בלי השלמה", onClick: () => {} },
+									cancel: { label: "Skip captions", onClick: () => {} },
 									action: {
-										label: "השלמת המלל",
+										label: "Complete captions",
 										onClick: () => {
 											const controller = new AbortController();
 											const progressId = toast.loading(
-												"מכינים את האודיו ששוחזר…",
+												"Preparing restored audio…",
 												{
 													duration: Infinity,
 													cancel: {
-														label: "ביטול",
+														label: "Cancel",
 														onClick: () => controller.abort(),
 													},
 												},
@@ -941,19 +1009,24 @@ function TimelineElementMenuContent({
 													toast.dismiss(progressId);
 													toast.success(
 														captions.insertedWordCount
-															? `נוספו ${captions.insertedWordCount} מילים בקטעים שהוחזרו`
-															: "לא זוהו מילים חסרות בקטעים שהוחזרו",
+															? localizeClientMessage(
+																	"Added {v0} words in the restored sections",
+																	{ v0: String(captions.insertedWordCount) },
+																)
+															: "No missing words were found in the restored sections",
 													);
 												})
 												.catch((error: unknown) => {
 													toast.dismiss(progressId);
 													if (controller.signal.aborted)
-														toast("השלמת המלל בוטלה. השחזור נשמר.");
+														toast(
+															"Caption completion cancelled. The restored sections are saved.",
+														);
 													else
 														toast.error(
 															error instanceof Error
 																? error.message
-																: "השלמת המלל נכשלה. השחזור נשמר.",
+																: "Could not complete captions. The restored sections are saved.",
 														);
 												});
 										},
@@ -964,12 +1037,12 @@ function TimelineElementMenuContent({
 							toast.error(
 								error instanceof Error
 									? error.message
-									: "שחזור הרגעים השקטים נכשל",
+									: "Could not restore silence",
 							);
 						}
 					}}
 				>
-					החזרת שקטים בין הקליפים שנבחרו
+					<UiMessage text={"Restore silence between selected clips"} />
 				</ContextMenuItem>
 			)}
 			{selectedElementCount === 1 && (
@@ -977,7 +1050,7 @@ function TimelineElementMenuContent({
 					action="duplicate-selected"
 					icon={<HugeiconsIcon icon={Copy01Icon} />}
 				>
-					Duplicate
+					<UiMessage text={"Duplicate"} />
 				</ActionMenuItem>
 			)}
 			{canMergeSelectedTextElements && (
@@ -986,31 +1059,33 @@ function TimelineElementMenuContent({
 						action="merge-text-selected"
 						icon={<HugeiconsIcon icon={TextIcon} />}
 					>
-						Connect text layers
+						<UiMessage text={"Connect text layers"} />
 					</ActionMenuItem>
 					<ActionMenuItem
 						action="merge-text-selected-multiline"
 						icon={<HugeiconsIcon icon={TextIcon} />}
 					>
-						Connect as multiline
+						<UiMessage text={"Connect as multiline"} />
 					</ActionMenuItem>
 				</>
 			)}
 			{parallaxCanvasTarget && isCurrentElementSelected && (
 				<ContextMenuSub>
-					<ContextMenuSubTrigger>Insert to Canvas</ContextMenuSubTrigger>
+					<ContextMenuSubTrigger>
+						<UiMessage text={"Insert to Canvas"} />
+					</ContextMenuSubTrigger>
 					<ContextMenuSubContent className="w-56">
 						<ContextMenuItem
 							icon={<Import className="size-4" />}
 							onClick={() => handleInsertIntoCanvas("move")}
 						>
-							Move into Canvas
+							<UiMessage text={"Move into Canvas"} />
 						</ContextMenuItem>
 						<ContextMenuItem
 							icon={<CopyPlus className="size-4" />}
 							onClick={() => handleInsertIntoCanvas("duplicate")}
 						>
-							Duplicate into Canvas
+							<UiMessage text={"Duplicate into Canvas"} />
 						</ContextMenuItem>
 					</ContextMenuSubContent>
 				</ContextMenuSub>
@@ -1024,7 +1099,9 @@ function TimelineElementMenuContent({
 			)}
 			{element.type === "video" && unifiedAngles && (
 				<ContextMenuSub>
-					<ContextMenuSubTrigger>Switch camera angle</ContextMenuSubTrigger>
+					<ContextMenuSubTrigger>
+						<UiMessage text={"Switch camera angle"} />
+					</ContextMenuSubTrigger>
 					<ContextMenuSubContent className="w-64">
 						{unifiedAngleAssets.map((angle, index) => {
 							const activeAngleId =
@@ -1043,7 +1120,7 @@ function TimelineElementMenuContent({
 									<span className="w-4">
 										{activeAngleId === angle.id ? "✓" : ""}
 									</span>
-									Angle {index + 1}: {angle.name}
+									<UiMessage text={"Angle"} /> {index + 1}: {angle.name}
 								</ContextMenuItem>
 							);
 						})}
@@ -1052,7 +1129,9 @@ function TimelineElementMenuContent({
 			)}
 			{unifiedAngleCycleTarget && isCurrentElementSelected && (
 				<ContextMenuSub>
-					<ContextMenuSubTrigger>One on, one off</ContextMenuSubTrigger>
+					<ContextMenuSubTrigger>
+						<UiMessage text={"One on, one off"} />
+					</ContextMenuSubTrigger>
 					<ContextMenuSubContent className="w-64">
 						{unifiedAngleCycleTarget.asset.unifiedAngles.angleAssetIds.map(
 							(angleAssetId, index) => {
@@ -1064,8 +1143,8 @@ function TimelineElementMenuContent({
 										key={angleAssetId}
 										onClick={() => handleCycleUnifiedAngles(angleAssetId)}
 									>
-										Start with Angle {index + 1}:{" "}
-										{angle?.name ?? "Missing media"}
+										<UiMessage text={"Start with Angle"} /> {index + 1}:{" "}
+										{angle?.name ?? <UiMessage text={"Missing media"} />}
 									</ContextMenuItem>
 								);
 							},
@@ -1075,7 +1154,9 @@ function TimelineElementMenuContent({
 			)}
 			{element.type === "text" && (
 				<ContextMenuSub>
-					<ContextMenuSubTrigger>Clip media into text</ContextMenuSubTrigger>
+					<ContextMenuSubTrigger>
+						<UiMessage text={"Clip media into text"} />
+					</ContextMenuSubTrigger>
 					<ContextMenuSubContent className="max-h-72 w-56 overflow-y-auto">
 						{element.clipMediaId && (
 							<ContextMenuItem
@@ -1091,7 +1172,7 @@ function TimelineElementMenuContent({
 									})
 								}
 							>
-								Remove clipped media
+								<UiMessage text={"Remove clipped media"} />
 							</ContextMenuItem>
 						)}
 						{clipMediaAssets.map((asset) => (
@@ -1114,13 +1195,13 @@ function TimelineElementMenuContent({
 						))}
 						{clipMediaAssets.length === 0 && (
 							<ContextMenuItem disabled>
-								Import image or video first
+								<UiMessage text={"Import image or video first"} />
 							</ContextMenuItem>
 						)}
 					</ContextMenuSubContent>
 				</ContextMenuSub>
 			)}
-			{canToggleCurrentSourceAudio && (
+			{canToggleCurrentSourceAudio && !audioVideoPeer && (
 				<ContextMenuItem
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
 					onClick={(event: React.MouseEvent) => {
@@ -1131,6 +1212,68 @@ function TimelineElementMenuContent({
 					{sourceAudioLabel}
 				</ContextMenuItem>
 			)}
+			{audioVideoPeer && (
+				<ContextMenuItem
+					onClick={() =>
+						editor.command.editClassicSourceAudio({
+							trackId,
+							elementId: element.id,
+							action: "unlink",
+						})
+					}
+				>
+					<UiMessage text={"Unlink audio and video"} />
+				</ContextMenuItem>
+			)}
+			{canLink && (
+				<ContextMenuItem
+					onClick={() => {
+						try {
+							editor.command.editClassicSourceAudio({
+								trackId: linkVideo.track.id,
+								elementId: linkVideo.element.id,
+								audioElementId: linkAudio.element.id,
+								action: "link",
+							});
+						} catch (error) {
+							toast.error(
+								error instanceof Error
+									? error.message
+									: "Audio/video link failed",
+							);
+						}
+					}}
+				>
+					<UiMessage text={"Link audio and video"} />
+				</ContextMenuItem>
+			)}
+			{element.type === "audio" &&
+				element.sourceType === "upload" &&
+				(
+					[
+						["remove", "Remove speech (DBS-TIGER)"],
+						["split", "Separate speech (DBS-TIGER)"],
+					] as const
+				).map(([mode, label]) => (
+					<ContextMenuItem
+						key={mode}
+						onClick={() => {
+							void import("@/timeline/audio-separation/separate-dialogue")
+								.then(({ separateDialogue }) =>
+									separateDialogue({ editor, trackId, element, mode }),
+								)
+								.catch((error: unknown) =>
+									toast.error(
+										error instanceof Error
+											? error.message
+											: "DBS-TIGER separation failed",
+									),
+								);
+						}}
+					>
+						{label}
+					</ContextMenuItem>
+				))}
 			<ContextMenuItem
 				onClick={() =>
 					editor.command.editClassicElementControls({
@@ -1141,10 +1284,22 @@ function TimelineElementMenuContent({
 					})
 				}
 			>
-				{element.enabled === false ? "Enable" : "Disable"}
-				{isCurrentElementSelected && selectedElementCount > 1
-					? " selected clips"
-					: " clip"}
+				{element.enabled === false ? (
+					<UiMessage text={"Enable"} />
+				) : (
+					<UiMessage text={"Disable"} />
+				)}
+				{isCurrentElementSelected && selectedElementCount > 1 ? (
+					<>
+						{" "}
+						<UiMessage text={"selected clips"} />
+					</>
+				) : (
+					<>
+						{" "}
+						<UiMessage text={"clip"} />
+					</>
+				)}
 			</ContextMenuItem>
 			{canElementBeHidden(element) && (
 				<VisibilityMenuItem
@@ -1161,7 +1316,11 @@ function TimelineElementMenuContent({
 						toggleElementExpanded(element.id);
 					}}
 				>
-					{isExpanded ? "Collapse keyframes" : "Expand keyframes"}
+					{isExpanded ? (
+						<UiMessage text={"Collapse keyframes"} />
+					) : (
+						<UiMessage text={"Expand keyframes"} />
+					)}
 				</ContextMenuItem>
 			)}
 			{selectedElementCount === 1 && hasMediaId(element) && (
@@ -1173,16 +1332,24 @@ function TimelineElementMenuContent({
 							requestRevealMedia(element.mediaId);
 						}}
 					>
-						Reveal media
+						<UiMessage text={"Reveal media"} />
 					</ContextMenuItem>
 				</>
+			)}
+			{seamlessPair && (
+				<ContextMenuItem
+					icon={<Clapperboard />}
+					onSelect={() => onSeamlessConnect(seamlessPair)}
+				>
+					<UiMessage text={"Seamless Connect"} />
+				</ContextMenuItem>
 			)}
 			{element.type === "video" && (
 				<ContextMenuItem
 					icon={<HugeiconsIcon icon={Exchange01Icon} />}
 					onSelect={onReplace}
 				>
-					Replace…
+					<UiMessage text={"Replace…"} />
 				</ContextMenuItem>
 			)}
 			<ContextMenuSeparator />
@@ -1191,14 +1358,14 @@ function TimelineElementMenuContent({
 				disabled={!isCurrentElementSelected}
 				icon={<HugeiconsIcon icon={Delete02Icon} />}
 			>
-				Delete to the same point
+				<UiMessage text={"Delete to the same point"} />
 			</ActionMenuItem>
 			<ActionMenuItem
 				action="ripple-delete-selected"
 				disabled={!isCurrentElementSelected}
 				icon={<HugeiconsIcon icon={Delete02Icon} />}
 			>
-				Delete and close timeline space
+				<UiMessage text={"Delete and close timeline space"} />
 			</ActionMenuItem>
 			<DeleteMenuItem
 				isMultipleSelected={selectedElementCount > 1}
@@ -1472,7 +1639,11 @@ function LoopTimelineBadge({
 				aria-expanded={isOpen}
 			>
 				<Repeat2 className="size-2.5 shrink-0" />
-				{elementWidth >= 70 && <span className="truncate">Loop</span>}
+				{elementWidth >= 70 && (
+					<span className="truncate">
+						<UiMessage text={"Loop"} />
+					</span>
+				)}
 			</button>
 			{isOpen &&
 				position &&
@@ -1497,14 +1668,16 @@ function LoopTimelineBadge({
 							<span className="shrink-0 text-[9px] tabular-nums text-muted-foreground">
 								{loopKeyframes.length}
 							</span>
-							<button
+							<UiLocalized<"button">
+								element={"button"}
+								messageProps={["aria-label"]}
 								type="button"
 								className="grid size-4 shrink-0 place-items-center rounded hover:bg-muted"
 								onClick={() => setIsOpen(false)}
 								aria-label="Close loop keyframes"
 							>
 								<X className="size-2.5" />
-							</button>
+							</UiLocalized>
 						</div>
 						<div className="max-h-44 overflow-y-auto py-1">
 							{lanes.map((lane) => (
@@ -1544,7 +1717,7 @@ function LoopTimelineBadge({
 							))}
 							{lanes.length === 0 && (
 								<p className="px-2 py-3 text-center text-[10px] text-muted-foreground">
-									No generated keyframes
+									<UiMessage text={"No generated keyframes"} />
 								</p>
 							)}
 						</div>
@@ -1817,7 +1990,7 @@ function TransitionSegment({
 						onRemove();
 					}}
 				>
-					Remove transition
+					<UiMessage text={"Remove transition"} />
 				</ContextMenuItem>
 			</ContextMenuContent>
 		</ContextMenu>
@@ -1907,7 +2080,9 @@ function KeyframeIndicators({
 		});
 
 		return (
-			<button
+			<UiLocalized<"button">
+				element={"button"}
+				messageProps={["aria-label"]}
 				key={indicator.time}
 				type="button"
 				className="pointer-events-auto absolute top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-grab mr-0.5"
@@ -1933,7 +2108,7 @@ function KeyframeIndicators({
 					)}
 					strokeWidth={1.5}
 				/>
-			</button>
+			</UiLocalized>
 		);
 	});
 }
@@ -2052,7 +2227,9 @@ function ExpandedKeyframeLanes({
 							});
 
 							return (
-								<button
+								<UiLocalized<"button">
+									element={"button"}
+									messageProps={["aria-label"]}
 									key={kf.id}
 									type="button"
 									className={cn(
@@ -2086,7 +2263,7 @@ function ExpandedKeyframeLanes({
 										)}
 										strokeWidth={1.5}
 									/>
-								</button>
+								</UiLocalized>
 							);
 						})}
 					</div>
@@ -2471,7 +2648,7 @@ function ElementContent({ element, track, mediaAsset }: ElementContentProps) {
 				className="flex size-full items-center gap-2 bg-red-950/70 px-2 text-xs text-red-100"
 				title={mediaAsset.sourcePath}
 			>
-				Media offline · {element.name}
+				<UiMessage text={"Media offline ·"} /> {element.name}
 			</div>
 		);
 	switch (element.type) {
@@ -2509,7 +2686,7 @@ function CopyMenuItem() {
 			action="copy-selected"
 			icon={<HugeiconsIcon icon={Copy01Icon} />}
 		>
-			Copy
+			<UiMessage text={"Copy"} />
 		</ActionMenuItem>
 	);
 }
@@ -2536,7 +2713,7 @@ function MuteMenuItem({
 
 	return (
 		<ActionMenuItem action="toggle-elements-muted-selected" icon={getIcon()}>
-			{isMuted ? "Unmute" : "Mute"}
+			{isMuted ? <UiMessage text={"Unmute"} /> : <UiMessage text={"Mute"} />}
 		</ActionMenuItem>
 	);
 }
@@ -2568,7 +2745,7 @@ function VisibilityMenuItem({
 			action="toggle-elements-visibility-selected"
 			icon={getIcon()}
 		>
-			{isHidden ? "Show" : "Hide"}
+			{isHidden ? <UiMessage text={"Show"} /> : <UiMessage text={"Hide"} />}
 		</ActionMenuItem>
 	);
 }
@@ -2590,9 +2767,17 @@ function DeleteMenuItem({
 			variant="destructive"
 			icon={<HugeiconsIcon icon={Delete02Icon} />}
 		>
-			{isMultipleSelected && isCurrentElementSelected
-				? `Delete ${selectedCount} elements`
-				: `Delete ${elementType === "text" ? "text" : "clip"}`}
+			{isMultipleSelected && isCurrentElementSelected ? (
+				<UiMessage
+					text={"Delete {v0} elements"}
+					values={{ v0: String(selectedCount) }}
+				/>
+			) : (
+				<UiMessage
+					text={"Delete {v0}"}
+					values={{ v0: String(elementType === "text" ? "text" : "clip") }}
+				/>
+			)}
 		</ActionMenuItem>
 	);
 }

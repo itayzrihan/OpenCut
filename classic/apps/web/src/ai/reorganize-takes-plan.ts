@@ -1,3 +1,4 @@
+import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
 import { readAgentResponse } from "@/editor-agent/stream";
 import { z } from "zod";
 import type { ReorganizeTakesPlan } from "@/timeline/reorganize-takes/apply-reorganize-takes";
@@ -67,7 +68,7 @@ async function requestReorganizeTakesJson({
 	prompt: string;
 }): Promise<unknown> {
 	const account = window.__opencutAccountId;
-	if (!account) throw new Error("Sign in to OpenCut first");
+	if (!account) throw new Error("Sign in to POCUT first");
 	const controller = new AbortController();
 	const assertAccount = () => {
 		if (window.__opencutAccountId !== account) {
@@ -100,11 +101,11 @@ async function requestReorganizeTakesJson({
 			);
 		const { models } = z
 			.object({
-				models: z.array(z.object({ id: z.string().min(1).max(100) })).max(200),
+				models: z.array(agentModelSchema).max(200),
 			})
 			.parse(modelResult);
 		assertAccount();
-		const model = models[0]?.id;
+		const { model, reasoningEffort } = preferredAgentModel(models);
 		if (!model)
 			throw new Error("No ChatGPT model is available for reorganizing takes");
 		const response = await fetch("/api/editor-agent/respond", {
@@ -118,6 +119,7 @@ async function requestReorganizeTakesJson({
 			},
 			body: JSON.stringify({
 				model,
+				reasoningEffort,
 				instructions: system,
 				input: [{ role: "user", content: prompt }],
 				tools: [],

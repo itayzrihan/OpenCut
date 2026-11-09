@@ -1,4 +1,14 @@
-import { type ComponentProps, forwardRef, useEffect, useRef, useState } from "react";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
+import {
+	type ComponentProps,
+	forwardRef,
+	useEffect,
+	useRef,
+	useState,
+} from "react";
 import { cn } from "@/utils/ui";
 import { Input } from "./input";
 import {
@@ -171,8 +181,14 @@ function ColorPickerContent({
 		if (!saturationElement) return;
 		setIsDragging("saturation");
 		const rect = saturationElement.getBoundingClientRect();
-		const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
-		const y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+		const x = Math.max(
+			0,
+			Math.min(1, (event.clientX - rect.left) / rect.width),
+		);
+		const y = Math.max(
+			0,
+			Math.min(1, (event.clientY - rect.top) / rect.height),
+		);
 		const newHex = appendAlpha({
 			rgbHex: hsvToHex({ h: displayHue, s: x, v: 1 - y }),
 			alpha,
@@ -187,7 +203,10 @@ function ColorPickerContent({
 		if (!hueElement) return;
 		setIsDragging("hue");
 		const rect = hueElement.getBoundingClientRect();
-		const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+		const x = Math.max(
+			0,
+			Math.min(1, (event.clientX - rect.left) / rect.width),
+		);
 		const newH = x * 360;
 		setInternalHue(newH);
 		if (s > 0) {
@@ -206,7 +225,10 @@ function ColorPickerContent({
 		if (!opacityElement) return;
 		setIsDragging("opacity");
 		const rect = opacityElement.getBoundingClientRect();
-		const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+		const x = Math.max(
+			0,
+			Math.min(1, (event.clientX - rect.left) / rect.width),
+		);
 		const newHex = appendAlpha({ rgbHex: rgbValue, alpha: x });
 		latestDragColorRef.current = newHex;
 		onChange?.(newHex);
@@ -291,11 +313,19 @@ function ColorPickerContent({
 			<header className="border-b flex justify-between items-center pb-2 px-2">
 				<Select defaultValue="custom">
 					<SelectTrigger variant="outline">
-						<SelectValue placeholder="Select a mode" />
+						<UiLocalized<typeof SelectValue>
+							element={SelectValue}
+							messageProps={["placeholder"]}
+							placeholder="Select a mode"
+						/>
 					</SelectTrigger>
 					<SelectContent position="popper">
-						<SelectItem value="custom">Custom</SelectItem>
-						<SelectItem value="saved">Saved</SelectItem>
+						<SelectItem value="custom">
+							<UiMessage text={"Custom"} />
+						</SelectItem>
+						<SelectItem value="saved">
+							<UiMessage text={"Saved"} />
+						</SelectItem>
 					</SelectContent>
 				</Select>
 				<div>
@@ -353,7 +383,10 @@ function ColorPickerContent({
 					type="button"
 					onMouseDown={handleOpacityMouseDown}
 				>
-					<div className="absolute inset-0 dark:invert" style={CHECKERBOARD_STYLE} />
+					<div
+						className="absolute inset-0 dark:invert"
+						style={CHECKERBOARD_STYLE}
+					/>
 					<div
 						className="absolute inset-0 rounded-lg"
 						style={{
@@ -380,10 +413,18 @@ function ColorPickerContent({
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="hex">HEX</SelectItem>
-							<SelectItem value="rgb">RGB</SelectItem>
-							<SelectItem value="hsl">HSL</SelectItem>
-							<SelectItem value="hsv">HSV</SelectItem>
+							<SelectItem value="hex">
+								<UiMessage text={"HEX"} />
+							</SelectItem>
+							<SelectItem value="rgb">
+								<UiMessage text={"RGB"} />
+							</SelectItem>
+							<SelectItem value="hsl">
+								<UiMessage text={"HSL"} />
+							</SelectItem>
+							<SelectItem value="hsv">
+								<UiMessage text={"HSV"} />
+							</SelectItem>
 						</SelectContent>
 					</Select>
 

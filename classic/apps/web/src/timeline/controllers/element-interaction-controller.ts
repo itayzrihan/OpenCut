@@ -1,4 +1,5 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
+import { includeLinkedAudioVideo } from "@/timeline/audio-separation";
 import {
 	buildMoveGroup,
 	resolveGroupMove,
@@ -598,13 +599,17 @@ export class ElementInteractionController {
 		const fps = this.deps.scene.getActiveFps();
 		if (!fps) return;
 
+		const tracks = this.deps.scene.getTracks();
 		const moveGroup = buildMoveGroup({
 			anchorRef: {
 				trackId: mousedown.trackId,
 				elementId: mousedown.elementId,
 			},
-			selectedElements: [...mousedown.selectedElements],
-			tracks: this.deps.scene.getTracks(),
+			selectedElements: includeLinkedAudioVideo({
+				tracks,
+				elements: mousedown.selectedElements,
+			}),
+			tracks,
 		});
 		if (!moveGroup) return;
 

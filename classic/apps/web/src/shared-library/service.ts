@@ -729,9 +729,13 @@ export class SharedLibraryService {
 
 	async importStickerFiles({
 		files,
+		requireDecodableImage = false,
 	}: {
 		files: File[];
+		requireDecodableImage?: boolean;
 	}): Promise<SharedStickerAsset[]> {
+		const accountId = window.__opencutAccountId;
+		if (!accountId) throw new Error("Sign in before importing images");
 		const metadata: SharedStickerAsset[] = [];
 		const copiedFiles: Array<{ id: string; file: File; dataUrl: string }> = [];
 		for (const file of files) {
@@ -741,6 +745,14 @@ export class SharedLibraryService {
 			const mimeType = safeMimeType({ file, fallback: "image/png" });
 			const dataUrl = await readFileAsDataUrl({ file });
 			const size = await readImageSize({ dataUrl });
+			if (
+				requireDecodableImage &&
+				(!size?.width ||
+					!size.height ||
+					size.width > 32768 ||
+					size.height > 32768)
+			)
+				throw new Error("An image could not be opened");
 			const copiedFile = await cloneStoredFile({
 				file,
 				name: file.name || `${id}.sticker`,
@@ -772,8 +784,11 @@ export class SharedLibraryService {
 		const response = await fetch(SHARED_LIBRARY_API, {
 			method: "POST",
 			body: formData,
+			headers: { "X-OpenCut-Account": accountId },
 		});
 		const data = await parseRepositoryResponse({ response });
+		if (window.__opencutAccountId !== accountId)
+			throw new Error("Account changed during upload");
 		const imported = readStickerAssetsFromApiResult({ value: data });
 		for (const asset of imported) {
 			const cached = copiedFiles.find((item) => item.id === asset.id);

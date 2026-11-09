@@ -26,7 +26,7 @@ const configuration = {
 		app: undefined,
 		output: "../dist",
 	},
-	icon: "../../web/public/icons/ms-icon-310x310.png",
+	icon: "../../web/public/pocut/mark.png",
 	extraResources: [...baseConfiguration.extraResources.map((resource) => ({
 		...resource,
 		from: `../${resource.from.replace(/\.next(?=\/)/g, buildDirectory)}`,

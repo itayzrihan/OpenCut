@@ -12,6 +12,7 @@ export function exportSourceWindows(clips: AudioClipSource[]) {
 				getSourceTimeAtClipTime({
 					clipTime: clip.duration,
 					retime: clip.retime,
+					trimStart: clip.curveTrimStart ?? clip.trimStart,
 				}) +
 				(clip.retime?.maintainPitch ? 3.1 : 0.1),
 		}))

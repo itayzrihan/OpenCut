@@ -1,5 +1,6 @@
 import { mockFetch } from "@/test-support/mock-fetch";
 import { expect, test } from "bun:test";
+import { saveAgentModelPreference } from "@/editor-agent/model-preference";
 import {
 	aiClientFetch,
 	prepareClientAiPairing,
@@ -14,6 +15,10 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 	const events = new EventTarget();
 	const win = {
 		__opencutAccountId: "alice",
+		localStorage: {
+			getItem: (key: string) => saved.get(key) ?? null,
+			setItem: (key: string, value: string) => saved.set(key, value),
+		},
 		location: {
 			origin: "https://editor.example.com",
 			hostname: "editor.example.com",
@@ -29,21 +34,31 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 			removeItem: (k: string) => saved.delete(k),
 		},
 	});
-	const requests: Array<{ url: string; headers: Headers }> = [];
+	const requests: Array<{ url: string; headers: Headers; body?: BodyInit | null }> = [];
 	globalThis.fetch = mockFetch(async (input, init) => {
-		requests.push({ url: String(input), headers: new Headers(init?.headers) });
+		requests.push({
+			url: String(input),
+			headers: new Headers(init?.headers),
+			body: init?.body,
+		});
 		return Response.json({ identity: "alice" });
 	});
 	try {
 		const alice = prepareClientAiPairing();
+		saveAgentModelPreference({ model: "agent-test", reasoningEffort: "high" });
 		await aiClientFetch({ path: "/api/ai/chat", init: { method: "POST", body: "{}" } });
 		expect(requests[0].url).toBe("/api/ai/chat");
 		expect(requests[0].headers.get("authorization")).toBeNull();
 		expect(requests[0].headers.get("x-opencut-account")).toBe("alice");
+		expect(JSON.parse(String(requests[0].body))).toEqual({
+			model: "agent-test",
+			reasoningEffort: "high",
+		});
 		win.__opencutAccountId = "bob";
 		expect(readClientAiPairing()).toBeNull();
-		await aiClientFetch({ path: "/api/ai/chat" });
+		await aiClientFetch({ path: "/api/ai/chat", init: { method: "POST", body: "{}" } });
 		expect(requests[1].headers.get("x-opencut-account")).toBe("bob");
+		expect(JSON.parse(String(requests[1].body))).toEqual({});
 		const bob = prepareClientAiPairing();
 		expect(bob.token).not.toBe(alice.token);
 		globalThis.fetch = mockFetch(async () => {

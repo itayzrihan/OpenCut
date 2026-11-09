@@ -19,6 +19,49 @@ async fn account() -> OpenCutRuntime {
     call(&rt,"app.state.patch",json!({"patch":[{"op":"add","path":"/account","value":{"id":"alice","displayName":"Alice","storage":{"mode":"localOnly","destinationId":null,"devices":[]}}}]})).await;
     rt
 }
+
+#[tokio::test]
+async fn tagged_brand_images_round_trip_and_reject_invalid_metadata_atomically() {
+    let rt = account().await;
+    let mut brand = kit();
+    brand["images"] = json!([
+        {"assetId":"hero-portrait","kind":"character","name":"דמות ראשית","tags":["Portrait", "מותג"]},
+        {"assetId":"product-photo","kind":"image","name":"Product","tags":[]}
+    ]);
+    let before = read(&rt).await;
+    let input = json!({"accountId":"alice","expectedRevision":before["revision"],"change":{"type":"upsert","kit":brand}});
+    call(&rt, "account.brand_kits.edit", input.clone()).await;
+    let saved = read(&rt).await;
+    assert_eq!(saved["account"]["brandKits"][0], brand);
+    for (field, invalid) in [
+        ("tags", json!(["Portrait", "portrait"])),
+        ("assetId", json!("product-photo")),
+        ("kind", json!("video")),
+    ] {
+        let mut edit = input.clone();
+        edit["expectedRevision"] = saved["revision"].clone();
+        edit["change"]["kit"]["images"][0][field] = invalid;
+        assert!(
+            rt.registry()
+                .invoke(
+                    "account.brand_kits.edit",
+                    InvocationContext::default(),
+                    edit
+                )
+                .await
+                .is_err()
+        );
+        assert_eq!(read(&rt).await, saved);
+    }
+    let reopened = OpenCutRuntime::full_access().unwrap();
+    reopened
+        .restore_application_state_from_bytes(
+            &rt.serialize_application_state_with_history().unwrap(),
+        )
+        .unwrap();
+    assert_eq!(read(&reopened).await, saved);
+}
+
 #[tokio::test]
 async fn kits_are_account_owned_validated_multiple_and_undoable_with_dry_run_and_retry() {
     let rt = account().await;

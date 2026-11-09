@@ -1,4 +1,8 @@
 import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
+import {
 	Dialog,
 	DialogBody,
 	DialogContent,
@@ -38,8 +42,11 @@ export function ProjectInfoDialog({
 	const durationSeconds = mediaTimeToSeconds({ time: project.duration });
 	const durationFormatted =
 		project.duration > 0
-		? (formatTimecode({ time: project.duration, format: durationSeconds >= 3600 ? "HH:MM:SS" : "MM:SS" }) ?? "")
-		: "0:00";
+			? (formatTimecode({
+					time: project.duration,
+					format: durationSeconds >= 3600 ? "HH:MM:SS" : "MM:SS",
+				}) ?? "")
+			: "0:00";
 
 	return (
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -51,16 +58,27 @@ export function ProjectInfoDialog({
 				</DialogHeader>
 
 				<DialogBody className="flex flex-col">
-					<InfoRow label="Duration" value={durationFormatted} />
-					<InfoRow
+					<UiLocalized<typeof InfoRow>
+						element={InfoRow}
+						messageProps={["label"]}
+						label="Duration"
+						value={durationFormatted}
+					/>
+					<UiLocalized<typeof InfoRow>
+						element={InfoRow}
+						messageProps={["label"]}
 						label="Created"
 						value={formatDate({ date: project.createdAt })}
 					/>
-					<InfoRow
+					<UiLocalized<typeof InfoRow>
+						element={InfoRow}
+						messageProps={["label"]}
 						label="Modified"
 						value={formatDate({ date: project.updatedAt })}
 					/>
-					<InfoRow
+					<UiLocalized<typeof InfoRow>
+						element={InfoRow}
+						messageProps={["label"]}
 						label="Project ID"
 						value={
 							<code className="text-xs bg-muted px-1.5 py-0.5 rounded">
@@ -71,9 +89,11 @@ export function ProjectInfoDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={() => onOpenChange(false)}>
-						Close
+						<UiMessage text={"Close"} />
 					</Button>
-					<Button onClick={() => onOpenChange(false)}>Done</Button>
+					<Button onClick={() => onOpenChange(false)}>
+						<UiMessage text={"Done"} />
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

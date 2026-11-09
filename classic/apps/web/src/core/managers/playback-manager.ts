@@ -1,4 +1,4 @@
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { prepareWithDeadline } from "./playback-preparation";
 import type { FrameRate } from "opencut-wasm";
 import { isRenderPerfEnabled } from "@/diagnostics/render-perf";

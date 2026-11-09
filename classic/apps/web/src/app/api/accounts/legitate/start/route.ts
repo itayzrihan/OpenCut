@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 			(error: unknown) => {
 				const message = error instanceof Error ? error.message : "";
 				const reason =
-					message === "Sign in to an OpenCut account first"
+					message === "Sign in to an POCUT account first"
 						? "session_cookie_missing"
 						: message === "Session expired. Sign in again"
 							? "session_expired"
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 		);
 		if (!account && !(await hasLegitateWorkspaceBinding()))
 			return new Response(
-				"Sign in to your OpenCut workspace first, then connect Legitate from Account settings.",
+				"Sign in to your POCUT workspace first, then connect Legitate from Account settings.",
 				{
 					status: 401,
 					headers: {

@@ -403,6 +403,15 @@ impl ClassicProject {
                     {
                         return Err(invalid("element enabled must be a boolean"));
                     }
+                    if let Some(link) = element.get("linkedAudioVideoId") {
+                        if !matches!(element["type"].as_str(), Some("audio" | "video"))
+                            || !link.as_str().is_some_and(|id| {
+                                !id.is_empty() && id.len() <= 256 && link != &element["id"]
+                            })
+                        {
+                            return Err(invalid("Invalid linked audio/video clip reference"));
+                        }
+                    }
                     if element["params"].get("textGraphicsSceneId").is_some() {
                         let p = &element["params"];
                         if element["type"] != "text"
@@ -458,6 +467,13 @@ impl ClassicProject {
                     let duration = ticks(element, "duration")?;
                     ticks(element, "trimStart")?;
                     ticks(element, "trimEnd")?;
+                    if element["retime"].get("speedKeyframes").is_some() {
+                        if !matches!(element["type"].as_str(), Some("video" | "audio")) {
+                            return Err(invalid("Speed keyframes require a video or audio clip"));
+                        }
+                        classic_timeline::SpeedCurve::parse(&element["retime"])
+                            .map_err(invalid)?;
+                    }
                     if start
                         .checked_add(duration)
                         .is_none_or(|end| end > MAX_SAFE_INTEGER)

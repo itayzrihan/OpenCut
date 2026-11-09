@@ -44,7 +44,7 @@ async function executable() {
 			} catch {}
 		}
 	throw Error(
-		"Background renderer is not installed. Update the local OpenCut app.",
+		"Background renderer is not installed. Update the local POCUT app.",
 	);
 }
 export function ensureRenderWorker(

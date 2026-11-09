@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 import { cn } from "@/utils/ui";
@@ -33,7 +34,13 @@ export function ThemeToggle({
 				icon={Sun03Icon}
 				className={cn("!size-[1.1rem]", iconClassName)}
 			/>
-			<span className="sr-only">{theme === "dark" ? "Light" : "Dark"}</span>
+			<span className="sr-only">
+				{theme === "dark" ? (
+					<UiMessage text={"Light"} />
+				) : (
+					<UiMessage text={"Dark"} />
+				)}
+			</span>
 		</Button>
 	);
 }

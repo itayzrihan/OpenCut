@@ -1,4 +1,8 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useId } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -22,8 +26,10 @@ export function ExportSettingsFields({
 		<div className="space-y-3 text-sm">
 			<div className="grid grid-cols-2 gap-3">
 				<label className="grid gap-1">
-					Format
-					<select
+					<UiMessage text={"Format"} />
+					<UiLocalized<"select">
+						element={"select"}
+						messageProps={["aria-label"]}
 						aria-label="Export format"
 						disabled={disabled}
 						className={selectClass}
@@ -36,12 +42,20 @@ export function ExportSettingsFields({
 						}
 					>
 						<option value="mp4">MP4</option>
-						<option value="webm">WebM (VP9)</option>
-					</select>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="webm"
+						>
+							{"WebM (VP9)"}
+						</UiLocalized>
+					</UiLocalized>
 				</label>
 				<label className="grid gap-1">
-					Quality
-					<select
+					<UiMessage text={"Quality"} />
+					<UiLocalized<"select">
+						element={"select"}
+						messageProps={["aria-label"]}
 						aria-label="Export quality"
 						disabled={disabled}
 						className={selectClass}
@@ -53,15 +67,41 @@ export function ExportSettingsFields({
 							})
 						}
 					>
-						<option value="low">Low · Smallest file</option>
-						<option value="medium">Medium · Balanced</option>
-						<option value="high">High · Recommended</option>
-						<option value="very_high">Very high · Largest file</option>
-					</select>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="low"
+						>
+							{"Low · Smallest file"}
+						</UiLocalized>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="medium"
+						>
+							{"Medium · Balanced"}
+						</UiLocalized>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="high"
+						>
+							{"High · Recommended"}
+						</UiLocalized>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="very_high"
+						>
+							{"Very high · Largest file"}
+						</UiLocalized>
+					</UiLocalized>
 				</label>
 				<label className="grid gap-1">
-					Resolution
-					<select
+					<UiMessage text={"Resolution"} />
+					<UiLocalized<"select">
+						element={"select"}
+						messageProps={["aria-label"]}
 						aria-label="Export resolution"
 						disabled={disabled}
 						className={selectClass}
@@ -76,14 +116,28 @@ export function ExportSettingsFields({
 							})
 						}
 					>
-						<option value="source">Source · Smart resolution</option>
-						<option value="project">Project resolution</option>
-					</select>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="source"
+						>
+							{"Source · Smart resolution"}
+						</UiLocalized>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="project"
+						>
+							{"Project resolution"}
+						</UiLocalized>
+					</UiLocalized>
 				</label>
 				{value.format === "mp4" && (
 					<label className="grid gap-1">
-						Encoding
-						<select
+						<UiMessage text={"Encoding"} />
+						<UiLocalized<"select">
+							element={"select"}
+							messageProps={["aria-label"]}
 							aria-label="Export encoding"
 							disabled={disabled}
 							className={selectClass}
@@ -98,9 +152,21 @@ export function ExportSettingsFields({
 								})
 							}
 						>
-							<option value="compact">Compact · HEVC (H.265)</option>
-							<option value="compatible">Compatible · H.264</option>
-						</select>
+							<UiLocalized<"option">
+								element={"option"}
+								messageProps={["children"]}
+								value="compact"
+							>
+								{"Compact · HEVC (H.265)"}
+							</UiLocalized>
+							<UiLocalized<"option">
+								element={"option"}
+								messageProps={["children"]}
+								value="compatible"
+							>
+								{"Compatible · H.264"}
+							</UiLocalized>
+						</UiLocalized>
 					</label>
 				)}
 			</div>
@@ -113,24 +179,29 @@ export function ExportSettingsFields({
 						onChange({ ...value, includeAudio: checked === true })
 					}
 				/>
-				<Label htmlFor={id}>Include audio in export</Label>
+				<Label htmlFor={id}>
+					<UiMessage text={"Include audio in export"} />
+				</Label>
 			</div>
 		</div>
 	);
 }
 export function ExportPlanSummary({ plan }: { plan: ExportPlan }) {
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			aria-label="Export output summary"
 			className="text-xs text-muted-foreground space-y-1"
 		>
 			<p className="font-medium text-foreground">
 				{plan.width} × {plan.height} · {plan.codec.toUpperCase()} ·{" "}
-				{(plan.videoBitrate / 1000000).toFixed(1)} Mbps
+				{(plan.videoBitrate / 1000000).toFixed(1)} <UiMessage text={"Mbps"} />
 			</p>
 			<p>
-				Estimated size: {(plan.estimatedBytes / 1000000000).toFixed(2)} GB ·
-				actual size varies.
+				<UiMessage text={"Estimated size:"} />{" "}
+				{(plan.estimatedBytes / 1000000000).toFixed(2)}{" "}
+				<UiMessage text={"GB · actual size varies."} />
 			</p>
 			{plan.warnings.map((w) => (
 				<p key={w}>{w}</p>
@@ -138,7 +209,8 @@ export function ExportPlanSummary({ plan }: { plan: ExportPlan }) {
 			{plan.upscaledSources.length > 0 && (
 				<details>
 					<summary>
-						{plan.upscaledSources.length} sources may be enlarged
+						{plan.upscaledSources.length}{" "}
+						<UiMessage text={"sources may be enlarged"} />
 					</summary>
 					{plan.upscaledSources.map((s) => (
 						<p key={s}>{s}</p>
@@ -146,8 +218,12 @@ export function ExportPlanSummary({ plan }: { plan: ExportPlan }) {
 				</details>
 			)}
 			{plan.codec === "hevc" && (
-				<p>HEVC makes smaller files; older players may need H.264.</p>
+				<p>
+					<UiMessage
+						text={"HEVC makes smaller files; older players may need H.264."}
+					/>
+				</p>
 			)}
-		</div>
+		</UiLocalized>
 	);
 }

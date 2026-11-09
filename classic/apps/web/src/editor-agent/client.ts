@@ -7,6 +7,7 @@ import { mediaTime } from "@/wasm/media-time";
 import { type AgentStreamEvent } from "./stream";
 import { requestAgentResponse } from "./transport";
 import { z } from "zod";
+import { agentModelSchema } from "./model-preference";
 import { knowledgeRequest } from "./knowledge-client";
 import { performHostEffect } from "./host-effects";
 import { performRenderEffect } from "./render-effects";
@@ -27,10 +28,8 @@ function isTerminalRun(
 ): boolean {
 	return snapshot?.phase === "completed" || snapshot?.phase === "failed";
 }
-export interface AgentModel {
-	id: string;
-	name: string;
-}
+const namedAgentModelSchema = agentModelSchema.required({ name: true });
+export type AgentModel = z.infer<typeof namedAgentModelSchema>;
 export const connectionSchemas = {
 	status: z.object({
 		connected: z.boolean(),
@@ -43,11 +42,7 @@ export const connectionSchemas = {
 		usageUrl: z.string().url(),
 	}),
 	models: z.object({
-		models: z
-			.array(
-				z.object({ id: z.string().min(1).max(100), name: z.string().max(200) }),
-			)
-			.max(200),
+		models: z.array(namedAgentModelSchema).max(200),
 	}),
 	signIn: z.object({
 		authorizationUrl: z
@@ -262,10 +257,12 @@ export class EditorAgentClient {
 	async run({
 		text,
 		model,
+		reasoningEffort,
 		attachments,
 	}: {
 		text?: string;
 		model: string;
+		reasoningEffort?: string;
 		attachments?: import("@/core/agent-protocol").EditingInputAttachment[];
 	}) {
 		this.assertScope();
@@ -355,6 +352,7 @@ export class EditorAgentClient {
 						this.emit({ type: "round", review: false });
 						const response = await this.respond({
 							body: request.body,
+							reasoningEffort,
 							signal: controller.signal,
 						});
 						controller.signal.throwIfAborted();
@@ -391,7 +389,11 @@ export class EditorAgentClient {
 						return { phase: round.phase };
 					}
 					if (round.needsVerification)
-						await this.review({ model, signal: controller.signal });
+						await this.review({
+							model,
+							reasoningEffort,
+							signal: controller.signal,
+						});
 					return {
 						phase: this.editor.command.getEditingAgentSnapshot()?.phase,
 					};
@@ -533,9 +535,11 @@ export class EditorAgentClient {
 	}
 	private async respond({
 		body,
+		reasoningEffort,
 		signal,
 	}: {
 		body: Record<string, unknown>;
+		reasoningEffort?: string;
 		signal: AbortSignal;
 	}) {
 		await this.persist();
@@ -564,7 +568,7 @@ export class EditorAgentClient {
 						"Content-Type": "application/json",
 						"X-OpenCut-Account": this.account,
 					},
-					body: JSON.stringify(body),
+					body: JSON.stringify({ ...body, reasoningEffort }),
 					signal,
 				}),
 			signal,
@@ -583,9 +587,11 @@ export class EditorAgentClient {
 	}
 	private async review({
 		model,
+		reasoningEffort,
 		signal,
 	}: {
 		model: string;
+		reasoningEffort?: string;
 		signal: AbortSignal;
 	}) {
 		const plan = this.editor.command.prepareEditingAgentReview();
@@ -624,7 +630,11 @@ export class EditorAgentClient {
 			revision: plan.revision,
 			frames,
 		});
-		const response = await this.respond({ body: request.body, signal });
+		const response = await this.respond({
+			body: request.body,
+			reasoningEffort,
+			signal,
+		});
 		signal.throwIfAborted();
 		this.assertScope();
 		const result = this.editor.command.applyEditingAgentReview({

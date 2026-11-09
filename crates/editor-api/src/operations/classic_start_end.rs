@@ -51,14 +51,9 @@ fn crop(track: &mut Value, low: i64, high: i64, shift: i64) -> Result<(), Capabi
         if a != start || b != end {
             let left = a - start;
             let right = end - b;
-            let rate = if matches!(e["type"].as_str(), Some("video" | "audio")) {
-                classic_update::rate(e)
-            } else {
-                1.0
-            };
-            let source_left = (left as f64 * rate).round() as i64;
-            let source_right = (duration as f64 * rate).round() as i64
-                - ((duration - right) as f64 * rate).round() as i64;
+            let source_left = classic_update::source_span(e, left)?.round() as i64;
+            let source_right = classic_update::source_span(e, duration)?.round() as i64
+                - classic_update::source_span(e, duration - right)?.round() as i64;
             let patch = json!({"startTime":a,"duration":b-a,"trimStart":tick(&e["trimStart"])?+source_left,"trimEnd":tick(&e["trimEnd"])?+source_right});
             // Split curves at the retained in-point before the existing trim policy
             // clips their out-point and timed words. IDs and unknown fields survive.

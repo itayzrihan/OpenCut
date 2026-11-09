@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { StandaloneWorker } from "@/batch/standalone-worker";
 import { useEffect, useState } from "react";
 import { executeBatch } from "@/batch/worker";
@@ -70,5 +71,9 @@ function IframeWorker() {
 			window.removeEventListener("message", handle);
 		};
 	}, []);
-	return <p>Full Auto Edit batch worker</p>;
+	return (
+		<p>
+			<UiMessage text={"Full Auto Edit batch worker"} />
+		</p>
+	);
 }

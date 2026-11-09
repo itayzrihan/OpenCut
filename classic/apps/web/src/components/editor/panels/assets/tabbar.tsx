@@ -8,6 +8,8 @@ import {
 } from "@/components/ui/tooltip";
 import { UiSurfaceButton as Button } from "@/components/editor/ui-surface-button";
 import { cn } from "@/utils/ui";
+import { useInterfaceLanguage } from "@/i18n/provider";
+import { interfaceDirection } from "@/i18n/locales";
 import {
 	TAB_KEYS,
 	tabs,
@@ -15,6 +17,7 @@ import {
 } from "@/components/editor/panels/assets/assets-panel-store";
 
 export function TabBar() {
+	const { t, locale } = useInterfaceLanguage();
 	const { activeTab, setActiveTab } = useAssetsPanelStore();
 	const [showTopFade, setShowTopFade] = useState(false);
 	const [showBottomFade, setShowBottomFade] = useState(false);
@@ -59,7 +62,7 @@ export function TabBar() {
 								<Button
 									variant={activeTab === tabKey ? "secondary" : "ghost"}
 									size="icon"
-									aria-label={tab.label}
+									aria-label={t(tab.label)}
 									className={cn(
 										"shrink-0",
 										"h-8 w-8",
@@ -71,13 +74,13 @@ export function TabBar() {
 								</Button>
 							</TooltipTrigger>
 							<TooltipContent
-								side="right"
+								side={interfaceDirection(locale) === "rtl" ? "left" : "right"}
 								align="center"
 								variant="sidebar"
 								sideOffset={8}
 							>
 								<div className="text-foreground text-sm leading-none font-medium">
-									{tab.label}
+									{t(tab.label)}
 								</div>
 							</TooltipContent>
 						</Tooltip>

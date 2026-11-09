@@ -1,12 +1,10 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useEditor } from "@/editor/use-editor";
-import {
-	getDbFromLinePos,
-	getLinePosFromDb,
-} from "@/timeline/audio-display";
+import { getDbFromLinePos, getLinePosFromDb } from "@/timeline/audio-display";
 import { VOLUME_DB_MAX, VOLUME_DB_MIN } from "@/timeline/audio-constants";
 import { getElementVolume, hasAnimatedVolume } from "@/timeline/audio-state";
 import type { AudioElement } from "@/timeline/types";
@@ -240,7 +238,9 @@ export function AudioVolumeLine({
 					style={{ top: lineTop }}
 				/>
 				{/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- custom drag widget for clip volume; pointer events drive the interaction, the click/mousedown handlers are propagation-stoppers. The a11y-correct long-term shape is <input type="range"> with a custom thumb. */}
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["title"]}
 					className="absolute inset-x-0 -translate-y-1/2 touch-none cursor-ns-resize pointer-events-auto"
 					style={{ top: lineTop, height: `${HIT_AREA_HEIGHT_PX}px` }}
 					onClick={handleClick}

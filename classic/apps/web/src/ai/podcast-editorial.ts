@@ -28,7 +28,7 @@ export async function runPodcastEditorial({
 }): Promise<PodcastVideo[]> {
 	if (!source.editorial)
 		throw new Error(
-			"Reload OpenCut to load the podcast editorial runtime. No scenes were changed.",
+			"Reload POCUT to load the podcast editorial runtime. No scenes were changed.",
 		);
 	const key = cache ? `${cache.key}:editorial-v1` : null;
 	let responses: Record<string, unknown> = {};
@@ -130,16 +130,16 @@ export async function runPodcastEditorial({
 		const labels: Record<string, string> = {
 			inventory:
 				options.mode === "teleprompter"
-					? "מיפוי תסריטים, משפטים וטייקים חוזרים"
-					: "מיפוי רגעים קצרים מכל הפרק",
+					? "Mapping scripts, sentences and repeated takes"
+					: "Finding short moments across the episode",
 			compose:
 				options.mode === "teleprompter"
-					? "ניקוי תסריטים ושמירת טייקים חלופיים"
-					: "בניית רצף וסדר עריכתי",
-			critique: "ביקורת תוכן והקשר",
+					? "Cleaning up scripts and saving alternate takes"
+					: "Building the edit sequence",
+			critique: "Reviewing content and context",
 		};
 		onStage(
-			`${labels[step.requests[0].stage] ?? "בדיקת הקשר נוסף"} · ${step.report.windowsReviewed ?? 0}/${step.report.windowsTotal ?? source.windows.length} · סבב ${Number(step.report.round ?? 0) + 1}`,
+			`${labels[step.requests[0].stage] ?? "Reviewing more context"} · ${step.report.windowsReviewed ?? 0}/${step.report.windowsTotal ?? source.windows.length} · round ${Number(step.report.round ?? 0) + 1}`,
 		);
 		// Checkpoint each success immediately, including when its sibling fails.
 		const results = await Promise.allSettled(

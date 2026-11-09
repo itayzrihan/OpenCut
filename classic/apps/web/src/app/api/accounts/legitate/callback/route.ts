@@ -8,6 +8,7 @@ import {
 	sessionCookie,
 } from "@/accounts/server";
 import { LEGITATE_ISSUER } from "@/accounts/legitate-oidc";
+import { ACCOUNT_WORKSPACE_HREF } from "@/accounts/workspace-route";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
@@ -60,10 +61,10 @@ export async function GET(request: Request) {
 				: { stage: "local_session" }),
 		});
 		const message = expired
-			? "This sign-in link expired. Start again from OpenCut in this browser."
-			: "Legitate sign-in could not be completed. Start a new sign-in from your OpenCut workspace.";
+			? "This sign-in link expired. Start again from POCUT in this browser."
+			: "Legitate sign-in could not be completed. Start a new sign-in from your POCUT workspace.";
 		return new Response(
-			`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to OpenCut</title><body style="background:#111;color:#eee;font:16px system-ui;padding:48px;max-width:640px;margin:auto"><h1>Return to OpenCut</h1><p>${message}</p><p><a style="color:#b9a5ff" href="/account">Open account settings and try again</a></p></body></html>`,
+			`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Return to POCUT</title><body style="background:#111;color:#eee;font:16px system-ui;padding:48px;max-width:640px;margin:auto"><h1>Return to POCUT</h1><p>${message}</p><p><a style="color:#b9a5ff" href="${ACCOUNT_WORKSPACE_HREF}">Open account settings and try again</a></p></body></html>`,
 			{
 				status: 400,
 				headers: {

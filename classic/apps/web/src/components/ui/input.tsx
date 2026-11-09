@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { Eye, EyeOff, X } from "lucide-react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/utils/ui";
@@ -12,7 +13,8 @@ const inputVariants = cva(
 	{
 		variants: {
 			variant: {
-				default: "selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20",
+				default:
+					"selection:bg-primary selection:text-primary-foreground focus-visible:border-primary/50 focus-visible:ring-2 focus-visible:ring-primary/20",
 				outline: "bg-background",
 				destructive:
 					"selection:bg-destructive selection:text-destructive-foreground focus-visible:border-destructive focus-visible:ring-destructive/10",
@@ -32,7 +34,8 @@ const inputVariants = cva(
 );
 
 interface InputProps
-	extends Omit<ComponentProps<"input">, "size">,
+	extends
+		Omit<ComponentProps<"input">, "size">,
 		VariantProps<typeof inputVariants> {
 	showPassword?: boolean;
 	onShowPasswordChange?: (show: boolean) => void;
@@ -103,7 +106,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 					{...props}
 				/>
 				{showClear && (
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="text"
 						size="icon"
 						onMouseDown={(e) => {
@@ -114,10 +119,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 						aria-label="Clear input"
 					>
 						<X className="!size-[0.85]" />
-					</Button>
+					</UiLocalized>
 				)}
 				{showPasswordToggle && (
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="text"
 						size="icon"
 						onClick={() => onShowPasswordChange?.(!showPassword)}
@@ -132,7 +139,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 						) : (
 							<EyeOff className="size-4" />
 						)}
-					</Button>
+					</UiLocalized>
 				)}
 			</div>
 		);

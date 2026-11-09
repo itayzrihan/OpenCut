@@ -1,4 +1,11 @@
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { SmartTakesControl } from "@/timeline/smart-takes/controls";
+import { SeamlessConnectControl } from "@/generative/components/seamless-connect-control";
+import { getSeamlessPair } from "@/generative/seamless-connect";
 import {
 	useEditorHistory,
 	useEditorMediaAsset,
@@ -30,6 +37,7 @@ import { type TActionWithOptionalArgs, invokeAction } from "@/actions";
 import {
 	canToggleSourceAudio,
 	getSourceAudioActionLabel,
+	linkedAudioVideoPeer,
 	isSourceAudioSeparated,
 } from "@/timeline/audio-separation";
 import { hasMediaId } from "@/timeline";
@@ -64,7 +72,7 @@ import { PopoverTrigger } from "@/components/ui/popover";
 import { useGraphEditorController } from "./graph-editor/use-controller";
 import { getToolbarFrameTime } from "./toolbar-frame-time";
 import { useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	CUT_SILENCE_ACTIONS,
 	DEFAULT_CUT_SILENCE_MODE,
@@ -101,8 +109,8 @@ export function TimelineToolbar({
 	};
 
 	return (
-		<ScrollArea className="scrollbar-hidden">
-			<div className="flex h-10 items-center justify-between border-b px-2 py-1">
+		<ScrollArea className="shrink-0 overflow-x-auto overflow-y-hidden">
+			<div className="flex h-10 w-max min-w-full items-center justify-between gap-2 border-b px-2 py-1">
 				<ToolbarLeftSection />
 
 				<ToolbarRightSection
@@ -136,6 +144,7 @@ function ToolbarLeftSection() {
 	const selectedTimelineElements = timeline.getElementsWithTracks({
 		elements: selectedElements,
 	});
+	const bridgePair = getSeamlessPair(selectedTimelineElements);
 	const selectedElement =
 		selectedTimelineElements.length === 1 ? selectedTimelineElements[0] : null;
 	const hasSelectedVideo = selectedTimelineElements.some(
@@ -151,6 +160,10 @@ function ToolbarLeftSection() {
 	const selectedMediaAsset = useEditorMediaAsset({ mediaId: selectedMediaId });
 	const canToggleSelectedSourceAudio =
 		!!selectedElement &&
+		!linkedAudioVideoPeer({
+			tracks: activeSceneTracks,
+			element: selectedElement.element,
+		}) &&
 		canToggleSourceAudio(selectedElement.element, selectedMediaAsset);
 	const sourceAudioLabel =
 		selectedElement?.element.type === "video"
@@ -178,14 +191,18 @@ function ToolbarLeftSection() {
 	return (
 		<div className="flex items-center gap-1">
 			<TooltipProvider delayDuration={500}>
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["label", "tooltip"]}
 					icon={<Undo2 />}
 					label="Undo"
 					tooltip="Undo"
 					disabled={!canUndo}
 					onClick={({ event }) => handleAction({ action: "undo", event })}
 				/>
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["label", "tooltip"]}
 					icon={<Redo2 />}
 					label="Redo"
 					tooltip="Redo"
@@ -193,14 +210,24 @@ function ToolbarLeftSection() {
 					onClick={({ event }) => handleAction({ action: "redo", event })}
 				/>
 				<div className="bg-border mx-1 h-6 w-px shrink-0" />
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={ScissorIcon} />}
 					tooltip="Split element (Shift+S)"
 					onClick={({ event }) => handleAction({ action: "split", event })}
 				/>
+				{bridgePair && (
+					<SeamlessConnectControl
+						key={`${bridgePair.left.id}:${bridgePair.right.id}`}
+						{...bridgePair}
+					/>
+				)}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label", "title"]}
 							variant="ghost"
 							size="sm"
 							className="h-7 w-9 shrink-0 gap-0.5 px-1"
@@ -211,14 +238,15 @@ function ToolbarLeftSection() {
 						>
 							<HugeiconsIcon icon={ScissorIcon} className="size-3.5!" />
 							<HugeiconsIcon icon={ArrowDown01Icon} className="size-2.5!" />
-						</Button>
+						</UiLocalized>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="start">
 						<DropdownMenuItem onSelect={() => invokeAction("trim-start")}>
-							<HugeiconsIcon icon={AlignLeftIcon} /> Start
+							<HugeiconsIcon icon={AlignLeftIcon} />{" "}
+							<UiMessage text={"Start"} />
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={() => invokeAction("trim-end")}>
-							<HugeiconsIcon icon={AlignRightIcon} /> End
+							<HugeiconsIcon icon={AlignRightIcon} /> <UiMessage text={"End"} />
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -235,13 +263,17 @@ function ToolbarLeftSection() {
 					undo={() => commandManager.undo()}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={AlignLeftIcon} />}
 					tooltip="Split left"
 					onClick={({ event }) => handleAction({ action: "split-left", event })}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={AlignRightIcon} />}
 					tooltip="Split right"
 					onClick={({ event }) =>
@@ -262,7 +294,9 @@ function ToolbarLeftSection() {
 					}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={Copy01Icon} />}
 					tooltip="Duplicate element"
 					onClick={({ event }) =>
@@ -270,14 +304,18 @@ function ToolbarLeftSection() {
 					}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={SnowIcon} />}
 					tooltip="Freeze frame (coming soon)"
 					disabled={true}
 					onClick={({ event: _event }) => {}}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={Delete02Icon} />}
 					tooltip="Delete element"
 					onClick={({ event }) =>
@@ -285,7 +323,9 @@ function ToolbarLeftSection() {
 					}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={
 						<span className="relative">
 							<HugeiconsIcon icon={Delete02Icon} />
@@ -299,7 +339,9 @@ function ToolbarLeftSection() {
 					}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={
 						<span className="relative">
 							<HugeiconsIcon icon={Delete02Icon} />
@@ -317,7 +359,9 @@ function ToolbarLeftSection() {
 
 				<BookmarkToolbarButton />
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={CursorRectangleSelection01Icon} />}
 					isActive={aiRangeSelection.mode !== "idle"}
 					tooltip={
@@ -465,7 +509,9 @@ function CutSilenceToolbarControl({
 						: `Cut silences · protect speech (default) · pauses from ${formattedSmartMinSilenceSeconds}s`;
 
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			role="group"
 			aria-label="Cut silences"
 			aria-busy={isAnalyzing}
@@ -489,7 +535,9 @@ function CutSilenceToolbarControl({
 			/>
 
 			<DropdownMenu>
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />}
 					tooltip="Cut silence modes: Protect Speech (default), Audio-based, Fast, or Deep"
 					disabled={disabled}
@@ -499,7 +547,9 @@ function CutSilenceToolbarControl({
 					)}
 				/>
 				<DropdownMenuContent align="start" className="w-80">
-					<DropdownMenuLabel>Cut silences</DropdownMenuLabel>
+					<DropdownMenuLabel>
+						<UiMessage text={"Cut silences"} />
+					</DropdownMenuLabel>
 					{CUT_SILENCE_ACTIONS.map((action) => (
 						<DropdownMenuItem
 							key={action.mode}
@@ -542,7 +592,7 @@ function CutSilenceToolbarControl({
 											className="text-muted-foreground text-xs"
 											htmlFor={`cut-silence-${action.mode}-min-seconds`}
 										>
-											Minimum pause (seconds)
+											<UiMessage text={"Minimum pause (seconds)"} />
 										</label>
 										<Input
 											id={`cut-silence-${action.mode}-min-seconds`}
@@ -603,10 +653,10 @@ function CutSilenceToolbarControl({
 					size="sm"
 					onClick={() => abortRef.current?.abort()}
 				>
-					Cancel
+					<UiMessage text={"Cancel"} />
 				</Button>
 			)}
-		</div>
+		</UiLocalized>
 	);
 }
 
@@ -690,7 +740,9 @@ function BookmarkToolbarButton() {
 	);
 
 	return (
-		<ToolbarButton
+		<UiLocalized<typeof ToolbarButton>
+			element={ToolbarButton}
+			messageProps={["tooltip"]}
 			icon={<HugeiconsIcon icon={Bookmark02Icon} />}
 			isActive={isCurrentlyBookmarked}
 			tooltip={isCurrentlyBookmarked ? "Remove bookmark" : "Add bookmark"}
@@ -723,14 +775,18 @@ function ToolbarRightSection({
 	return (
 		<div className="flex items-center gap-1">
 			<TooltipProvider delayDuration={500}>
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<HugeiconsIcon icon={MagnetIcon} />}
 					isActive={snappingEnabled}
 					tooltip="Auto snapping"
 					onClick={() => toggleSnapping()}
 				/>
 
-				<ToolbarButton
+				<UiLocalized<typeof ToolbarButton>
+					element={ToolbarButton}
+					messageProps={["tooltip"]}
 					icon={<OcRippleIcon size={24} className="scale-110" />}
 					isActive={rippleEditingEnabled}
 					tooltip="Ripple editing"
@@ -741,23 +797,27 @@ function ToolbarRightSection({
 			<div className="bg-border mx-1 h-6 w-px" />
 
 			<div className="flex items-center gap-1">
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label", "title"]}
 					variant="ghost"
 					size="sm"
 					aria-label="Fit timeline to view"
 					title="Show the entire timeline"
 					onClick={onFitTimeline}
 				>
-					Fit
-				</Button>
-				<Button
+					<UiMessage text={"Fit"} />
+				</UiLocalized>
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label"]}
 					variant="text"
 					size="icon"
 					aria-label="Zoom out timeline"
 					onClick={() => onZoom({ direction: "out" })}
 				>
 					<HugeiconsIcon icon={SearchMinusIcon} />
-				</Button>
+				</UiLocalized>
 				<Slider
 					className="w-28"
 					value={[zoomToSlider({ zoomLevel, minZoom })]}
@@ -768,14 +828,16 @@ function ToolbarRightSection({
 					max={1}
 					step={0.005}
 				/>
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["aria-label"]}
 					variant="text"
 					size="icon"
 					aria-label="Zoom in timeline"
 					onClick={() => onZoom({ direction: "in" })}
 				>
 					<HugeiconsIcon icon={SearchAddIcon} />
-				</Button>
+				</UiLocalized>
 			</div>
 		</div>
 	);
@@ -828,7 +890,9 @@ function ToolbarButton({
 	return (
 		<Tooltip delayDuration={200}>
 			<TooltipTrigger asChild>{trigger}</TooltipTrigger>
-			<TooltipContent>{tooltip}</TooltipContent>
+			<TooltipContent>
+				<UiValue>{tooltip}</UiValue>
+			</TooltipContent>
 		</Tooltip>
 	);
 }

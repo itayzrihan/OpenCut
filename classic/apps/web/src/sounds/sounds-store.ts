@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import type { SoundEffect, SavedSound } from "@/sounds/types";
 import { storageService } from "@/services/storage/service";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { EditorCore } from "@/core";
 import { buildLibraryAudioElement } from "@/timeline/element-utils";
 import { mediaTimeFromSeconds } from "@/wasm";
@@ -259,7 +259,9 @@ export const useSoundsStore = create<SoundsStore>((set, get) => ({
 
 	addSharedAudioToTimeline: async ({ asset }) => {
 		try {
-			const file = await sharedLibraryService.getAudioAssetFile({ id: asset.id });
+			const file = await sharedLibraryService.getAudioAssetFile({
+				id: asset.id,
+			});
 			if (!file) {
 				toast.error("Shared audio file is missing");
 				return false;

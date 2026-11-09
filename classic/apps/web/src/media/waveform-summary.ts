@@ -253,12 +253,14 @@ export function buildWaveformSampleBuckets({
 			getSourceTimeAtClipTime({
 				clipTime: clipStartSec,
 				retime,
+				trimStart: sourceStartSec,
 			});
 		const sourceBucketEndSec =
 			sourceStartSec +
 			getSourceTimeAtClipTime({
 				clipTime: clipEndSec,
 				retime,
+				trimStart: sourceStartSec,
 			});
 
 		return {

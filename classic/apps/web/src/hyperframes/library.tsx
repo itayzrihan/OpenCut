@@ -1,8 +1,12 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { FolderOpen, Layers2, MoreHorizontal, Plus } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import {
 	DropdownMenu,
@@ -182,7 +186,13 @@ export function HyperframesLibraryCard({
 					{item.name}
 				</div>
 				<div className="text-[10px] text-muted-foreground">
-					HyperFrames{!isGrid && ` · ${item.resourceAssetIds.length} files`}
+					HyperFrames
+					{!isGrid && (
+						<UiMessage
+							text={" · {v0} files"}
+							values={{ v0: String(item.resourceAssetIds.length) }}
+						/>
+					)}
 				</div>
 			</div>
 			<div className={cn("flex items-center", isGrid && "justify-between")}>
@@ -193,11 +203,13 @@ export function HyperframesLibraryCard({
 						onClick={() => onShowFiles(item.assetId)}
 					>
 						<FolderOpen className="size-3" />
-						{item.resourceAssetIds.length} files
+						{item.resourceAssetIds.length} <UiMessage text={"files"} />
 					</button>
 				)}
 				<div className="flex">
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["title"]}
 						size="icon"
 						variant="ghost"
 						className="size-6"
@@ -207,7 +219,7 @@ export function HyperframesLibraryCard({
 						onClick={() => void add()}
 					>
 						<Plus />
-					</Button>
+					</UiLocalized>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<Button
@@ -221,16 +233,16 @@ export function HyperframesLibraryCard({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent align="end">
 							<DropdownMenuItem disabled={adding} onSelect={() => void add()}>
-								Add at playhead
+								<UiMessage text={"Add at playhead"} />
 							</DropdownMenuItem>
 							<DropdownMenuItem onSelect={() => onShowFiles(item.assetId)}>
-								Show files
+								<UiMessage text={"Show files"} />
 							</DropdownMenuItem>
 							<DropdownMenuItem
 								disabled={!item.occurrences.length}
 								onSelect={() => void showInTimeline()}
 							>
-								Show in timeline
+								<UiMessage text={"Show in timeline"} />
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>

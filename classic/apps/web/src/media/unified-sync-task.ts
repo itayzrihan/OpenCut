@@ -6,7 +6,7 @@ import {
 	isUnifiedAnglesAsset,
 	unifiedAnglesSyncStatus,
 } from "./unified-angles";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 
 export type UnifiedSyncTaskUpdate = {
 	mediaId: string;

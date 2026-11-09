@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { Separator } from "@/components/ui/separator";
 import {
 	type Tab,
@@ -55,7 +56,7 @@ export function AssetsPanel() {
 		"see-captions": <CaptionReviewView />,
 		adjustment: (
 			<div className="text-muted-foreground p-4">
-				Adjustment view coming soon...
+				<UiMessage text={"Adjustment view coming soon..."} />
 			</div>
 		),
 		settings: <SettingsView />,

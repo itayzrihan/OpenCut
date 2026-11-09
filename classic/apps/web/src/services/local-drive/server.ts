@@ -190,7 +190,7 @@ function assertContainedPath({
 	) {
 		return resolvedPath;
 	}
-	throw new Error("Stored path points outside the PoCut project folder");
+	throw new Error("Stored path points outside the POCUT project folder");
 }
 
 function safeFileName(name: string, fallback: string): string {
@@ -1554,7 +1554,7 @@ export async function chooseFiles(): Promise<string[]> {
 	try {
 		if (currentPlatform === "darwin") {
 			const script = [
-				'set chosenFiles to choose file with prompt "Import media into PoCut" with multiple selections allowed',
+				'set chosenFiles to choose file with prompt "Import media into POCUT" with multiple selections allowed',
 				'set output to ""',
 				"repeat with chosenFile in chosenFiles",
 				"set output to output & POSIX path of chosenFile & linefeed",
@@ -1592,7 +1592,7 @@ export async function chooseFiles(): Promise<string[]> {
 				"--file-selection",
 				"--multiple",
 				"--separator=\n",
-				"--title=Import media into PoCut",
+				"--title=Import media into POCUT",
 			],
 			{ maxBuffer: 1024 * 1024 },
 		);

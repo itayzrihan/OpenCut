@@ -1,5 +1,6 @@
 "use client";
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- WAI-ARIA window splitter: a focusable separator with value and arrow-key controls. */
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { useRef } from "react";
 
 /** Transient pointer geometry only; the final size commits through the editor registry. */
@@ -21,7 +22,9 @@ export function TrackControlsResizer({
 	const bounded = (value: number) =>
 		Math.max(80, Math.min(480, Math.round(value)));
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label", "title"]}
 			role="separator"
 			aria-label="Resize track controls"
 			aria-orientation="vertical"

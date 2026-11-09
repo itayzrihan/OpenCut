@@ -48,7 +48,7 @@ async function start() {
     cwd: release.appRoot,
     env: { ...environment, NODE_ENV: 'production', NEXT_TELEMETRY_DISABLED: '1',
       OPENCUT_SESSION_POLICY_BINARY: environment.OPENCUT_SESSION_POLICY_BINARY ?? join(releaseDirectory(release), executableName('opencut-session-policy')),
-      HOSTNAME: '127.0.0.1', PORT: String(config.appPort), OPENCUT_ACCOUNTS_DIR: config.accountsRoot },
+      HOSTNAME: '127.0.0.1', OPENCUT_DELEGATED_MCP_LOCAL: '1', PORT: String(config.appPort), OPENCUT_ACCOUNTS_DIR: config.accountsRoot },
   }, 'production.log');
   production = process;
   activeRelease = release;

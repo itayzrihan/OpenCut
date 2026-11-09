@@ -1,3 +1,7 @@
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import type { TCanvasSize } from "@/project/types";
 import type { TScene } from "@/timeline";
 import type { PreviewOverlaySourceResult } from "@/preview/overlays";
@@ -105,7 +109,9 @@ function ParallaxCameraFrames({
 		: startTop;
 	return (
 		<div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.1)_100%)]">
-			<CameraFrame
+			<UiLocalized<typeof CameraFrame>
+				element={CameraFrame}
+				messageProps={["label"]}
 				left={startLeft}
 				top={startTop}
 				width={visibleFrameWidth}
@@ -113,7 +119,9 @@ function ParallaxCameraFrames({
 				label="START"
 				muted
 			/>
-			<CameraFrame
+			<UiLocalized<typeof CameraFrame>
+				element={CameraFrame}
+				messageProps={["label"]}
 				left={endLeft}
 				top={startTop}
 				width={visibleFrameWidth}
@@ -121,7 +129,9 @@ function ParallaxCameraFrames({
 				label="END"
 				muted
 			/>
-			<CameraFrame
+			<UiLocalized<typeof CameraFrame>
+				element={CameraFrame}
+				messageProps={["label"]}
 				left={currentLeft}
 				top={currentTop}
 				width={visibleFrameWidth}
@@ -129,7 +139,10 @@ function ParallaxCameraFrames({
 				label="CAMERA"
 			/>
 			<div className="absolute top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/15 bg-black/60 px-3 py-1 text-[10px] font-medium tracking-wide text-white/75 backdrop-blur">
-				WORLD CANVAS · place layers anywhere · camera moves {direction}
+				<UiMessage
+					text={"WORLD CANVAS · place layers anywhere · camera moves"}
+				/>{" "}
+				{direction}
 			</div>
 		</div>
 	);

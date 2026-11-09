@@ -1,4 +1,9 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { useInterfaceLanguage } from "@/i18n/provider";
 import { openSceneWorker, sceneWorkerUrl } from "./window-worker";
 import { EditorCore as BackgroundEditor } from "@/core";
 import {
@@ -8,6 +13,14 @@ import {
 	type SceneAction,
 } from "./scene-jobs";
 import { BrandKitPicker } from "@/brand-kits/picker";
+import { BrowserTranscriptionPicker } from "@/transcription/browser-model-picker";
+import {
+	BROWSER_TRANSCRIPTION_LABELS,
+	DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
+} from "@/transcription/models";
+import { Clapperboard, FolderOpen, Sparkles } from "lucide-react";
+import brand from "@/components/landing/pocut-brand.module.css";
+import { cn } from "@/utils/ui";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 import {
 	createContext,
@@ -20,7 +33,7 @@ import {
 } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { batchEditIsLocked } from "opencut-wasm";
 import type { EditorCore } from "@/core";
 import { Button } from "@/components/ui/button";
@@ -28,6 +41,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
 	DialogContent,
+	DialogBody,
 	DialogHeader,
 	DialogTitle,
 	DialogDescription,
@@ -41,6 +55,7 @@ import { setBatchReadOnlyProjects } from "./read-only";
 import { AutomationProgress } from "./automation-progress";
 import { AutomationWorkerHost, type AutomationWorkerTask } from "./worker-host";
 import { createWorkerReadiness } from "./worker-readiness";
+import { batchStatusLabels } from "./progress-view";
 type StartProject = (input: {
 	sceneIds?: string[];
 	action?: SceneAction;
@@ -72,6 +87,7 @@ export function BatchEditProvider({ children }: { children: ReactNode }) {
 	return <BatchEditHost>{children}</BatchEditHost>;
 }
 function BatchEditHost({ children }: { children: ReactNode }) {
+	const { t, locale } = useInterfaceLanguage();
 	const [state, setState] = useState<BatchState>({ runs: [] });
 	const [loaded, setLoaded] = useState(false);
 	const [polledAt, setPolledAt] = useState(0);
@@ -83,6 +99,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 		wordAnimation: false,
 		music: false,
 		soundEffects: false,
+		browserModel: DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
 	});
 	const [starting, setStarting] = useState(false);
 	const [workers, setWorkers] = useState<
@@ -353,21 +370,42 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 						rel="noopener noreferrer"
 						className="fixed bottom-3 right-3 z-50 rounded border bg-background px-3 py-1 text-xs"
 					>
-						Open background editor
+						<UiMessage text={"Open background editor"} />
 					</a>
 				)}
 
 			<Dialog open={open} onOpenChange={setOpen}>
-				<DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-					<DialogHeader>
-						<DialogTitle>Batch · Full Auto Edit</DialogTitle>
+				<DialogContent
+					className={cn(
+						brand.theme,
+						"flex max-h-[min(90dvh,840px)] max-w-3xl flex-col overflow-hidden rounded-2xl",
+					)}
+				>
+					<DialogHeader className="shrink-0 px-5 py-5 pe-14 sm:px-7 sm:pe-16">
+						<p
+							className={cn(
+								brand.eyebrow,
+								"flex items-center gap-2 text-primary",
+							)}
+						>
+							<Sparkles className="size-4" aria-hidden="true" />{" "}
+							<UiMessage text={"POCUT Studio"} />
+						</p>
+						<DialogTitle className="text-xl leading-tight">
+							<UiMessage text={"Batch · Full Auto Edit"} />
+						</DialogTitle>
 						<DialogDescription>
-							Choose videos. Each gets its own project with the same editing
-							options.
+							<UiMessage
+								text={
+									"Choose videos. Each gets its own project with the same editing options."
+								}
+							/>
 						</DialogDescription>
 					</DialogHeader>
-					<div className="px-6 space-y-5">
-						<input
+					<DialogBody className="scrollbar-thin min-h-0 gap-5 overflow-y-auto px-5 py-5 sm:px-7">
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label"]}
 							ref={input}
 							type="file"
 							accept="video/*,.mp4,.mov,.mkv,.webm,.m4v"
@@ -397,98 +435,131 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 								);
 							}}
 						/>
-						<div className="flex gap-3">
-							<Button
-								variant="outline"
-								disabled={starting}
-								onClick={() => input.current?.click()}
-							>
-								Choose videos
-							</Button>
-							<Button
-								variant="outline"
-								disabled={starting}
-								onClick={async () => {
-									try {
-										const picked = await batchRequest<BatchSource[]>({
-											action: "pick",
-										});
-										setFiles((old) => [...old, ...picked]);
-									} catch (e) {
-										toast.error(String(e));
-									}
-								}}
-							>
-								Import from drive
-							</Button>
-						</div>
-						{files.length > 0 && (
-							<ul className="max-h-36 overflow-y-auto space-y-1 text-sm">
-								{files.map((f, i) => (
-									<li
-										key={`${f.name}-${i}`}
-										className="flex justify-between gap-3"
-									>
-										<span>{f.name}</span>
-										<Button
-											variant="text"
-											size="sm"
-											aria-label={`Remove ${f.name}`}
-											onClick={() =>
-												setFiles((v) => v.filter((_, n) => n !== i))
-											}
-										>
-											Remove
-										</Button>
-									</li>
-								))}
-							</ul>
-						)}
-						<BrandKitPicker
-							value={options.brandKitId}
-							disabled={starting}
-							onChange={(brandKitId) =>
-								setOptions((previous) => ({ ...previous, brandKitId }))
-							}
-						/>
-						<div className="grid gap-3 sm:grid-cols-2">
-							{(
-								[
-									["zoom", "Automatic Zoom"],
-									["transitions", "Automatic Transition Edit"],
-									["wordAnimation", "Automatic Word Animation and Reveal"],
-									["soundEffects", "Automatic Sound Effects · Earshot"],
-									["music", "Automatic Music"],
-								] as const
-							).map(([key, label]) => (
-								<label key={key} className="flex items-center gap-3 text-sm">
-									<Checkbox
-										checked={options[key]}
-										disabled={starting}
-										onCheckedChange={(v) =>
-											setOptions((p) => ({ ...p, [key]: v === true }))
+						<section
+							aria-labelledby="batch-source-title"
+							className="grid gap-3 rounded-xl border bg-background/40 p-4 sm:grid-cols-[auto_1fr] sm:items-center"
+						>
+							<h3 id="batch-source-title" className="text-sm font-semibold">
+								<UiMessage text={"Source videos"} />
+							</h3>
+							<div className="flex flex-wrap gap-2 sm:justify-end">
+								<Button
+									variant="outline"
+									disabled={starting}
+									onClick={() => input.current?.click()}
+								>
+									<Clapperboard aria-hidden="true" />{" "}
+									<UiMessage text={"Choose videos"} />
+								</Button>
+								<Button
+									variant="outline"
+									disabled={starting}
+									onClick={async () => {
+										try {
+											const picked = await batchRequest<BatchSource[]>({
+												action: "pick",
+											});
+											setFiles((old) => [...old, ...picked]);
+										} catch (e) {
+											toast.error(String(e));
 										}
-									/>
-									{label}
-								</label>
-							))}
+									}}
+								>
+									<FolderOpen aria-hidden="true" />{" "}
+									<UiMessage text={"Import from drive"} />
+								</Button>
+							</div>
+							{files.length > 0 && (
+								<ul className="max-h-36 divide-y overflow-y-auto rounded-lg border px-3 text-sm sm:col-span-2">
+									{files.map((f, i) => (
+										<li
+											key={`${f.name}-${i}`}
+											className="flex items-center justify-between gap-3 py-1.5"
+										>
+											<span className="min-w-0 break-words">{f.name}</span>
+											<Button
+												variant="text"
+												size="sm"
+												aria-label={t("Remove {v0}", { v0: f.name })}
+												onClick={() =>
+													setFiles((v) => v.filter((_, n) => n !== i))
+												}
+											>
+												<UiMessage text={"Remove"} />
+											</Button>
+										</li>
+									))}
+								</ul>
+							)}
+						</section>
+						<div className="grid gap-3 sm:grid-cols-2">
+							<BrowserTranscriptionPicker
+								value={options.browserModel}
+								disabled={starting}
+								onChange={(browserModel) =>
+									setOptions((previous) => ({ ...previous, browserModel }))
+								}
+							/>
+							<BrandKitPicker
+								value={options.brandKitId}
+								disabled={starting}
+								onChange={(brandKitId) =>
+									setOptions((previous) => ({ ...previous, brandKitId }))
+								}
+							/>
 						</div>
-						<p className="text-xs text-muted-foreground">
-							Always included: vertical cover, local face/body centering,
-							silence removal at 0.3s, Hebrew ivrit-ai Large v3 Turbo in your
-							browser, 1-row Auto Texts,{" "}
-							{options.brandKitId ? "Brand Kit fonts" : "Assistant bold"},
-							centered captions, hidden punctuation, fade 60% / 25% and black
-							edge feather.
-						</p>
-						<p className="text-xs text-muted-foreground">
-							עריכות של סצנות רצות בחלון ״עריכות ברקע״ ויש להשאיר אותו פתוח.
-							אפשר לעבור בין סצנות ולרענן את העורך. בייבוא קבוצת סרטונים יש
-							להשאיר גם את הלשונית הזו פתוחה. אפשר להוסיף עבודות לתור.
-						</p>
+						<fieldset className="rounded-xl border bg-background/40 px-4 pb-4">
+							<legend className="px-1 text-sm font-semibold">
+								<UiMessage text={"Optional finishing steps"} />
+							</legend>
+							<div className="grid gap-1.5 pt-2 sm:grid-cols-2">
+								{(
+									[
+										["zoom", "Automatic Zoom"],
+										["transitions", "Automatic Transition Edit"],
+										["wordAnimation", "Automatic Word Animation and Reveal"],
+										["soundEffects", "Automatic Sound Effects · Earshot"],
+										["music", "Automatic Music"],
+									] as const
+								).map(([key, label]) => (
+									<label
+										key={key}
+										className="flex min-h-8 cursor-pointer items-center gap-2.5 rounded-md px-1.5 py-1 text-sm hover:bg-accent"
+									>
+										<Checkbox
+											checked={options[key]}
+											disabled={starting}
+											onCheckedChange={(v) =>
+												setOptions((p) => ({ ...p, [key]: v === true }))
+											}
+										/>
+										{t(label)}
+									</label>
+								))}
+							</div>
+						</fieldset>
+						<div className="grid gap-2 rounded-xl border bg-accent/40 p-4 text-xs leading-relaxed text-muted-foreground">
+							<p>
+								<strong className="font-semibold text-foreground">
+									<UiMessage text={"Always included"} />
+								</strong>{" "}
+								<UiMessage
+									text={
+										"· Vertical framing, silence removal, and centered single-row captions."
+									}
+								/>
+							</p>
+							<p>
+								<UiMessage
+									text={
+										"Keep this tab open during video imports. Scene edits run in the Background Edits window, which you can minimize while you work. You can add more jobs to the queue."
+									}
+								/>
+							</p>
+						</div>
 						{!isLoading && !status.authenticated && (
 							<Button variant="outline" onClick={login}>
-								Log in to AI to start
+								<UiMessage text={"Log in to AI to start"} />
 							</Button>
 						)}
 						{state.runs
@@ -498,10 +569,10 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 									r.jobs.some((j) => batchEditIsLocked({ status: j.status })),
 							)
 							.map((run) => (
-								<section key={run.id} className="space-y-2 border-t pt-4">
-									<div className="flex justify-between items-center">
+								<section key={run.id} className="grid gap-3 border-t pt-5">
+									<div className="flex flex-wrap items-center justify-between gap-2">
 										<h3 className="text-sm font-medium">
-											{run.jobs.length} projects ·{" "}
+											{run.jobs.length} <UiMessage text={"projects ·"} />{" "}
 											{new Date(run.updatedAt).toLocaleDateString()}
 										</h3>
 										{run.jobs.some((j) =>
@@ -511,7 +582,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 												variant="text"
 												onClick={() => cancel({ id: run.id })}
 											>
-												Cancel remaining
+												<UiMessage text={"Cancel remaining"} />
 											</Button>
 										)}
 									</div>
@@ -528,27 +599,39 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 														soundEffects: "Earshot sound effects",
 													})[k],
 											)
-											.join(" · ") || "Basic Full Auto Edit"}
-										{run.options.brandKit
-											? ` · Brand Kit: ${run.options.brandKit.name}`
+											.join(" · ") || (
+											<UiMessage text={"Basic Full Auto Edit"} />
+										)}
+										{run.options.browserModel
+											? ` · ${BROWSER_TRANSCRIPTION_LABELS[run.options.browserModel]}`
 											: ""}
+										{run.options.brandKit ? (
+											<UiMessage
+												text={" · Brand Kit: {v0}"}
+												values={{ v0: String(run.options.brandKit.name) }}
+											/>
+										) : (
+											""
+										)}
 									</p>
 									{run.jobs.map((job) => (
 										<div
 											key={job.projectId}
-											className="rounded-md border p-3 text-sm space-y-1"
+											className="grid gap-2 rounded-xl border bg-background/40 p-4 text-sm"
 										>
 											<div className="flex items-center justify-between gap-3">
-												<span className="font-medium">{job.fileName}</span>
-												<span>{job.status}</span>
+												<span className="min-w-0 break-words font-medium">
+													{job.fileName}
+												</span>
+												<span>{t(batchStatusLabels[job.status])}</span>
 											</div>
 											<p
 												role="status"
 												className="text-xs text-muted-foreground whitespace-pre-wrap"
 											>
-												{job.message}
+												{job.message && t(job.message)}
 											</p>
-											<div className="flex gap-4">
+											<div className="flex flex-wrap gap-4">
 												{job.sourceProjectId &&
 													["failed", "interrupted"].includes(job.status) && (
 														<button
@@ -564,7 +647,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 																	.catch((e) => toast.error(String(e)));
 															}}
 														>
-															Resume saved edit
+															<UiMessage text={"Resume saved edit"} />
 														</button>
 													)}
 												{job.created && (
@@ -573,11 +656,13 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 														onClick={() => setOpen(false)}
 														className="text-xs underline"
 													>
-														{job.sourceProjectId
-															? "Open source · editable"
-															: batchEditIsLocked({ status: job.status })
-																? "View live · read-only"
-																: "Open project"}
+														{job.sourceProjectId ? (
+															<UiMessage text={"Open source · editable"} />
+														) : batchEditIsLocked({ status: job.status }) ? (
+															<UiMessage text={"View live · read-only"} />
+														) : (
+															<UiMessage text={"Open project"} />
+														)}
 													</Link>
 												)}
 												{batchEditIsLocked({ status: job.status }) && (
@@ -588,7 +673,11 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 															cancel({ id: run.id, projectId: job.projectId })
 														}
 													>
-														{job.cancelRequested ? "Cancelling…" : "Cancel"}
+														{job.cancelRequested ? (
+															<UiMessage text={"Cancelling…"} />
+														) : (
+															<UiMessage text={"Cancel"} />
+														)}
 													</button>
 												)}
 											</div>
@@ -596,20 +685,39 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 									))}
 								</section>
 							))}
-					</div>
-					<DialogFooter>
+					</DialogBody>
+					<DialogFooter className="shrink-0 px-5 py-4 sm:items-center sm:px-7">
+						<p
+							className="order-last text-xs text-muted-foreground sm:order-first sm:me-auto"
+							aria-live="polite"
+						>
+							{files.length ? (
+								files.length === 1 ? (
+									t("One video selected")
+								) : (
+									t("Selected videos: {v0}", {
+										v0: new Intl.NumberFormat(locale).format(files.length),
+									})
+								)
+							) : (
+								<UiMessage text={"No videos selected"} />
+							)}
+						</p>
 						<Button variant="outline" onClick={() => setOpen(false)}>
-							Close
+							<UiMessage text={"Close"} />
 						</Button>
 						<Button
 							disabled={
 								!loaded || starting || !files.length || !status.authenticated
 							}
+							className={brand.primary}
 							onClick={start}
 						>
-							{starting
-								? "Starting…"
-								: `Start Full Auto Edit · ${files.length} videos`}
+							{starting ? (
+								<UiMessage text={"Starting…"} />
+							) : (
+								<UiMessage text={"Start Full Auto Edit"} />
+							)}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -621,12 +729,13 @@ export function BatchEditButton() {
 	const batch = useBatchEdit();
 	return (
 		<Button size="lg" variant="outline" onClick={batch.open}>
-			Batch
+			<UiMessage text={"Batch"} />
 		</Button>
 	);
 }
 
 export function BatchProjectBadge({ projectId }: { projectId: string }) {
+	const { t } = useInterfaceLanguage();
 	const { state } = useBatchEdit();
 	const job = state.runs
 		.flatMap((r) => r.jobs)
@@ -634,10 +743,17 @@ export function BatchProjectBadge({ projectId }: { projectId: string }) {
 	return job ? (
 		<span
 			className="block text-xs text-muted-foreground truncate"
-			title={job.message}
+			title={job.message && t(job.message)}
 		>
-			Auto Edit · {batchEditIsLocked({ status: job.status }) ? "Locked · " : ""}
-			{job.status}
+			<UiMessage text={"Auto Edit ·"} />{" "}
+			{batchEditIsLocked({ status: job.status }) ? (
+				<>
+					<UiMessage text={"Locked ·"} />{" "}
+				</>
+			) : (
+				""
+			)}
+			{t(batchStatusLabels[job.status])}
 		</span>
 	) : null;
 }

@@ -212,6 +212,7 @@ export async function createProjectEdit({
 				"wordAnimation",
 				"soundEffects",
 				"music",
+				"browserModel",
 			] as const)
 				if (options[key] !== previous.options[key])
 					throw new Error("Resume must preserve the original recipe");

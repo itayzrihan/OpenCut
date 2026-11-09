@@ -1,3 +1,4 @@
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { KeyframeIcon } from "@hugeicons/core-free-icons";
@@ -25,7 +26,9 @@ export function KeyframeToggle({
 	return (
 		<div className="mb-0.5 flex items-center gap-0.5">
 			{navigation && (
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["title", "aria-label"]}
 					variant="text"
 					className="size-4 p-0 [&>svg]:size-3"
 					disabled={!navigation.hasPrevious}
@@ -34,7 +37,7 @@ export function KeyframeToggle({
 					onClick={navigation.onPrevious}
 				>
 					<ChevronLeft />
-				</Button>
+				</UiLocalized>
 			)}
 			<Button
 				variant="text"
@@ -50,7 +53,9 @@ export function KeyframeToggle({
 				/>
 			</Button>
 			{navigation && (
-				<Button
+				<UiLocalized<typeof Button>
+					element={Button}
+					messageProps={["title", "aria-label"]}
 					variant="text"
 					className="size-4 p-0 [&>svg]:size-3"
 					disabled={!navigation.hasNext}
@@ -59,7 +64,7 @@ export function KeyframeToggle({
 					onClick={navigation.onNext}
 				>
 					<ChevronRight />
-				</Button>
+				</UiLocalized>
 			)}
 		</div>
 	);

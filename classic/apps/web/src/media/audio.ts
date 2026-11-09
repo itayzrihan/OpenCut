@@ -26,7 +26,7 @@ import { canElementHaveAudio, hasMediaId } from "@/timeline/element-utils";
 import { canTrackHaveAudio } from "@/timeline/track-capabilities";
 import { getDisplayTracks } from "@/timeline/track-order";
 import { mediaSupportsAudio } from "@/media/media-utils";
-import { getSourceTimeAtClipTime, renderRetimedBuffer } from "@/retime";
+import { createRetimeMapping, renderRetimedBuffer } from "@/retime";
 import {
 	Input,
 	ALL_FORMATS,
@@ -51,6 +51,7 @@ export interface CollectedAudioElement {
 	startTime: number;
 	duration: number;
 	trimStart: number;
+	curveTrimStart?: number;
 	trimEnd: number;
 	volume: number;
 	muted: boolean;
@@ -399,6 +400,7 @@ interface AudioMixSource {
 	startTime: number;
 	duration: number;
 	trimStart: number;
+	curveTrimStart?: number;
 	trimEnd: number;
 	volume: number;
 	retime?: RetimeConfig;
@@ -450,6 +452,7 @@ export interface AudioClipSource {
 	startTime: number;
 	duration: number;
 	trimStart: number;
+	curveTrimStart?: number;
 	trimEnd: number;
 	volume: number;
 	muted: boolean;
@@ -1031,6 +1034,7 @@ function mixAudioChannels({
 	const renderedLength = Math.ceil(elementDuration * sampleRate);
 
 	const outputChannels = 2;
+	const mapping = createRetimeMapping({ retime, trimStart: element.curveTrimStart ?? trimStart });
 	for (let channel = 0; channel < outputChannels; channel++) {
 		const outputData = outputBuffer.getChannelData(channel);
 		const sourceChannel = Math.min(channel, buffer.numberOfChannels - 1);
@@ -1042,7 +1046,7 @@ function mixAudioChannels({
 
 			const clipTime = i / sampleRate;
 			const sourceTime =
-				trimStart + getSourceTimeAtClipTime({ clipTime, retime });
+				trimStart + mapping.sourceAt(clipTime);
 			const sourceIndex = sourceTime * buffer.sampleRate;
 			if (sourceIndex >= sourceData.length) break;
 

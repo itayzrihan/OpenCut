@@ -1,4 +1,5 @@
 import { openAudioWindowReader } from "@/media/audio-window";
+import type { BrowserTranscriptionModel } from "./models";
 import { transcribeAudioWindows } from "./windows";
 import type {
 	TranscriptionLanguage,
@@ -10,11 +11,13 @@ import type {
 export async function transcribeTimelineAudioBlob({
 	audioBlob,
 	language,
+	browserModel,
 	signal = new AbortController().signal,
 	onProgress,
 }: {
 	audioBlob: Blob;
 	language: TranscriptionLanguage;
+	browserModel?: BrowserTranscriptionModel;
 	signal?: AbortSignal;
 	onProgress?: (progress: TranscriptionProgress) => void;
 }): Promise<TranscriptionResult> {
@@ -26,6 +29,7 @@ export async function transcribeTimelineAudioBlob({
 		return await transcribeAudioWindows({
 			duration: await reader.duration(),
 			language,
+			browserModel,
 			signal,
 			onProgress,
 			load: (range) => reader.read(range),

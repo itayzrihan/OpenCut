@@ -1,20 +1,43 @@
 "use client";
-import { useEffect, useState, type ReactNode, type FormEvent } from "react";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useState,
+	type ReactNode,
+} from "react";
 import { hydrateAccountPreferences } from "@/services/local-drive/preferences";
 import { BackgroundSnapshots } from "./background-snapshots";
-import { ClientAiSetup } from "@/ai/components/client-ai-setup";
 import { WorkspaceLoading } from "@/components/workspace-loading";
 import { PeerSyncPresence } from "@/peer-sync/presence";
+import { usePathname } from "next/navigation";
+import { PocutLanding } from "@/components/landing/pocut-landing";
+import { BRAND_KITS_HREF } from "@/brand-kits/types";
+import { ACCOUNT_WORKSPACE_HREF, isAccountWorkspace } from "./workspace-route";
 type Account = { id: string; displayName: string };
+const WorkspaceAccount = createContext<{
+	displayName: string;
+	canConnectLegitate: boolean;
+	legitateOnly: boolean;
+	storageBusy: boolean;
+} | null>(null);
+
+export function useWorkspaceAccount() {
+	return useContext(WorkspaceAccount);
+}
+
 export function AccountGate({ children }: { children: ReactNode }) {
+	const path = usePathname();
 	const [account, setAccount] = useState<Account | null>(null);
 	const [loading, setLoading] = useState(true);
-	const [register, setRegister] = useState(false);
-	const [recover, setRecover] = useState(false);
 	const [error, setError] = useState("");
-	const [busy, setBusy] = useState(false);
 	const [legitateConfigured, setLegitateConfigured] = useState(false);
 	const [legitateOnly, setLegitateOnly] = useState(false);
+	const [storageBusy, setStorageBusy] = useState(false);
 	useEffect(() => {
 		let cancelled = false;
 		fetch("/api/accounts", { cache: "no-store" })
@@ -36,10 +59,11 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					}
 					setAccount(current);
 					if (current && storageBusy) {
-						if (window.location.pathname !== "/account") {
-							window.location.replace("/account");
+						if (!isAccountWorkspace(window.location)) {
+							window.location.replace(ACCOUNT_WORKSPACE_HREF);
 							return;
 						}
+						setStorageBusy(true);
 						setLoading(false);
 						return;
 					}
@@ -64,213 +88,102 @@ export function AccountGate({ children }: { children: ReactNode }) {
 			cancelled = true;
 		};
 	}, []);
-	async function submit(event: FormEvent<HTMLFormElement>) {
-		event.preventDefault();
-		setBusy(true);
-		setError("");
-		const form = new FormData(event.currentTarget);
-		try {
-			let recovery: unknown;
-			if (recover) {
-				const file = form.get("recovery");
-				if (!(file instanceof File) || !file.size || file.size > 16 * 1024)
-					throw new Error("Choose your OpenCut account recovery JSON file");
-				recovery = JSON.parse(await file.text());
-			}
-			const response = await fetch("/api/accounts", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					action: recover ? "recover" : register ? "register" : "login",
-					login: form.get("login"),
-					displayName: form.get("displayName"),
-					password: form.get("password"),
-					recovery,
-				}),
-			});
-			const result = await response.json();
-			if (!response.ok) throw new Error(result.error);
-			window.__opencutActivateAccount(
-				result.account.id,
-				register || recover ? "/account" : undefined,
-			);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : "Could not sign in");
-			setBusy(false);
-		}
-	}
+	useEffect(() => {
+		if (!storageBusy || !account) return;
+		const controller = new AbortController();
+		const timer = setInterval(() => {
+			void fetch("/api/accounts", {
+				cache: "no-store",
+				signal: controller.signal,
+			})
+				.then((response) => response.json())
+				.then((current) => {
+					if (
+						!controller.signal.aborted &&
+						current.account?.id === account.id &&
+						current.storageBusy === false
+					)
+						window.location.reload();
+				})
+				.catch(() => {});
+		}, 2500);
+		return () => {
+			controller.abort();
+			clearInterval(timer);
+		};
+	}, [account, storageBusy]);
 	if (loading) return <WorkspaceLoading />;
 	if (account && error)
 		return (
 			<main className="grid min-h-screen place-items-center p-8">
 				<div className="space-y-4">
 					<p role="alert">
-						Your workspace settings could not be loaded. If an import or sync is
-						running, wait for it to finish.
+						<UiMessage
+							text={
+								"Your workspace settings could not be loaded. If an import or sync is running, wait for it to finish."
+							}
+						/>
 					</p>
 					<button
 						className="rounded border px-4 py-2"
 						onClick={() => window.location.reload()}
 					>
-						Retry opening workspace
+						<UiMessage text={"Retry opening workspace"} />
 					</button>
 				</div>
 			</main>
 		);
 	if (account)
 		return (
-			<>
+			<WorkspaceAccount.Provider
+				value={{
+					displayName: account.displayName,
+					canConnectLegitate: legitateConfigured && !legitateOnly,
+					legitateOnly,
+					storageBusy,
+				}}
+			>
 				<BackgroundSnapshots />
 				<PeerSyncPresence />
-				<ClientAiSetup />
 				{children}
-				<nav
-					aria-label="Workspace"
-					className="fixed bottom-3 left-3 z-50 flex max-w-[calc(100vw-1.5rem)] items-center gap-2"
-				>
-					<a
-						href="/account"
-						className="max-w-48 truncate rounded border bg-background px-3 py-1 text-xs shadow"
-						aria-label="Account and storage settings"
+				{path !== "/projects" && (
+					<UiLocalized<"nav">
+						element={"nav"}
+						messageProps={["aria-label"]}
+						aria-label="Workspace"
+						className="fixed bottom-3 left-3 z-50 flex max-w-[calc(100vw-1.5rem)] items-center gap-2"
 					>
-						{account.displayName}
-					</a>
-					<a
-						href="/brand-kits"
-						className="shrink-0 rounded border bg-background px-3 py-1 text-xs shadow"
-					>
-						Brand Kits
-					</a>
-					{legitateConfigured && !legitateOnly && (
-						<form action="/api/accounts/legitate/start" method="post">
-							<button className="rounded border bg-background px-3 py-1 text-xs shadow">
-								Connect Legitate
-							</button>
-						</form>
-					)}
-				</nav>
-			</>
+						<UiLocalized<"a">
+							element={"a"}
+							messageProps={["aria-label"]}
+							href={ACCOUNT_WORKSPACE_HREF}
+							className="max-w-48 truncate rounded border bg-background px-3 py-1 text-xs shadow"
+							aria-label="Account and storage settings"
+						>
+							{account.displayName}
+						</UiLocalized>
+						<a
+							href={BRAND_KITS_HREF}
+							className="shrink-0 rounded border bg-background px-3 py-1 text-xs shadow"
+						>
+							<UiMessage text={"Brand Kits"} />
+						</a>
+						{legitateConfigured && !legitateOnly && (
+							<form action="/api/accounts/legitate/start" method="post">
+								<button className="rounded border bg-background px-3 py-1 text-xs shadow">
+									<UiMessage text={"Connect Legitate"} />
+								</button>
+							</form>
+						)}
+					</UiLocalized>
+				)}
+			</WorkspaceAccount.Provider>
 		);
 	return (
-		<main className="grid min-h-screen place-items-center p-6">
-			{!legitateOnly && (
-				<form
-					onSubmit={submit}
-					className="w-full max-w-md space-y-5 rounded-xl border p-8"
-				>
-					<div>
-						<h1 className="text-2xl font-semibold">Your OpenCut workspace</h1>
-						<p className="mt-2 text-sm text-muted-foreground">
-							Projects, assets, and settings belong to your account. Your
-							existing work stays preserved for import after setup.
-						</p>
-					</div>
-					{recover ? (
-						<label className="block text-sm">
-							Account recovery file
-							<input
-								required
-								type="file"
-								accept=".json,application/json"
-								name="recovery"
-								className="mt-1 w-full rounded border p-2"
-							/>
-						</label>
-					) : (
-						<label className="block text-sm">
-							Account name
-							<input
-								required
-								name="login"
-								autoComplete="username"
-								minLength={3}
-								maxLength={128}
-								className="mt-1 w-full rounded border bg-background p-2"
-							/>
-						</label>
-					)}
-					{register && !recover && (
-						<label className="block text-sm">
-							Display name
-							<input
-								required
-								name="displayName"
-								maxLength={128}
-								className="mt-1 w-full rounded border bg-background p-2"
-							/>
-						</label>
-					)}
-					<label className="block text-sm">
-						Password
-						<input
-							required
-							name="password"
-							type="password"
-							autoComplete={register ? "new-password" : "current-password"}
-							minLength={register ? 12 : 1}
-							maxLength={1024}
-							className="mt-1 w-full rounded border bg-background p-2"
-						/>
-					</label>
-					{error && (
-						<p role="alert" className="text-sm text-red-500">
-							{error}
-						</p>
-					)}
-					<button
-						disabled={busy}
-						className="w-full rounded bg-primary p-2 text-primary-foreground disabled:opacity-50"
-					>
-						{busy
-							? "Opening…"
-							: recover
-								? "Recover account"
-								: register
-									? "Create account"
-									: "Sign in"}
-					</button>
-					<button
-						type="button"
-						disabled={busy}
-						onClick={() => {
-							setRegister(recover ? false : !register);
-							setRecover(false);
-						}}
-						className="w-full text-sm underline"
-					>
-						{register || recover
-							? "Use an existing account"
-							: "Create a new account"}
-					</button>
-					{!recover && (
-						<button
-							type="button"
-							disabled={busy}
-							onClick={() => {
-								setRegister(false);
-								setRecover(true);
-							}}
-							className="w-full text-sm underline"
-						>
-							Recover an account on this machine
-						</button>
-					)}
-					<p className="text-xs text-muted-foreground">
-						This account is stored on this machine. Keep your password safe.
-					</p>
-				</form>
-			)}
-			{legitateConfigured && (
-				<form
-					action="/api/accounts/legitate/start"
-					method="post"
-					className="w-full max-w-md"
-				>
-					<button className="w-full rounded border px-4 py-2">
-						Sign in with Legitate
-					</button>
-				</form>
-			)}
-		</main>
+		<PocutLanding
+			legitateConfigured={legitateConfigured}
+			legitateOnly={legitateOnly}
+			error={error}
+		/>
 	);
 }

@@ -2,9 +2,11 @@
 import type { SceneTracks } from "@/timeline";
 import type { CaptionLayoutSettings } from "@/subtitles/caption-layout";
 import type { TranscriptionLanguage, TranscriptionWord } from "./types";
+import type { BrowserTranscriptionModel } from "./models";
 export type TranscriptionEngine = "local" | "external";
 export interface TranscriptionJob {
 	engine?: TranscriptionEngine;
+	browserModel?: BrowserTranscriptionModel;
 	externalConfiguration?: string | null;
 	id: string;
 	sceneId: string;
@@ -32,6 +34,7 @@ export type TranscriptionChange =
 			type: "start";
 			referenceElementIds?: string[];
 			engine?: TranscriptionEngine;
+			browserModel?: BrowserTranscriptionModel;
 			externalConfiguration?: string;
 			sceneId: string;
 			language: TranscriptionLanguage;

@@ -6,7 +6,6 @@ import {
 	readSubscriptionImage,
 	ImageHostError,
 } from "@/editor-agent/server/subscription-image";
-import { getOpenAIOAuthStatus } from "@/ai/server/openai-codex-oauth";
 import { z } from "zod";
 import { withProjectWriteRequest } from "@/editor-agent/server/project-write";
 export const runtime = "nodejs";
@@ -66,13 +65,11 @@ export const GET = withAccount(async (request: NextRequest) => {
 			);
 		}
 	}
-	const { status } = await getOpenAIOAuthStatus({ request });
 	return Response.json(
 		{
-			authenticated: status.authenticated,
-			availability: "unverified",
-			error: status.error,
-			connectUrl: "/api/ai/oauth/start",
+			authenticated: false,
+			availability: "unavailable",
+			error: "Image generation is unavailable through the POCUT Agent ChatGPT connection.",
 		},
 		{ headers: { "Cache-Control": "no-store" } },
 	);

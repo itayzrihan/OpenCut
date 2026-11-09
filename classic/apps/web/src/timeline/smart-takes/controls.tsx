@@ -1,8 +1,12 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useState, useSyncExternalStore } from "react";
 import { ChevronDown, Layers, Sparkles, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	useEditor,
 	useEditorTimelineScenes,
@@ -93,18 +97,30 @@ export function SmartTakesControl() {
 							) : (
 								<Sparkles className="size-3.5" />
 							)}{" "}
-							Smart takes · {mode === "experimental" ? "מהיר" : "קלאסי"}
+							<UiMessage text={"Smart takes ·"} />{" "}
+							{mode === "experimental" ? (
+								<UiMessage text={"Fast"} />
+							) : (
+								<UiMessage text={"Classic"} />
+							)}
 						</Button>
 					</span>
 				</TooltipTrigger>
 				<TooltipContent>
-					{disabledReason ??
-						"Infer story order, remove filming notes and keep alternative takes. If needed, generate a transcript and Codex-correct it first."}
+					{disabledReason ?? (
+						<UiMessage
+							text={
+								"Infer story order, remove filming notes and keep alternative takes. If needed, generate a transcript and Codex-correct it first."
+							}
+						/>
+					)}
 				</TooltipContent>
 			</Tooltip>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="outline"
 						size="sm"
 						className="-ml-1 rounded-l-none px-2"
@@ -112,7 +128,7 @@ export function SmartTakesControl() {
 						aria-label="Choose Smart takes mode"
 					>
 						<ChevronDown className="size-3.5" />
-					</Button>
+					</UiLocalized>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start">
 					<DropdownMenuRadioGroup
@@ -123,10 +139,10 @@ export function SmartTakesControl() {
 						}}
 					>
 						<DropdownMenuRadioItem value="experimental">
-							חדש ומהיר · ברירת מחדל
+							<UiMessage text={"Fast · default"} />
 						</DropdownMenuRadioItem>
 						<DropdownMenuRadioItem value="standard">
-							קלאסי · איטי יותר
+							<UiMessage text={"Classic · slower"} />
 						</DropdownMenuRadioItem>
 					</DropdownMenuRadioGroup>
 				</DropdownMenuContent>
@@ -139,8 +155,12 @@ export function SmartTakesControl() {
 						?.map((s) => `${s.stage}: ${(s.durationMs / 1000).toFixed(1)}s`)
 						.join("\n")}
 				>
-					{status.mode === "experimental" ? "מהיר" : "קלאסי"} ·{" "}
-					{(status.elapsedMs / 1000).toFixed(1)}s
+					{status.mode === "experimental" ? (
+						<UiMessage text={"Fast"} />
+					) : (
+						<UiMessage text={"Classic"} />
+					)}{" "}
+					· {(status.elapsedMs / 1000).toFixed(1)}s
 				</span>
 			)}
 			{stage && (
@@ -152,14 +172,16 @@ export function SmartTakesControl() {
 					>
 						{stage}
 					</span>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						aria-label="Cancel take analysis"
 						onClick={() => task.cancel()}
 					>
 						<X />
-					</Button>
+					</UiLocalized>
 				</>
 			)}
 		</div>
@@ -179,14 +201,17 @@ export function SmartTakeMenu({ element }: { element: TimelineElement }) {
 		<ContextMenuSub>
 			<ContextMenuSubTrigger>
 				<Layers className="mr-2 size-4" />
-				בחר את הטייק הטוב ביותר ({group.alternatives.length})
+				<UiMessage text={"Choose the best take ("} />
+				{group.alternatives.length})
 			</ContextMenuSubTrigger>
 			<ContextMenuSubContent className="max-h-96 w-96 overflow-y-auto">
 				<div className="px-3 py-2 text-xs text-muted-foreground" dir="auto">
 					{group.label} ·{" "}
-					{group.confidence < 0.75
-						? "Needs review"
-						: "Transcript recommendation"}
+					{group.confidence < 0.75 ? (
+						<UiMessage text={"Needs review"} />
+					) : (
+						<UiMessage text={"Transcript recommendation"} />
+					)}
 				</div>
 				{group.alternatives.map((take, index) => {
 					const words = take.parts.flatMap((part) =>
@@ -224,13 +249,22 @@ export function SmartTakeMenu({ element }: { element: TimelineElement }) {
 							<span className="font-medium" dir="auto">
 								{group.selected === index ? "✓ " : ""}
 								{take.label}
-								{assembly.recommendations[ref.groupIndex] === index
-									? " · AI pick"
-									: ""}
+								{assembly.recommendations[ref.groupIndex] === index ? (
+									<>
+										{" "}
+										<UiMessage text={"· AI pick"} />
+									</>
+								) : (
+									""
+								)}
 							</span>
 							<span className="text-xs text-muted-foreground">
 								{duration.toFixed(1)}s · {take.parts.length}{" "}
-								{take.parts.length === 1 ? "cut" : "cuts combined"}
+								{take.parts.length === 1 ? (
+									<UiMessage text={"cut"} />
+								) : (
+									<UiMessage text={"cuts combined"} />
+								)}
 							</span>
 							<span className="line-clamp-3 text-sm" dir="auto">
 								{words.map((w) => w.text).join(" ")}
@@ -255,12 +289,14 @@ export function SmartTakeBadge({ element }: { element: TimelineElement }) {
 	const group = assembly.plan.groups[ref.groupIndex];
 	if (!group || group.alternatives.length < 2) return null;
 	return (
-		<span
+		<UiLocalized<"span">
+			element={"span"}
+			messageProps={["title"]}
 			className="pointer-events-none absolute right-1 bottom-1 z-10 flex items-center gap-1 rounded bg-black/75 px-1 text-[10px] text-white"
 			title="Right-click to choose a take"
 		>
 			<Layers className="size-3" />
 			{group.alternatives.length}
-		</span>
+		</UiLocalized>
 	);
 }

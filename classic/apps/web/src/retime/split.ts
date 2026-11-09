@@ -1,14 +1,10 @@
 import type { RetimeConfig } from "@/timeline";
 import { getSourceTimeAtClipTime } from "./resolve";
 
-export function getSourceSpanAtClipTime({
-	clipTime,
-	retime,
-}: {
-	clipTime: number;
-	retime?: RetimeConfig;
-}): number {
-	return Math.max(0, getSourceTimeAtClipTime({ clipTime, retime }));
+export function getSourceSpanAtClipTime(
+	options: Parameters<typeof getSourceTimeAtClipTime>[0],
+): number {
+	return Math.max(0, getSourceTimeAtClipTime(options));
 }
 
 export function splitRetimeAtClipTime({

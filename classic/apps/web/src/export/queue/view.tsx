@@ -1,4 +1,10 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { ElectronBackButton } from "@/components/electron-back-button";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -49,24 +55,37 @@ export default function RenderQueue() {
 	return (
 		<main className="mx-auto max-w-5xl p-6 space-y-5">
 			<div>
-				<h1 className="text-2xl font-semibold">OpenCut Render Queue</h1>
+				<header className="flex flex-wrap items-center gap-3">
+					<ElectronBackButton />
+					<h1 className="text-2xl font-semibold">
+						<UiMessage text={"POCUT Render Queue"} />
+					</h1>
+				</header>
 				<p className="mt-2 text-sm text-muted-foreground">
-					You can close this view and continue editing. The background renderer
-					processes each job’s saved scene snapshot.
+					<UiMessage
+						text={
+							"You can close this view and continue editing. The background renderer processes each job’s saved scene snapshot."
+						}
+					/>
 				</p>
 			</div>
 			<p role="status" className="text-sm">
-				{state.worker?.message ?? "Background render queue"}
+				{state.worker?.message ?? (
+					<UiMessage text={"Background render queue"} />
+				)}
 			</p>
 			{error && (
 				<p role="alert" className="text-destructive text-sm">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 			{!state.jobs.length && (
 				<div className="border rounded-lg p-8 text-muted-foreground">
-					Your queue is empty. Choose Export → Add to Render Queue in any
-					project.
+					<UiMessage
+						text={
+							"Your queue is empty. Choose Export → Add to Render Queue in any project."
+						}
+					/>
 				</div>
 			)}
 			<div className="space-y-3">
@@ -81,8 +100,9 @@ export default function RenderQueue() {
 								<h2 className="font-semibold truncate">{job.projectName}</h2>
 								<p className="text-sm truncate">{job.sceneName}</p>
 								<p className="text-xs text-muted-foreground">
-									Saved {new Date(job.createdAtMs).toLocaleString()} · revision{" "}
-									{job.sourceRevision}
+									<UiMessage text={"Saved"} />{" "}
+									{new Date(job.createdAtMs).toLocaleString()}{" "}
+									<UiMessage text={"· revision"} /> {job.sourceRevision}
 								</p>
 							</div>
 							<span className="capitalize text-sm font-medium">
@@ -91,18 +111,27 @@ export default function RenderQueue() {
 						</div>
 						<p className="text-sm text-muted-foreground">
 							{job.options.format.toUpperCase()} ·{" "}
-							{job.options.preferences.resolution === "source"
-								? "Source resolution"
-								: "Project resolution"}{" "}
+							{job.options.preferences.resolution === "source" ? (
+								<UiMessage text={"Source resolution"} />
+							) : (
+								<UiMessage text={"Project resolution"} />
+							)}{" "}
 							·{" "}
-							{job.options.format === "webm"
-								? "VP9"
-								: job.options.preferences.encoding === "compact"
-									? "HEVC"
-									: "H.264"}{" "}
+							{job.options.format === "webm" ? (
+								"VP9"
+							) : job.options.preferences.encoding === "compact" ? (
+								<UiMessage text={"HEVC"} />
+							) : (
+								"H.264"
+							)}{" "}
 							· {job.options.quality.replaceAll("_", " ")} ·{" "}
-							{job.options.fps.numerator / job.options.fps.denominator} fps ·
-							Audio {job.options.includeAudio ? "on" : "off"}
+							{job.options.fps.numerator / job.options.fps.denominator}{" "}
+							<UiMessage text={"fps · Audio"} />{" "}
+							{job.options.includeAudio ? (
+								<UiMessage text={"on"} />
+							) : (
+								<UiMessage text={"off"} />
+							)}
 						</p>
 						{job.status === "rendering" && (
 							<Progress
@@ -124,7 +153,11 @@ export default function RenderQueue() {
 									disabled={job.cancelRequested}
 									onClick={() => void change(job.id, job.projectId, "cancel")}
 								>
-									{job.cancelRequested ? "Cancelling…" : "Cancel"}
+									{job.cancelRequested ? (
+										<UiMessage text={"Cancelling…"} />
+									) : (
+										<UiMessage text={"Cancel"} />
+									)}
 								</Button>
 							)}
 							{["failed", "cancelled"].includes(job.status) &&
@@ -134,7 +167,7 @@ export default function RenderQueue() {
 										variant="outline"
 										onClick={() => void change(job.id, job.projectId, "retry")}
 									>
-										Retry saved snapshot
+										<UiMessage text={"Retry saved snapshot"} />
 									</Button>
 								)}
 							{job.status === "completed" && job.outputId && (
@@ -145,7 +178,8 @@ export default function RenderQueue() {
 									)}
 									download
 								>
-									Download {job.options.format.toUpperCase()}
+									<UiMessage text={"Download"} />{" "}
+									{job.options.format.toUpperCase()}
 								</a>
 							)}
 						</div>
@@ -158,7 +192,9 @@ export default function RenderQueue() {
 							/>
 						)}
 						<details className="text-xs text-muted-foreground">
-							<summary>Snapshot details</summary>
+							<summary>
+								<UiMessage text={"Snapshot details"} />
+							</summary>
 							<p className="mt-2 break-all">{job.snapshotHash}</p>
 						</details>
 					</article>
@@ -184,7 +220,9 @@ function JobSettings({
 	const selectClass = "bg-background border rounded p-1.5 text-xs";
 	return (
 		<details className="text-sm">
-			<summary>Edit export settings</summary>
+			<summary>
+				<UiMessage text={"Edit export settings"} />
+			</summary>
 			<form
 				className="mt-3 flex flex-wrap items-end gap-3"
 				onSubmit={async (e) => {
@@ -208,7 +246,7 @@ function JobSettings({
 				}}
 			>
 				<label className="grid gap-1">
-					Format
+					<UiMessage text={"Format"} />
 					<select
 						className={selectClass}
 						value={draft.format}
@@ -221,7 +259,7 @@ function JobSettings({
 					</select>
 				</label>
 				<label className="grid gap-1">
-					Resolution
+					<UiMessage text={"Resolution"} />
 					<select
 						className={selectClass}
 						value={draft.preferences.resolution}
@@ -235,12 +273,24 @@ function JobSettings({
 							})
 						}
 					>
-						<option value="source">Source</option>
-						<option value="project">Project</option>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="source"
+						>
+							{"Source"}
+						</UiLocalized>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="project"
+						>
+							{"Project"}
+						</UiLocalized>
 					</select>
 				</label>
 				<label className="grid gap-1">
-					Encoding
+					<UiMessage text={"Encoding"} />
 					<select
 						className={selectClass}
 						value={draft.preferences.encoding}
@@ -254,12 +304,18 @@ function JobSettings({
 							})
 						}
 					>
-						<option value="compact">HEVC</option>
+						<UiLocalized<"option">
+							element={"option"}
+							messageProps={["children"]}
+							value="compact"
+						>
+							{"HEVC"}
+						</UiLocalized>
 						<option value="compatible">H.264</option>
 					</select>
 				</label>
 				<label className="grid gap-1">
-					Quality
+					<UiMessage text={"Quality"} />
 					<select
 						className={selectClass}
 						value={draft.quality}
@@ -285,10 +341,14 @@ function JobSettings({
 							setDraft({ ...draft, includeAudio: e.target.checked })
 						}
 					/>
-					Audio
+					<UiMessage text={"Audio"} />
 				</label>
 				<Button size="sm" disabled={saving} type="submit">
-					{saving ? "Saving…" : "Save settings"}
+					{saving ? (
+						<UiMessage text={"Saving…"} />
+					) : (
+						<UiMessage text={"Save settings"} />
+					)}
 				</Button>
 			</form>
 		</details>

@@ -73,7 +73,7 @@ export const POST = withAccount(async (request) => {
 		const host = await getHost();
 		if (input.action === "open") {
 			if (!(await getProject(input.projectId)))
-				throw new Error("OpenCut project is unavailable");
+				throw new Error("POCUT project is unavailable");
 			return Response.json(
 				await host.open({
 					scope,

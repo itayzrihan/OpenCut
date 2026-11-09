@@ -1,0 +1,84 @@
+.screen {
+	position: fixed;
+	inset: 0;
+	z-index: 40;
+	display: grid;
+	place-items: center;
+	padding: 24px;
+	background-image: radial-gradient(
+		ellipse at center,
+		var(--pocut-panel),
+		transparent 68%
+	);
+}
+
+.content {
+	width: min(100%, 360px);
+	text-align: center;
+}
+
+.mark {
+	display: grid;
+	place-items: center;
+	width: 76px;
+	height: 76px;
+	margin: 0 auto 18px;
+	border: 1px solid var(--pocut-line);
+	border-radius: 22px;
+	background: var(--pocut-panel);
+	box-shadow: 0 10px 36px
+		color-mix(in srgb, var(--pocut-violet) 19%, transparent);
+}
+
+.wordmark {
+	font-size: 1.8rem;
+	font-weight: 850;
+	letter-spacing: -0.07em;
+	line-height: 1;
+}
+
+.wordmark span {
+	color: var(--pocut-violet);
+}
+.content h1 {
+	margin-top: 17px;
+	font-size: 1rem;
+	font-weight: 650;
+}
+.description {
+	margin-top: 5px;
+	color: var(--pocut-muted);
+	font-size: 0.85rem;
+}
+
+.track {
+	width: 148px;
+	height: 3px;
+	margin: 23px auto 0;
+	overflow: hidden;
+	border-radius: 999px;
+	background: var(--pocut-line);
+}
+
+.playhead {
+	width: 42%;
+	height: 100%;
+	margin-inline: auto;
+	border-radius: inherit;
+	background: var(--pocut-violet);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.playhead {
+		animation: scan 1.35s ease-in-out infinite alternate;
+	}
+}
+
+@keyframes scan {
+	from {
+		transform: translateX(-69%);
+	}
+	to {
+		transform: translateX(69%);
+	}
+}

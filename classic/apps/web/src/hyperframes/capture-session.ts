@@ -301,7 +301,7 @@ export class HyperframesCaptureSession {
 			)
 		)
 			throw new Error(
-				"HyperFrames requires the sandboxed OpenCut engine patch",
+				"HyperFrames requires the sandboxed POCUT engine patch",
 			);
 		const origin = new URL(preview.url).origin;
 		await engine.page.setRequestInterception(true);

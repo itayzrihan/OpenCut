@@ -38,7 +38,7 @@ return betterAuth({
 		},
 	},
 	baseURL: webEnv.NEXT_PUBLIC_SITE_URL,
-	appName: "OpenCut",
+	appName: "POCUT",
 	trustedOrigins: [webEnv.NEXT_PUBLIC_SITE_URL],
 });
 }

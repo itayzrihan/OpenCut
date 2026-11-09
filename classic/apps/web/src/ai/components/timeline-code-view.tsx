@@ -1,8 +1,12 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useMemo, useState } from "react";
 import { Braces, Check, Copy, RotateCcw, TriangleAlert } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	buildTimelineDocumentV2,
 	parseTimelineDocumentV2,
@@ -204,7 +208,7 @@ export function TimelineCodeView() {
 	if (!activeScene || !activeProject || !liveDocument) {
 		return (
 			<div className="text-muted-foreground flex size-full items-center justify-center p-4 text-sm">
-				Open a scene to inspect its timeline code.
+				<UiMessage text={"Open a scene to inspect its timeline code."} />
 			</div>
 		);
 	}
@@ -220,13 +224,25 @@ export function TimelineCodeView() {
 		<div className="flex size-full min-h-0 flex-col overflow-hidden">
 			<div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b px-3">
 				<div className="min-w-0">
-					<div className="truncate text-sm font-medium">Timeline Source v2</div>
+					<div className="truncate text-sm font-medium">
+						<UiMessage text={"Timeline Source v2"} />
+					</div>
 					<div className="text-muted-foreground truncate text-xs">
-						{activeScene.name} · {lineCount} lines{isDirty ? " · modified" : ""}
+						{activeScene.name} · {lineCount} <UiMessage text={"lines"} />
+						{isDirty ? (
+							<>
+								{" "}
+								<UiMessage text={"· modified"} />
+							</>
+						) : (
+							""
+						)}
 					</div>
 				</div>
 				<div className="flex shrink-0 items-center gap-1">
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						onClick={format}
@@ -234,8 +250,10 @@ export function TimelineCodeView() {
 						aria-label="Format source"
 					>
 						<Braces className="size-4" />
-					</Button>
-					<Button
+					</UiLocalized>
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						onClick={copy}
@@ -243,8 +261,10 @@ export function TimelineCodeView() {
 						aria-label="Copy source"
 					>
 						<Copy className="size-4" />
-					</Button>
-					<Button
+					</UiLocalized>
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						onClick={reset}
@@ -252,7 +272,7 @@ export function TimelineCodeView() {
 						aria-label="Reset source"
 					>
 						<RotateCcw className="size-4" />
-					</Button>
+					</UiLocalized>
 				</div>
 			</div>
 
@@ -260,13 +280,19 @@ export function TimelineCodeView() {
 				<div className="border-b border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
 					<div className="flex items-start gap-2">
 						<TriangleAlert className="mt-0.5 size-3.5 shrink-0" />
-						<span>The timeline changed. Reset before applying this draft.</span>
+						<span>
+							<UiMessage
+								text={"The timeline changed. Reset before applying this draft."}
+							/>
+						</span>
 					</div>
 				</div>
 			)}
 
 			<div className="min-h-0 flex-1 p-2">
-				<Textarea
+				<UiLocalized<typeof Textarea>
+					element={Textarea}
+					messageProps={["aria-label"]}
 					value={sourceText}
 					onChange={(event) => setDraft(event.target.value)}
 					onKeyDown={(event) => {
@@ -305,10 +331,14 @@ export function TimelineCodeView() {
 					disabled={!isDirty || isStale || sourceUnavailable}
 				>
 					<Check className="size-4" />
-					Apply full source
+					<UiMessage text={"Apply full source"} />
 				</Button>
 				<div className="text-muted-foreground mt-1.5 text-center text-[10px]">
-					Complete active scene + project settings · Undoable · Ctrl/⌘+Enter
+					<UiMessage
+						text={
+							"Complete active scene + project settings · Undoable · Ctrl/⌘+Enter"
+						}
+					/>
 				</div>
 			</div>
 		</div>

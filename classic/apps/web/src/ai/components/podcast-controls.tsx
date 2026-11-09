@@ -1,7 +1,11 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { Film, ListVideo, Scissors, TextSelect, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	useEditor,
 	useEditorSelection,
@@ -23,31 +27,31 @@ import type { PodcastMode } from "../podcast-types";
 const modes = [
 	{
 		mode: "teaser",
-		label: "יצירת טיזר",
+		label: "Create a teaser",
 		icon: Film,
 		description:
-			"מיפוי רגעים מכל הפרק, חיבור שאלות, ניגודים ורגעי שיא לטיזר קצר, וביקורת תוכן לפני היצירה. נשמר ברצף חדש.",
+			"Find moments across the episode and combine questions, contrasts and highlights into a short teaser. The reviewed teaser is saved as a new sequence.",
 	},
 	{
 		mode: "highlights",
-		label: "קטעים חכמים מפודקאסט",
+		label: "Smart podcast clips",
 		icon: Scissors,
 		description:
-			"רעיונות חזקים מכל הפרק, עם פתיחה ברורה, דוגמה או תפנית וסיום בעל ערך. כל קטע עובר ביקורת ונשמר בסצנה חדשה.",
+			"Find strong ideas with a clear opening, an example or a twist, and a worthwhile ending. Each clip is reviewed and saved as a new scene.",
 	},
 	{
 		mode: "chronological",
-		label: "קטעים לפי סדר המקור",
+		label: "Clips in source order",
 		icon: ListVideo,
 		description:
-			"בחירת תשובות וסיפורים שלמים, קיצור חזרות וביקורת על החיתוכים, תוך שמירת סדר המקור. כל קטע נשמר בסצנה חדשה.",
+			"Select complete answers and stories, trim repetition, and review cuts in source order. Each clip is saved as a new scene.",
 	},
 	{
 		mode: "teleprompter",
-		label: "חיתוכי טלפרומפטר",
+		label: "Teleprompter cuts",
 		icon: TextSelect,
 		description:
-			"ניקוי חזרות והתחלות מחדש, שמירת כל משפט ייחודי וסדר התסריטים. כל סרטון בסצנה חדשה, עם טייקים חלופיים לבחירה לכל משפט.",
+			"Trim repetition and false starts while keeping unique sentences and script order. Each video gets a new scene with alternate takes for each sentence.",
 	},
 ] as const;
 export function PodcastControls({
@@ -109,11 +113,19 @@ export function PodcastControls({
 		}
 	};
 	return (
-		<div className="mb-4 space-y-3 rounded-md border p-3" dir="rtl">
+		<div className="mb-4 space-y-3 rounded-md border p-3">
 			<p className="text-xs text-muted-foreground">
-				{selectedElements.length
-					? "מקור העריכה: טווחי הקליפים המסומנים בלבד, עם זוויות המצלמה והאודיו המסונכרן שלהם."
-					: "מקור העריכה: כל הטיימליין הפעיל, כולל עריכת המולטיקאם."}
+				{selectedElements.length ? (
+					<UiMessage
+						text={
+							"Source: selected clip ranges, with their camera angles and synced audio."
+						}
+					/>
+				) : (
+					<UiMessage
+						text={"Source: the active timeline, including the multicam edit."}
+					/>
+				)}
 			</p>
 			{modes.map((item) => (
 				<div key={item.mode} className="space-y-1">
@@ -142,10 +154,16 @@ export function PodcastControls({
 							})
 						}
 					>
-						פתח את סצנת המקור להפקה נוספת
+						<UiMessage text={"Open the source scene to create another edit"} />
 					</Button>
-					<p>פתיחה: {scene.podcastExtract.openingHook}</p>
-					<p>סיום: {scene.podcastExtract.endingHook}</p>
+					<p>
+						<UiMessage text={"Opening hook:"} />{" "}
+						{scene.podcastExtract.openingHook}
+					</p>
+					<p>
+						<UiMessage text={"Ending hook:"} />{" "}
+						{scene.podcastExtract.endingHook}
+					</p>
 					{scene.podcastExtract.options.mode === "teleprompter" &&
 						scene.takeAssembly && (
 							<details
@@ -153,7 +171,7 @@ export function PodcastControls({
 								onToggle={(event) => setShowTakes(event.currentTarget.open)}
 							>
 								<summary className="cursor-pointer">
-									טייקים חלופיים לפי משפט (
+									<UiMessage text={"Alternate takes by sentence ("} />
 									{
 										scene.takeAssembly.plan.groups.filter(
 											(g) => g.alternatives.length > 1 || g.reviewOnly,
@@ -168,13 +186,18 @@ export function PodcastControls({
 												<label key={groupIndex} className="block space-y-1">
 													<span>
 														{group.label}
-														{group.reviewOnly
-															? " · שמור לבדיקה, מחוץ לעריכה"
-															: ""}
+														{group.reviewOnly ? (
+															<>
+																{" "}
+																<UiMessage text={"· Saved for review"} />
+															</>
+														) : (
+															""
+														)}
 													</span>
 													<select
 														className="w-full rounded border bg-background p-2"
-														aria-label={`טייק: ${group.label}`}
+														aria-label={`Take: ${group.label}`}
 														disabled={running}
 														value={group.reviewOnly ? "review" : group.selected}
 														onChange={(event) => {
@@ -193,9 +216,14 @@ export function PodcastControls({
 														}}
 													>
 														{group.reviewOnly && (
-															<option value="review" disabled>
-																שמור לבדיקה — לא נכלל בסרטון
-															</option>
+															<UiLocalized<"option">
+																element={"option"}
+																messageProps={["children"]}
+																value="review"
+																disabled
+															>
+																{"Saved for review"}
+															</UiLocalized>
 														)}
 														{group.alternatives.map((alternative, index) => (
 															<option key={index} value={index}>
@@ -211,15 +239,22 @@ export function PodcastControls({
 						)}
 					{!!scene.takeAssembly?.quality?.unverifiedBoundaries && (
 						<p role="status" className="text-amber-600">
-							יש לבדוק בהאזנה {scene.takeAssembly.quality.unverifiedBoundaries}{" "}
-							גבולות חיתוך ללא שתיקה מאומתת.
+							<UiMessage text={"Listen to"} />{" "}
+							{scene.takeAssembly.quality.unverifiedBoundaries}{" "}
+							<UiMessage
+								text={"cut points where silence could not be confirmed."}
+							/>
 						</p>
 					)}
 				</div>
 			)}
 			{unavailable && (
 				<p className="text-xs text-muted-foreground">
-					בחר סצנה עם וידאו או אודיו בטיימליין כדי להתחיל.
+					<UiMessage
+						text={
+							"Select a scene with video or audio on the timeline to begin."
+						}
+					/>
 				</p>
 			)}
 			{running && (
@@ -233,20 +268,26 @@ export function PodcastControls({
 					>
 						{status.stage}
 					</span>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						aria-label="Cancel podcast analysis"
 						onClick={task.cancel}
 					>
 						<X />
-					</Button>
+					</UiLocalized>
 				</div>
 			)}
 			{status.status === "succeeded" && (
 				<p role="status" className="text-xs">
-					נוצרו {status.outputCount} רצפים לעריכה. אפשר לעבור ביניהם בחלונית
-					Media או בתפריט הרצפים בציר הזמן.
+					<UiMessage text={"Created"} /> {status.outputCount}{" "}
+					<UiMessage
+						text={
+							"editable sequences. Switch between them in Media or from the timeline sequence menu."
+						}
+					/>
 				</p>
 			)}
 			{status.status === "failed" && (
@@ -256,7 +297,7 @@ export function PodcastControls({
 			)}
 			{status.status === "cancelled" && (
 				<p role="status" className="text-xs">
-					הניתוח בוטל. לא נוצרו קטעים.
+					<UiMessage text={"Analysis cancelled. No clips were created."} />
 				</p>
 			)}
 			<Dialog
@@ -265,28 +306,33 @@ export function PodcastControls({
 					if (!open) setMode(null);
 				}}
 			>
-				<DialogContent dir="rtl">
+				<DialogContent>
 					<DialogHeader>
 						<DialogTitle>{selected?.label}</DialogTitle>
 						<DialogDescription>
-							{selected?.description} כל תוצאה נשמרת כרצף נפרד. הווידאו
-							והכתוביות בפרק המקורי נשארים ללא שינוי, ואפשר להפיק ממנו שוב.
+							{selected?.description}{" "}
+							<UiMessage
+								text={
+									"Each result is saved as a separate sequence. The original episode stays available for future edits."
+								}
+							/>
 						</DialogDescription>
 					</DialogHeader>
 					<div className="space-y-4 px-6">
 						{mode === "teleprompter" ? (
 							<p className="text-sm">
-								אפשר להשתמש בהקלטה אחת או בכמה קבצים. זיהוי הסרטונים ואורכם
-								אוטומטי, ללא מגבלת 90 שניות; עד 32 תסריטים בכל הפקה. החלופות
-								יופיעו כאן ובקליק ימני על הקליפים. ההמלצה מבוססת על התמלול; אפשר
-								להאזין ולבחור טייק אחר.
+								<UiMessage
+									text={
+										"Use one recording or several files. The editor detects videos and durations automatically and handles up to 32 scripts per run. Preview alternate takes here or from a clip’s context menu."
+									}
+								/>
 							</p>
 						) : mode === "teaser" ? (
 							<label
 								htmlFor="podcast-teaser-duration"
 								className="block space-y-2 text-sm"
 							>
-								אורך מרבי לטיזר, בשניות
+								<UiMessage text={"Maximum teaser length (seconds)"} />
 								<Input
 									id="podcast-teaser-duration"
 									type="number"
@@ -301,7 +347,7 @@ export function PodcastControls({
 								htmlFor="podcast-output-count"
 								className="block space-y-2 text-sm"
 							>
-								מספר מרבי של סרטונים
+								<UiMessage text={"Maximum number of videos"} />
 								<Input
 									id="podcast-output-count"
 									type="number"
@@ -313,15 +359,16 @@ export function PodcastControls({
 							</label>
 						)}
 						<p className="text-xs text-muted-foreground">
-							אם אין תמלול, ניצור אותו תחילה. התמלול נשאר גם אם הניתוח מבוטל.
-							מספר התוצאות תלוי באיכות החומר; חיתוכים ללא שתיקה מאומתת יסומנו
-							לבדיקה. בטיזר הסיום יכול להשאיר רעיון פתוח, אבל לא לחתוך מילה
-							באמצע.
+							<UiMessage
+								text={
+									"The editor creates a transcript if needed and keeps it if analysis is cancelled. The number of results depends on the footage. Cut points without confirmed silence are flagged for review."
+								}
+							/>
 						</p>
 					</div>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setMode(null)}>
-							סגור
+							<UiMessage text={"Close"} />
 						</Button>
 						<Button
 							disabled={
@@ -333,7 +380,7 @@ export function PodcastControls({
 							}
 							onClick={() => void run()}
 						>
-							צור רצפים
+							<UiMessage text={"Create sequences"} />
 						</Button>
 					</DialogFooter>
 				</DialogContent>

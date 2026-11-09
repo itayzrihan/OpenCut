@@ -353,18 +353,24 @@ function resolveSpeakerVisualRange({
 		time: getSourceSpanAtClipTime({
 			clipTime: leadingTimelineSpan,
 			retime: sourceElement.retime,
+			trimStart: sourceElement.trimStart,
+			ticks: true,
 		}),
 	});
 	const visibleSourceEnd = roundMediaTime({
 		time: getSourceSpanAtClipTime({
 			clipTime: visualEndOffset,
 			retime: sourceElement.retime,
+			trimStart: sourceElement.trimStart,
+			ticks: true,
 		}),
 	});
 	const fullSourceSpan = roundMediaTime({
 		time: getSourceSpanAtClipTime({
 			clipTime: sourceElement.duration,
 			retime: sourceElement.retime,
+			trimStart: sourceElement.trimStart,
+			ticks: true,
 		}),
 	});
 	const trailingSourceSpan = subMediaTime({

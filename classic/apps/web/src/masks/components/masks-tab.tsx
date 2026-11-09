@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import type { MaskableElement } from "@/timeline";
 import type { Mask, MaskType, TextMask } from "@/masks/types";
 import type { NumberParamDefinition, SelectParamDefinition } from "@/params";
@@ -195,7 +199,9 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center justify-between gap-2">
-				<SectionTitle>Masks</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Masks"} />
+				</SectionTitle>
 				<DropdownMenu
 					open={hasMask ? false : isDropdownOpen}
 					onOpenChange={handleDropdownOpenChange}
@@ -204,26 +210,37 @@ export function MasksTab({ element, trackId }: MasksTabProps) {
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<span className="inline-flex">
-									<Button
+									<UiLocalized<typeof Button>
+										element={Button}
+										messageProps={["aria-label"]}
 										variant="ghost"
 										size="icon"
 										disabled
 										aria-label="Add mask"
 									>
 										<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
-									</Button>
+									</UiLocalized>
 								</span>
 							</TooltipTrigger>
 							<TooltipContent className="max-w-56 text-balance">
-								Only one mask is supported right now. If you need more,
-								duplicate the clip and apply a different mask to each copy.
+								<UiMessage
+									text={
+										"Only one mask is supported right now. If you need more, duplicate the clip and apply a different mask to each copy."
+									}
+								/>
 							</TooltipContent>
 						</Tooltip>
 					) : (
 						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon" aria-label="Add mask">
+							<UiLocalized<typeof Button>
+								element={Button}
+								messageProps={["aria-label"]}
+								variant="ghost"
+								size="icon"
+								aria-label="Add mask"
+							>
 								<HugeiconsIcon icon={PlusSignIcon} className="size-3.5!" />
-							</Button>
+							</UiLocalized>
 						</DropdownMenuTrigger>
 					)}
 					<DropdownMenuContent className="w-40" onPointerLeave={onPointerLeave}>
@@ -373,7 +390,11 @@ function MaskParamsFields({
 			{definition.features.hasPosition &&
 				"centerX" in mask.params &&
 				"centerY" in mask.params && (
-					<SectionField label="Position">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Position"
+					>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -404,13 +425,17 @@ function MaskParamsFields({
 								onCommit={onCommit}
 							/>
 						</div>
-					</SectionField>
+					</UiLocalized>
 				)}
 
 			{definition.features.sizeMode === "width-height" &&
 				"width" in mask.params &&
 				"height" in mask.params && (
-					<SectionField label="Size">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Size"
+					>
 						<div className="flex items-center gap-2">
 							<MaskNumberField
 								className="flex-1"
@@ -441,12 +466,16 @@ function MaskParamsFields({
 								onCommit={onCommit}
 							/>
 						</div>
-					</SectionField>
+					</UiLocalized>
 				)}
 
 			{definition.features.sizeMode === "height-only" &&
 				"height" in mask.params && (
-					<SectionField label="Height">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Height"
+					>
 						<MaskNumberField
 							icon="H"
 							param={getNumberParamDefinition({
@@ -460,12 +489,16 @@ function MaskParamsFields({
 							onPreview={previewNumberParam("height")}
 							onCommit={onCommit}
 						/>
-					</SectionField>
+					</UiLocalized>
 				)}
 
 			{definition.features.sizeMode === "width-only" &&
 				"width" in mask.params && (
-					<SectionField label="Width">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Width"
+					>
 						<MaskNumberField
 							icon="W"
 							param={getNumberParamDefinition({
@@ -479,11 +512,15 @@ function MaskParamsFields({
 							onPreview={previewNumberParam("width")}
 							onCommit={onCommit}
 						/>
-					</SectionField>
+					</UiLocalized>
 				)}
 
 			{definition.features.sizeMode === "uniform" && "scale" in mask.params && (
-				<SectionField label="Scale">
+				<UiLocalized<typeof SectionField>
+					element={SectionField}
+					messageProps={["label"]}
+					label="Scale"
+				>
 					<MaskNumberField
 						icon={
 							isTextMask(mask) ? <HugeiconsIcon icon={ArrowExpandIcon} /> : "S"
@@ -499,11 +536,15 @@ function MaskParamsFields({
 						onPreview={previewNumberParam("scale")}
 						onCommit={onCommit}
 					/>
-				</SectionField>
+				</UiLocalized>
 			)}
 
 			{definition.features.hasRotation && "rotation" in mask.params && (
-				<SectionField label="Rotation">
+				<UiLocalized<typeof SectionField>
+					element={SectionField}
+					messageProps={["label"]}
+					label="Rotation"
+				>
 					<MaskNumberField
 						icon={<HugeiconsIcon icon={RotateClockwiseIcon} />}
 						param={getNumberParamDefinition({
@@ -517,10 +558,14 @@ function MaskParamsFields({
 						onPreview={previewNumberParam("rotation")}
 						onCommit={onCommit}
 					/>
-				</SectionField>
+				</UiLocalized>
 			)}
 
-			<SectionField label="Feather">
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Feather"
+			>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={FeatherIcon} />}
 					param={featherParam}
@@ -531,9 +576,13 @@ function MaskParamsFields({
 					onPreview={previewNumberParam("feather")}
 					onCommit={onCommit}
 				/>
-			</SectionField>
+			</UiLocalized>
 
-			<SectionField label="Stroke">
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Stroke"
+			>
 				<div className="flex flex-col gap-2">
 					<div className="flex items-center gap-2">
 						<MaskNumberField
@@ -578,7 +627,7 @@ function MaskParamsFields({
 						</Select>
 					) : null}
 				</div>
-			</SectionField>
+			</UiLocalized>
 		</SectionFields>
 	);
 }
@@ -626,7 +675,11 @@ function TextMaskFields({
 
 	return (
 		<>
-			<SectionField label="Content">
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Content"
+			>
 				<Textarea
 					value={content.displayValue}
 					className="min-h-20"
@@ -634,8 +687,12 @@ function TextMaskFields({
 					onChange={content.onChange}
 					onBlur={content.onBlur}
 				/>
-			</SectionField>
-			<SectionField label="Font">
+			</UiLocalized>
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Font"
+			>
 				<FontPicker
 					defaultValue={mask.params.fontFamily}
 					onValueChange={(value) => {
@@ -643,8 +700,12 @@ function TextMaskFields({
 						onCommit();
 					}}
 				/>
-			</SectionField>
-			<SectionField label="Size">
+			</UiLocalized>
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Size"
+			>
 				<MaskNumberField
 					icon={<HugeiconsIcon icon={TextFontIcon} />}
 					param={fontSizeParam}
@@ -652,8 +713,12 @@ function TextMaskFields({
 					onPreview={previewNumberParam("fontSize")}
 					onCommit={onCommit}
 				/>
-			</SectionField>
-			<SectionField label="Spacing">
+			</UiLocalized>
+			<UiLocalized<typeof SectionField>
+				element={SectionField}
+				messageProps={["label"]}
+				label="Spacing"
+			>
 				<div className="flex items-start gap-2">
 					<MaskNumberField
 						className="w-1/2"
@@ -672,7 +737,7 @@ function TextMaskFields({
 						onCommit={onCommit}
 					/>
 				</div>
-			</SectionField>
+			</UiLocalized>
 		</>
 	);
 }
@@ -780,13 +845,17 @@ function EmptyView({ onAddMask }: EmptyViewProps) {
 		<div className="flex flex-col h-full items-center justify-center gap-4 text-center">
 			<OcShapesIcon className="size-10 text-muted-foreground" strokeWidth={1} />
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">No masks</h3>
+				<h3 className="font-medium text-foreground">
+					<UiMessage text={"No masks"} />
+				</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-40">
-					Add a mask to hide or reveal parts of this layer.
+					<UiMessage
+						text={"Add a mask to hide or reveal parts of this layer."}
+					/>
 				</p>
 			</div>
 			<Button variant="default" size="sm" onClick={onAddMask}>
-				Add mask
+				<UiMessage text={"Add mask"} />
 			</Button>
 		</div>
 	);

@@ -24,6 +24,7 @@ export interface GroupResizeMember extends ElementRef {
 export interface GroupResizeUpdate extends ElementRef {
 	patch: {
 		wordRuns?: TextWordRun[];
+		retime?: RetimeConfig;
 		params?: TextElement["params"];
 		trimStart: MediaTime;
 		trimEnd: MediaTime;

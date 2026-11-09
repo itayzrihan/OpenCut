@@ -18,6 +18,7 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier src --write",
     "assets:verify": "node scripts/verify-background-removal-assets.mjs",
+    "audio:setup": "python scripts/dbs-tiger.py setup",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push:local": "cross-env NODE_ENV=development drizzle-kit push",

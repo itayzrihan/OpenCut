@@ -1,20 +1,10 @@
-import { createHash, randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, stat, writeFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { readFile, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { NextRequest } from "next/server";
-import sharp from "sharp";
 import { z } from "zod";
 import { accountDataRoot, requireAccount } from "@/accounts/server";
-import {
-	forwardCodexResponsesRequest,
-	getOpenAIOAuthStatus,
-} from "@/ai/server/openai-codex-oauth";
-import {
-	getMediaFile,
-	listProjectMetadata,
-	storeUploadedMedia,
-} from "@/services/local-drive/server";
-import { withEditorProjectWrite } from "./project-write";
+import { getMediaFile, listProjectMetadata } from "@/services/local-drive/server";
 
 const resultSchema = z
 	.object({
@@ -93,13 +83,9 @@ export async function generateSubscriptionImage({
 			definitive: true,
 		});
 	}
-	const journal = z
-		.object({ projectId: z.literal(projectId) })
-		.passthrough()
-		.parse(initial.journal);
+	z.object({ projectId: z.literal(projectId) }).parse(initial.journal);
 	const root = join(accountDataRoot(), "image-jobs");
 	const path = join(root, `${initial.jobKey}.json`);
-	await mkdir(root, { recursive: true });
 	let saved: unknown = null;
 	try {
 		if ((await stat(path)).size > 16_000)
@@ -131,104 +117,10 @@ export async function generateSubscriptionImage({
 		});
 	if (plan.action === "recover")
 		return { ...plan.result!, projectId, jobKey: plan.jobKey };
-	await withEditorProjectWrite({
-		projectId,
-		write: async ({ assertWrite }) => assertWrite(),
+	throw new ImageHostError({
+		message: "Image generation is unavailable through the POCUT Agent ChatGPT connection.",
+		definitive: true,
 	});
-	const connection = await getOpenAIOAuthStatus({ request });
-	if (!connection.status.authenticated || !connection.credentials)
-		throw new ImageHostError({
-			message:
-				"Connect your Codex subscription for image generation. No paid API fallback is enabled.",
-			definitive: true,
-		});
-	await assertOwned({ projectId, accountId: account.id });
-	request.signal.throwIfAborted();
-	// Exclusive durable claim precedes the provider request. A racing host or a
-	// process restart can recover a completed record, never dispatch it twice.
-	try {
-		await writeFile(path, JSON.stringify(journal), { flag: "wx" });
-	} catch (error) {
-		if (error instanceof Error && "code" in error && error.code === "EEXIST")
-			throw new ImageHostError({
-				message:
-					"This image operation is already running; reconcile the same operationId",
-				definitive: false,
-			});
-		throw error;
-	}
-	const response = await forwardCodexResponsesRequest({
-		credentials: connection.credentials,
-		body: plan.providerBody!,
-		signal: AbortSignal.any([request.signal, AbortSignal.timeout(300_000)]),
-		allowModelFallback: false,
-	});
-	const output = z
-		.object({ output: z.array(z.unknown()) })
-		.passthrough()
-		.parse(response).output;
-	const images = output.flatMap((item) => {
-		const parsed = z
-			.object({
-				type: z.literal("image_generation_call"),
-				status: z.literal("completed"),
-				result: z.string().min(1).max(24_000_000),
-			})
-			.passthrough()
-			.safeParse(item);
-		return parsed.success ? [parsed.data.result] : [];
-	});
-	if (images.length !== 1)
-		throw new ImageHostError({
-			message:
-				"The subscription did not return exactly one completed image. Reconcile this operation before generating again.",
-			definitive: false,
-		});
-	const bytes = Buffer.from(images[0], "base64");
-	if (
-		bytes.length > 16_000_000 ||
-		!bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
-	)
-		throw new ImageHostError({
-			message: "Generated image is not a bounded PNG",
-			definitive: false,
-		});
-	const decoder = sharp(bytes, { limitInputPixels: 4096 * 4096 });
-	const dimensions = await decoder.metadata();
-	await decoder.stats(); // Decode all pixels before publishing the artifact.
-	request.signal.throwIfAborted();
-	await assertOwned({ projectId, accountId: account.id });
-	const result = resultSchema.parse({
-		mediaId: plan.mediaId,
-		fileName: plan.fileName,
-		width: dimensions.width,
-		height: dimensions.height,
-		byteSize: bytes.length,
-		lastModified: Date.now(),
-		sha256: createHash("sha256").update(bytes).digest("hex"),
-	});
-	await storeUploadedMedia({
-		projectId,
-		mediaId: result.mediaId,
-		fileName: result.fileName,
-		mimeType: "image/png",
-		lastModified: result.lastModified,
-		size: bytes.length,
-		allowLargeCopy: false,
-		body: new ReadableStream({
-			start(controller) {
-				controller.enqueue(bytes);
-				controller.close();
-			},
-		}),
-	});
-	const completed = planSchema.parse(
-		subscriptionImagePlan(input, journal, result, Date.now()),
-	);
-	const temporary = `${path}.${randomUUID()}.pending`;
-	await writeFile(temporary, JSON.stringify(completed.journal), { flag: "wx" });
-	await rename(temporary, path);
-	return { ...result, projectId, jobKey: plan.jobKey };
 }
 
 export async function readSubscriptionImage({

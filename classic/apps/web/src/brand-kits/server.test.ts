@@ -1,6 +1,6 @@
 // @opencut-test-wasm: real
 import { expect, test } from "bun:test";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { registerAccount, sessionCookie, withAccount } from "@/accounts/server";
@@ -53,7 +53,36 @@ test("canonical Brand Kits persist, retry after reopen, reject stale writes, and
 			await request({ token: alice.token })
 		).json()) as BrandKitLibrary;
 		expect(original.kits).toEqual([]);
-		const kit = { ...newBrandKit(), name: "Alice Brand" };
+		const images = [
+			{
+				assetId: "portrait",
+				kind: "character" as const,
+				name: "Studio host",
+				tags: ["presenter", "portrait"],
+			},
+		];
+		const stickerManifest = join(
+			root,
+			"data",
+			alice.account.id,
+			"shared-library",
+		);
+		await mkdir(stickerManifest, { recursive: true });
+		await writeFile(
+			join(stickerManifest, "manifest.json"),
+			JSON.stringify({
+				stickerAssets: [
+					{
+						id: "portrait",
+						storageKind: "account",
+						mimeType: "image/png",
+						width: 120,
+						height: 160,
+					},
+				],
+			}),
+		);
+		const kit = { ...newBrandKit(), name: "Alice Brand", images };
 		const edit = {
 			expectedRevision: original.revision,
 			requestId: "first-write",
@@ -63,6 +92,17 @@ test("canonical Brand Kits persist, retry after reopen, reject stale writes, and
 		expect(savedResponse.status).toBe(200);
 		const saved = (await savedResponse.json()) as BrandKitLibrary;
 		expect(saved.kits).toEqual([kit]);
+		const bobLibrary = (await (
+			await request({ token: bob.token })
+		).json()) as BrandKitLibrary;
+		const foreign = await request({
+			token: bob.token,
+			edit: { ...edit, expectedRevision: bobLibrary.revision },
+		});
+		expect(foreign.status).toBe(409);
+		expect((await foreign.json()).error).toContain(
+			"does not belong to this account",
+		);
 		expect(
 			await (await request({ token: alice.token, edit: edit })).json(),
 		).toEqual(saved);

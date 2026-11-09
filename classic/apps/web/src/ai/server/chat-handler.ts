@@ -1,10 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-	forwardCodexResponsesRequest,
-	getOpenAIOAuthStatus,
-	setCredentialsCookie,
-} from "@/ai/server/openai-codex-oauth";
+	chatGPTModels,
+	chatGPTStatus,
+	requireLocalChatGPT,
+	streamChatGPTResponse,
+} from "@/editor-agent/server/chatgpt";
+import { AgentProviderFailure, readAgentResponse } from "@/editor-agent/stream";
 import { ALLOWED_AI_TOOL_WIRE_NAMES } from "@/ai/tool-wire-names";
 import { retryOverload } from "@/ai/server/retry-overload";
 
@@ -33,7 +35,11 @@ const chatRequestSchema = z
 		input: z.array(z.unknown()).min(1).max(MAX_AI_INPUT_ITEMS),
 		tools: z.array(aiToolSchema).max(MAX_AI_TOOLS).optional(),
 		webSearch: z.boolean().optional(),
-		model: z.string().trim().min(1).max(80).optional(),
+		model: z.string().trim().min(1).max(100).optional(),
+		reasoningEffort: z
+			.string()
+			.regex(/^[a-z][a-z0-9_]{0,31}$/)
+			.optional(),
 		previousResponseId: z.string().trim().min(1).max(200).optional(),
 	})
 	.strict()
@@ -46,6 +52,8 @@ const chatRequestSchema = z
 	);
 
 export async function handleAiChatRequest(request: NextRequest) {
+	const denied = requireLocalChatGPT(request);
+	if (denied) return denied;
 	const contentLength = Number(request.headers.get("content-length") ?? "0");
 	if (
 		Number.isFinite(contentLength) &&
@@ -76,39 +84,64 @@ export async function handleAiChatRequest(request: NextRequest) {
 		);
 	}
 
-	const oauth = await getOpenAIOAuthStatus({ request });
-	if (!oauth.status.authenticated || !oauth.credentials) {
+	const { sharing } = await chatGPTStatus();
+	if (!sharing) {
 		return NextResponse.json(
-			{
-				error:
-					oauth.status.error ??
-					"Log in with OpenAI before using the AI editing agent.",
-			},
+			{ error: "Connect ChatGPT in the POCUT Agent to use AI editing." },
 			{ status: 401 },
 		);
 	}
-
-	const credentials = oauth.credentials;
+	const { input, tools, webSearch, reasoningEffort } = parsed.data;
+	const instructions = input.flatMap((item) => {
+		const message = z
+			.object({ role: z.literal("system"), content: z.string() })
+			.safeParse(item);
+		return message.success ? [message.data.content] : [];
+	});
+	const providerInput = input.filter(
+		(item) =>
+			!(
+				item &&
+				typeof item === "object" &&
+				"role" in item &&
+				item.role === "system"
+			),
+	);
 	try {
+		const model =
+			parsed.data.model ?? (await chatGPTModels(request.signal))[0]?.id;
+		if (!model)
+			throw new Error("No models are available for this ChatGPT connection.");
+		const providerTools = webSearch ? [{ type: "web_search" }] : tools;
 		const responseBody = await retryOverload({
-			request: () =>
-				forwardCodexResponsesRequest({
-					credentials,
-					body: parsed.data,
+			request: async () =>
+				readAgentResponse({
+					response: await streamChatGPTResponse({
+						body: {
+							model,
+							input: providerInput,
+							...(instructions.length
+								? { instructions: instructions.join("\n\n") }
+								: {}),
+							...(providerTools?.length ? { tools: providerTools } : {}),
+							...(webSearch
+								? { include: ["web_search_call.action.sources"] }
+								: {}),
+							...(reasoningEffort
+								? { reasoning: { effort: reasoningEffort } }
+								: {}),
+							parallel_tool_calls: !webSearch,
+						},
+						signal: request.signal,
+					}),
 					signal: request.signal,
+					onEvent: () => {},
 				}),
 			signal: request.signal,
 		});
-		const response = NextResponse.json({ response: responseBody });
-		if (oauth.refreshedCredentials) {
-			setCredentialsCookie({
-				response,
-				credentials: oauth.refreshedCredentials,
-			});
-		}
-		return response;
+		return NextResponse.json({ response: responseBody });
 	} catch (error) {
-		if (error instanceof DOMException && error.name === "AbortError") {
+		if (request.signal.aborted) {
 			return NextResponse.json(
 				{ error: "AI request cancelled" },
 				{ status: 499 },
@@ -117,11 +150,14 @@ export async function handleAiChatRequest(request: NextRequest) {
 		return NextResponse.json(
 			{
 				error:
-					error instanceof Error
-						? error.message
-						: "OpenAI Codex request failed.",
+					error instanceof Error ? error.message : "ChatGPT request failed.",
 			},
-			{ status: 502 },
+			{
+				status:
+					error instanceof AgentProviderFailure && error.failure.status === 429
+						? 429
+						: 502,
+			},
 		);
 	}
 }

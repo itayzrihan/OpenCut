@@ -1,5 +1,11 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { ElectronBackButton } from "@/components/electron-back-button";
 import { Button } from "../ui/button";
 import { useRef, useState } from "react";
 import {
@@ -19,7 +25,7 @@ import { FeedbackPopover } from "@/feedback/components/feedback-popover";
 import { ThemeToggle } from "../theme-toggle";
 import { DEFAULT_LOGO_URL } from "@/site/brand";
 import { SOCIAL_LINKS } from "@/site/social";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	useEditor,
 	useEditorProject,
@@ -46,21 +52,26 @@ import { useAssetsPanelStore } from "./panels/assets/assets-panel-store";
 
 export function EditorHeader() {
 	return (
-		<header className="bg-background grid min-h-[3.4rem] shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 px-3 py-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,18rem)_minmax(0,1fr)]">
-			<div className="flex min-w-0 items-center gap-1 overflow-hidden">
+		<header
+			data-pocut-editor-header
+			className="grid min-h-[3.55rem] shrink-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2 gap-y-1 px-3 py-1 min-[1180px]:grid-cols-[minmax(0,1fr)_minmax(0,18rem)_minmax(0,1fr)]"
+		>
+			<div className="flex min-w-0 items-center gap-1">
+				<ElectronBackButton />
 				<ProjectDropdown />
+				<span data-pocut-editor-wordmark>POCUT</span>
 				<EditableProjectName />
 			</div>
-			<div className="col-span-2 row-start-2 w-full min-w-0 max-w-72 justify-self-center lg:col-span-1 lg:col-start-2 lg:row-start-1 lg:max-w-none">
+			<div className="col-span-2 row-start-2 w-full min-w-0 max-w-72 justify-self-center min-[1180px]:col-span-1 min-[1180px]:col-start-2 min-[1180px]:row-start-1 min-[1180px]:max-w-none">
 				<HeaderSceneSelector />
 			</div>
-			<nav className="col-start-2 row-start-1 flex items-center gap-2 justify-self-end lg:col-start-3">
+			<nav className="col-start-2 row-start-1 flex items-center gap-2 justify-self-end min-[1180px]:col-start-3">
 				<Button
 					variant="ghost"
 					size="sm"
 					onClick={() => useAssetsPanelStore.getState().setActiveTab("catalog")}
 				>
-					Catalog
+					<UiMessage text={"Catalog"} />
 				</Button>
 				<FeedbackPopover />
 				<ExportButton />
@@ -79,13 +90,15 @@ function HeaderSceneSelector() {
 			<Button
 				variant="ghost"
 				size="sm"
-				className="w-full min-w-0 gap-2"
+				className="w-full min-w-0 gap-2 border border-border bg-card"
 				aria-label={`Sequences: ${currentScene?.name || "No Scene"}`}
 				title={currentScene?.name || "Sequences"}
 				data-native-keyboard-activation
 			>
 				<Layers className="size-4 shrink-0 text-muted-foreground" />
-				<span className="truncate">{currentScene?.name || "No Scene"}</span>
+				<span className="truncate">
+					{currentScene?.name || <UiMessage text={"No Scene"} />}
+				</span>
 				<ChevronDown className="size-3 shrink-0 text-muted-foreground" />
 			</Button>
 		</ScenesView>
@@ -203,14 +216,19 @@ function ProjectDropdown() {
 				result.sharedAudioLinked + result.sharedStickersLinked;
 			const importedSharedCount =
 				result.sharedAudioImported + result.sharedStickersImported;
-			toast.success(`Imported "${result.projectName}"`, {
-				description: [
-					`${result.mediaImported} media`,
-					`${result.fontsImported} fonts`,
-					`${linkedSharedCount} shared linked`,
-					`${importedSharedCount} shared imported`,
-				].join(" | "),
-			});
+			toast.success(
+				localizeClientMessage('Imported "{v0}"', {
+					v0: String(result.projectName),
+				}),
+				{
+					description: [
+						`${result.mediaImported} media`,
+						`${result.fontsImported} fonts`,
+						`${linkedSharedCount} shared linked`,
+						`${importedSharedCount} shared imported`,
+					].join(" | "),
+				},
+			);
 			router.push(`/editor/${result.projectId}`);
 		} catch (error) {
 			console.error("Failed to import project ZIP:", error);
@@ -234,15 +252,22 @@ function ProjectDropdown() {
 			/>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" size="icon" className="p-1 rounded-sm size-8">
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
+						variant="ghost"
+						size="icon"
+						className="size-8 shrink-0 rounded-md p-0.5"
+						aria-label="Project menu"
+					>
 						<Image
 							src={DEFAULT_LOGO_URL}
-							alt="Project thumbnail"
+							alt=""
 							width={32}
 							height={32}
-							className="invert dark:invert-0 size-5"
+							className="size-7"
 						/>
-					</Button>
+					</UiLocalized>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="start" className="z-100 w-44">
 					<DropdownMenuItem
@@ -250,14 +275,14 @@ function ProjectDropdown() {
 						disabled={isExiting}
 						icon={<HugeiconsIcon icon={Logout05Icon} />}
 					>
-						Exit project
+						<UiMessage text={"Exit project"} />
 					</DropdownMenuItem>
 
 					<DropdownMenuItem
 						onClick={() => setOpenDialog("shortcuts")}
 						icon={<HugeiconsIcon icon={CommandIcon} />}
 					>
-						Shortcuts
+						<UiMessage text={"Shortcuts"} />
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />
@@ -267,18 +292,22 @@ function ProjectDropdown() {
 						disabled={isArchiveBusy}
 						icon={<HugeiconsIcon icon={FileZipIcon} />}
 					>
-						{isArchiveExporting
-							? "Exporting project ZIP..."
-							: "Export project ZIP"}
+						{isArchiveExporting ? (
+							<UiMessage text={"Exporting project ZIP..."} />
+						) : (
+							<UiMessage text={"Export project ZIP"} />
+						)}
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => archiveInputRef.current?.click()}
 						disabled={isArchiveBusy}
 						icon={<HugeiconsIcon icon={FileImportIcon} />}
 					>
-						{isArchiveImporting
-							? "Importing project ZIP..."
-							: "Import project ZIP"}
+						{isArchiveImporting ? (
+							<UiMessage text={"Importing project ZIP..."} />
+						) : (
+							<UiMessage text={"Import project ZIP"} />
+						)}
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />

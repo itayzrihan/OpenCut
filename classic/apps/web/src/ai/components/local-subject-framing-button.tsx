@@ -1,7 +1,8 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runLocalSubjectFraming } from "@/ai/subject-framing";
@@ -56,12 +57,15 @@ export function LocalSubjectFramingButton({
 				onClick={run}
 				disabled={disabled || running}
 			>
-				{running ? <Loader2 className="animate-spin" /> : <Sparkles />} Center
-				Subject Horizontally
+				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
+				<UiMessage text={"Center Subject Horizontally"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Local face/body detection, no cloud request. Centers existing vertical
-				cover clips.
+				<UiMessage
+					text={
+						"Local face/body detection, no cloud request. Centers existing vertical cover clips."
+					}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -74,7 +78,7 @@ export function LocalSubjectFramingButton({
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel framing
+					<UiMessage text={"Cancel framing"} />
 				</Button>
 			)}
 		</div>

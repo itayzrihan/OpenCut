@@ -1,7 +1,16 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useState } from "react";
+import { HardDrive } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import brand from "@/components/landing/pocut-brand.module.css";
 import { saveAllAccountPreferences } from "@/services/local-drive/preferences";
-import { PeerSyncSettings } from "@/peer-sync/settings";
+import styles from "./settings.module.css";
 type StorageMode = "localOnly" | "externalDrive" | "personalDevices";
 type State = {
 	profile: {
@@ -102,7 +111,7 @@ export function StorageSettings({
 					url = URL.createObjectURL(blob),
 					anchor = document.createElement("a");
 				anchor.href = url;
-				anchor.download = "OpenCut-account-recovery.json";
+				anchor.download = "POCUT-account-recovery.json";
 				anchor.click();
 				setTimeout(() => URL.revokeObjectURL(url), 30_000);
 				setPassword("");
@@ -116,19 +125,23 @@ export function StorageSettings({
 	const running = state?.job?.status === "running",
 		disabled = busy || running;
 	return (
-		<section className="space-y-5 rounded-xl border p-6">
-			<PeerSyncSettings />
+		<section className={styles.card}>
 			<div>
-				<h2 className="text-lg font-medium">Your storage</h2>
+				<h3 className={styles.heading}>
+					<HardDrive className="size-4 text-primary" aria-hidden="true" />
+					<UiMessage text={"Your storage"} />
+				</h3>
 				<p className="mt-2 text-sm text-muted-foreground">
-					Keep work local, or save encrypted versions to an external drive, a
-					drive provider’s synced folder, or a mounted folder shared by one of
-					your machines. OpenCut keeps a separate account vault outside Git.
+					<UiMessage
+						text={
+							"Keep work local, or save encrypted versions to an external drive, a drive provider’s synced folder, or a mounted folder shared by one of your machines. POCUT keeps a separate account vault outside Git."
+						}
+					/>
 				</p>
 			</div>
 			<fieldset className="space-y-2" disabled={disabled}>
 				<legend className="mb-2 text-sm font-medium">
-					Where to keep saved versions
+					<UiMessage text={"Where to keep saved versions"} />
 				</legend>
 				<div className="grid gap-2 sm:grid-cols-3">
 					{(
@@ -148,7 +161,7 @@ export function StorageSettings({
 					).map(([value, label, description]) => (
 						<label
 							key={value}
-							className={`cursor-pointer rounded border p-3 text-sm ${mode === value ? "border-primary bg-primary/5" : ""}`}
+							className={`min-w-0 cursor-pointer rounded-lg border p-3 text-sm transition-colors hover:border-primary/60 ${mode === value ? "border-primary/70 bg-primary/10" : "bg-background/60"}`}
 						>
 							<span className="flex items-center gap-2 font-medium">
 								<input
@@ -158,10 +171,10 @@ export function StorageSettings({
 									checked={mode === value}
 									onChange={() => setMode(value)}
 								/>
-								{label}
+								<UiMessage text={label} />
 							</span>
 							<span className="mt-2 block text-xs text-muted-foreground">
-								{description}
+								<UiMessage text={description} />
 							</span>
 						</label>
 					))}
@@ -171,34 +184,39 @@ export function StorageSettings({
 				<>
 					{mode === "personalDevices" && (
 						<p className="text-sm text-muted-foreground">
-							Choose a folder on this machine, or a mounted share from another
-							machine you own. To connect another computer, recover this account
-							there and select the same shared folder. The machine hosting the
-							share must be reachable when saving or opening versions.
+							<UiMessage
+								text={
+									"Choose a folder on this machine, or a mounted share from another machine you own. To connect another computer, recover this account there and select the same shared folder. The machine hosting the share must be reachable when saving or opening versions."
+								}
+							/>
 						</p>
 					)}
 					<label className="block space-y-1 text-sm">
 						<span>
-							{mode === "personalDevices"
-								? "Shared folder on your machine"
-								: "Existing storage folder"}
+							{mode === "personalDevices" ? (
+								<UiMessage text={"Shared folder on your machine"} />
+							) : (
+								<UiMessage text={"Existing storage folder"} />
+							)}
 						</span>
-						<input
+						<UiLocalized<typeof Input>
+							element={Input}
+							messageProps={["placeholder"]}
 							value={folder}
 							onChange={(event) => setFolder(event.target.value)}
 							placeholder="Full path to your drive or mounted share"
-							className="w-full rounded border bg-background p-2"
 							disabled={disabled}
 						/>
 					</label>
 					<label className="block space-y-1 text-sm">
-						<span>Name for this machine</span>
-						<input
+						<span>
+							<UiMessage text={"Name for this machine"} />
+						</span>
+						<Input
 							value={deviceName}
 							onChange={(event) => setDeviceName(event.target.value)}
 							maxLength={128}
 							disabled={disabled}
-							className="w-full rounded border bg-background p-2"
 						/>
 					</label>
 					<label className="flex items-center gap-2 text-sm">
@@ -208,13 +226,16 @@ export function StorageSettings({
 							onChange={(event) => setAutomatic(event.target.checked)}
 							disabled={disabled}
 						/>
-						Automatically save changed work every five minutes while OpenCut is
-						open
+						<UiMessage
+							text={
+								"Automatically save changed work every five minutes while POCUT is open"
+							}
+						/>
 					</label>
 				</>
 			)}
 			<div className="flex flex-wrap gap-2">
-				<button
+				<Button
 					disabled={
 						disabled ||
 						!state ||
@@ -229,63 +250,84 @@ export function StorageSettings({
 							automaticSnapshots: automatic,
 						})
 					}
-					className="rounded border px-4 py-2 disabled:opacity-50"
+					className={brand.primary}
 				>
-					Save storage choice
-				</button>
+					<UiMessage text={"Save storage choice"} />
+				</Button>
 				{state?.profile.folder && (
-					<button
+					<Button
+						variant="outline"
 						disabled={disabled || state.connection.status !== "connected"}
 						onClick={() => void action({ action: "publish" })}
-						className="rounded bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
 					>
-						Save encrypted snapshot
-					</button>
+						<UiMessage text={"Save encrypted snapshot"} />
+					</Button>
 				)}
 			</div>
-			<p className="text-sm">
-				{state?.connection.status === "unavailable"
-					? `Destination unavailable: ${state.profile.folder}. Your local workspace remains available.`
-					: state?.profile.folder
-						? `Connected: ${state.profile.folder}`
-						: "Local only. Your work stays on this machine."}
+			<p className="break-words rounded-lg border bg-background/55 p-3 text-sm text-muted-foreground">
+				{state?.connection.status === "unavailable" ? (
+					<UiMessage
+						text={
+							"Destination unavailable: {v0}. Your local workspace remains available."
+						}
+						values={{ v0: String(state.profile.folder) }}
+					/>
+				) : state?.profile.folder ? (
+					<UiMessage
+						text={"Connected: {v0}"}
+						values={{ v0: String(state.profile.folder) }}
+					/>
+				) : (
+					<UiMessage text={"Local only. Your work stays on this machine."} />
+				)}
 			</p>
 			{state?.connection.error && (
 				<p role="status" className="break-words text-sm text-amber-600">
 					{state.connection.error}
 				</p>
 			)}
-			<button
+			<Button
+				variant="outline"
+				size="sm"
+				className="w-fit"
 				disabled={disabled}
 				onClick={() => void refresh().catch((error) => setError(error.message))}
-				className="text-sm underline disabled:opacity-50"
 			>
-				Refresh connection and versions
-			</button>
+				<UiMessage text={"Refresh connection and versions"} />
+			</Button>
 			{!!state?.devices.length && (
 				<div className="space-y-2">
-					<h3 className="font-medium">Machines using this vault</h3>
+					<h3 className="font-medium">
+						<UiMessage text={"Machines using this vault"} />
+					</h3>
 					<p className="text-xs text-muted-foreground">
-						These identities were verified from the shared vault. The last
-						connection or save does not indicate whether a machine is online
-						now.
+						<UiMessage
+							text={
+								"These identities were verified from the shared vault. The last connection or save does not indicate whether a machine is online now."
+							}
+						/>
 					</p>
 					<ul className="space-y-2">
 						{state.devices.map((device) => (
 							<li key={device.id} className="rounded border p-3 text-sm">
 								<p className="font-medium">
 									{device.name}
-									{device.id === state.currentDevice.id
-										? " (this machine)"
-										: ""}
+									{device.id === state.currentDevice.id ? (
+										<>
+											{" "}
+											<UiMessage text={"(this machine)"} />
+										</>
+									) : (
+										""
+									)}
 								</p>
 								<p className="text-xs text-muted-foreground">
-									Last connection or save:{" "}
+									<UiMessage text={"Last connection or save:"} />{" "}
 									{new Date(device.lastSeenAt).toLocaleString()}
 								</p>
 								<details className="mt-1 text-xs">
 									<summary className="cursor-pointer">
-										Device fingerprint
+										<UiMessage text={"Device fingerprint"} />
 									</summary>
 									<code className="break-all">{device.fingerprint}</code>
 								</details>
@@ -297,41 +339,55 @@ export function StorageSettings({
 			{running && (
 				<div className="flex items-center gap-4">
 					<p role="status">
-						{state.job?.action === "restore"
-							? "Restoring"
-							: "Encrypting and verifying"}
-						: {state.job?.files} / {state.job?.total || "…"} files
+						{state.job?.action === "restore" ? (
+							<UiMessage text={"Restoring"} />
+						) : (
+							<UiMessage text={"Encrypting and verifying"} />
+						)}
+						: {state.job?.files} / {state.job?.total || "…"}{" "}
+						<UiMessage text={"files"} />
 					</p>
-					<button
+					<Button
+						variant="outline"
+						size="sm"
 						onClick={() => void action({ action: "cancel" })}
-						className="underline"
 					>
-						Cancel
-					</button>
+						<UiMessage text={"Cancel"} />
+					</Button>
 				</div>
 			)}
 			{state?.job && !running && (
 				<p role="status" className="text-sm">
-					{state.job.status === "complete"
-						? "Operation completed and verified."
-						: (state.job.error ?? state.job.status)}
+					{state.job.status === "complete" ? (
+						<UiMessage text={"Operation completed and verified."} />
+					) : (
+						(state.job.error ?? state.job.status)
+					)}
 				</p>
 			)}
 			{state?.snapshots.length ? (
 				<div className="space-y-3">
-					<h3 className="font-medium">Saved versions</h3>
+					<h3 className="font-medium">
+						<UiMessage text={"Saved versions"} />
+					</h3>
 					<label className="flex gap-2 text-sm">
 						<input
 							type="checkbox"
 							checked={metadataOnly}
 							onChange={(event) => setMetadataOnly(event.target.checked)}
 						/>
-						Open projects without downloading source media (offline editing)
+						<UiMessage
+							text={
+								"Open projects without downloading source media (offline editing)"
+							}
+						/>
 					</label>
 					<p className="text-xs text-muted-foreground">
-						Versions from every connected machine remain separate. Opening a
-						version first saves your current work as an encrypted version and
-						retains its local files.
+						<UiMessage
+							text={
+								"Versions from every connected machine remain separate. Opening a version first saves your current work as an encrypted version and retains its local files."
+							}
+						/>
 					</p>
 					<ul className="space-y-2">
 						{state.snapshots.map((snapshot) => (
@@ -343,16 +399,28 @@ export function StorageSettings({
 									<span className="block font-medium">
 										{state.devices.find(
 											(device) => device.id === snapshot.deviceId,
-										)?.name ?? `Machine ${snapshot.deviceId.slice(0, 8)}`}
-										{snapshot.deviceId === state.currentDevice.id
-											? " (this machine)"
-											: ""}
+										)?.name ?? (
+											<UiMessage
+												text={"Machine {v0}"}
+												values={{ v0: String(snapshot.deviceId.slice(0, 8)) }}
+											/>
+										)}
+										{snapshot.deviceId === state.currentDevice.id ? (
+											<>
+												{" "}
+												<UiMessage text={"(this machine)"} />
+											</>
+										) : (
+											""
+										)}
 									</span>
 									{new Date(snapshot.createdAt).toLocaleString()} ·{" "}
-									{snapshot.files} files · {(snapshot.bytes / 1e6).toFixed(1)}{" "}
-									MB
+									{snapshot.files} <UiMessage text={"files ·"} />{" "}
+									{(snapshot.bytes / 1e6).toFixed(1)} <UiMessage text={"MB"} />
 								</span>
-								<button
+								<Button
+									variant="outline"
+									size="sm"
 									disabled={disabled}
 									onClick={() =>
 										void action({
@@ -362,10 +430,9 @@ export function StorageSettings({
 											metadataOnly,
 										})
 									}
-									className="underline disabled:opacity-50"
 								>
-									Open this version
-								</button>
+									<UiMessage text={"Open this version"} />
+								</Button>
 							</li>
 						))}
 					</ul>
@@ -373,35 +440,38 @@ export function StorageSettings({
 			) : null}
 			{!legitateOnly && (
 				<div className="space-y-3 border-t pt-4">
-					<h3 className="font-medium">Use this account on another machine</h3>
+					<h3 className="font-medium">
+						<UiMessage text={"Use this account on another machine"} />
+					</h3>
 					<p className="text-sm text-muted-foreground">
-						Download your password-protected recovery file. On the other
-						machine, choose “Recover an account”, connect the same drive folder,
-						and restore a saved version. Keep this file and its password: they
-						unlock your encrypted storage.
+						<UiMessage
+							text={
+								"Download your password-protected recovery file. On the other machine, choose “Recover an account”, connect the same drive folder, and restore a saved version. Keep this file and its password: they unlock your encrypted storage."
+							}
+						/>
 					</p>
 					<label className="block text-sm">
-						Account password
-						<input
+						<UiMessage text={"Account password"} />
+						<Input
 							type="password"
 							autoComplete="current-password"
 							value={password}
 							onChange={(event) => setPassword(event.target.value)}
-							className="mt-1 w-full rounded border bg-background p-2"
+							className="mt-2"
 						/>
 					</label>
-					<button
+					<Button
+						variant="outline"
 						disabled={disabled || !password}
 						onClick={() => void action({ action: "export-identity", password })}
-						className="rounded border px-4 py-2 disabled:opacity-50"
 					>
-						Download account recovery file
-					</button>
+						<UiMessage text={"Download account recovery file"} />
+					</Button>
 				</div>
 			)}
 			{error && (
 				<p role="alert" className="text-sm text-red-500">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 		</section>

@@ -1,5 +1,16 @@
 import { batchEditIsLocked, fullAutoEditStages } from "opencut-wasm";
-import type { BatchState } from "./types";
+import type { BatchJobStatus, BatchState } from "./types";
+
+export const batchStatusLabels: Record<BatchJobStatus, string> = {
+	queued: "Queued",
+	importing: "Importing",
+	ready: "Ready",
+	running: "Running",
+	completed: "Completed",
+	failed: "Failed",
+	cancelled: "Cancelled",
+	interrupted: "Interrupted",
+};
 
 /** Presentation only: the queue and documents remain owned by the host and EditorCore. */
 export function automationView({

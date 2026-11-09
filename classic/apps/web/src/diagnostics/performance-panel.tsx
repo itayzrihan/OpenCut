@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useState } from "react";
 import { isRenderPerfEnabled } from "./render-perf";
 import {
@@ -54,10 +55,15 @@ export function PerformancePanel() {
 	if (!enabled) return null;
 	return (
 		<details className="fixed bottom-3 right-3 z-50 max-w-lg rounded border bg-background p-2 text-xs">
-			<summary>Preview performance · local diagnostics</summary>
+			<summary>
+				<UiMessage text={"Preview performance · local diagnostics"} />
+			</summary>
 			<p>
-				Completed renders, not physical display FPS. No media or project
-				contents.
+				<UiMessage
+					text={
+						"Completed renders, not physical display FPS. No media or project contents."
+					}
+				/>
 			</p>
 			<button
 				type="button"
@@ -72,7 +78,7 @@ export function PerformancePanel() {
 					setTimeout(() => URL.revokeObjectURL(url), 1000);
 				}}
 			>
-				Download measurements
+				<UiMessage text={"Download measurements"} />
 			</button>
 			<pre
 				data-testid="preview-performance-reports"

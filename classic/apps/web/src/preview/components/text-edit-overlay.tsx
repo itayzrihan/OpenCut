@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { useCallback, useEffect, useRef } from "react";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { useEditor } from "@/editor/use-editor";
@@ -121,7 +122,9 @@ export function TextEditOverlay({
 				transformOrigin: "center center",
 			}}
 		>
-			<div
+			<UiLocalized<"div">
+				element={"div"}
+				messageProps={["aria-label"]}
 				ref={divRef}
 				contentEditable
 				suppressContentEditableWarning

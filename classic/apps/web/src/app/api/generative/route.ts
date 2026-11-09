@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import type { NextRequest } from "next/server";
 import {
 	withAccount,
 	accountDataRoot,
@@ -10,7 +11,9 @@ import * as vault from "@/generative/server/vault";
 import * as store from "@/generative/server/store";
 import * as provider from "@/generative/server/provider";
 import { publicOrigin, share } from "@/generative/server/shares";
+import { CHATGPT_STORYBOARD_MODEL } from "@/generative/storyboard-model";
 export const runtime = "nodejs";
+
 export const GET = withAccount(async (request: Request) => {
 	try {
 		const url = new URL(request.url),
@@ -49,7 +52,7 @@ export const GET = withAccount(async (request: Request) => {
 		);
 	}
 });
-export const POST = withAccount(async (request: Request) => {
+export const POST = withAccount(async (request: NextRequest) => {
 	try {
 		assertLocalOrigin(request);
 		const root = join(accountDataRoot(), "generative");
@@ -102,6 +105,8 @@ export const POST = withAccount(async (request: Request) => {
 			case "prepare":
 				if (body.request?.projectId !== projectId)
 					throw new Error("Project scope mismatch");
+				if (body.request?.kind === "storyboard" && body.request?.model === CHATGPT_STORYBOARD_MODEL)
+					throw new Error("Image generation is unavailable through the POCUT Agent ChatGPT connection.");
 				return Response.json({
 					job: await provider.prepare({
 						root: root,
@@ -119,6 +124,9 @@ export const POST = withAccount(async (request: Request) => {
 						jobId: body.id,
 						pin: body.pin,
 						digest: body.digest,
+						authorizeChatGpt: async () => {
+							throw new Error("Image generation is unavailable through the POCUT Agent ChatGPT connection.");
+						},
 					}),
 				});
 			case "reject":

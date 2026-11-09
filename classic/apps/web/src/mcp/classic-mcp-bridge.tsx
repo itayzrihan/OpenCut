@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { bridgePublication } from "./bridge-publication";
 import {
 	advertiseCanonicalRegistry,
@@ -95,8 +96,8 @@ async function createBridgeToolRuntime({
 		sessionState,
 		options: {
 			userRequest: toolName
-				? `Authenticated OpenCut MCP requested capability ${toolName}`
-				: "Expose the complete authenticated local OpenCut MCP capability inventory",
+				? `Authenticated POCUT MCP requested capability ${toolName}`
+				: "Expose the complete authenticated local POCUT MCP capability inventory",
 			includeLayerAccess: true,
 			includeMediaAccess: true,
 			includePreviewImage: true,
@@ -539,11 +540,13 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 							: "bg-red-400"
 				}`}
 			/>
-			{status === "connected"
-				? "MCP connected"
-				: status === "connecting"
-					? "MCP connecting"
-					: "MCP unavailable"}
+			{status === "connected" ? (
+				<UiMessage text={"MCP connected"} />
+			) : status === "connecting" ? (
+				<UiMessage text={"MCP connecting"} />
+			) : (
+				<UiMessage text={"MCP unavailable"} />
+			)}
 		</div>
 	);
 }

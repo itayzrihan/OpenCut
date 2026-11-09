@@ -13,7 +13,7 @@ test("expired Legitate callbacks offer a fresh local sign-in without reflecting 
 	expect(response.headers.get("content-type")).toContain("text/html");
 	const body = await response.text();
 	expect(body).toContain("This sign-in link expired");
-	expect(body).toContain('href="/account"');
+	expect(body).toContain('href="/projects?tab=account"');
 	expect(body).not.toContain("old-private-code");
 	expect(body).not.toContain("old-private-state");
 });

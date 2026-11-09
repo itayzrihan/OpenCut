@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { Message as UiMessage } from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import type { AiEditOperation, AiEditPlan } from "@/ai/types";
 
@@ -24,15 +26,22 @@ export function AiPlanReview({
 		}
 		return (
 			<div className="border-t pt-3">
-				<div className="text-sm font-medium">The AI plan was rejected</div>
+				<div className="text-sm font-medium">
+					<UiMessage text={"The AI plan was rejected"} />
+				</div>
 				<div className="border-destructive/40 bg-destructive/10 text-destructive mt-2 max-h-40 overflow-y-auto rounded-sm border p-2 text-xs leading-5">
 					{uniqueErrors.map((error) => (
-						<div key={error}>{error}</div>
+						<div key={error}>
+							<UiValue>{error}</UiValue>
+						</div>
 					))}
 				</div>
 				<div className="text-muted-foreground mt-2 text-xs">
-					The returned plan failed validation against the current timeline. Send
-					the request again.
+					<UiMessage
+						text={
+							"The returned plan failed validation against the current timeline. Send the request again."
+						}
+					/>
 				</div>
 			</div>
 		);
@@ -45,18 +54,20 @@ export function AiPlanReview({
 				<div className="min-w-0">
 					<div className="text-sm font-medium">{plan.title}</div>
 					<div className="text-muted-foreground mt-1 text-xs leading-5">
-						{plan.summary || "No summary returned."}
+						{plan.summary || <UiMessage text={"No summary returned."} />}
 					</div>
 				</div>
 				<div className="text-muted-foreground shrink-0 text-xs">
-					{plan.operations.length} ops
+					{plan.operations.length} <UiMessage text={"ops"} />
 				</div>
 			</div>
 
 			{uniqueErrors.length > 0 && (
 				<div className="border-destructive/40 bg-destructive/10 text-destructive mt-3 rounded-sm border p-2 text-xs leading-5">
 					{uniqueErrors.map((error) => (
-						<div key={error}>{error}</div>
+						<div key={error}>
+							<UiValue>{error}</UiValue>
+						</div>
 					))}
 				</div>
 			)}
@@ -71,7 +82,7 @@ export function AiPlanReview({
 			<div className="mt-3 max-h-40 overflow-y-auto rounded-sm border">
 				{plan.operations.length === 0 ? (
 					<div className="text-muted-foreground p-3 text-xs">
-						No timeline edits proposed.
+						<UiMessage text={"No timeline edits proposed."} />
 					</div>
 				) : (
 					plan.operations.map((operation, index) => (
@@ -107,8 +118,9 @@ export function AiPlanReview({
 									{operation.startTime !== undefined &&
 										operation.duration !== undefined && (
 											<div className="text-muted-foreground mt-1 text-xs">
-												layer {operation.startTime} -{" "}
-												{operation.startTime + operation.duration} ticks
+												<UiMessage text={"layer"} /> {operation.startTime} -{" "}
+												{operation.startTime + operation.duration}{" "}
+												<UiMessage text={"ticks"} />
 											</div>
 										)}
 									<pre className="bg-muted/40 mt-2 max-h-28 overflow-y-auto whitespace-pre-wrap rounded-sm p-2 text-[11px] leading-4">
@@ -123,14 +135,18 @@ export function AiPlanReview({
 
 			<div className="mt-3 flex justify-end gap-2">
 				<Button variant="outline" size="sm" onClick={onDiscard}>
-					Discard
+					<UiMessage text={"Discard"} />
 				</Button>
 				<Button
 					size="sm"
 					onClick={onApply}
 					disabled={errors.length > 0 || isApplying}
 				>
-					{isApplying ? "Applying..." : "Apply"}
+					{isApplying ? (
+						<UiMessage text={"Applying..."} />
+					) : (
+						<UiMessage text={"Apply"} />
+					)}
 				</Button>
 			</div>
 		</div>

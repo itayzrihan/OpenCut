@@ -17,11 +17,13 @@ import { runAutomaticTextTransitions } from "./automatic-text-transitions";
 import { runAutomaticWordAnimation } from "./automatic-word-animation";
 import { loadProjectFont, isProjectFontLoaded } from "@/fonts/custom-fonts";
 import { loadBundledAssistantBold } from "@/fonts/bundled-fonts";
+import type { BrowserTranscriptionModel } from "@/transcription/models";
 import { assertBrowserTranscriptionAvailable } from "@/services/transcription/service";
 
 export interface FullAutoOptions {
 	action?: import("@/batch/scene-jobs").SceneAction;
 	brandKitId?: string;
+	browserModel?: BrowserTranscriptionModel;
 	/** Host-resolved immutable recipe; never accepted from a queue request. */
 	brandKit?: BrandKit;
 	brandKitAccountId?: string;
@@ -185,7 +187,7 @@ export async function runFullAutoEdit({
 			switch (stage) {
 				case "preflight": {
 					progress(
-						"Checking imported video, caption font, AI and Hebrew model…",
+						"Checking imported video, caption font, AI and browser transcription…",
 					);
 					const scene = editor.scenes.getActiveScene();
 					const revision = editor.command.getStateRevision();
@@ -289,7 +291,9 @@ export async function runFullAutoEdit({
 						editor,
 						signal,
 						onProgress: progress,
-						language: "he",
+						language:
+							options.browserModel === "whisper-large-v3-turbo" ? "auto" : "he",
+						...(options.browserModel && { browserModel: options.browserModel }),
 						settings: {
 							...DEFAULT_CAPTION_LAYOUT,
 							rows: 1,

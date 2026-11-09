@@ -1,4 +1,8 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import Link from "next/link";
 import { useBatchEdit } from "@/batch/provider";
 import { batchEditIsLocked } from "opencut-wasm";
@@ -15,7 +19,6 @@ import { Timeline } from "@/timeline/components";
 import { PreviewPanelWithOverlays } from "@/preview/components/panel-with-overlays";
 import { EditorHeader } from "@/components/editor/editor-header";
 import { EditorProvider } from "@/components/providers/editor-provider";
-import { Onboarding } from "@/components/editor/onboarding";
 import { MigrationDialog } from "@/project/components/migration-dialog";
 import { usePanelStore } from "@/editor/panel-store";
 import { usePasteMedia } from "@/media/use-paste-media";
@@ -25,12 +28,11 @@ import { useEditorRenderer } from "@/editor/use-editor";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
-import { ChangelogNotification } from "@/changelog/components/changelog-notification";
-import { StoragePersistenceDialog } from "@/services/storage/components/storage-persistence-dialog";
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
 import { EditorAgentWorkspace } from "@/editor-agent/overlay";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 import { WorkspaceLoading } from "@/components/workspace-loading";
+import styles from "./editor.module.css";
 
 export default function Editor() {
 	const params = useParams();
@@ -55,32 +57,38 @@ export default function Editor() {
 				{(readOnly || preparing) && (
 					<div className="fixed top-0 inset-x-0 z-100 bg-background border-b p-3 flex justify-between gap-4 text-sm">
 						<span role="status">
-							{preparing
-								? "Saving project for background editing… Your timeline stays open."
-								: `Auto Edit · Read-only · ${job?.message ?? ""}`}
+							{preparing ? (
+								<UiMessage
+									text={
+										"Saving project for background editing… Your timeline stays open."
+									}
+								/>
+							) : (
+								<UiMessage
+									text={"Auto Edit · Read-only · {v0}"}
+									values={{ v0: String(job?.message ?? "") }}
+								/>
+							)}
 						</span>
 						<Link href="/projects" className="underline shrink-0">
-							Back to Projects
+							<UiMessage text={"Back to Projects"} />
 						</Link>
 					</div>
 				)}
 				<div
 					inert={readOnly || preparing}
 					data-opencut-editor-project={projectId}
-					className="bg-background flex h-screen w-screen flex-col overflow-hidden"
+					className={`bg-background flex h-dvh w-full min-w-0 flex-col overflow-hidden ${styles.editor}`}
 					style={readOnly || preparing ? { paddingTop: 48 } : undefined}
 				>
 					<DegradedRendererBanner />
 					<EditorHeader />
-					<div className="min-h-0 min-w-0 flex-1">
+					<div className={`min-h-0 min-w-0 flex-1 ${styles.workspace}`}>
 						<EditorAgentWorkspace>
 							<EditorLayout />
 						</EditorAgentWorkspace>
 					</div>
-					<Onboarding />
 					<MigrationDialog />
-					<StoragePersistenceDialog />
-					<ChangelogNotification />
 				</div>
 			</EditorProvider>
 		</MobileGate>
@@ -94,8 +102,12 @@ function DegradedRendererBanner() {
 
 	return (
 		<div className="bg-accent border-b h-9 flex items-center justify-center gap-2 text-xs text-muted-foreground">
-			<span>For the best experience, open OpenCut in Chrome.</span>
-			<Button
+			<span>
+				<UiMessage text={"For the best experience, open POCUT in Chrome."} />
+			</span>
+			<UiLocalized<typeof Button>
+				element={Button}
+				messageProps={["aria-label"]}
 				variant="text"
 				size="icon"
 				className="p-0 w-auto [&_svg]:size-3.5"
@@ -103,7 +115,7 @@ function DegradedRendererBanner() {
 				aria-label="Dismiss"
 			>
 				<HugeiconsIcon icon={Cancel01Icon} />
-			</Button>
+			</UiLocalized>
 		</div>
 	);
 }
@@ -117,7 +129,7 @@ function EditorLayout() {
 			<ParallaxCanvasEditorBanner />
 			<ResizablePanelGroup
 				direction="vertical"
-				className="size-full gap-[0.18rem]"
+				className={styles.rows}
 				onLayout={(sizes) => {
 					setPanel({
 						panel: "mainContent",
@@ -137,7 +149,7 @@ function EditorLayout() {
 				>
 					<ResizablePanelGroup
 						direction="horizontal"
-						className="size-full gap-[0.19rem] px-3"
+						className={styles.columns}
 						onLayout={(sizes) => {
 							setPanel({ panel: "tools", size: sizes[0] ?? panels.tools });
 							setPanel({ panel: "preview", size: sizes[1] ?? panels.preview });
@@ -151,41 +163,41 @@ function EditorLayout() {
 							defaultSize={panels.tools}
 							minSize={15}
 							maxSize={40}
-							className="min-w-0"
+							className={`min-w-0 ${styles.pane}`}
 						>
 							<AssetsPanel />
 						</ResizablePanel>
 
-						<ResizableHandle withHandle />
+						<ResizableHandle withHandle className={styles.divider} />
 
 						<ResizablePanel
 							defaultSize={panels.preview}
 							minSize={30}
-							className="min-h-0 min-w-0 flex-1"
+							className={`min-h-0 min-w-0 flex-1 ${styles.pane} ${styles.preview}`}
 						>
 							<PreviewPanelWithOverlays />
 						</ResizablePanel>
 
-						<ResizableHandle withHandle />
+						<ResizableHandle withHandle className={styles.divider} />
 
 						<ResizablePanel
 							defaultSize={panels.properties}
 							minSize={15}
 							maxSize={40}
-							className="min-w-0"
+							className={`min-w-0 ${styles.pane}`}
 						>
 							<PropertiesPanel />
 						</ResizablePanel>
 					</ResizablePanelGroup>
 				</ResizablePanel>
 
-				<ResizableHandle withHandle />
+				<ResizableHandle withHandle className={styles.divider} />
 
 				<ResizablePanel
 					defaultSize={panels.timeline}
 					minSize={15}
 					maxSize={70}
-					className="min-h-0 px-3 pb-3"
+					className={`min-h-0 ${styles.pane}`}
 				>
 					<Timeline />
 				</ResizablePanel>

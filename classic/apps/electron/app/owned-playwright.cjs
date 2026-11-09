@@ -15,7 +15,7 @@ async function connectOwnedWindow(webContents, { appOrigin }) {
 		});
 		const pages = browser.contexts().flatMap((context) => context.pages());
 		if (pages.length !== 1)
-			throw new Error("Expected exactly one owned OpenCut page");
+			throw new Error("Expected exactly one owned POCUT page");
 		const page = pages[0];
 		page.setDefaultTimeout(5000);
 		return {
@@ -28,7 +28,7 @@ async function connectOwnedWindow(webContents, { appOrigin }) {
 	} catch (error) {
 		transport.close();
 		// Playwright errors may contain its endpoint/headers. Keep them host-only.
-		throw new Error("Could not connect to the owned OpenCut window", {
+		throw new Error("Could not connect to the owned POCUT window", {
 			cause: error,
 		});
 	}

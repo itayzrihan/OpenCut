@@ -1,8 +1,12 @@
 "use client";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEditor } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
 import type { TextElement } from "@/timeline";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 export function TextGraphicsProperties({
 	element,
 	trackId,
@@ -34,8 +38,11 @@ export function TextGraphicsProperties({
 	return (
 		<div className="space-y-4 p-3">
 			<p>
-				Add icons, graphics, UI Elements or animations above or below this text.
-				The text moves in the opposite direction as the content enters.
+				<UiMessage
+					text={
+						"Add icons, graphics, UI Elements or animations above or below this text. The text moves in the opposite direction as the content enters."
+					}
+				/>
 			</p>
 			{!sceneId ? (
 				<div className="flex gap-2">
@@ -53,25 +60,43 @@ export function TextGraphicsProperties({
 								)
 							}
 						>
-							Add {edge === "top" ? "above" : "below"} text
+							<UiMessage text={"Add"} />{" "}
+							{edge === "top" ? (
+								<UiMessage text={"above"} />
+							) : (
+								<UiMessage text={"below"} />
+							)}{" "}
+							<UiMessage text={"text"} />
 						</Button>
 					))}
 				</div>
 			) : (
 				<>
 					<label className="block">
-						Placement{" "}
+						<UiMessage text={"Placement"} />{" "}
 						<select
 							className="bg-background"
 							value={String(element.params.textGraphicsEdge)}
 							onChange={(e) => update({ textGraphicsEdge: e.target.value })}
 						>
-							<option value="top">Above text</option>
-							<option value="bottom">Below text</option>
+							<UiLocalized<"option">
+								element={"option"}
+								messageProps={["children"]}
+								value="top"
+							>
+								{"Above text"}
+							</UiLocalized>
+							<UiLocalized<"option">
+								element={"option"}
+								messageProps={["children"]}
+								value="bottom"
+							>
+								{"Below text"}
+							</UiLocalized>
 						</select>
 					</label>
 					<label className="block">
-						Content size (%){" "}
+						<UiMessage text={"Content size (%)"} />{" "}
 						<input
 							className="w-20 bg-background"
 							type="number"
@@ -86,7 +111,7 @@ export function TextGraphicsProperties({
 						/>
 					</label>
 					<label className="block">
-						Entry / exit (seconds){" "}
+						<UiMessage text={"Entry / exit (seconds)"} />{" "}
 						<input
 							className="w-20 bg-background"
 							type="number"
@@ -108,7 +133,7 @@ export function TextGraphicsProperties({
 								.catch((e: Error) => toast.error(e.message));
 						}}
 					>
-						Edit graphics scene
+						<UiMessage text={"Edit graphics scene"} />
 					</Button>
 					<Button
 						variant="outline"
@@ -130,13 +155,14 @@ export function TextGraphicsProperties({
 							})
 						}
 					>
-						Detach graphics
+						<UiMessage text={"Detach graphics"} />
 					</Button>
 					<p className="text-xs text-muted-foreground">
-						Content follows this text’s timing. Edit its scene to arrange
-						multiple graphics, then return through the Scenes list. Empty
-						content leaves the text in place. Detaching keeps the content scene
-						for reuse.
+						<UiMessage
+							text={
+								"Content follows this text’s timing. Edit its scene to arrange multiple graphics, then return through the Scenes list. Empty content leaves the text in place. Detaching keeps the content scene for reuse."
+							}
+						/>
 					</p>
 				</>
 			)}

@@ -1,7 +1,12 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	type KeyboardShortcut,
 	useKeyboardShortcutsHelp,
@@ -57,7 +62,10 @@ export function ShortcutsDialog({
 				});
 				if (conflict) {
 					toast.error(
-						`Key "${keyString}" is already bound to "${conflict.existingAction}"`,
+						localizeClientMessage('Key "{v0}" is already bound to "{v1}"', {
+							v0: String(keyString),
+							v1: String(conflict.existingAction),
+						}),
 					);
 					setRecordingShortcut(null);
 					return;
@@ -110,7 +118,9 @@ export function ShortcutsDialog({
 		<Dialog open={isOpen} onOpenChange={onOpenChange}>
 			<DialogContent className="flex max-h-[80vh] max-w-2xl flex-col p-0">
 				<DialogHeader>
-					<DialogTitle>Keyboard shortcuts</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Keyboard shortcuts"} />
+					</DialogTitle>
 				</DialogHeader>
 
 				<DialogBody className="scrollbar-thin grow overflow-y-auto">
@@ -140,7 +150,7 @@ export function ShortcutsDialog({
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="destructive" onClick={resetToDefaults}>
-						Reset to default
+						<UiMessage text={"Reset to default"} />
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -173,7 +183,9 @@ function ShortcutItem({
 				{shortcut.icon && (
 					<div className="text-muted-foreground">{shortcut.icon}</div>
 				)}
-				<span className="text-sm">{shortcut.description}</span>
+				<span className="text-sm">
+					<UiMessage text={shortcut.description} />
+				</span>
 			</div>
 			<div className="flex items-center gap-2">
 				{displayKeys.map((key: string, index: number) => (
@@ -193,7 +205,9 @@ function ShortcutItem({
 							})}
 						</div>
 						{index < displayKeys.length - 1 && (
-							<span className="text-muted-foreground text-xs">or</span>
+							<span className="text-muted-foreground text-xs">
+								<UiMessage text={"or"} />
+							</span>
 						)}
 					</div>
 				))}
@@ -218,7 +232,9 @@ function EditableShortcutKey({
 	};
 
 	return (
-		<Button
+		<UiLocalized<typeof Button>
+			element={Button}
+			messageProps={["title"]}
 			variant="outline"
 			size="sm"
 			onClick={handleClick}
@@ -227,6 +243,6 @@ function EditableShortcutKey({
 			}
 		>
 			{children}
-		</Button>
+		</UiLocalized>
 	);
 }

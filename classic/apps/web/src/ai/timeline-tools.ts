@@ -1676,7 +1676,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 				"features",
 			],
 			description:
-				"List paged summaries from one OpenCut creative catalog domain, including saved UI elements. Use catalog.search for intent-based discovery and catalog.get for exact parameters.",
+				"List paged summaries from one POCUT creative catalog domain, including saved UI elements. Use catalog.search for intent-based discovery and catalog.get for exact parameters.",
 			parameters: objectSchema({
 				properties: {
 					domain: {
@@ -1713,7 +1713,7 @@ export function createTimelineToolDefinitions(): AiToolDefinition[] {
 				"action details",
 			],
 			description:
-				"Get one exact OpenCut catalog entry and its configurable parameters by domain and id.",
+				"Get one exact POCUT catalog entry and its configurable parameters by domain and id.",
 			parameters: objectSchema({
 				properties: {
 					domain: {

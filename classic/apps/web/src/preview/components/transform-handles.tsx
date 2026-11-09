@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { usePreviewViewport } from "@/preview/components/preview-viewport";
 import { useTransformHandles } from "@/preview/hooks/use-transform-handles";
 import { isVisualElement } from "@/timeline/element-utils";
@@ -138,7 +139,9 @@ export function TransformHandles({
 					/>
 				);
 			})}
-			<IconHandle
+			<UiLocalized<typeof IconHandle>
+				element={IconHandle}
+				messageProps={["title"]}
 				icon={Rotate01Icon}
 				screen={rotationHandleScreen}
 				title="Rotate"
@@ -146,7 +149,9 @@ export function TransformHandles({
 				onPointerMove={onPointerMove}
 				onPointerUp={onPointerUp}
 			/>
-			<IconHandle
+			<UiLocalized<typeof IconHandle>
+				element={IconHandle}
+				messageProps={["title"]}
 				icon={CenterFocusIcon}
 				screen={centerHandleScreen}
 				title="Center to camera"

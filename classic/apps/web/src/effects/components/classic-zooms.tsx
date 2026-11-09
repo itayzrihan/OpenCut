@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { classicZoomPresets, sampleAutomaticZoom } from "opencut-wasm";
 import { useMemo } from "react";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
@@ -14,10 +18,21 @@ type Preset = ReturnType<typeof classicZoomPresets>[number];
 export function ClassicZooms() {
 	const presets = useMemo(() => classicZoomPresets(), []);
 	return (
-		<section aria-label="Classic Zooms" className="mb-4 border-b pb-4">
-			<h3 className="mb-1 text-sm font-medium">Classic Zooms</h3>
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
+			aria-label="Classic Zooms"
+			className="mb-4 border-b pb-4"
+		>
+			<h3 className="mb-1 text-sm font-medium">
+				<UiMessage text={"Classic Zooms"} />
+			</h3>
 			<p className="mb-3 text-xs text-muted-foreground">
-				Four camera zoom presets. Drag onto a layer or add at the playhead.
+				<UiMessage
+					text={
+						"Four camera zoom presets. Drag onto a layer or add at the playhead."
+					}
+				/>
 			</p>
 			<div
 				className="grid gap-2"
@@ -27,7 +42,7 @@ export function ClassicZooms() {
 					<ClassicZoomItem key={preset.style} preset={preset} />
 				))}
 			</div>
-		</section>
+		</UiLocalized>
 	);
 }
 

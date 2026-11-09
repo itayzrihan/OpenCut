@@ -20,12 +20,12 @@ use axum::{
 use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use opencut_editor_api::{
     AccessLevel, ArtifactRef, ArtifactStore, CapabilityDescriptor, CapabilityError,
-    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime,
+    CapabilityResult, FnCapability, InvocationContext, OpenCutRuntime, PolicyDecision,
 };
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use subtle::ConstantTimeEq;
-use tokio::{net::TcpListener, sync::oneshot, task::JoinHandle};
+use tokio::{net::TcpListener, sync::{Semaphore, oneshot}, task::JoinHandle};
 
 const BRIDGE_BODY_LIMIT: usize = 32 * 1024 * 1024;
 
@@ -164,6 +164,17 @@ struct ClassicBridgeInner {
 #[derive(Clone)]
 pub struct ClassicBridge {
     inner: Arc<ClassicBridgeInner>,
+}
+
+struct PendingClassicCommand<'a> {
+    bridge: &'a ClassicBridge,
+    id: &'a str,
+}
+
+impl Drop for PendingClassicCommand<'_> {
+    fn drop(&mut self) {
+        self.bridge.abandon_command(self.id);
+    }
 }
 
 impl ClassicBridge {
@@ -841,17 +852,19 @@ impl ClassicBridge {
                 .insert(command_id.clone(), (snapshot.session_id.clone(), canonical, sender));
             state.queue.push_back(command);
         }
+        let _pending = PendingClassicCommand {
+            bridge: self,
+            id: &command_id,
+        };
 
         let completion = tokio::select! {
             result = receiver => result.map_err(|_| {
                 CapabilityError::Failed("the browser command result channel closed".into())
             })?,
             _ = context.cancellation.cancelled() => {
-                self.abandon_command(&command_id);
                 return Err(CapabilityError::Failed("browser command was cancelled".into()));
             },
             _ = tokio::time::sleep(if canonical { Duration::from_secs(240) } else { COMMAND_TIMEOUT }) => {
-                self.abandon_command(&command_id);
                 return Err(CapabilityError::Unavailable(
                     "the OpenCut browser did not answer before the command deadline; reconcile an uncertain write using its original idempotency key".into(),
                 ));
@@ -955,6 +968,7 @@ impl ClassicBridge {
 struct BridgeHttpState {
     bridge: ClassicBridge,
     expected_token: Arc<str>,
+    delegated_slots: Arc<Semaphore>,
 }
 
 #[derive(Debug, Serialize)]
@@ -1029,10 +1043,17 @@ pub async fn spawn_classic_bridge(
     let state = BridgeHttpState {
         bridge,
         expected_token: Arc::from(token.clone()),
+        delegated_slots: Arc::new(Semaphore::new(8)),
     };
     let app = Router::new()
         .route("/bridge/status", get(bridge_status))
         .route("/bridge/state", put(update_bridge_state))
+        .route(
+            "/bridge/delegated/{account_id}/{project_id}",
+            get(list_delegated_tools)
+                .post(invoke_delegated_tool)
+                .layer(DefaultBodyLimit::max(4 * 1024 * 1024)),
+        )
         .route(
             "/bridge/heartbeat/{session_id}",
             post(update_bridge_heartbeat).layer(DefaultBodyLimit::max(512 * 1024)),
@@ -1077,6 +1098,9 @@ fn bridge_instance_config_path(config_path: &Path) -> PathBuf {
 }
 
 pub fn default_classic_bridge_config_path() -> PathBuf {
+    if let Some(directory) = std::env::var_os("OPENCUT_CLASSIC_BRIDGE_DIRECTORY") {
+        return PathBuf::from(directory).join("mcp-classic-bridge.json");
+    }
     if let Some(directory) = std::env::var_os("LOCALAPPDATA") {
         return PathBuf::from(directory)
             .join("OpenCut")
@@ -1128,6 +1152,186 @@ async fn bridge_status(State(state): State<BridgeHttpState>) -> Json<BridgeStatu
         project_name: session.as_ref().map(|session| session.project_name.clone()),
         revision: session.as_ref().map(|session| session.revision),
     })
+}
+
+fn delegated_session(
+    bridge: &ClassicBridge,
+    account_id: &str,
+    project_id: &str,
+) -> Option<ClassicSessionSnapshot> {
+    let prefix = format!("{account_id}_");
+    bridge.inner.sessions.read().ok()?.values()
+        .filter(|snapshot| {
+            snapshot.project_id == project_id
+                && snapshot.session_id.starts_with(&prefix)
+                && !is_session_stale(snapshot)
+        })
+        .max_by_key(|snapshot| {
+            (
+                snapshot_is_focused(snapshot),
+                snapshot_is_visible(snapshot),
+                snapshot_last_active_at_ms(snapshot),
+                snapshot.updated_at_ms,
+            )
+        })
+        .cloned()
+}
+
+fn delegated_descriptor(tool: &ClassicToolDescriptor) -> Option<&CapabilityDescriptor> {
+    let descriptor = tool.canonical.as_ref()?;
+    let id = descriptor.id.as_str();
+    let project_edit = matches!(
+        id,
+        "project.classic.scene.delete"
+            | "project.classic.scene.open"
+            | "project.classic.scene.view"
+            | "project.classic.scenes.edit"
+            | "project.classic.settings.update"
+            | "project.classic.viewport.set"
+    );
+    (descriptor.available
+        && tool.name.strip_prefix("canonical.") == Some(id)
+        && internal_agent_tool_reason(&tool.name).is_none()
+        && !descriptor.open_world
+        && descriptor.access < AccessLevel::Admin
+        && !id.starts_with("account.")
+        && !id.starts_with("projects.")
+        && (!id.starts_with("project.") || project_edit)
+        && !id.starts_with("plugins."))
+        .then_some(descriptor)
+}
+
+fn delegation_error(status: StatusCode, error: &str) -> Response {
+    (status, Json(json!({"error": error}))).into_response()
+}
+
+async fn list_delegated_tools(
+    State(state): State<BridgeHttpState>,
+    AxumPath((account_id, project_id)): AxumPath<(String, String)>,
+) -> Response {
+    let Some(snapshot) = delegated_session(&state.bridge, &account_id, &project_id) else {
+        return delegation_error(StatusCode::NOT_FOUND, "Open this POCUT project to connect the agent");
+    };
+    let registry = state.bridge.inner.runtime.registry();
+    let Ok(policy) = registry.effective_policy() else {
+        return delegation_error(StatusCode::SERVICE_UNAVAILABLE, "Editor policy is unavailable");
+    };
+    let tools: Vec<_> = snapshot.tools.iter().filter_map(|tool| {
+        let descriptor = delegated_descriptor(tool)?;
+        let wrapper = registry.descriptor(&classic_capability_id(&tool.name)?).ok()??;
+        if matches!(policy.evaluate(&wrapper), PolicyDecision::Denied(_)) {
+            return None;
+        }
+        Some(json!({
+            "name": format!("opencut.{}", descriptor.id),
+            "description": descriptor.description,
+            "inputSchema": crate::capability_input_schema(descriptor),
+            "annotations": {
+                "readOnlyHint": descriptor.access == AccessLevel::Read,
+                "destructiveHint": descriptor.access >= AccessLevel::Destructive,
+                "openWorldHint": false
+            }
+        }))
+    }).collect();
+    Json(json!({ "tools": tools })).into_response()
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DelegatedToolCall {
+    name: String,
+    #[serde(default)]
+    arguments: serde_json::Map<String, Value>,
+}
+
+async fn invoke_delegated_tool(
+    State(state): State<BridgeHttpState>,
+    AxumPath((account_id, project_id)): AxumPath<(String, String)>,
+    Json(mut call): Json<DelegatedToolCall>,
+) -> Response {
+    let Ok(_slot) = state.delegated_slots.try_acquire() else {
+        return delegation_error(StatusCode::TOO_MANY_REQUESTS, "The editor is busy");
+    };
+    let Some(snapshot) = delegated_session(&state.bridge, &account_id, &project_id) else {
+        return delegation_error(StatusCode::NOT_FOUND, "Open this POCUT project to connect the agent");
+    };
+    let Some((tool, descriptor)) = snapshot.tools.iter().find_map(|tool| {
+        let descriptor = delegated_descriptor(tool)?;
+        (call.name.strip_prefix("opencut.") == Some(descriptor.id.as_str()))
+            .then_some((tool, descriptor))
+    }) else {
+        return delegation_error(StatusCode::FORBIDDEN, "This tool is outside the delegated editor access");
+    };
+    if call.arguments.contains_key("browserSessionId")
+        || call.arguments.get("projectId").is_some_and(|value| value.as_str() != Some(project_id.as_str()))
+    {
+        return delegation_error(StatusCode::FORBIDDEN, "The request targets a different editor scope");
+    }
+    if descriptor.access != AccessLevel::Read {
+        if !call.arguments.contains_key("projectId") {
+            return delegation_error(StatusCode::BAD_REQUEST, "Specify the linked projectId for edits");
+        }
+        if call.arguments.get("idempotencyKey").is_some_and(|value| {
+            value.as_str().is_none_or(|key| key.is_empty() || key.len() > 200)
+        }) {
+            return delegation_error(StatusCode::BAD_REQUEST, "Invalid idempotencyKey");
+        }
+    }
+    let state_read = call.name == "opencut.app.state.read";
+    if state_read {
+        if call.arguments.get("pointer").and_then(Value::as_str).is_some_and(|pointer| {
+            matches!(pointer.split('/').nth(1), Some("account" | "agentPolicy" | "renderQueue"))
+        }) {
+            return delegation_error(StatusCode::FORBIDDEN, "The state path is outside the delegated editor access");
+        }
+        call.arguments.insert("projectId".into(), json!(project_id));
+    }
+    let Some(id) = classic_capability_id(&tool.name) else {
+        return delegation_error(StatusCode::FORBIDDEN, "Invalid editor capability");
+    };
+    call.arguments.insert("browserSessionId".into(), json!(snapshot.session_id));
+    let mut context = InvocationContext {
+        source: "pocut-delegated-mcp".into(),
+        actor: Some(account_id),
+        metadata: serde_json::Map::from_iter([("opencut/projectId".into(), json!(project_id))]),
+        ..InvocationContext::default()
+    };
+    if let Err(error) = crate::apply_invocation_envelope(descriptor, &mut call.arguments, &mut context) {
+        return delegation_error(StatusCode::BAD_REQUEST, &error);
+    }
+    let _cancel = context.cancellation.clone().drop_guard();
+    let receipt = state.bridge.inner.runtime.registry().invoke(
+        &id, context, Value::Object(call.arguments),
+    ).await;
+    match receipt {
+        Ok(receipt) => {
+            let mut data = receipt.result.data;
+            let mut result = data["output"].take();
+            if state_read && result["pointer"] == "" {
+                if let Some(document) = result.get_mut("value").and_then(Value::as_object_mut) {
+                    document.remove("account");
+                    document.remove("agentPolicy");
+                    document.remove("renderQueue");
+                }
+            }
+            let mut budget = 8 * 1024 * 1024;
+            let images: Vec<_> = receipt.result.artifacts.iter().filter_map(|reference| {
+                if !matches!(reference.mime_type.as_str(), "image/png" | "image/jpeg" | "image/webp")
+                    || reference.byte_size > budget
+                {
+                    return None;
+                }
+                let artifact = state.bridge.inner.artifacts.get(&reference.id).ok()?;
+                budget -= reference.byte_size;
+                Some(json!({
+                    "type": "image", "mimeType": reference.mime_type,
+                    "data": BASE64.encode(&artifact.bytes)
+                }))
+            }).collect();
+            Json(json!({ "result": result, "images": images })).into_response()
+        }
+        Err(error) => delegation_error(StatusCode::UNPROCESSABLE_ENTITY, &error.to_string()),
+    }
 }
 
 async fn update_bridge_state(
@@ -1881,7 +2085,13 @@ mod canonical_transport_tests {
         bridge.update_session(snapshot).unwrap();
         let result=native.registry().invoke("classic.tool.invoke",InvocationContext::default(),json!({"toolName":"canonical.audio.earshot.preview","browserSessionId":"live-tab","arguments":{}})).await;
         assert!(result.is_err()); assert!(bridge.take_commands("live-tab").is_empty());
-        let status=bridge_status(State(BridgeHttpState {bridge,expected_token:Arc::from("test-token")})).await.0;
+        let status = bridge_status(State(BridgeHttpState {
+            bridge,
+            expected_token: Arc::from("test-token"),
+            delegated_slots: Arc::new(Semaphore::new(8)),
+        }))
+        .await
+        .0;
         assert_eq!(serde_json::to_value(status).unwrap()["supportsCanonicalInvocation"],true);
     }
 

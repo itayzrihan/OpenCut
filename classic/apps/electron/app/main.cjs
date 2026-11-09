@@ -21,13 +21,14 @@ const {
 } = require("./runtime.cjs");
 
 // The local Production launcher owns this profile and the external server.
-if (process.env.OPENCUT_ELECTRON_USER_DATA) {
-	app.setPath("userData", process.env.OPENCUT_ELECTRON_USER_DATA);
-}
+const profilePath = process.env.OPENCUT_ELECTRON_USER_DATA ?? app.getPath("userData");
+app.setName("POCUT");
+app.setPath("userData", profilePath);
 
 let mainWindow = null;
 let mainAppUrl = null;
 let webServer = null;
+let packagedBridge = null;
 let isQuitting = false;
 const serverOutput = [];
 const performanceProfile = getPerformanceProfile();
@@ -64,6 +65,23 @@ function startPackagedServer() {
 		10,
 	);
 	const url = getAppUrl(port);
+	const bridgeDirectory = join(profilePath, "mcp-bridge");
+	const bridgeExecutable = join(process.resourcesPath, "control-plane",
+		process.platform === "win32" ? "opencut-mcp.exe" : "opencut-mcp");
+	if (existsSync(bridgeExecutable)) {
+		packagedBridge = spawn(bridgeExecutable, [], {
+			cwd: server.root,
+			env: {
+				...process.env,
+				OPENCUT_CLASSIC_BRIDGE_DIRECTORY: bridgeDirectory,
+				OPENCUT_CLASSIC_BRIDGE_ADDR: "127.0.0.1:0",
+			},
+			stdio: ["pipe", "ignore", "inherit"],
+			windowsHide: true,
+		});
+		packagedBridge.on("error", () => console.warn("POCUT MCP bridge could not start"));
+		packagedBridge.on("exit", () => { packagedBridge = null; });
+	}
 
 	webServer = spawn(process.execPath, [server.entry], {
 		cwd: server.root,
@@ -71,6 +89,8 @@ function startPackagedServer() {
 			...process.env,
 			ELECTRON_RUN_AS_NODE: "1",
 			HOSTNAME: "127.0.0.1",
+			OPENCUT_DELEGATED_MCP_LOCAL: "1",
+			OPENCUT_CLASSIC_BRIDGE_DIRECTORY: bridgeDirectory,
 			PORT: `${port}`,
 			NODE_ENV: "production",
 			NEXT_TELEMETRY_DISABLED: "1",
@@ -84,9 +104,10 @@ function startPackagedServer() {
 	webServer.stderr?.on("data", rememberServerOutput);
 	webServer.on("exit", (code) => {
 		webServer = null;
+		packagedBridge?.kill();
 		if (!isQuitting && code !== 0) {
 			dialog.showErrorBox(
-				"OpenCut stopped unexpectedly",
+				"POCUT stopped unexpectedly",
 				`The local web runtime exited with code ${code}.`,
 			);
 		}
@@ -118,14 +139,20 @@ const MEDIA_FILE_EXTENSIONS = [
 // Runs in the main process so the resulting dialog is owned by the app window — unlike the
 // server-side PowerShell/osascript/zenity fallback in services/local-drive/server.ts, which is
 // spawned from a detached background process with no window to parent itself to.
-ipcMain.handle("opencut:pick-media-files", async (event) => {
+ipcMain.handle("opencut:pick-media-files", async (event, labels) => {
 	const window = BrowserWindow.fromWebContents(event.sender) ?? mainWindow ?? undefined;
+	const label = (key, fallback) => {
+		const value = labels?.[key];
+		return typeof value === "string" && value.length > 0 && value.length <= 128 && !/[\x00-\x1f]/.test(value)
+			? value
+			: fallback;
+	};
 	const result = await dialog.showOpenDialog(window, {
-		title: "Import media into OpenCut",
+		title: label("title", "Import media into POCUT"),
 		properties: ["openFile", "multiSelections"],
 		filters: [
-			{ name: "Media", extensions: MEDIA_FILE_EXTENSIONS },
-			{ name: "All Files", extensions: ["*"] },
+			{ name: label("media", "Media"), extensions: MEDIA_FILE_EXTENSIONS },
+			{ name: label("allFiles", "All Files"), extensions: ["*"] },
 		],
 	});
 	return result.canceled ? [] : result.filePaths;
@@ -154,7 +181,7 @@ function createWindow(appUrl) {
 		minHeight: 700,
 		show: true,
 		autoHideMenuBar: true,
-		backgroundColor: "#09090b",
+		backgroundColor: "#0d0a16",
 		webPreferences: {
 			...performanceProfile.webPreferences,
 			contextIsolation: true,
@@ -277,6 +304,17 @@ function authorizeComputer(event) {
 		mainAppUrl,
 	);
 }
+ipcMain.handle("opencut:chatgpt-sign-in", async (event, candidate) => {
+	authorizeComputer(event);
+	const url = new URL(candidate);
+	if (
+		url.origin !== "https://auth.openai.com" ||
+		url.pathname !== "/api/accounts/authorize" ||
+		url.username ||
+		url.password
+	) throw new Error("Invalid ChatGPT authorization URL");
+	await shell.openExternal(url.href);
+});
 ipcMain.handle("opencut:agent-computer-permissions", async (event, scope) => {
 	authorizeComputer(event);
 	return computerService.setAccess(scope);
@@ -335,6 +373,7 @@ async function boot() {
 function stopPackagedServer() {
 	isQuitting = true;
 	webServer?.kill();
+	packagedBridge?.kill();
 	webServer = null;
 }
 
@@ -352,7 +391,7 @@ if (!app.requestSingleInstanceLock()) {
 			? `\n\nWeb runtime output:\n${serverOutput.join("\n")}`
 			: "";
 		dialog.showErrorBox(
-			"OpenCut could not start",
+			"POCUT could not start",
 			`${error instanceof Error ? error.message : String(error)}${details}`,
 		);
 		app.quit();

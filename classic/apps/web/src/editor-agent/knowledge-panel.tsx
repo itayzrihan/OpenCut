@@ -1,4 +1,9 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useCallback, useEffect, useRef, useState, useId } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -169,9 +174,16 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 					},
 		);
 	return (
-		<section className={styles.knowledge} aria-label="Skills and memory">
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
+			className={styles.knowledge}
+			aria-label="Skills and memory"
+		>
 			<div className={styles.knowledgeToolbar}>
-				<strong>Skills & memory</strong>
+				<strong>
+					<UiMessage text={"Skills & memory"} />
+				</strong>
 				<Button
 					variant="ghost"
 					size="sm"
@@ -181,53 +193,89 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 						void refresh(query).catch((cause) => setError(String(cause)));
 					}}
 				>
-					Refresh
+					<UiMessage text={"Refresh"} />
 				</Button>
 			</div>
 			<p className={styles.knowledgeHint}>
-				Private to your account. Project versions override matching global
-				knowledge.
+				<UiMessage
+					text={
+						"Private to your account. Project versions override matching global knowledge."
+					}
+				/>
 			</p>
 			{error && (
 				<p role="alert" className={styles.error}>
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 			{editing ? (
 				<>
 					<div className={styles.knowledgeToolbar}>
 						<Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
-							← Library
+							<UiMessage text={"← Library"} />
 						</Button>
 						<span>
-							{selected?.location.type ?? (global ? "global" : "project")} ·{" "}
-							{kind}
+							{selected?.location.type ??
+								(global ? (
+									<UiMessage text={"global"} />
+								) : (
+									<UiMessage text={"project"} />
+								))}{" "}
+							· {kind}
 						</span>
 					</div>
 					{!selected && (
 						<div className={styles.knowledgeToolbar}>
-							<select
+							<UiLocalized<"select">
+								element={"select"}
+								messageProps={["aria-label"]}
 								aria-label="Knowledge type"
 								value={kind}
 								onChange={(e) =>
 									setKind(e.target.value === "skill" ? "skill" : "memory")
 								}
 							>
-								<option value="memory">Memory</option>
-								<option value="skill">Skill</option>
-							</select>
-							<select
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="memory"
+								>
+									{"Memory"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="skill"
+								>
+									{"Skill"}
+								</UiLocalized>
+							</UiLocalized>
+							<UiLocalized<"select">
+								element={"select"}
+								messageProps={["aria-label"]}
 								aria-label="Knowledge scope"
 								value={global ? "global" : "project"}
 								onChange={(e) => setGlobal(e.target.value === "global")}
 							>
-								<option value="project">This project</option>
-								<option value="global">All my projects</option>
-							</select>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="project"
+								>
+									{"This project"}
+								</UiLocalized>
+								<UiLocalized<"option">
+									element={"option"}
+									messageProps={["children"]}
+									value="global"
+								>
+									{"All my projects"}
+								</UiLocalized>
+							</UiLocalized>
 						</div>
 					)}
 					<label>
-						Title
+						<UiMessage text={"Title"} />
 						<input
 							dir="auto"
 							value={title}
@@ -237,7 +285,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 						/>
 					</label>
 					<label htmlFor={contentId}>
-						Content
+						<UiMessage text={"Content"} />
 						<Textarea
 							id={contentId}
 							dir="auto"
@@ -249,7 +297,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 						/>
 					</label>
 					<label>
-						Tags, separated by commas
+						<UiMessage text={"Tags, separated by commas"} />
 						<input
 							dir="auto"
 							value={tags}
@@ -259,7 +307,11 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 					</label>
 					{head?.deleted && (
 						<p>
-							This item is archived. Restore an earlier version to use it again.
+							<UiMessage
+								text={
+									"This item is archived. Restore an earlier version to use it again."
+								}
+							/>
 						</p>
 					)}
 					<div className={styles.knowledgeToolbar}>
@@ -271,7 +323,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 								}
 								onClick={save}
 							>
-								Save
+								<UiMessage text={"Save"} />
 							</Button>
 						)}
 						{selected && (
@@ -292,7 +344,11 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 									})
 								}
 							>
-								{readOnly ? "Copy into this project" : "Duplicate"}
+								{readOnly ? (
+									<UiMessage text={"Copy into this project"} />
+								) : (
+									<UiMessage text={"Duplicate"} />
+								)}
 							</Button>
 						)}
 						{selected && !readOnly && (
@@ -309,19 +365,29 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 									})
 								}
 							>
-								Archive
+								<UiMessage text={"Archive"} />
 							</Button>
 						)}
 					</div>
 					{selected && (
 						<details>
-							<summary>Version history · {selected.versions.length}</summary>
+							<summary>
+								<UiMessage text={"Version history ·"} />{" "}
+								{selected.versions.length}
+							</summary>
 							{[...selected.versions].reverse().map((version) => (
 								<div key={version.version} className={styles.knowledgeToolbar}>
 									<span>
 										v{version.version} ·{" "}
 										{new Date(version.savedAtMs).toLocaleString()}
-										{version.deleted ? " · archived" : ""}
+										{version.deleted ? (
+											<>
+												{" "}
+												<UiMessage text={"· archived"} />
+											</>
+										) : (
+											""
+										)}
 									</span>
 									{!readOnly && version.version !== head!.version && (
 										<Button
@@ -338,7 +404,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 												})
 											}
 										>
-											Restore
+											<UiMessage text={"Restore"} />
 										</Button>
 									)}
 								</div>
@@ -355,14 +421,16 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 							void refresh(query).catch((cause) => setError(String(cause)));
 						}}
 					>
-						<input
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label", "placeholder"]}
 							aria-label="Search skills and memory"
 							placeholder="Search your library…"
 							value={query}
 							onChange={(e) => setQuery(e.target.value)}
 						/>
 						<Button type="submit" variant="outline" size="sm">
-							Search
+							<UiMessage text={"Search"} />
 						</Button>
 					</form>
 					<Button
@@ -378,7 +446,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 							setEditing(true);
 						}}
 					>
-						Add skill or memory
+						<UiMessage text={"Add skill or memory"} />
 					</Button>
 					{entries.map((item) => (
 						<article
@@ -394,15 +462,28 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 								<span>
 									{item.key.kind} · {item.location.type}
 									{item.location.type === "project" &&
-									item.location.projectId !== projectId
-										? " · other project"
-										: ""}{" "}
+									item.location.projectId !== projectId ? (
+										<>
+											{" "}
+											<UiMessage text={"· other project"} />
+										</>
+									) : (
+										""
+									)}{" "}
 									· v{item.version}
-									{item.deleted
-										? " · archived"
-										: !item.enabled
-											? " · disabled"
-											: ""}
+									{item.deleted ? (
+										<>
+											{" "}
+											<UiMessage text={"· archived"} />
+										</>
+									) : !item.enabled ? (
+										<>
+											{" "}
+											<UiMessage text={"· disabled"} />
+										</>
+									) : (
+										""
+									)}
 								</span>
 								<p dir="auto">{item.description}</p>
 							</button>
@@ -422,7 +503,11 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 											})
 										}
 									>
-										{item.enabled ? "Disable" : "Enable"}
+										{item.enabled ? (
+											<UiMessage text={"Disable"} />
+										) : (
+											<UiMessage text={"Enable"} />
+										)}
 									</Button>
 								)}
 								{item.location.type !== "project" && (
@@ -438,9 +523,11 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 											})
 										}
 									>
-										{item.excludedInProject
-											? "Use in this project"
-											: "Exclude from this project"}
+										{item.excludedInProject ? (
+											<UiMessage text={"Use in this project"} />
+										) : (
+											<UiMessage text={"Exclude from this project"} />
+										)}
 									</Button>
 								)}
 							</div>
@@ -448,6 +535,6 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 					))}
 				</>
 			)}
-		</section>
+		</UiLocalized>
 	);
 }

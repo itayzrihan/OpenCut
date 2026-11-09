@@ -391,12 +391,13 @@ test("resume preserves a failed finishing checkpoint and rejects stale or change
 test("resume preserves a failed caption checkpoint and rejects stale or changed recipes", async () => {
 	const projectId = "resume-caption-project",
 		stamp = "2026-09-29T10:00:00.000Z";
+	const recipe = { ...options, browserModel: "whisper-large-v3-turbo" as const };
 	projects.set(projectId, { metadata: { name: "Resume", updatedAt: stamp } });
 	const original = await createProjectEdit({
 		id: "resume-caption-original",
 		projectId,
 		expectedUpdatedAt: stamp,
-		options,
+		options: recipe,
 	});
 	await updateBatch({
 		id: original.run.id,
@@ -415,16 +416,20 @@ test("resume preserves a failed caption checkpoint and rejects stale or changed 
 		id: "resume-caption-next",
 		projectId,
 		expectedUpdatedAt: stamp,
-		options,
+		options: recipe,
 		resumeRunId: original.run.id,
 	};
 	await expect(
 		createProjectEdit({ ...input, expectedUpdatedAt: "stale" }),
 	).rejects.toThrow("Project changed");
 	await expect(
-		createProjectEdit({ ...input, options: { ...options, zoom: false } }),
+		createProjectEdit({
+			...input,
+			options: { ...recipe, browserModel: "ivrit-large-v3-turbo" },
+		}),
 	).rejects.toThrow("original recipe");
 	const resumed = await createProjectEdit(input);
+	expect(resumed.run.options.browserModel).toBe("whisper-large-v3-turbo");
 	expect(resumed.run.jobs[0]).toMatchObject({
 		source: "existing",
 		status: "ready",

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { useTimelineStore } from "@/timeline/timeline-store";
 import { useActionHandler } from "@/actions/use-action-handler";
 import { useEditor, useEditorSelection } from "@/editor/use-editor";
@@ -240,22 +240,12 @@ export function useEditorActions() {
 	useActionHandler(
 		"split",
 		() => {
-			const currentTime = editor.playback.getCurrentTime();
-			const tracks = editor.scenes.getActiveScene().tracks;
-			const elementsToSplit =
-				selectedElements.length > 0
-					? selectedElements
-					: getElementsAtTime({
-							tracks,
-							time: currentTime,
-						});
-
-			if (elementsToSplit.length === 0) return;
-
-			editor.timeline.splitElements({
-				elements: elementsToSplit,
-				splitTime: currentTime,
-			});
+			try {
+				if (!editor.timeline.splitAtPlayhead())
+					toast.info("Place the playhead inside a clip to split.");
+			} catch (error) {
+				toast.error(error instanceof Error ? error.message : "Split failed");
+			}
 		},
 		undefined,
 	);

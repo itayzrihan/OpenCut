@@ -26,12 +26,12 @@ import type { AnyBaseNode } from "@/services/renderer/nodes/base-node";
 import { VideoNode } from "@/services/renderer/nodes/video-node";
 import { ParallaxSceneNode } from "@/services/renderer/nodes/parallax-scene-node";
 import { videoCache } from "@/services/video-cache/service";
-import { getSourceTimeAtClipTime } from "@/retime";
+import { getClipTimeAtSourceTime, getSourceTimeAtClipTime } from "@/retime";
 import { mapParallaxParentTimeToSourceTime } from "@/parallax-story-teller/camera-geometry";
 import { HyperframesRenderCache } from "@/hyperframes/render-cache";
 import type { HyperframesRenderContext } from "@/hyperframes/types";
 import type { VideoElement } from "@/timeline/types";
-import { ALL_FORMATS, CanvasSink, Input } from "mediabunny";
+import { ALL_FORMATS, CanvasSink, EncodedPacketSink, Input } from "mediabunny";
 import { createMediaSource } from "@/media/source";
 
 export type SnapshotResult =
@@ -283,6 +283,87 @@ export class RendererManager {
 		});
 	}
 
+	async captureVideoBoundary({
+		clip,
+		edge,
+	}: {
+		clip: VideoElement;
+		edge: "first" | "last";
+	}): Promise<SnapshotResult> {
+		const project = this.editor.project.getActiveForScene();
+		const scene = this.editor.scenes.getActiveSceneOrNull();
+		const assets = this.editor.media.getAssets();
+		if (!project || !scene || !assets.some((asset) => asset.id === clip.mediaId))
+			return {
+				success: false,
+				error: "Relink the selected source video before generating",
+			};
+		const { fps, canvasSize, background } = project.settings;
+		const step = (TICKS_PER_SECOND * fps.denominator) / fps.numerator;
+		const end = clip.startTime + clip.duration;
+		let time = mediaTime({
+			ticks:
+				edge === "first"
+					? clip.startTime
+					: Math.max(
+							clip.startTime,
+							Math.min(end - 1, Math.round((Math.ceil(end / step) - 1) * step)),
+						),
+		});
+		const renderTree = buildScene({
+			hyperframes: this.getHyperframesRenderContext(),
+			tracks: {
+				main: {
+					...scene.tracks.main,
+					hidden: false,
+					elements: [clip],
+				},
+				overlay: [],
+				audio: [],
+			},
+			mediaAssets: assets,
+			duration: this.editor.timeline.getTotalDuration(),
+			canvasSize,
+			background,
+			isPreview: true,
+		});
+		const requestsAt = (time: MediaTime) =>
+			collectVideoFrameRequestsAtTime({ node: renderTree, time });
+		const readFrame = ({ sourceTime, ...source }: VideoFrameRequest) =>
+			videoCache.getFrameAt({ ...source, time: sourceTime });
+		const requests = requestsAt(time);
+		let frames = await Promise.all(requests.map(readFrame));
+		const missingIndex = frames.findIndex((frame) => !frame);
+		if (missingIndex >= 0) {
+			const start = requestsAt(clip.startTime)[missingIndex]?.sourceTime;
+			const stop = requestsAt(mediaTime({ ticks: end - 1 }))[missingIndex]?.sourceTime;
+			if (start !== undefined && stop !== undefined) {
+				const fallback = await findVideoBoundaryFallback({
+					clip,
+					request: requests[missingIndex],
+					start,
+					stop,
+				});
+				if (fallback !== null && fallback !== time) {
+					time = fallback;
+					frames = await Promise.all(requestsAt(time).map(readFrame));
+				}
+			}
+		}
+		if (!frames.length || frames.some((frame) => !frame))
+			return {
+				success: false,
+				error: "Could not decode the selected video frame",
+			};
+		return this.createSnapshot({
+			time,
+			renderTree,
+			maxDimension: 1024,
+			mimeType: "image/jpeg",
+			maxBytes: 250_000,
+		});
+	}
+
 	async captureVideoSourceFrames({
 		clip,
 		times,
@@ -321,6 +402,8 @@ export class RendererManager {
 						time: clip.trimStart + getSourceTimeAtClipTime({
 							clipTime: time - clip.startTime,
 							retime: clip.retime,
+							trimStart: clip.trimStart,
+							ticks: true,
 						}),
 					}),
 				}),
@@ -392,17 +475,19 @@ export class RendererManager {
 
 	private async createSnapshot({
 		time,
+		renderTree: isolatedTree,
 		maxDimension,
 		mimeType = "image/png",
 		maxBytes,
 	}: {
 		time?: MediaTime;
+		renderTree?: RootNode | null;
 		maxDimension?: number;
 		mimeType?: "image/png" | "image/jpeg";
 		maxBytes?: number;
 	} = {}): Promise<SnapshotResult> {
 		try {
-			const renderTree = this.getRenderTree();
+			const renderTree = isolatedTree ?? this.getRenderTree();
 			const activeProject = this.editor.project.getActiveForScene();
 
 			if (!renderTree || !activeProject) {
@@ -415,15 +500,18 @@ export class RendererManager {
 			}
 
 			const { canvasSize, fps } = activeProject.settings;
-			const renderTime = mediaTime({
-				ticks: Math.max(
-					0,
-					Math.min(
-						time ?? this.editor.playback.getCurrentTime(),
-						this.editor.timeline.getLastFrameTime(),
-					),
-				),
-			});
+			const renderTime =
+				isolatedTree && time !== undefined
+					? time
+					: mediaTime({
+							ticks: Math.max(
+								0,
+								Math.min(
+									time ?? this.editor.playback.getCurrentTime(),
+									this.editor.timeline.getLastFrameTime(),
+								),
+							),
+						});
 
 			const renderer = new CanvasRenderer({
 				width: canvasSize.width,
@@ -726,14 +814,15 @@ export function collectVideoFrameRequestsAtTime({
 	if (node instanceof VideoNode) {
 		const localTime = time - node.params.timeOffset;
 		if (localTime < 0 || localTime >= node.params.duration) return [];
-		const sourceTime = addMediaTime({
-			a: mediaTime({ ticks: node.params.trimStart }),
-			b: mediaTime({
-				ticks: getSourceTimeAtClipTime({
-					clipTime: mediaTime({ ticks: localTime }),
+		const sourceTime = roundMediaTime({
+			time:
+				node.params.trimStart +
+				getSourceTimeAtClipTime({
+					clipTime: localTime,
 					retime: node.params.retime,
+					trimStart: node.params.trimStart,
+					ticks: true,
 				}),
-			}),
 		});
 		return [
 			{
@@ -768,6 +857,58 @@ export function collectVideoFrameRequestsAtTime({
 	return node.children.flatMap((child) =>
 		collectVideoFrameRequestsAtTime({ node: child, time: childTime }),
 	);
+}
+
+async function findVideoBoundaryFallback({
+	clip,
+	request,
+	start,
+	stop,
+}: {
+	clip: VideoElement;
+	request: VideoFrameRequest;
+	start: number;
+	stop: number;
+}): Promise<MediaTime | null> {
+	const input = new Input({
+		formats: ALL_FORMATS,
+		source: createMediaSource(request),
+	});
+	try {
+		const track = await input.getPrimaryVideoTrack();
+		if (!track) return null;
+		const packets = new EncodedPacketSink(track);
+		const timestamp = Math.max(request.sourceTime, await track.getFirstTimestamp());
+		const packet = await packets.getPacket(timestamp, {
+			metadataOnly: true,
+			skipLiveWait: true,
+		});
+		if (!packet) return null;
+
+		// The container can outlast its picture (for example, because of AAC padding).
+		// Pick a point inside the actual frame and the selected clip's source range.
+		const trimStart = Math.round(start * TICKS_PER_SECOND);
+		const firstTick = Math.max(trimStart, Math.ceil(packet.timestamp * TICKS_PER_SECOND));
+		const lastTick = Math.min(
+			Math.round(stop * TICKS_PER_SECOND),
+			Math.ceil((packet.timestamp + packet.duration) * TICKS_PER_SECOND) - 1,
+		);
+		if (lastTick < firstTick) return null;
+		const sourceTick = Math.floor((firstTick + lastTick) / 2);
+		const clipTick = Math.round(
+			getClipTimeAtSourceTime({
+				sourceTime: sourceTick - trimStart,
+				retime: clip.retime,
+				trimStart,
+				ticks: true,
+			}),
+		);
+		return mediaTime({
+			ticks: clip.startTime + Math.max(0, Math.min(clip.duration - 1, clipTick)),
+		});
+	} finally {
+		input.dispose();
+	}
 }
 
 async function encodeCanvasBlob({

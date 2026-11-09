@@ -10,6 +10,7 @@ const bun = process.platform === "win32" ? "bun.exe" : "bun";
 function start(command, args, cwd) {
 	return spawn(command, args, {
 		cwd,
+		env: { ...process.env, OPENCUT_DELEGATED_MCP_LOCAL: "1" },
 		stdio: "inherit",
 		windowsHide: true,
 	});
@@ -48,7 +49,7 @@ if (
 }
 
 mcp = start(process.execPath, [runner], classicRoot);
-next = start(bun, ["run", "next", "dev", "--turbopack"], webRoot);
+next = start(bun, ["run", "next", "dev", "--turbopack", "--hostname", "127.0.0.1"], webRoot);
 
 const exitCode = await new Promise((resolvePromise) => {
 	let settled = false;

@@ -1,5 +1,10 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -130,12 +135,17 @@ function VariablesInspector({
 	return (
 		<Section collapsible sectionKey="hyperframes-variables">
 			<SectionHeader>
-				<SectionTitle>Composition variables</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Composition variables"} />
+				</SectionTitle>
 			</SectionHeader>
 			<SectionContent className="flex flex-col gap-3">
 				<p className="text-muted-foreground text-xs">
-					Customize this clip’s text and style. Shared variable names also
-					update matching nested compositions.
+					<UiMessage
+						text={
+							"Customize this clip’s text and style. Shared variable names also update matching nested compositions."
+						}
+					/>
 				</p>
 				{visible.map((variable) => (
 					<VariableField
@@ -169,19 +179,19 @@ function VariablesInspector({
 						role="status"
 					>
 						<Loader2 className="size-3 animate-spin" />
-						Checking the updated animation…
+						<UiMessage text={"Checking the updated animation…"} />
 						<Button
 							size="sm"
 							variant="ghost"
 							onClick={() => operation.current?.abort()}
 						>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</Button>
 					</div>
 				)}
 				{error && (
 					<p role="alert" className="text-destructive text-xs">
-						{error}
+						<UiValue>{error}</UiValue>
 					</p>
 				)}
 			</SectionContent>
@@ -260,7 +270,7 @@ function VariableField({
 					aria-label={`Reset variable: ${label}`}
 					onClick={onReset}
 				>
-					Reset
+					<UiMessage text={"Reset"} />
 				</Button>
 			</div>
 			{d.type === "boolean" ? (
@@ -272,7 +282,7 @@ function VariableField({
 						disabled={disabled}
 						onChange={(event) => onApply(event.target.checked)}
 					/>
-					Enabled
+					<UiMessage text={"Enabled"} />
 				</label>
 			) : d.type === "enum" ? (
 				<select
@@ -303,7 +313,9 @@ function VariableField({
 						}}
 					/>
 					{d.type === "font" && (
-						<input
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["placeholder"]}
 							{...common}
 							aria-label={`Font source: ${label}`}
 							value={fontSource}
@@ -318,7 +330,7 @@ function VariableField({
 						aria-label={`Apply variable: ${label}`}
 						onClick={submit}
 					>
-						Apply
+						<UiMessage text={"Apply"} />
 					</Button>
 				</>
 			)}
@@ -327,7 +339,7 @@ function VariableField({
 			)}
 			{error && (
 				<p role="alert" className="text-destructive text-xs">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
 		</div>

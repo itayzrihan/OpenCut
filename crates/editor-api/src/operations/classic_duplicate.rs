@@ -171,6 +171,9 @@ fn duplicate(
             let mut copy = original.clone();
             let id = fresh(document, &mut occupied, "classic-clip");
             copy["id"] = json!(id);
+            copy.as_object_mut()
+                .unwrap()
+                .remove(classic_source_audio::LINK);
             copy["name"] = json!(format!(
                 "{} (copy)",
                 original["name"].as_str().unwrap_or("")

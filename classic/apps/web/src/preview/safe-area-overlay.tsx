@@ -1,3 +1,7 @@
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import type { CSSProperties, ReactNode } from "react";
 import type {
 	PreviewOverlayDefinition,
@@ -66,11 +70,13 @@ function GuideLabel({
 
 function SafeAreaOverlay() {
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			className="pointer-events-none absolute inset-0 select-none"
 			style={{ containerType: "inline-size" }}
 			role="img"
-			aria-label="אזורי ביטחון: למעלה כותרות וניווט, בצד ימין כפתורי אינטראקציה, למטה שם משתמש, תיאור ומוזיקה. הקצוות עלולים להיחתך. Super Safe Area בין 22% ל־74% מהגובה מיועד לתוכן החשוב ביותר. הכיסוי בפועל משתנה בין פלטפורמות."
+			aria-label="Safe areas. Titles and navigation at the top, interaction buttons on the right, and username, description and music at the bottom. Edges may be cropped. Keep key content between 22% and 74% of frame height. Coverage varies by platform."
 		>
 			<div
 				className="absolute inset-0"
@@ -102,9 +108,9 @@ function SafeAreaOverlay() {
 					transform: "translateX(-50%)",
 				}}
 			>
-				כותרות וכפתורי ניווט
+				<UiMessage text={"Titles and navigation"} />
 				<br />
-				עלולים לכסות את האזור
+				<UiMessage text={"may cover this area"} />
 			</GuideLabel>
 			<GuideLabel
 				style={{
@@ -114,7 +120,7 @@ function SafeAreaOverlay() {
 					transform: "translate(-50%, -50%) rotate(-90deg)",
 				}}
 			>
-				קצוות שעלולים להיחתך
+				<UiMessage text={"Edges may be cropped"} />
 			</GuideLabel>
 			<GuideLabel
 				style={{
@@ -124,7 +130,7 @@ function SafeAreaOverlay() {
 					transform: "translate(-50%, -50%) rotate(-90deg)",
 				}}
 			>
-				לייקים, תגובות ושיתוף
+				<UiMessage text={"Likes, comments and shares"} />
 			</GuideLabel>
 			<GuideLabel
 				style={{
@@ -134,9 +140,9 @@ function SafeAreaOverlay() {
 					transform: "translateX(-50%)",
 				}}
 			>
-				שם משתמש, תיאור ומוזיקה
+				<UiMessage text={"Username, description and music"} />
 				<br />
-				וגם כפתורי פעולה
+				<UiMessage text={"and action buttons"} />
 			</GuideLabel>
 			{[SUPER_SAFE_TOP, SUPER_SAFE_BOTTOM].map((top) => (
 				<div
@@ -161,7 +167,9 @@ function SafeAreaOverlay() {
 					opacity: 0.6,
 				}}
 			>
-				<span dir="ltr">SUPER SAFE AREA</span>
+				<span dir="ltr">
+					<UiMessage text={"SUPER SAFE AREA"} />
+				</span>
 			</GuideLabel>
 			<GuideLabel
 				accent
@@ -173,8 +181,8 @@ function SafeAreaOverlay() {
 					opacity: 0.6,
 				}}
 			>
-				כאן ממקמים את התוכן החשוב
+				<UiMessage text={"Keep key content here"} />
 			</GuideLabel>
-		</div>
+		</UiLocalized>
 	);
 }

@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import type { Metadata } from "next";
 import { BasePage } from "@/app/base-page";
 import { Separator } from "@/components/ui/separator";
@@ -14,25 +15,25 @@ import {
 } from "@/changelog/components/release";
 
 export const metadata: Metadata = {
-	title: "Changelog - OpenCut",
-	description: "What's new in OpenCut",
+	title: "Changelog - POCUT",
+	description: "What's new in POCUT",
 	openGraph: {
-		title: "Changelog - OpenCut",
-		description: "Every update, improvement, and fix to OpenCut — documented.",
+		title: "Changelog - POCUT",
+		description: "Every update, improvement, and fix to POCUT — documented.",
 		type: "website",
 		images: [
 			{
 				url: "/open-graph/changlog.jpg",
 				width: 1200,
 				height: 630,
-				alt: "OpenCut Changelog",
+				alt: "POCUT Changelog",
 			},
 		],
 	},
 	twitter: {
 		card: "summary_large_image",
-		title: "Changelog - OpenCut",
-		description: "What's new in OpenCut",
+		title: "Changelog - POCUT",
+		description: "What's new in POCUT",
 		images: ["/open-graph/changlog.jpg"],
 	},
 };
@@ -41,7 +42,10 @@ export default function ChangelogPage() {
 	const releases = getSortedReleases();
 
 	return (
-		<BasePage title="Changelog" description="See what's new in OpenCut">
+		<BasePage
+			title={<UiMessage text="Changelog" />}
+			description={<UiMessage text="See what's new in POCUT" />}
+		>
 			<div className="mx-auto w-full max-w-3xl">
 				<div className="relative">
 					<div

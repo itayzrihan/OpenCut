@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useMemo, useState } from "react";
 import type { EditorCore } from "@/core";
 import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
@@ -156,7 +160,9 @@ export function TimelineBookmarksRow({
 			className="relative flex-1 overflow-hidden"
 			style={{ height: TIMELINE_BOOKMARK_ROW_HEIGHT_PX }}
 		>
-			<button
+			<UiLocalized<"button">
+				element={"button"}
+				messageProps={["aria-label"]}
 				className="relative w-full cursor-default select-none border-0 bg-transparent p-0"
 				style={{
 					height: TIMELINE_BOOKMARK_ROW_HEIGHT_PX,
@@ -184,7 +190,7 @@ export function TimelineBookmarksRow({
 						onBookmarkMouseDown={onBookmarkMouseDown}
 					/>
 				))}
-			</button>
+			</UiLocalized>
 		</div>
 	);
 }
@@ -410,8 +416,12 @@ function BookmarkPopoverContent({
 	return (
 		<>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Note</Label>
-				<Input
+				<Label className="text-xs">
+					<UiMessage text={"Note"} />
+				</Label>
+				<UiLocalized<typeof Input>
+					element={Input}
+					messageProps={["placeholder"]}
 					placeholder="Add a note..."
 					value={bookmark.note ?? ""}
 					onChange={(event) => handleUpdate({ note: event.target.value })}
@@ -419,7 +429,9 @@ function BookmarkPopoverContent({
 				/>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Color</Label>
+				<Label className="text-xs">
+					<UiMessage text={"Color"} />
+				</Label>
 				<div className="relative">
 					<ColorPicker
 						value={uppercase({ string: draftColorHex })}
@@ -435,7 +447,9 @@ function BookmarkPopoverContent({
 								/^#/,
 								"",
 							).toUpperCase() && (
-							<Button
+							<UiLocalized<typeof Button>
+								element={Button}
+								messageProps={["aria-label"]}
 								type="button"
 								variant="text"
 								size="text"
@@ -452,12 +466,14 @@ function BookmarkPopoverContent({
 									icon={ArrowTurnBackwardIcon}
 									className="!size-3.5"
 								/>
-							</Button>
+							</UiLocalized>
 						)}
 				</div>
 			</div>
 			<div className="flex flex-col gap-2">
-				<Label className="text-xs">Duration</Label>
+				<Label className="text-xs">
+					<UiMessage text={"Duration"} />
+				</Label>
 				<div className="flex items-center gap-1.5">
 					<Input
 						type="number"
@@ -482,7 +498,9 @@ function BookmarkPopoverContent({
 					/>
 				</div>
 			</div>
-			<Button
+			<UiLocalized<typeof Button>
+				element={Button}
+				messageProps={["aria-label"]}
 				type="button"
 				variant="outline"
 				size="sm"
@@ -496,8 +514,8 @@ function BookmarkPopoverContent({
 				aria-label="delete bookmark"
 			>
 				<HugeiconsIcon icon={Delete02Icon} className="!size-3.5" />
-				Delete
-			</Button>
+				<UiMessage text={"Delete"} />
+			</UiLocalized>
 		</>
 	);
 }

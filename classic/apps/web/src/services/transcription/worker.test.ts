@@ -6,6 +6,8 @@ import {
 	BROWSER_WHISPER_REVISION,
 	BROWSER_WHISPER_CPU_MODEL,
 	BROWSER_WHISPER_CPU_REVISION,
+	MULTILINGUAL_WHISPER_MODEL,
+	MULTILINGUAL_WHISPER_REVISION,
 } from "@/transcription/models";
 
 const env = {
@@ -112,11 +114,15 @@ afterAll(() => {
 		else Reflect.deleteProperty(globalThis, key);
 	}
 });
-const run = (lowMemory = false) => {
+const run = (options: Partial<WorkerMessage> = {}) => {
 	if (!worker.onmessage)
 		throw new Error("Transcription worker did not initialize");
 	return worker.onmessage({
-		data: { audio: new Float32Array(32000), language: "he", lowMemory },
+		data: {
+			audio: new Float32Array(32000),
+			language: "he",
+			...options,
+		},
 	});
 };
 
@@ -152,6 +158,22 @@ test("pins GPU timestamped weights, caches public files and preserves word timin
 	});
 	expect(disposed).toBe(1);
 });
+test("multilingual browser transcription detects language and requests word timing", async () => {
+	await run({
+		lowMemory: true,
+		browserModel: "whisper-large-v3-turbo",
+		language: "auto",
+	});
+	expect(loadedModel).toBe(MULTILINGUAL_WHISPER_MODEL);
+	expect(loadOptions).toMatchObject({
+		revision: MULTILINGUAL_WHISPER_REVISION,
+		device: "webgpu",
+		dtype: "q4f16",
+	});
+	expect(inferenceOptions.language).toBeUndefined();
+	expect(inferenceOptions.return_timestamps).toBe("word");
+	expect(messages.at(-1)).toMatchObject({ type: "complete" });
+});
 test("without fp16 WebGPU uses the local WASM-compatible timestamped conversion", async () => {
 	Object.defineProperty(globalThis, "navigator", {
 		configurable: true,
@@ -183,6 +205,15 @@ test("untimed text fails instead of producing unusable caption sources", async (
 	expect(disposed).toBe(1);
 });
 
+test("a recovery pass skips unaligned speech without publishing invalid timings", async () => {
+	output = { text: "שלום", chunks: [{ text: "שלום", timestamp: [2, 2] }] };
+	await run({ lowMemory: true, recovery: true });
+	expect(messages.at(-1)).toMatchObject({
+		type: "complete",
+		result: { text: "", words: [], segments: [] },
+	});
+});
+
 test("GPU allocation failure returns audio ownership for a fresh-worker retry", async () => {
 	failure = new RangeError("Array buffer allocation failed");
 	await run();
@@ -202,7 +233,7 @@ test("inference allocation failure disposes the pipeline and requests recovery",
 });
 
 test("recovery keeps pinned timestamped weights with a smaller q4 encoder", async () => {
-	await run(true);
+	await run({ lowMemory: true });
 	expect(loadedModel).toBe(BROWSER_WHISPER_MODEL);
 	expect(loadOptions).toMatchObject({
 		revision: BROWSER_WHISPER_REVISION,
@@ -215,7 +246,7 @@ test("recovery keeps pinned timestamped weights with a smaller q4 encoder", asyn
 
 test("recovery allocation failure stops with actionable guidance", async () => {
 	failure = new RangeError("Array buffer allocation failed");
-	await run(true);
+	await run({ lowMemory: true });
 	expect(lastError()).toContain("even with the reduced-memory model");
 	expect(lastError()).toContain(
 		"Model loading failed before transcription started",

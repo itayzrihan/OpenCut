@@ -3,12 +3,15 @@ import {
 	chatGPTModels,
 	chatGPTStatus,
 	disconnectChatGPT,
+	requireLocalChatGPT,
 	startChatGPTSignIn,
 } from "@/editor-agent/server/chatgpt";
 import { z } from "zod";
 
 export const runtime = "nodejs";
-export const GET = withAccount(async () => {
+export const GET = withAccount(async (request) => {
+	const denied = requireLocalChatGPT(request);
+	if (denied) return denied;
 	try {
 		return Response.json(await chatGPTStatus());
 	} catch {
@@ -19,6 +22,8 @@ export const GET = withAccount(async () => {
 	}
 });
 export const POST = withAccount(async (request) => {
+	const denied = requireLocalChatGPT(request);
+	if (denied) return denied;
 	const input = z
 		.object({ operation: z.enum(["signIn", "disconnect", "models"]) })
 		.strict()

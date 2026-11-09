@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { useEditor } from "@/editor/use-editor";
@@ -15,7 +16,11 @@ const FULL_LENGTH_PRESET_IDS = new Set(["editorial-edge-feather"]);
 
 export function OverlayEffectsView() {
 	return (
-		<PanelView title="Overlay FX">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Overlay FX"
+		>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
@@ -24,7 +29,7 @@ export function OverlayEffectsView() {
 					<OverlayEffectItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 

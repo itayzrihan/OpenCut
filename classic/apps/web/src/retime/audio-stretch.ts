@@ -1,7 +1,7 @@
-import { PitchShifter } from "soundtouchjs";
 import { clampRetimeRate, shouldMaintainPitch } from "@/retime/rate";
 import type { RetimeConfig } from "@/timeline";
-import { getSourceTimeAtClipTime } from "./resolve";
+import { streamPitchPreserved } from "./pitch-stream";
+import { createRetimeMapping } from "./resolve";
 
 const RATE_EPSILON = 1e-6;
 
@@ -31,6 +31,8 @@ function buildResampledBuffer({
 	clipDuration,
 	targetSampleRate,
 	retime,
+	curveTrimStart,
+	clipTimeOffset,
 }: {
 	audioContext: BaseAudioContext;
 	sourceBuffer: AudioBuffer;
@@ -38,6 +40,8 @@ function buildResampledBuffer({
 	clipDuration: number;
 	targetSampleRate: number;
 	retime?: RetimeConfig;
+	curveTrimStart: number;
+	clipTimeOffset: number;
 }): AudioBuffer {
 	const outputLength = Math.max(1, Math.ceil(clipDuration * targetSampleRate));
 	const numChannels = Math.max(1, Math.min(2, sourceBuffer.numberOfChannels));
@@ -47,6 +51,8 @@ function buildResampledBuffer({
 		targetSampleRate,
 	);
 
+	const mapping = createRetimeMapping({ retime, trimStart: curveTrimStart });
+	const windowStart = mapping.sourceAt(clipTimeOffset);
 	for (let channel = 0; channel < numChannels; channel++) {
 		const sourceData = sourceBuffer.getChannelData(
 			Math.min(channel, sourceBuffer.numberOfChannels - 1),
@@ -56,7 +62,7 @@ function buildResampledBuffer({
 		for (let i = 0; i < outputLength; i++) {
 			const clipTime = i / targetSampleRate;
 			const sourceTime =
-				trimStart + getSourceTimeAtClipTime({ clipTime, retime });
+				trimStart + mapping.sourceAt(clipTimeOffset + clipTime) - windowStart;
 			outputData[i] = sampleLinear({
 				channelData: sourceData,
 				position: sourceTime * sourceBuffer.sampleRate,
@@ -68,12 +74,14 @@ function buildResampledBuffer({
 }
 
 async function buildPitchPreservedBuffer({
+	audioContext,
 	sourceBuffer,
 	trimStart,
 	clipDuration,
 	rate,
 	targetSampleRate,
 }: {
+	audioContext: BaseAudioContext;
 	sourceBuffer: AudioBuffer;
 	trimStart: number;
 	clipDuration: number;
@@ -124,20 +132,26 @@ async function buildPitchPreservedBuffer({
 	resampleSourceNode.start(0);
 	const resampledBuffer = await resampleCtx.startRendering();
 
-	const outputSamples = Math.max(
-		1,
-		Math.ceil(clipDuration * targetSampleRate),
-	);
-	const stretchCtx = new OfflineAudioContext(
+	const outputSamples = Math.max(1, Math.ceil(clipDuration * targetSampleRate));
+	const output = audioContext.createBuffer(
 		numChannels,
 		outputSamples,
 		targetSampleRate,
 	);
-	const shifter = new PitchShifter(stretchCtx, resampledBuffer, 4096);
-	shifter.tempo = rate;
-	shifter.pitch = 1;
-	shifter.connect(stretchCtx.destination);
-	return stretchCtx.startRendering();
+	let offset = 0;
+	for await (const chunk of streamPitchPreserved({
+		context: audioContext,
+		trimStart: 0,
+		duration: clipDuration,
+		rate,
+		readSource: (start) =>
+			Promise.resolve({ buffer: resampledBuffer, trimStart: start }),
+	})) {
+		for (let ch = 0; ch < numChannels; ch++)
+			output.copyToChannel(chunk.getChannelData(ch), ch, offset);
+		offset += chunk.length;
+	}
+	return output;
 }
 
 export async function renderRetimedBuffer({
@@ -146,6 +160,8 @@ export async function renderRetimedBuffer({
 	trimStart,
 	clipDuration,
 	retime,
+	curveTrimStart = trimStart,
+	clipTimeOffset = 0,
 	maintainPitch = false,
 }: {
 	audioContext: BaseAudioContext;
@@ -153,16 +169,21 @@ export async function renderRetimedBuffer({
 	trimStart: number;
 	clipDuration: number;
 	retime?: RetimeConfig;
+	/** Logical curve origin and offset, independent of the decoded buffer window. */
+	curveTrimStart?: number;
+	clipTimeOffset?: number;
 	maintainPitch?: boolean;
 }): Promise<AudioBuffer> {
 	const targetSampleRate = audioContext.sampleRate;
 	const rate = clampRetimeRate({ rate: retime?.rate ?? 1 });
 	const usePitchPreservation =
+		!retime?.speedKeyframes?.length &&
 		shouldMaintainPitch({ rate, maintainPitch }) &&
 		Math.abs(rate - 1) > RATE_EPSILON;
 
 	if (usePitchPreservation) {
 		return buildPitchPreservedBuffer({
+			audioContext,
 			sourceBuffer,
 			trimStart,
 			clipDuration,
@@ -178,5 +199,7 @@ export async function renderRetimedBuffer({
 		clipDuration,
 		targetSampleRate,
 		retime,
+		curveTrimStart,
+		clipTimeOffset,
 	});
 }

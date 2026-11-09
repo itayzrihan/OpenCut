@@ -3,7 +3,7 @@ import type {
 	SmartTakeMode,
 	TakeRunMetrics,
 } from "@/timeline/smart-takes/types";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { EditorCore } from "@/core";
 import {
 	requestSmartTakePlan,

@@ -1,5 +1,10 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
+import { useInterfaceLanguage } from "@/i18n/provider";
 import { useState, useEffect } from "react";
 import {
 	useEditor,
@@ -160,10 +165,15 @@ function TimecodeDisplay() {
 }
 
 function ZoomSelect() {
+	const { t, locale } = useInterfaceLanguage();
 	const { isAtFit, zoomPercent, fitToScreen, setViewportPercent } =
 		usePreviewViewport();
 
-	const displayLabel = isAtFit ? "Fit" : `${zoomPercent}%`;
+	const percent = new Intl.NumberFormat(locale, {
+		style: "percent",
+		maximumFractionDigits: 1,
+	});
+	const displayLabel = isAtFit ? t("Fit") : percent.format(zoomPercent / 100);
 
 	const onValueChange = (value: string) => {
 		if (value === "fit") {
@@ -180,11 +190,13 @@ function ZoomSelect() {
 		>
 			<SelectTrigger className="tabular-nums">{displayLabel}</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="fit">Fit</SelectItem>
+				<SelectItem value="fit">
+					<UiMessage text={"Fit"} />
+				</SelectItem>
 				<SelectSeparator />
 				{PREVIEW_ZOOM_PRESETS.map((preset) => (
 					<SelectItem key={preset} value={String(preset)}>
-						{preset}%
+						{percent.format(preset / 100)}
 					</SelectItem>
 				))}
 			</SelectContent>
@@ -199,7 +211,9 @@ function PlayPauseButton() {
 	]);
 
 	return (
-		<Button
+		<UiLocalized<typeof Button>
+			element={Button}
+			messageProps={["aria-label"]}
 			variant="text"
 			size="icon"
 			onClick={() => invokeAction("toggle-play")}
@@ -217,6 +231,6 @@ function PlayPauseButton() {
 			) : (
 				<HugeiconsIcon icon={isPlaying ? PauseIcon : PlayIcon} />
 			)}
-		</Button>
+		</UiLocalized>
 	);
 }

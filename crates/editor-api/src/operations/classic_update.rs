@@ -8,7 +8,36 @@ use std::collections::BTreeMap;
 struct Update {
     track_id: String,
     element_id: String,
+    #[schemars(schema_with = "patch_schema")]
     patch: Map<String, Value>,
+}
+fn patch_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
+    schemars::json_schema!({
+        "type": "object",
+        "properties": {
+            "retime": {
+                "type": ["object", "null"],
+                "properties": {
+                    "rate": { "type": "number" },
+                    "maintainPitch": { "type": "boolean" },
+                    "speedKeyframes": {
+                        "type": "array",
+                        "maxItems": 1000,
+                        "items": {
+                            "type": "object",
+                            "required": ["time", "rate", "interpolation"],
+                            "additionalProperties": false,
+                            "properties": {
+                                "time": { "type": "integer", "minimum": -9007199254740991_i64, "maximum": 9007199254740991_i64 },
+                                "rate": { "type": "number", "minimum": 0.01, "maximum": 5 },
+                                "interpolation": { "enum": ["hold", "linear", "easeIn", "easeOut", "easeInOut"] }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    })
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -135,6 +164,35 @@ pub(super) fn rate(element: &Value) -> f64 {
     } else {
         value.clamp(0.01, 5.0)
     }
+}
+fn translate_speed_keyframes(retime: &Value, source_delta: i64) -> Result<Value, CapabilityError> {
+    let mut translated = retime.clone();
+    if source_delta != 0
+        && let Some(keys) = translated
+            .get_mut("speedKeyframes")
+            .and_then(Value::as_array_mut)
+    {
+        for key in keys {
+            let time = key["time"]
+                .as_i64()
+                .and_then(|time| time.checked_add(source_delta))
+                .filter(|time| (-SAFE..=SAFE).contains(time))
+                .ok_or_else(|| invalid("Linked speed keyframe time exceeds safe ticks"))?;
+            key["time"] = json!(time);
+        }
+    }
+    Ok(translated)
+}
+pub(super) fn source_span(element: &Value, duration: i64) -> Result<f64, CapabilityError> {
+    if !matches!(element["type"].as_str(), Some("video" | "audio")) {
+        return Ok(duration as f64);
+    }
+    let curve = classic_timeline::SpeedCurve::parse(&element["retime"]).map_err(invalid)?;
+    Ok(curve.source_span(
+        ticks(&element["trimStart"])? as f64,
+        duration as f64,
+        rate(element),
+    ))
 }
 fn round(value: f64) -> Result<i64, CapabilityError> {
     if !value.is_finite() || !(0.0..=SAFE as f64).contains(&value) {
@@ -277,6 +335,7 @@ pub(super) fn apply(
                 | "mediaId"
                 | "sourceAudio"
                 | "linkedSourceId"
+                | "linkedAudioVideoId"
                 | "hyperframes"
                 | "captionSource"
         )
@@ -308,12 +367,13 @@ pub(super) fn apply(
     if patch.contains_key("retime") && matches!(before["type"].as_str(), Some("video" | "audio")) {
         let source = before
             .get("sourceDuration")
+            .filter(|value| !value.is_null())
             .map(ticks)
             .transpose()?
             .map(|v| v as f64)
             .unwrap_or(
                 ticks(&before["trimStart"])? as f64
-                    + ticks(&before["duration"])? as f64 * rate(before)
+                    + source_span(before, ticks(&before["duration"])?)?
                     + ticks(&before["trimEnd"])? as f64,
             );
         let next_rate = rate(&next);
@@ -325,7 +385,12 @@ pub(super) fn apply(
         }
         let span =
             (source - ticks(&next["trimStart"])? as f64 - ticks(&next["trimEnd"])? as f64).max(0.0);
-        next["duration"] = json!(round(span / next_rate)?);
+        let curve = classic_timeline::SpeedCurve::parse(&next["retime"]).map_err(invalid)?;
+        next["duration"] = json!(round(curve.timeline_span(
+            ticks(&next["trimStart"])? as f64,
+            span,
+            next_rate,
+        ))?);
         duration_changed = true;
     }
     if patch.contains_key("startTime") {
@@ -373,7 +438,7 @@ pub(super) fn register_classic_update(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.update",
         "Update, trim or retime Classic clips",
-        "Atomically patch 1..1000 explicit trackId/elementId clips in a Classic scene. Read the existing clip first; patch merges params and replaces other supplied serializable fields, null removes optional fields. Exact nonnegative safe integer ticks (120000/second). Retime derives duration from the original source span and clamps rate to 0.01..5; null resets retime. Duration changes anchor in/out transitions and split scalar/discrete/composite animation curves at the new boundary. Text content preserves word identity/style, explicit word insertion can extend duration, trim fits timed word runs; caption transcript/ownership is synchronized. The first main-track clip remains at zero when startTime is patched. Optional managedTypingSfx=true replaces typing companions for target text clips using the shared authored sound definition, segmented over each pre-edit text duration (maximum 1000 new segments). false removes managed or strongly overlapping authored typing audio; omitted leaves it unchanged. Unrelated audio is retained. Set the reveal-mode patch explicitly; this flag manages companion audio and does not download shared-library bytes. Linked clips change only when explicitly listed; no ripple. Identity/type/media/source-audio bindings, captionSource and HyperFrames source require dedicated capabilities. Generated caption visual reflow is excluded; use caption layout workflow. Retains all other fields and rejects duplicate/missing targets, invalid patches and incompatible state without partial writes. Supports revision, dry run, cancellation, idempotent registry retry keys and undo/redo.",
+        "Atomically patch 1..1000 explicit trackId/elementId clips in a Classic scene. Read the existing clip first; patch merges params and replaces other supplied serializable fields, null removes optional fields. Exact nonnegative safe integer ticks (120000/second). Retime derives duration from the original source span and clamps rate to 0.01..5; null resets retime. Optional speedKeyframes are sorted objects {time: source ticks, rate: 0.01..5, interpolation: hold|linear|easeIn|easeOut|easeInOut}. Easing applies toward the next point. Pitch preservation requires constant speed. Duration changes anchor in/out transitions and split scalar/discrete/composite animation curves at the new boundary. Text content preserves word identity/style, explicit word insertion can extend duration, trim fits timed word runs; caption transcript/ownership is synchronized. The first main-track clip remains at zero when startTime is patched. Optional managedTypingSfx=true replaces typing companions for target text clips using the shared authored sound definition, segmented over each pre-edit text duration (maximum 1000 new segments). false removes managed or strongly overlapping authored typing audio; omitted leaves it unchanged. Unrelated audio is retained. Set the reveal-mode patch explicitly; this flag manages companion audio and does not download shared-library bytes. Reciprocal audio/video partners follow timing changes. Unlink before changing them independently. No ripple. Identity/type/media/source-audio bindings, captionSource and HyperFrames source require dedicated capabilities. Generated caption visual reflow is excluded; use caption layout workflow. Retains all other fields and rejects duplicate/missing targets, invalid patches and incompatible state without partial writes. Supports revision, dry run, cancellation, idempotent registry retry keys and undo/redo.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -429,6 +494,7 @@ fn apply_updates(
             let before = scene["tracks"].clone();
             let tracks = &mut scene["tracks"];
             let mut seen = HashSet::new();
+            let mut mirrored = Vec::new();
             for update in &input.updates {
                 if !seen.insert(&update.element_id) {
                     return Err(invalid("Duplicate clip update"));
@@ -463,6 +529,44 @@ fn apply_updates(
                     ))
                 );
                 let next = apply(&original, &update.patch, main, earliest, &prefix)?;
+                if ["startTime", "duration", "trimStart", "trimEnd", "retime"]
+                    .iter()
+                    .any(|key| update.patch.contains_key(*key))
+                    && let Some((other_track, other)) =
+                        classic_source_audio::peer(&before, &original)
+                {
+                    let other_id = other["id"].as_str().unwrap();
+                    let explicit = input.updates.iter().find(|u| u.element_id == other_id);
+                    if !explicit.is_some_and(|u| {
+                        ["startTime", "duration", "trimStart", "trimEnd", "retime"]
+                            .iter()
+                            .any(|key| u.patch.contains_key(*key))
+                    }) {
+                        let mut patch = Map::new();
+                        for key in ["startTime", "duration", "trimStart", "trimEnd"] {
+                            let delta = ticks(&next[key])? - ticks(&original[key])?;
+                            if delta != 0 {
+                                patch.insert(key.to_owned(), json!(ticks(&other[key])? + delta));
+                            }
+                        }
+                        if let Some(retime) = update.patch.get("retime") {
+                            patch.insert(
+                                "retime".to_owned(),
+                                translate_speed_keyframes(
+                                    retime,
+                                    ticks(&other["trimStart"])? - ticks(&original["trimStart"])?,
+                                )?,
+                            );
+                        }
+                        if !patch.is_empty() {
+                            mirrored.push((
+                                other_track["id"].as_str().unwrap().to_owned(),
+                                other_id.to_owned(),
+                                patch,
+                            ));
+                        }
+                    }
+                }
                 let track = track_mut(tracks, &update.track_id)
                     .ok_or_else(|| invalid("Track not found"))?;
                 let target = track["elements"]
@@ -473,7 +577,56 @@ fn apply_updates(
                     .unwrap();
                 *target = next;
             }
-            classic_captions::sync_after_edit(tracks, &before, &json!(input.updates))?;
+            let mut touched = json!(input.updates);
+            for (track_id, element_id, patch) in mirrored {
+                let track = track_mut(tracks, &track_id).unwrap();
+                let other = track["elements"]
+                    .as_array_mut()
+                    .unwrap()
+                    .iter_mut()
+                    .find(|clip| clip["id"] == element_id)
+                    .unwrap();
+                let next = apply(
+                    other,
+                    &patch,
+                    false,
+                    None,
+                    &format!("linked-trim-{}-{}", input.expected_revision, element_id),
+                )?;
+                if ["startTime", "duration"]
+                    .iter()
+                    .any(|key| patch.get(*key).is_some_and(|value| next[*key] != *value))
+                {
+                    return Err(invalid(
+                        "Linked audio and video cannot remain aligned with this timing change",
+                    ));
+                }
+                *other = next;
+                touched
+                    .as_array_mut()
+                    .unwrap()
+                    .push(json!({"trackId": track_id, "elementId": element_id, "patch": patch}));
+            }
+            for update in &input.updates {
+                let (_, original) =
+                    classic_source_audio::find_clip(&before, &update.element_id).unwrap();
+                if let Some((_, partner)) = classic_source_audio::peer(&before, original)
+                    && original["startTime"] == partner["startTime"]
+                    && original["duration"] == partner["duration"]
+                {
+                    let (_, next) =
+                        classic_source_audio::find_clip(tracks, &update.element_id).unwrap();
+                    let (_, next_partner) = classic_source_audio::peer(tracks, next).unwrap();
+                    if next["startTime"] != next_partner["startTime"]
+                        || next["duration"] != next_partner["duration"]
+                    {
+                        return Err(invalid(
+                            "Linked audio and video must remain aligned; unlink them before editing separately",
+                        ));
+                    }
+                }
+            }
+            classic_captions::sync_after_edit(tracks, &before, &touched)?;
             if let Some(enabled) = input.managed_typing_sfx {
                 reconcile_typing(document, &mut scene, &before, &input.updates, enabled)?;
             }

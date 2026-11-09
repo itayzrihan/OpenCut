@@ -16,7 +16,11 @@ import type {
 	ParallaxTrackDirection,
 } from "@/timeline";
 import * as wasm from "opencut-wasm";
-import { calculateTotalDuration, isExactGlobalTimelineGap } from "@/timeline";
+import {
+	calculateTotalDuration,
+	isExactGlobalTimelineGap,
+	isRetimableElement,
+} from "@/timeline";
 import { TimelineDragSource } from "@/timeline/drag-source";
 import { mergeElementOverlay } from "@/timeline/element-overlay";
 import { applyElementUpdate } from "@/timeline/update-pipeline";
@@ -41,9 +45,17 @@ import {
 	FAST_AUDIO_FRAME_SECONDS,
 } from "@/timeline/audio-silence-analysis";
 import { extractCompactAudioFeaturesGPU } from "@/timeline/audio-silence-analysis-gpu";
-import {} from "@/timeline/element-utils";
+import { getElementsAtTime } from "@/timeline/element-utils";
 import { isElementMuted } from "@/timeline/audio-state";
-import { doesElementHaveEnabledAudio } from "@/timeline/audio-separation";
+import {
+	doesElementHaveEnabledAudio,
+	includeLinkedAudioVideo,
+} from "@/timeline/audio-separation";
+import {
+	buildRippleResizeUpdates,
+	type GroupResizeResult,
+} from "@/timeline/group-resize";
+import { useTimelineStore } from "@/timeline/timeline-store";
 import { getEffectiveRateAt, getSourceTimeAtClipTime } from "@/retime";
 import { findCaptionSourceTrack } from "@/subtitles/caption-tracks";
 import {
@@ -257,18 +269,104 @@ export class TimelineManager {
 		retime?: RetimeConfig;
 		pushHistory?: boolean;
 	}): void {
-		this.updateElements({
-			updates: [
+		const tracks = this.editor.scenes.getActiveScene().tracks;
+		const refs = includeLinkedAudioVideo({
+			tracks,
+			elements: [{ trackId, elementId }],
+		});
+		const anchor =
+			refs.find((ref) => ref.trackId === tracks.main.id) ?? refs[0];
+		const entries = this.getElementsWithTracks({ elements: refs });
+		const target = entries.find(
+			({ element }) => element.id === elementId,
+		)?.element;
+		if (!target || !isRetimableElement(target)) return;
+		const selectedUpdates = entries.flatMap(({ track, element }) => {
+			if (!isRetimableElement(element)) return [];
+			const sourceDelta = element.trimStart - target.trimStart;
+			const clipRetime =
+				retime?.speedKeyframes?.length && sourceDelta !== 0
+					? {
+							...retime,
+							speedKeyframes: retime.speedKeyframes.map((key) => ({
+								...key,
+								time: mediaTime({ ticks: key.time + sourceDelta }),
+							})),
+						}
+					: retime;
+			const next = applyElementUpdate({
+				element,
+				patch: { retime: clipRetime },
+				context: { tracks, trackId: track.id },
+			});
+			return [
 				{
-					trackId,
-					elementId,
+					trackId: track.id,
+					elementId: element.id,
 					patch: {
-						retime,
+						retime: clipRetime,
+						startTime: element.startTime,
+						duration: next.duration,
+						trimStart: element.trimStart,
+						trimEnd: element.trimEnd,
 					},
 				},
-			],
+			];
+		});
+		const original = entries.find(
+			({ element }) => element.id === anchor.elementId,
+		)?.element;
+		const resized = selectedUpdates.find(
+			(update) => update.elementId === anchor.elementId,
+		);
+		if (!original || !resized || resized.patch.duration <= 0) return;
+		const insertedDuration = mediaTime({
+			ticks: resized.patch.duration - original.duration,
+		});
+		if (
+			insertedDuration === 0 ||
+			(anchor.trackId !== tracks.main.id &&
+				!useTimelineStore.getState().rippleEditingEnabled)
+		) {
+			this.updateElements({
+				updates: [{ trackId, elementId, patch: { retime } }],
+				pushHistory,
+			});
+			return;
+		}
+		const timeEdit = {
+			cutTime: addMediaTime({ a: original.startTime, b: original.duration }),
+			insertedDuration,
+		};
+		this.commitTimelineResize({
+			updates: buildRippleResizeUpdates({
+				tracks,
+				selectedUpdates,
+				...timeEdit,
+			}),
+			timeEdit,
 			pushHistory,
 		});
+	}
+
+	commitTimelineResize({
+		updates,
+		timeEdit,
+		pushHistory = true,
+	}: Pick<GroupResizeResult, "updates" | "timeEdit"> & {
+		pushHistory?: boolean;
+	}): void {
+		const command = new UpdateElementsCommand({
+			editor: this.editor,
+			captionTimeEdit: timeEdit,
+			removedElementIds: updates
+				.filter((update) => update.patch.duration <= 0)
+				.map((update) => update.elementId),
+			updates: updates.filter((update) => update.patch.duration > 0),
+		});
+		if (pushHistory)
+			this.editor.command.execute({ command, applyRipple: !timeEdit });
+		else command.execute();
 	}
 
 	moveElements({
@@ -320,6 +418,51 @@ export class TimelineManager {
 			trackId,
 			change: { type: "toggleVisibility" },
 		});
+	}
+
+	splitAtPlayhead(): boolean {
+		const scene = this.editor.scenes.getActiveSceneOrNull();
+		if (!scene) return false;
+		const splitTime = this.editor.playback.getCurrentTime();
+		const atPlayhead = getElementsAtTime({
+			tracks: scene.tracks,
+			time: splitTime,
+		});
+		if (!atPlayhead.length) return false;
+
+		const selection = this.getElementsWithTracks({
+			elements: this.editor.selection.getSelectedElements(),
+		});
+		const selectedTargets = atPlayhead.filter(({ trackId, elementId }) =>
+			selection.some(
+				({ track, element }) =>
+					track.id === trackId && element.id === elementId,
+			),
+		);
+		if (selectedTargets.length) {
+			this.splitElements({ elements: selectedTargets, splitTime });
+			return true;
+		}
+		// After a cut the right half becomes selected at the exact playhead.
+		// Repeating Split at that boundary must not start cutting other tracks.
+		if (
+			selection.some(
+				({ element }) =>
+					splitTime === element.startTime ||
+					splitTime === element.startTime + element.duration,
+			)
+		)
+			return false;
+
+		const selectedTrackIds = new Set(selection.map(({ track }) => track.id));
+		const onSelectedTracks = atPlayhead.filter(({ trackId }) =>
+			selectedTrackIds.has(trackId),
+		);
+		this.splitElements({
+			elements: onSelectedTracks.length ? onSelectedTracks : atPlayhead,
+			splitTime,
+		});
+		return true;
 	}
 
 	splitElements({
@@ -705,6 +848,8 @@ export class TimelineManager {
 				getSourceTimeAtClipTime({
 					clipTime,
 					retime: source.retime,
+					trimStart: source.trimStart,
+					ticks: true,
 				});
 			const sourceTime = mediaTimeToSeconds({
 				time: roundMediaTime({ time: sourceTimeTicks }),
@@ -1024,6 +1169,8 @@ export class TimelineManager {
 				getSourceTimeAtClipTime({
 					clipTime,
 					retime: source.retime,
+					trimStart: source.trimStart,
+					ticks: true,
 				});
 			const sourceTime = mediaTimeToSeconds({
 				time: roundMediaTime({ time: sourceTimeTicks }),
@@ -1338,6 +1485,7 @@ export class TimelineManager {
 				getSourceTimeAtClipTime({
 					clipTime: clipDuration,
 					retime: element.retime,
+					trimStart: sourceStart,
 				});
 			const frames = await extractCompactAudioFeaturesGPU({
 				samples: decoded.samples,
@@ -1564,10 +1712,14 @@ export class TimelineManager {
 		trackId: string;
 		elementId: string;
 	}): void {
+		const clip = this.getElementsWithTracks({
+			elements: [{ trackId, elementId }],
+		})[0]?.element;
+		if (clip?.type !== "video") return;
 		this.editor.command.editClassicSourceAudio({
 			trackId,
 			elementId,
-			action: "toggle",
+			action: clip.isSourceAudioEnabled === false ? "recover" : "extractLinked",
 		});
 	}
 

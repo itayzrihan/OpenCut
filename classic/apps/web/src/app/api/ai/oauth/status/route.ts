@@ -1,22 +1,18 @@
 import { withAccount } from "@/accounts/server";
-import { type NextRequest, NextResponse } from "next/server";
 import {
-	getOpenAIOAuthStatus,
-	setCredentialsCookie,
-} from "@/ai/server/openai-codex-oauth";
+	chatGPTStatus,
+	requireLocalChatGPT,
+} from "@/editor-agent/server/chatgpt";
 
 export const runtime = "nodejs";
 
-async function GETHandler(request: NextRequest) {
-	const result = await getOpenAIOAuthStatus({ request });
-	const response = NextResponse.json(result.status);
-	if (result.refreshedCredentials) {
-		setCredentialsCookie({
-			response,
-			credentials: result.refreshedCredentials,
-		});
-	}
-	return response;
-}
-
-export const GET = withAccount(GETHandler);
+export const GET = withAccount(async (request) => {
+	const denied = requireLocalChatGPT(request);
+	if (denied) return denied;
+	const { sharing, identity, error } = await chatGPTStatus();
+	return Response.json({
+		authenticated: sharing,
+		identity: identity && { email: identity.email, profileName: identity.name },
+		error,
+	});
+});

@@ -1,4 +1,4 @@
-import { mockFetch } from "@/test-support/mock-fetch";
+import { mockFetch } from "../../test-support/mock-fetch";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- This isolated browser fixture supplies the bridge's host boundaries. */
 
 const projectListeners = new Set<() => void>();
@@ -62,6 +62,12 @@ window.fetch = mockFetch(async (input, options) => {
 		publications.push(JSON.parse(String(options?.body)));
 		return Response.json({ ok: true });
 	}
+	if (url.startsWith("/api/mcp-bridge/heartbeat/")) {
+		const previous = publications.at(-1);
+		if (!previous) throw new Error("Heartbeat sent before first snapshot");
+		publications.push({ ...previous, ...JSON.parse(String(options?.body)) });
+		return Response.json({ ok: true });
+	}
 	if (url.startsWith("/api/mcp-bridge/commands/"))
 		return Response.json({ commands: [] });
 	if (url.startsWith("/api/mcp-bridge/session/")) {
@@ -75,6 +81,12 @@ export const mediaTimeToSeconds = ({ time }: { time: number }) => time;
 export const applyAiEditPlan = () => {
 	throw new Error("Unexpected edit command");
 };
+function unexpectedHostEffect(): never {
+	throw new Error("Unexpected host effect in the publication fixture");
+}
+export const performHostEffect = unexpectedHostEffect;
+export const performEarshotPreviewEffect = unexpectedHostEffect;
+export const performSceneAutomationEffect = unexpectedHostEffect;
 export const createTimelineToolDefinitions = () => [];
 export const createTimelineToolSessionState = () => ({});
 export const createTimelineToolRuntime = async () => ({ tools: [] });
@@ -99,6 +111,10 @@ export const buildTimelineDocumentV2 = ({
 	};
 };
 export const editor = {
+	command: {
+		getCanonicalRevision: () => 1,
+		getCanonicalCapabilityRegistry: () => ({ revision: 1, capabilities: [] }),
+	},
 	project: {
 		getActiveOrNull: () => project,
 		subscribe: subscribe(projectListeners),

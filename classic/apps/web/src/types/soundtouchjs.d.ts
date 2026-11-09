@@ -1,7 +1,14 @@
 declare module "soundtouchjs" {
 	export class SoundTouch {
 		tempo: number;
-		pitch: number;
+		readonly stretch: {
+			setParameters(
+				sampleRate: number,
+				sequenceMs: number,
+				seekWindowMs: number,
+				overlapMs: number,
+			): void;
+		};
 	}
 	export class SimpleFilter {
 		constructor(
@@ -12,17 +19,5 @@ declare module "soundtouchjs" {
 		);
 		readonly sourcePosition: number;
 		extract(target: Float32Array, count: number): number;
-	}
-	export class PitchShifter {
-		constructor(
-			context: BaseAudioContext,
-			buffer: AudioBuffer,
-			bufferSize: number,
-			onEnd?: () => void,
-		);
-		tempo: number;
-		pitch: number;
-		connect(destination: AudioNode): void;
-		off(): void;
 	}
 }

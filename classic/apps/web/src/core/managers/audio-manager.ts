@@ -5,7 +5,7 @@ import {
 	renderNoiseReducedWindow,
 } from "@/media/noise-reduction";
 import type { EditorCore } from "@/core";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { TProject } from "@/project/types";
 import { mediaTimeFromSeconds, TICKS_PER_SECOND } from "@/wasm";
 import { clampRetimeRate } from "@/retime/rate";
@@ -104,6 +104,7 @@ function mapParallaxAudioClips({
 			getSourceTimeAtClipTime({
 				clipTime: sourceOffset,
 				retime: clip.retime,
+				trimStart: clip.curveTrimStart ?? clip.trimStart,
 			});
 		const mappedRetime = mapRetimeToTimelineScale({
 			retime: clip.retime,
@@ -116,6 +117,10 @@ function mapParallaxAudioClips({
 				startTime: mappedStartTime,
 				duration: mappedDuration,
 				trimStart: mappedTrimStart,
+				curveTrimStart:
+					(clip.curveTrimStart ?? clip.trimStart) +
+					mappedTrimStart -
+					clip.trimStart,
 				retime: mappedRetime,
 				timelineElement: {
 					...clip.timelineElement,
@@ -415,7 +420,7 @@ export class AudioManager {
 		// sync handles. Ordinary cuts can be decoded in bounded 2s windows.
 		if (
 			!hasAudioProcessing(clip.timelineElement.params) &&
-			(clip.retime ||
+			((clip.retime && !clip.retime.speedKeyframes?.length) ||
 				!this.audioSinks.canReadIndependentRanges({
 					sourceKey: clip.sourceKey,
 					sampleRate: this.audioContext?.sampleRate ?? 0,
@@ -425,11 +430,17 @@ export class AudioManager {
 			return clip;
 		const local = Math.max(0, time - clip.startTime);
 		const start = Math.floor((local + 1e-9) / 2) * 2;
+		const sourceOffset = getSourceTimeAtClipTime({
+			clipTime: start,
+			retime: clip.retime,
+			trimStart: clip.curveTrimStart ?? clip.trimStart,
+		});
 		return {
 			...clip,
 			id: `${clip.id}:audio-window:${start}`,
 			startTime: clip.startTime + start,
-			trimStart: clip.trimStart + start,
+			trimStart: clip.trimStart + sourceOffset,
+			curveTrimStart: (clip.curveTrimStart ?? clip.trimStart) + sourceOffset,
 			duration: Math.min(2, clip.duration - start),
 		};
 	}
@@ -729,6 +740,7 @@ export class AudioManager {
 				getSourceTimeAtClipTime({
 					clipTime: iteratorStartTime - clip.startTime,
 					retime: clip.retime,
+					trimStart: clip.curveTrimStart ?? clip.trimStart,
 				});
 			const iterator = sink.buffers(sourceStartTime);
 			currentIterator = iterator;
@@ -744,6 +756,7 @@ export class AudioManager {
 					getClipTimeAtSourceTime({
 						sourceTime: timestamp - clip.trimStart,
 						retime: clip.retime,
+						trimStart: clip.curveTrimStart ?? clip.trimStart,
 					});
 				if (timelineTime >= clipEnd) break;
 
@@ -995,6 +1008,7 @@ export class AudioManager {
 			clip.procedural !== undefined ||
 			hasAudioProcessing(clip.timelineElement.params) ||
 			clip.duration <= 12 ||
+			!!clip.retime?.speedKeyframes?.length ||
 			(clip.retime?.maintainPitch === true &&
 				clampRetimeRate({ rate: clip.retime.rate }) !== 1)
 		);
@@ -1056,6 +1070,7 @@ export class AudioManager {
 			trimStart: clip.trimStart,
 			trimEnd: clip.trimEnd,
 			retime: clip.retime ?? null,
+			curveTrimStart: clip.curveTrimStart,
 			noiseReduction: noiseReductionAmount(clip.timelineElement.params),
 			dynamics: clip.timelineElement.params,
 			animations: clip.timelineElement.animations,
@@ -1122,6 +1137,7 @@ export class AudioManager {
 				audioContext,
 				sourceBuffer: decodedBuffer,
 				trimStart: useFullSource ? clip.trimStart : 0,
+				curveTrimStart: clip.curveTrimStart ?? clip.trimStart,
 				clipDuration: clip.duration,
 				retime: clip.retime,
 				maintainPitch: clip.retime?.maintainPitch === true,
@@ -1185,6 +1201,7 @@ export class AudioManager {
 			getSourceTimeAtClipTime({
 				clipTime: clip.duration,
 				retime: clip.retime,
+				trimStart: clip.curveTrimStart ?? clip.trimStart,
 			}),
 		);
 		const sourceEnd = sourceStart + sourceDuration;

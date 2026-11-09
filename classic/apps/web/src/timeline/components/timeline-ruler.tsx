@@ -1,3 +1,4 @@
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { type JSX } from "react";
 import { BASE_TIMELINE_PIXELS_PER_SECOND } from "@/timeline/scale";
 import { mediaTimeToSeconds } from "opencut-wasm";
@@ -84,7 +85,9 @@ export function TimelineRuler({
 	}
 
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["aria-label"]}
 			role="slider"
 			tabIndex={0}
 			aria-label="Timeline ruler"
@@ -116,6 +119,6 @@ export function TimelineRuler({
 			>
 				{timelineTicks}
 			</div>
-		</div>
+		</UiLocalized>
 	);
 }

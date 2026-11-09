@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useState } from "react";
 import {
 	getDefaultBackgroundRemovalSettings,
@@ -127,7 +131,9 @@ export function BackgroundRemovalTab({
 	return (
 		<div className="flex h-full flex-col">
 			<div className="sticky top-0 z-10 flex h-11 shrink-0 items-center gap-2 border-b bg-background/95 px-3.5 backdrop-blur">
-				<SectionTitle>Person background</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Person background"} />
+				</SectionTitle>
 				<div className="ml-auto flex items-center gap-1.5">
 					<Button
 						variant="ghost"
@@ -135,10 +141,10 @@ export function BackgroundRemovalTab({
 						disabled={!isDirty}
 						onClick={cancelDraft}
 					>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button size="sm" disabled={!isDirty} onClick={applyDraft}>
-						Apply
+						<UiMessage text={"Apply"} />
 					</Button>
 				</div>
 			</div>
@@ -149,24 +155,34 @@ export function BackgroundRemovalTab({
 			>
 				<SectionHeader
 					trailing={
-						<Switch
+						<UiLocalized<typeof Switch>
+							element={Switch}
+							messageProps={["aria-label"]}
 							checked={draft.enabled}
 							onCheckedChange={(enabled) => updateDraft({ enabled })}
 							aria-label="Enable person background processing"
 						/>
 					}
 				>
-					<SectionTitle>Local AI matte</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Local AI matte"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
 						<p className="text-xs leading-relaxed text-muted-foreground">
-							Detects people on-device with MODNet. Frames stay local; the model
-							downloads once and is cached by the browser.
+							<UiMessage
+								text={
+									"Detects people on-device with MODNet. Frames stay local; the model downloads once and is cached by the browser."
+								}
+							/>
 						</p>
 						<p className="text-xs leading-relaxed text-muted-foreground">
-							Choose an effect and tuning, then Apply. The complete change is
-							stored as one undoable edit.
+							<UiMessage
+								text={
+									"Choose an effect and tuning, then Apply. The complete change is stored as one undoable edit."
+								}
+							/>
 						</p>
 
 						<div className="grid grid-cols-3 gap-1.5">
@@ -189,7 +205,11 @@ export function BackgroundRemovalTab({
 							))}
 						</div>
 
-						<SectionField label="Quality">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Quality"
+						>
 							<Select
 								value={draft.quality}
 								onValueChange={(quality) => {
@@ -203,19 +223,21 @@ export function BackgroundRemovalTab({
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="fast">
-										Fast · 256px / 15 fps preview
+										<UiMessage text={"Fast · 256px / 15 fps preview"} />
 									</SelectItem>
 									<SelectItem value="balanced">
-										Balanced · 384px / 24 fps
+										<UiMessage text={"Balanced · 384px / 24 fps"} />
 									</SelectItem>
 									<SelectItem value="precise">
-										Precise · 512px / 30 fps
+										<UiMessage text={"Precise · 512px / 30 fps"} />
 									</SelectItem>
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 
-						<TuningSlider
+						<UiLocalized<typeof TuningSlider>
+							element={TuningSlider}
+							messageProps={["label"]}
 							label="Mask threshold"
 							value={draft.maskThreshold}
 							min={0.05}
@@ -226,7 +248,9 @@ export function BackgroundRemovalTab({
 								setDraft((value) => ({ ...value, maskThreshold }))
 							}
 						/>
-						<TuningSlider
+						<UiLocalized<typeof TuningSlider>
+							element={TuningSlider}
+							messageProps={["label"]}
 							label="Edge detail"
 							value={draft.edgeContrast}
 							min={0.5}
@@ -237,7 +261,9 @@ export function BackgroundRemovalTab({
 								setDraft((value) => ({ ...value, edgeContrast }))
 							}
 						/>
-						<TuningSlider
+						<UiLocalized<typeof TuningSlider>
+							element={TuningSlider}
+							messageProps={["label"]}
 							label="Edge feather"
 							value={draft.edgeFeather}
 							min={0}
@@ -248,7 +274,9 @@ export function BackgroundRemovalTab({
 								setDraft((value) => ({ ...value, edgeFeather }))
 							}
 						/>
-						<TuningSlider
+						<UiLocalized<typeof TuningSlider>
+							element={TuningSlider}
+							messageProps={["label"]}
 							label="Temporal stability"
 							value={draft.temporalSmoothing}
 							min={0}
@@ -261,7 +289,9 @@ export function BackgroundRemovalTab({
 						/>
 
 						{draft.mode === "blur" && (
-							<TuningSlider
+							<UiLocalized<typeof TuningSlider>
+								element={TuningSlider}
+								messageProps={["label"]}
 								label="Background blur"
 								value={draft.blurStrength}
 								min={0}
@@ -288,11 +318,13 @@ export function BackgroundRemovalTab({
 										htmlFor={`duplicate-background-${element.id}`}
 										className="cursor-pointer text-xs leading-relaxed"
 									>
-										Duplicate to a video layer above
+										<UiMessage text={"Duplicate to a video layer above"} />
 										<span className="mt-0.5 block text-muted-foreground">
-											Uses a free video track only when it cannot overlap;
-											otherwise a new video track is inserted immediately above
-											this clip.
+											<UiMessage
+												text={
+													"Uses a free video track only when it cannot overlap; otherwise a new video track is inserted immediately above this clip."
+												}
+											/>
 										</span>
 									</label>
 								</div>
@@ -311,7 +343,7 @@ export function BackgroundRemovalTab({
 								})
 							}
 						>
-							Reset tuning
+							<UiMessage text={"Reset tuning"} />
 						</Button>
 					</SectionFields>
 				</SectionContent>
@@ -368,14 +400,18 @@ function ModelStatus({
 }) {
 	if (status.state === "idle") {
 		return (
-			<p className="text-xs text-muted-foreground">Model loads when enabled.</p>
+			<p className="text-xs text-muted-foreground">
+				<UiMessage text={"Model loads when enabled."} />
+			</p>
 		);
 	}
 	if (status.state === "loading") {
 		return (
 			<div className="flex flex-col gap-1.5">
 				<div className="flex justify-between text-xs text-muted-foreground">
-					<span>Loading local model</span>
+					<span>
+						<UiMessage text={"Loading local model"} />
+					</span>
 					<span>{status.progress}%</span>
 				</div>
 				<Progress value={status.progress} />
@@ -393,15 +429,19 @@ function ModelStatus({
 						void backgroundRemovalService.retry().catch(() => undefined)
 					}
 				>
-					Retry model
+					<UiMessage text={"Retry model"} />
 				</Button>
 			</div>
 		);
 	}
 	return (
 		<p className="text-xs text-muted-foreground">
-			Ready ·{" "}
-			{status.backend === "webgpu" ? "WebGPU acceleration" : "WASM fallback"}
+			<UiMessage text={"Ready ·"} />{" "}
+			{status.backend === "webgpu" ? (
+				<UiMessage text={"WebGPU acceleration"} />
+			) : (
+				<UiMessage text={"WASM fallback"} />
+			)}
 		</p>
 	);
 }

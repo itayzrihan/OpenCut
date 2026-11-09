@@ -2,6 +2,7 @@ import type { EditorCore } from "@/core";
 import type { MediaAsset } from "@/media/types";
 import type { DirectorJob } from "./types";
 import { fileUrl, canonical } from "./client";
+import { insertSeamless } from "./seamless-connect";
 import { applyReplacement } from "./replace-clip";
 const imports = new Set<string>();
 /** Host bytes pass through the normal canonical Media import; no parallel asset store. */
@@ -86,17 +87,23 @@ export async function importDirectorResult({
 				if (applyReplacement({ editor, job, mediaId }))
 					notify("Clip replaced at its original duration");
 			} catch {
+				notifyWarning("The replacement is in Media. The original clip was left in place.");
+			}
+		} else if (job.seamless) {
+			try {
+				if (insertSeamless({ editor, job, mediaId }))
+					notify("Seamless Connect inserted on the timeline");
+			} catch {
 				notifyWarning(
-					"The replacement is in Media. The original clip was left in place.",
+					"The connection is in Media. Open The Director to insert it at the original cut.",
 				);
 			}
 		} else
 			notify(
-				job.referenceImage
-					? "Replacement reference image is ready"
-					: job.kind === "storyboard"
-						? "Director storyboard ready for review"
-						: "Generated video added to Media",
+				job.referenceImage ? "Replacement reference image is ready"
+				: job.kind === "storyboard"
+					? "Director storyboard ready for review"
+					: "Generated video added to Media",
 			);
 	} finally {
 		imports.delete(key);

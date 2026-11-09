@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useState } from "react";
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -248,32 +252,48 @@ export function TextTransitionsTab({
 			<Section sectionKey={`${element.id}:transitions:${scope.type}`}>
 				<SectionContent className="pt-4">
 					<SectionFields>
-						<SectionField label="Glower">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Glower"
+						>
 							<Switch
 								checked={glowerEnabled}
 								onCheckedChange={(checked) =>
 									updateGlower({ glowerEnabled: checked })
 								}
 							/>
-						</SectionField>
-						<SectionField label="Lightning Storm">
+						</UiLocalized>
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Lightning Storm"
+						>
 							<Switch
 								checked={scopedSettings.lightningStormEnabled ?? false}
 								onCheckedChange={(checked) =>
 									updateGlower({ lightningStormEnabled: checked })
 								}
 							/>
-						</SectionField>
-						<SectionField label="Glitchy">
+						</UiLocalized>
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Glitchy"
+						>
 							<Switch
 								checked={scopedSettings.glitchyEnabled ?? false}
 								onCheckedChange={(checked) =>
 									updateGlower({ glitchyEnabled: checked })
 								}
 							/>
-						</SectionField>
+						</UiLocalized>
 						{glowerEnabled && (
-							<SectionField label="Glow direction">
+							<UiLocalized<typeof SectionField>
+								element={SectionField}
+								messageProps={["label"]}
+								label="Glow direction"
+							>
 								<Select
 									value={scopedSettings.glowerDirection ?? "auto"}
 									onValueChange={(value) =>
@@ -294,9 +314,13 @@ export function TextTransitionsTab({
 										))}
 									</SelectContent>
 								</Select>
-							</SectionField>
+							</UiLocalized>
 						)}
-						<SectionField label="Reveal">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Reveal"
+						>
 							<Select
 								value={revealMode}
 								onValueChange={(value) =>
@@ -314,8 +338,12 @@ export function TextTransitionsTab({
 									))}
 								</SelectContent>
 							</Select>
-						</SectionField>
-						<SectionField label="Transition in">
+						</UiLocalized>
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Transition in"
+						>
 							<Select
 								value={transitionIn}
 								onValueChange={(value) =>
@@ -335,7 +363,7 @@ export function TextTransitionsTab({
 									))}
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 					</SectionFields>
 				</SectionContent>
 			</Section>
@@ -346,32 +374,48 @@ export function TextTransitionsTab({
 		<Section sectionKey={`${element.id}:transitions`}>
 			<SectionContent className="pt-4">
 				<SectionFields>
-					<SectionField label="Glower">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Glower"
+					>
 						<Switch
 							checked={glowerEnabled}
 							onCheckedChange={(checked) =>
 								updateGlower({ glowerEnabled: checked })
 							}
 						/>
-					</SectionField>
-					<SectionField label="Lightning Storm">
+					</UiLocalized>
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Lightning Storm"
+					>
 						<Switch
 							checked={scopedSettings.lightningStormEnabled ?? false}
 							onCheckedChange={(checked) =>
 								updateGlower({ lightningStormEnabled: checked })
 							}
 						/>
-					</SectionField>
-					<SectionField label="Glitchy">
+					</UiLocalized>
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Glitchy"
+					>
 						<Switch
 							checked={scopedSettings.glitchyEnabled ?? false}
 							onCheckedChange={(checked) =>
 								updateGlower({ glitchyEnabled: checked })
 							}
 						/>
-					</SectionField>
+					</UiLocalized>
 					{glowerEnabled && (
-						<SectionField label="Glow direction">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Glow direction"
+						>
 							<Select
 								value={scopedSettings.glowerDirection ?? "auto"}
 								onValueChange={(value) =>
@@ -392,9 +436,13 @@ export function TextTransitionsTab({
 									))}
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 					)}
-					<SectionField label="In transition">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="In transition"
+					>
 						<Select value={inTransitionId} onValueChange={setInTransitionId}>
 							<SelectTrigger>
 								<SelectValue>
@@ -415,8 +463,12 @@ export function TextTransitionsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
-					<SectionField label="In %">
+					</UiLocalized>
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="In %"
+					>
 						<Input
 							type="number"
 							min={0}
@@ -429,8 +481,12 @@ export function TextTransitionsTab({
 								)
 							}
 						/>
-					</SectionField>
-					<SectionField label="Out transition">
+					</UiLocalized>
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Out transition"
+					>
 						<Select value={outTransitionId} onValueChange={setOutTransitionId}>
 							<SelectTrigger>
 								<SelectValue>
@@ -451,8 +507,12 @@ export function TextTransitionsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
-					<SectionField label="Out %">
+					</UiLocalized>
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Out %"
+					>
 						<Input
 							type="number"
 							min={0}
@@ -465,9 +525,9 @@ export function TextTransitionsTab({
 								)
 							}
 						/>
-					</SectionField>
+					</UiLocalized>
 					<Button type="button" onClick={applyTransitions}>
-						Apply transitions
+						<UiMessage text={"Apply transitions"} />
 					</Button>
 					<Button
 						type="button"
@@ -475,7 +535,7 @@ export function TextTransitionsTab({
 						disabled={selectedOverlappingTextEntries.length < 2}
 						onClick={() => applyAndArrange(selectedTextEntries)}
 					>
-						Apply &amp; arrange selected
+						<UiMessage text={"Apply & arrange selected"} />
 					</Button>
 					<Button
 						type="button"
@@ -483,7 +543,7 @@ export function TextTransitionsTab({
 						disabled={allOverlappingTextEntries.length < 2}
 						onClick={() => applyAndArrange(getAllTextEntries())}
 					>
-						Apply &amp; arrange all text
+						<UiMessage text={"Apply & arrange all text"} />
 					</Button>
 				</SectionFields>
 			</SectionContent>
@@ -504,7 +564,9 @@ function TransitionPresetLabel({
 	return (
 		<span className="flex items-center gap-2">
 			{hasTextTransitionSfx({ transitionId, side }) ? (
-				<HugeiconsIcon
+				<UiLocalized<typeof HugeiconsIcon>
+					element={HugeiconsIcon}
+					messageProps={["aria-label"]}
 					icon={VolumeHighIcon}
 					size={14}
 					aria-label="Includes sound effect"

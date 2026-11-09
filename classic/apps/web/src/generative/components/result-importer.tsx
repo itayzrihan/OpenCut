@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { processMediaAssets } from "@/media/processing";
 import { status } from "../client";

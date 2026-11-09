@@ -1,4 +1,9 @@
 "use client";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { FullAutoEditButton } from "@/ai/components/full-auto-edit-button";
 import { sceneActions, type SceneAction } from "@/batch/scene-jobs";
 
@@ -21,7 +26,7 @@ import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { MediaDragOverlay } from "@/components/editor/panels/assets/drag-overlay";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -133,7 +138,11 @@ type MediaListEntry =
  */
 async function pickLocalMediaRecords({ projectId }: { projectId: string }) {
 	if (detectRuntimeTarget() === "electron" && window.opencutElectron) {
-		const paths = await window.opencutElectron.pickMediaFiles();
+		const paths = await window.opencutElectron.pickMediaFiles({
+			title: localizeClientMessage("Import media into POCUT"),
+			media: localizeClientMessage("Media"),
+			allFiles: localizeClientMessage("All Files"),
+		});
 		if (paths.length === 0) return [];
 		return registerLocalMediaPaths({ projectId, paths });
 	}
@@ -479,7 +488,11 @@ function MediaViewContent() {
 					fps: activeProject.settings.fps,
 					canvasSize: activeProject.settings.canvasSize,
 				});
-				toast.success(`Exported “${scene.name}” for Premiere Pro`);
+				toast.success(
+					localizeClientMessage("Exported “{v0}” for Premiere Pro", {
+						v0: String(scene.name),
+					}),
+				);
 			} catch (error) {
 				toast.error(
 					error instanceof Error ? error.message : "Premiere XML export failed",
@@ -552,7 +565,9 @@ function MediaViewContent() {
 				/>
 			)}
 
-			<PanelView
+			<UiLocalized<typeof PanelView>
+				element={PanelView}
+				messageProps={["title"]}
 				title="Assets"
 				actions={
 					<MediaActions
@@ -584,11 +599,13 @@ function MediaViewContent() {
 							useAssetsPanelStore.getState().setActiveTab("catalog")
 						}
 					>
-						Catalog · examples + prompts
+						<UiMessage text={"Catalog · examples + prompts"} />
 					</Button>
 					<div className="flex h-8 items-center gap-2 rounded border px-2">
 						<Search className="size-3.5 shrink-0 text-muted-foreground" />
-						<input
+						<UiLocalized<"input">
+							element={"input"}
+							messageProps={["aria-label", "placeholder"]}
 							aria-label="Search assets"
 							placeholder={folder ? "Search these files" : "Search assets"}
 							value={search}
@@ -596,20 +613,24 @@ function MediaViewContent() {
 							className="w-full min-w-0 bg-transparent text-xs outline-none"
 						/>
 						{search && (
-							<button
+							<UiLocalized<"button">
+								element={"button"}
+								messageProps={["aria-label"]}
 								type="button"
 								aria-label="Clear asset search"
 								onClick={() => setSearch("")}
 							>
 								<X className="size-3.5" />
-							</button>
+							</UiLocalized>
 						)}
 					</div>
 					{library.items.length > 0 && (
 						<div className="flex h-6 items-center gap-1 text-xs">
 							{folder ? (
 								<>
-									<Button
+									<UiLocalized<typeof Button>
+										element={Button}
+										messageProps={["aria-label"]}
 										variant="ghost"
 										size="icon"
 										className="size-6 shrink-0"
@@ -620,12 +641,12 @@ function MediaViewContent() {
 										}}
 									>
 										<ArrowLeft />
-									</Button>
+									</UiLocalized>
 									<span className="truncate" title={folder.name}>
 										{folder.name}
 									</span>
 									<span className="ml-auto shrink-0 text-muted-foreground">
-										{filteredMediaItems.length} files
+										{filteredMediaItems.length} <UiMessage text={"files"} />
 									</span>
 								</>
 							) : (
@@ -641,7 +662,7 @@ function MediaViewContent() {
 										)}
 										onClick={() => setShowAllFiles(false)}
 									>
-										Library
+										<UiMessage text={"Library"} />
 									</button>
 									<button
 										type="button"
@@ -654,7 +675,7 @@ function MediaViewContent() {
 										)}
 										onClick={() => setShowAllFiles(true)}
 									>
-										All files
+										<UiMessage text={"All files"} />
 									</button>
 								</>
 							)}
@@ -683,9 +704,11 @@ function MediaViewContent() {
 					  sequenceScenes.length === 0 &&
 					  visibleCompositions.length === 0 ? (
 						<p className="px-2 py-8 text-center text-xs text-muted-foreground">
-							{query
-								? "No matching assets"
-								: "No resource files in this composition"}
+							{query ? (
+								<UiMessage text={"No matching assets"} />
+							) : (
+								<UiMessage text={"No resource files in this composition"} />
+							)}
 						</p>
 					) : (
 						<SelectableSurface
@@ -716,7 +739,7 @@ function MediaViewContent() {
 						</SelectableSurface>
 					)}
 				</div>
-			</PanelView>
+			</UiLocalized>
 		</>
 	);
 }
@@ -816,7 +839,7 @@ function UnifiedWithAudioAction({ ids }: { ids: string[] }) {
 					);
 			}}
 		>
-			Unify with Audio · סנכרון וידאו ואודיו
+			<UiMessage text={"Unify with Audio"} />
 		</ContextMenuItem>
 	);
 }
@@ -869,7 +892,7 @@ function MediaItemWithContextMenu({
 						});
 					}}
 				>
-					Add to timeline
+					<UiMessage text={"Add to timeline"} />
 				</ContextMenuItem>
 				<ContextMenuItem
 					disabled={!item.file && !item.url}
@@ -885,16 +908,16 @@ function MediaItemWithContextMenu({
 						if (item.file) setTimeout(() => URL.revokeObjectURL(url), 60_000);
 					}}
 				>
-					Download original
+					<UiMessage text={"Download original"} />
 				</ContextMenuItem>
 				<UnifiedWithAudioAction ids={idsToDelete} />
 				<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
-					Unify as Unified Angles
+					<UiMessage text={"Unify as Unified Angles"} />
 				</ContextMenuItem>
 				<ContextMenuItem
 					onClick={() => onCreatePodcastSync({ ids: idsToDelete })}
 				>
-					Create podcast sync sequence
+					<UiMessage text={"Create podcast sync sequence"} />
 				</ContextMenuItem>
 				<ContextMenuItem
 					variant="destructive"
@@ -1165,7 +1188,11 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 					<File className="size-5" />
 				</div>
 				<div className="truncate text-xs">{entry.item.name}</div>
-				{isGrid && <div className="text-[10px]">Resource file</div>}
+				{isGrid && (
+					<div className="text-[10px]">
+						<UiMessage text={"Resource file"} />
+					</div>
+				)}
 			</div>
 		);
 
@@ -1236,7 +1263,7 @@ function SequenceItem({
 			<div className={cn("min-w-0", isGrid ? "w-full px-1.5 py-1" : "flex-1")}>
 				<div className="truncate text-xs font-medium">{scene.name}</div>
 				<div className="truncate text-[11px] text-muted-foreground">
-					Sequence
+					<UiMessage text={"Sequence"} />
 				</div>
 			</div>
 		</button>
@@ -1256,21 +1283,26 @@ function SequenceItem({
 				<ContextMenuContent>
 					{sceneActions.map(([action, label]) => (
 						<ContextMenuItem key={action} onClick={() => setEditAction(action)}>
-							{label} · {ids.length} סצנות
+							{label} · {ids.length}{" "}
+							{ids.length === 1 ? (
+								<UiMessage text={"scene"} />
+							) : (
+								<UiMessage text={"scenes"} />
+							)}
 						</ContextMenuItem>
 					))}
 					<ContextMenuItem
 						onClick={() => onOpenSequence({ sceneId: scene.id })}
 					>
-						Open sequence
+						<UiMessage text={"Open sequence"} />
 					</ContextMenuItem>
 					<ContextMenuItem onClick={() => onUnnestSequence({ scene })}>
 						<SplitSquareHorizontal className="size-4" />
-						Unnest into timeline
+						<UiMessage text={"Unnest into timeline"} />
 					</ContextMenuItem>
 					<ContextMenuItem onClick={() => onPremiereExport({ scene })}>
 						<FileOutput className="size-4" />
-						Export Premiere Pro XML
+						<UiMessage text={"Export Premiere Pro XML"} />
 					</ContextMenuItem>
 				</ContextMenuContent>
 			</ContextMenu>
@@ -1367,7 +1399,9 @@ function MediaPreview({
 	if (item.type === "video") {
 		if (isUnifiedAnglesAsset(item)) {
 			return (
-				<MediaTypePlaceholder
+				<UiLocalized<typeof MediaTypePlaceholder>
+					element={MediaTypePlaceholder}
+					messageProps={["label"]}
 					icon={Video01Icon}
 					label={
 						item.unifiedAngles?.audioFinishingVersion === 1
@@ -1399,7 +1433,9 @@ function MediaPreview({
 		}
 
 		return (
-			<MediaTypePlaceholder
+			<UiLocalized<typeof MediaTypePlaceholder>
+				element={MediaTypePlaceholder}
+				messageProps={["label"]}
 				icon={Video01Icon}
 				label="Video"
 				duration={item.duration}
@@ -1410,7 +1446,9 @@ function MediaPreview({
 
 	if (item.type === "audio") {
 		return (
-			<MediaTypePlaceholder
+			<UiLocalized<typeof MediaTypePlaceholder>
+				element={MediaTypePlaceholder}
+				messageProps={["label"]}
 				icon={MusicNote03Icon}
 				label="Audio"
 				duration={item.duration}
@@ -1420,7 +1458,13 @@ function MediaPreview({
 	}
 
 	return (
-		<MediaTypePlaceholder icon={Image02Icon} label="Unknown" variant="muted" />
+		<UiLocalized<typeof MediaTypePlaceholder>
+			element={MediaTypePlaceholder}
+			messageProps={["label"]}
+			icon={Image02Icon}
+			label="Unknown"
+			variant="muted"
+		/>
 	);
 }
 
@@ -1458,7 +1502,9 @@ function MediaActions({
 			<TooltipProvider>
 				<Tooltip>
 					<TooltipTrigger asChild>
-						<Button
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
 							size="icon"
 							variant="ghost"
 							aria-label={
@@ -1477,13 +1523,15 @@ function MediaActions({
 							) : (
 								<HugeiconsIcon icon={GridViewIcon} />
 							)}
-						</Button>
+						</UiLocalized>
 					</TooltipTrigger>
 					<TooltipContent>
 						<p>
-							{mediaViewMode === "grid"
-								? "Switch to list view"
-								: "Switch to grid view"}
+							{mediaViewMode === "grid" ? (
+								<UiMessage text={"Switch to list view"} />
+							) : (
+								<UiMessage text={"Switch to grid view"} />
+							)}
 						</p>
 					</TooltipContent>
 				</Tooltip>
@@ -1491,7 +1539,9 @@ function MediaActions({
 					<DropdownMenu>
 						<TooltipTrigger asChild>
 							<DropdownMenuTrigger asChild>
-								<Button
+								<UiLocalized<typeof Button>
+									element={Button}
+									messageProps={["aria-label"]}
 									size="icon"
 									variant="ghost"
 									aria-label="Sort assets"
@@ -1499,32 +1549,40 @@ function MediaActions({
 									className="items-center justify-center"
 								>
 									<HugeiconsIcon icon={SortingOneNineIcon} />
-								</Button>
+								</UiLocalized>
 							</DropdownMenuTrigger>
 						</TooltipTrigger>
 						<DropdownMenuContent align="end">
-							<SortMenuItem
+							<UiLocalized<typeof SortMenuItem>
+								element={SortMenuItem}
+								messageProps={["label"]}
 								label="Name"
 								sortKey="name"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
-							<SortMenuItem
+							<UiLocalized<typeof SortMenuItem>
+								element={SortMenuItem}
+								messageProps={["label"]}
 								label="Type"
 								sortKey="type"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
-							<SortMenuItem
+							<UiLocalized<typeof SortMenuItem>
+								element={SortMenuItem}
+								messageProps={["label"]}
 								label="Duration"
 								sortKey="duration"
 								currentSortBy={sortBy}
 								currentSortOrder={sortOrder}
 								onSort={onSort}
 							/>
-							<SortMenuItem
+							<UiLocalized<typeof SortMenuItem>
+								element={SortMenuItem}
+								messageProps={["label"]}
 								label="File size"
 								sortKey="size"
 								currentSortBy={sortBy}
@@ -1535,32 +1593,46 @@ function MediaActions({
 					</DropdownMenu>
 					<TooltipContent>
 						<p>
-							Sort by {sortBy} (
-							{sortOrder === "asc" ? "ascending" : "descending"})
+							<UiMessage text={"Sort by"} /> {sortBy} (
+							{sortOrder === "asc" ? (
+								<UiMessage text={"ascending"} />
+							) : (
+								<UiMessage text={"descending"} />
+							)}
+							)
 						</p>
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="ghost"
 						size="icon"
 						aria-label="More asset actions"
 						disabled={isProcessing}
 					>
 						<MoreHorizontal />
-					</Button>
+					</UiLocalized>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
 					<DropdownMenuItem onSelect={onUnify} disabled={!canUnify}>
 						<Layers2 className="size-4" />
-						Unify selected angles
+						<UiMessage text={"Unify selected angles"} />
 					</DropdownMenuItem>
 					<DropdownMenuItem onSelect={onPodcastSync}>
 						<SplitSquareHorizontal className="size-4" />
-						Podcast multicam
-						{selectedCount > 0 ? ` (${selectedCount} selected)` : ""}
+						<UiMessage text={"Podcast multicam"} />
+						{selectedCount > 0 ? (
+							<UiMessage
+								text={" ({v0} selected)"}
+								values={{ v0: String(selectedCount) }}
+							/>
+						) : (
+							""
+						)}
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
@@ -1573,11 +1645,13 @@ function MediaActions({
 					className="gap-1.5 rounded-r-none"
 				>
 					<HugeiconsIcon icon={CloudUploadIcon} />
-					Import
+					<UiMessage text={"Import"} />
 				</Button>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
 							variant="outline"
 							size="sm"
 							disabled={isProcessing}
@@ -1585,17 +1659,17 @@ function MediaActions({
 							aria-label="Import options"
 						>
 							<ChevronDown />
-						</Button>
+						</UiLocalized>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align="end">
 						<DropdownMenuItem onSelect={onImport}>
-							Media files…
+							<UiMessage text={"Media files…"} />
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={onImportBrowser}>
-							Upload media files…
+							<UiMessage text={"Upload media files…"} />
 						</DropdownMenuItem>
 						<DropdownMenuItem onSelect={onImportHyperframes}>
-							HyperFrames project folder…
+							<UiMessage text={"HyperFrames project folder…"} />
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

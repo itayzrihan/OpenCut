@@ -1,7 +1,8 @@
-import { withAccount } from "@/accounts/server";
-import { handleDeviceLogin } from "@/ai/server/device-login";
-import type { NextRequest } from "next/server";
 export const runtime = "nodejs";
-export const POST = withAccount((request: NextRequest) =>
-	handleDeviceLogin({ request: request }),
-);
+
+export function POST() {
+	return Response.json(
+		{ error: "The separate Codex sign-in was retired. Connect ChatGPT in the POCUT Agent." },
+		{ status: 410, headers: { "Cache-Control": "no-store" } },
+	);
+}

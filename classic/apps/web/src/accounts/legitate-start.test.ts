@@ -43,7 +43,7 @@ test("first link requires the local account in the same browser, while an existi
 	expect(unauthenticated.headers.get("set-cookie")).toBe(null);
 	expect(unauthenticated.headers.get("cache-control")).toBe("no-store");
 	expect(await unauthenticated.text()).toContain(
-		"Sign in to your OpenCut workspace first",
+		"Sign in to your POCUT workspace first",
 	);
 	const session = await registerAccount({
 		login: "legitate-fixture",

@@ -1,4 +1,7 @@
 "use client";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import {
 	Dialog,
@@ -11,7 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Download, ListPlus } from "lucide-react";
 import {
 	ExportSettingsFields,
@@ -327,7 +330,10 @@ export function ProjectsExportDialog({
 			setWorkerIndex(0);
 		} else if (created.length === remaining.length) {
 			toast.success(
-				`${created.length} project${created.length === 1 ? "" : "s"} added to Render Queue`,
+				localizeClientMessage("{v0} project{v1} added to Render Queue", {
+					v0: String(created.length),
+					v1: String(created.length === 1 ? "" : "s"),
+				}),
 			);
 			onClose();
 		}
@@ -359,19 +365,29 @@ export function ProjectsExportDialog({
 			<DialogContent className="max-w-3xl max-h-[90vh] flex flex-col overflow-hidden">
 				<DialogHeader className="shrink-0">
 					<DialogTitle>
-						Export{" "}
-						{projectIds.length === 1
-							? "project"
-							: `${projectIds.length} projects`}
+						<UiMessage text={"Export"} />{" "}
+						{projectIds.length === 1 ? (
+							<UiMessage text={"project"} />
+						) : (
+							<UiMessage
+								text={"{v0} projects"}
+								values={{ v0: String(projectIds.length) }}
+							/>
+						)}
 					</DialogTitle>
 					<DialogDescription>
-						Choose a scene and export settings for each project. Exports use the
-						latest saved version; save any changes in the editor first.
+						<UiMessage
+							text={
+								"Choose a scene and export settings for each project. Exports use the latest saved version; save any changes in the editor first."
+							}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="overflow-y-auto min-h-0">
 					<section className="space-y-3">
-						<h3 className="text-sm font-medium">Settings for all projects</h3>
+						<h3 className="text-sm font-medium">
+							<UiMessage text={"Settings for all projects"} />
+						</h3>
 						<ExportSettingsFields
 							value={common}
 							onChange={setCommon}
@@ -389,18 +405,21 @@ export function ProjectsExportDialog({
 								>
 									<div className="flex flex-wrap items-center justify-between gap-2">
 										<h3 className="text-sm font-medium">
-											{row.info?.name ?? "Loading saved project…"}
+											{row.info?.name ?? (
+												<UiMessage text={"Loading saved project…"} />
+											)}
 										</h3>
 										{row.info && (
 											<span className="text-xs text-muted-foreground">
-												Saved revision {row.info.sourceRevision}
+												<UiMessage text={"Saved revision"} />{" "}
+												{row.info.sourceRevision}
 											</span>
 										)}
 									</div>
 									{row.info && (
 										<>
 											<label className="grid gap-1 text-sm">
-												Scene
+												<UiMessage text={"Scene"} />
 												<select
 													aria-label={`Scene for ${row.info.name}`}
 													className="bg-background border rounded p-2"
@@ -419,7 +438,14 @@ export function ProjectsExportDialog({
 													{row.info.scenes.map((s) => (
 														<option key={s.id} value={s.id}>
 															{s.name}
-															{s.isMain ? " · Main" : ""}
+															{s.isMain ? (
+																<>
+																	{" "}
+																	<UiMessage text={"· Main"} />
+																</>
+															) : (
+																""
+															)}
 														</option>
 													))}
 												</select>
@@ -444,7 +470,7 @@ export function ProjectsExportDialog({
 														)
 													}
 												/>
-												Custom settings for this project
+												<UiMessage text={"Custom settings for this project"} />
 											</label>
 											{row.override && (
 												<ExportSettingsFields
@@ -464,7 +490,9 @@ export function ProjectsExportDialog({
 									)}
 									{row.checking && (
 										<p className="text-xs text-muted-foreground">
-											Reading saved scene and checking encoder…
+											<UiMessage
+												text={"Reading saved scene and checking encoder…"}
+											/>
 										</p>
 									)}
 									{row.error && (
@@ -492,12 +520,12 @@ export function ProjectsExportDialog({
 							size="sm"
 							onClick={() => setRefreshToken((t) => t + 1)}
 						>
-							Refresh saved versions
+							<UiMessage text={"Refresh saved versions"} />
 						</Button>
 					)}
 					{error && (
 						<p role="alert" className="text-sm text-destructive">
-							{error}
+							<UiValue>{error}</UiValue>
 						</p>
 					)}
 				</DialogBody>
@@ -505,22 +533,28 @@ export function ProjectsExportDialog({
 					{busy ? (
 						<>
 							<p className="mr-auto text-sm text-muted-foreground self-center">
-								{submitting
-									? "Preparing saved snapshots…"
-									: "Exporting to your selected destination…"}
+								{submitting ? (
+									<UiMessage text={"Preparing saved snapshots…"} />
+								) : (
+									<UiMessage text={"Exporting to your selected destination…"} />
+								)}
 							</p>
 							<Button
 								variant="outline"
 								disabled={submitting}
 								onClick={() => void cancel()}
 							>
-								Cancel exports
+								<UiMessage text={"Cancel exports"} />
 							</Button>
 						</>
 					) : (
 						<>
 							<Button variant="outline" onClick={onClose}>
-								{submitted.current.size ? "Done" : "Cancel"}
+								{submitted.current.size ? (
+									<UiMessage text={"Done"} />
+								) : (
+									<UiMessage text={"Cancel"} />
+								)}
 							</Button>
 							<Button
 								variant="outline"
@@ -528,14 +562,14 @@ export function ProjectsExportDialog({
 								onClick={() => void start("direct")}
 							>
 								<Download />
-								Export directly
+								<UiMessage text={"Export directly"} />
 							</Button>
 							<Button
 								disabled={!ready || !remaining.length}
 								onClick={() => void start("queue")}
 							>
 								<ListPlus />
-								Add to Render Queue
+								<UiMessage text={"Add to Render Queue"} />
 							</Button>
 						</>
 					)}
@@ -551,6 +585,6 @@ function outputName(info: SavedExportInfo) {
 		`${info.name}${info.scenes.length > 1 ? ` · ${scene?.name ?? "Scene"}` : ""}`
 			.replace(/[<>:"/\\|?*\u0000-\u001f]/g, "-")
 			.trim()
-			.slice(0, 160) || "OpenCut export";
+			.slice(0, 160) || "POCUT export";
 	return `${stem}.${info.options.format}`;
 }

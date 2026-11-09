@@ -1,8 +1,12 @@
 "use client";
 
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { LogOut, Send, X } from "lucide-react";
+import { toast } from "@/i18n/toast";
+import { Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,7 +82,7 @@ export function AiChatView() {
 	const { selectedElements } = useElementSelection();
 	const rangeSelection = useTimelineStore((state) => state.aiRangeSelection);
 	const activeRange = getSelectedTimelineRange(rangeSelection);
-	const { status, isLoading, login, logout } = useAiOAuthStatus();
+	const { status, isLoading, login } = useAiOAuthStatus();
 	const [message, setMessage] = useState("");
 	const [enabled, setEnabled] = useState<Set<ContextOption>>(
 		() => new Set(["playhead", "selected", "range", "layers"]),
@@ -332,27 +336,22 @@ export function AiChatView() {
 				<div className="min-w-0">
 					<div className="text-sm font-medium">AI</div>
 					<div className="text-muted-foreground truncate text-xs">
-						{isLoading
-							? "Checking login..."
-							: identityLabel
-								? identityLabel
-								: "OpenAI login required"}
+						{isLoading ? (
+							<UiMessage text={"Checking login..."} />
+						) : identityLabel ? (
+							identityLabel
+						) : (
+							<UiMessage text={"Connect ChatGPT in the Agent"} />
+						)}
 					</div>
 				</div>
-				{status.authenticated ? (
-					<Button
-						variant="text"
-						size="icon"
-						onClick={logout}
-						aria-label="Log out"
-					>
-						<LogOut className="size-4" />
-					</Button>
-				) : (
-					<Button size="sm" onClick={login}>
-						Log in
-					</Button>
-				)}
+				<Button size="sm" variant="outline" onClick={login}>
+					{status.authenticated ? (
+						<UiMessage text={"Manage in Agent"} />
+					) : (
+						<UiMessage text={"Connect in Agent"} />
+					)}
+				</Button>
 			</div>
 			{status.error && !status.authenticated && (
 				<div className="border-b border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -423,7 +422,9 @@ export function AiChatView() {
 				</div>
 
 				<div className="mt-3">
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["placeholder"]}
 						value={message}
 						onChange={(event) => setMessage(event.target.value)}
 						placeholder="Ask for an edit"
@@ -445,7 +446,9 @@ export function AiChatView() {
 
 				{citations.length > 0 && (
 					<div className="mt-3 rounded-sm border p-3 text-xs">
-						<div className="font-medium">Web sources</div>
+						<div className="font-medium">
+							<UiMessage text={"Web sources"} />
+						</div>
 						<ul className="mt-2 space-y-1.5">
 							{citations.map((citation) => (
 								<li key={citation.url} className="min-w-0">
@@ -480,7 +483,7 @@ export function AiChatView() {
 				{isRunning ? (
 					<Button className="w-full" variant="secondary" onClick={handleCancel}>
 						<X className="size-4" />
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 				) : (
 					<Button
@@ -489,7 +492,7 @@ export function AiChatView() {
 						onClick={handleSend}
 					>
 						<Send className="size-4" />
-						Send
+						<UiMessage text={"Send"} />
 					</Button>
 				)}
 			</div>

@@ -34,6 +34,8 @@ pub use transcription_recovery::*;
 mod restore_silence_captions;
 pub use restore_silence_captions::*;
 mod source_document;
+mod speed_curve;
+pub use speed_curve::SpeedCurve;
 
 pub use captions::*;
 pub use edit_provenance::*;

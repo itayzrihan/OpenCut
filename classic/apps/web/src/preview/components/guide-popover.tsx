@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { AnimatePresence, motion } from "motion/react";
 import { GUIDE_REGISTRY, getGuideById } from "@/guides";
 import { usePreviewStore } from "@/preview/preview-store";
@@ -23,7 +24,9 @@ export function GridPopover({ children }: { children: React.ReactNode }) {
 			<PopoverTrigger>{children}</PopoverTrigger>
 			<PopoverContent sideOffset={8} className="w-60 px-0">
 				<div className="flex flex-col gap-2 px-4">
-					<Label>Guides</Label>
+					<Label>
+						<UiMessage text={"Guides"} />
+					</Label>
 					<div className="grid grid-cols-3 gap-1">
 						{GUIDE_REGISTRY.map((guide) => (
 							<GridItem

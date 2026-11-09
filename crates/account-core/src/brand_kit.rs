@@ -11,6 +11,23 @@ pub struct BrandLogo {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub enum BrandImageKind {
+    Character,
+    Image,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BrandImage {
+    pub asset_id: String,
+    pub name: String,
+    pub kind: BrandImageKind,
+    #[serde(default)]
+    pub tags: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct BrandKit {
     pub id: String,
@@ -25,6 +42,8 @@ pub struct BrandKit {
     pub heading_font: String,
     pub body_font: String,
     pub logo: Option<BrandLogo>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub images: Vec<BrandImage>,
     #[serde(default)]
     pub music_ids: Vec<String>,
     #[serde(default)]
@@ -75,6 +94,30 @@ impl BrandKit {
             super::validate_id(&logo.asset_id)?;
             if logo.width == 0 || logo.height == 0 || logo.width > 32768 || logo.height > 32768 {
                 return Err("Invalid logo dimensions".into());
+            }
+        }
+        if self.images.len() > 64 {
+            return Err("A Brand Kit can contain up to 64 images".into());
+        }
+        let mut image_ids = std::collections::BTreeSet::new();
+        for image in &self.images {
+            super::validate_id(&image.asset_id)?;
+            super::validate_name(&image.name)?;
+            if !image_ids.insert(&image.asset_id) {
+                return Err("Duplicate Brand Kit image".into());
+            }
+            if image.tags.len() > 12 {
+                return Err("An image can have up to 12 tags".into());
+            }
+            let mut tags = std::collections::BTreeSet::new();
+            for tag in &image.tags {
+                let trimmed = tag.trim();
+                if trimmed.is_empty() || tag.len() > 96 || tag.chars().any(char::is_control) {
+                    return Err("Image tags must be non-empty and at most 96 bytes".into());
+                }
+                if !tags.insert(trimmed.to_lowercase()) {
+                    return Err("Duplicate image tag".into());
+                }
             }
         }
         Ok(())

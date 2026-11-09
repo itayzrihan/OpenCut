@@ -1,8 +1,16 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
-import { BACKGROUND_PRESETS, type BackgroundPreset } from "@/backgrounds/presets";
+import { toast } from "@/i18n/toast";
+import {
+	BACKGROUND_PRESETS,
+	type BackgroundPreset,
+} from "@/backgrounds/presets";
 import {
 	Section,
 	SectionContent,
@@ -139,7 +147,9 @@ export function SpeakerFrameBreakoutPropertiesTab({
 		bindings: persistedBindings,
 		mediaAssets: editor.media.getAssets(),
 		settings: persistedSettings,
-		maxTrackIndexShift: scene ? getDisplayTracks({ tracks: scene.tracks }).length : 0,
+		maxTrackIndexShift: scene
+			? getDisplayTracks({ tracks: scene.tracks }).length
+			: 0,
 	});
 	const isAppliedAndCurrent = isSpeakerFrameBreakoutAppliedAndCurrent({
 		layer: element,
@@ -159,13 +169,8 @@ export function SpeakerFrameBreakoutPropertiesTab({
 
 	const updateNumber = ({ key, value }: { key: string; value: number }) =>
 		setDraft((current) => ({ ...current, [key]: value }));
-	const draftNumber = ({
-		key,
-		fallback,
-	}: {
-		key: string;
-		fallback: number;
-	}) => readDraftNumber({ params: draft, key, fallback });
+	const draftNumber = ({ key, fallback }: { key: string; fallback: number }) =>
+		readDraftNumber({ params: draft, key, fallback });
 	const updateBackground = (presetId: string) => {
 		const preset = backgrounds.find((entry) => entry.id === presetId);
 		if (!preset) return;
@@ -193,7 +198,10 @@ export function SpeakerFrameBreakoutPropertiesTab({
 				onProgress: setProgress,
 			});
 			toast.success(
-				`Speaker Frame Breakout ready · ${result.preparedFrames} cached mattes`,
+				localizeClientMessage(
+					"Speaker Frame Breakout ready · {v0} cached mattes",
+					{ v0: String(result.preparedFrames) },
+				),
 			);
 		} catch (error) {
 			if (error instanceof DOMException && error.name === "AbortError") {
@@ -223,7 +231,9 @@ export function SpeakerFrameBreakoutPropertiesTab({
 	return (
 		<div className="flex h-full flex-col">
 			<div className="sticky top-0 z-10 flex h-11 shrink-0 items-center gap-2 border-b bg-background/95 px-3.5 backdrop-blur">
-				<SectionTitle>Speaker Frame Breakout</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Speaker Frame Breakout"} />
+				</SectionTitle>
 				<div className="ml-auto flex items-center gap-1.5">
 					{isApplying ? (
 						<Button
@@ -231,7 +241,7 @@ export function SpeakerFrameBreakoutPropertiesTab({
 							size="sm"
 							onClick={() => applyController.current?.abort()}
 						>
-							Cancel
+							<UiMessage text={"Cancel"} />
 						</Button>
 					) : (
 						<>
@@ -243,18 +253,20 @@ export function SpeakerFrameBreakoutPropertiesTab({
 									setDraft(buildSpeakerFrameBreakoutDraftParams({ element }))
 								}
 							>
-								Reset
+								<UiMessage text={"Reset"} />
 							</Button>
 							<Button
 								size="sm"
 								disabled={!applyRequired || persistedBindings.length === 0}
 								onClick={() => void apply()}
 							>
-								{!applyRequired && persistedSettings.matteApplied
-									? "Applied"
-									: persistedSettings.matteApplied
-										? "Reapply"
-										: "Apply"}
+								{!applyRequired && persistedSettings.matteApplied ? (
+									<UiMessage text={"Applied"} />
+								) : persistedSettings.matteApplied ? (
+									<UiMessage text={"Reapply"} />
+								) : (
+									<UiMessage text={"Apply"} />
+								)}
 							</Button>
 						</>
 					)}
@@ -263,13 +275,18 @@ export function SpeakerFrameBreakoutPropertiesTab({
 
 			<Section showTopBorder={false} sectionKey={`${element.id}:smart-status`}>
 				<SectionHeader>
-					<SectionTitle>Prepared effect</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Prepared effect"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
 						<p className="text-xs leading-relaxed text-muted-foreground">
-							The layer binds to the nearest visible video underneath it.
-							Background removal runs only when you press Apply.
+							<UiMessage
+								text={
+									"The layer binds to the nearest visible video underneath it. Background removal runs only when you press Apply."
+								}
+							/>
 						</p>
 						<SmartLayerStatus
 							hasSource={persistedBindings.length > 0}
@@ -281,7 +298,9 @@ export function SpeakerFrameBreakoutPropertiesTab({
 						{isApplying && progress && (
 							<div className="flex flex-col gap-1.5">
 								<div className="flex justify-between text-xs text-muted-foreground">
-									<span>Preparing person mattes</span>
+									<span>
+										<UiMessage text={"Preparing person mattes"} />
+									</span>
 									<span>
 										{progress.completedFrames}/{progress.totalFrames}
 									</span>
@@ -292,7 +311,9 @@ export function SpeakerFrameBreakoutPropertiesTab({
 						{modelStatus.state === "loading" && !isApplying && (
 							<div className="flex flex-col gap-1.5">
 								<div className="flex justify-between text-xs text-muted-foreground">
-									<span>Loading local model</span>
+									<span>
+										<UiMessage text={"Loading local model"} />
+									</span>
 									<span>{modelStatus.progress}%</span>
 								</div>
 								<Progress value={modelStatus.progress} />
@@ -310,7 +331,7 @@ export function SpeakerFrameBreakoutPropertiesTab({
 										void backgroundRemovalService.retry().catch(() => undefined)
 									}
 								>
-									Retry model
+									<UiMessage text={"Retry model"} />
 								</Button>
 							</div>
 						)}
@@ -320,11 +341,17 @@ export function SpeakerFrameBreakoutPropertiesTab({
 
 			<Section sectionKey={`${element.id}:smart-background`}>
 				<SectionHeader>
-					<SectionTitle>Background</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Background"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<SectionField label="Preset">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Preset"
+						>
 							<Select
 								value={String(draft.backgroundPresetId ?? "paper-grid")}
 								onValueChange={updateBackground}
@@ -341,42 +368,46 @@ export function SpeakerFrameBreakoutPropertiesTab({
 									))}
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 					</SectionFields>
 				</SectionContent>
 			</Section>
 
 			<Section sectionKey={`${element.id}:smart-layout`}>
 				<SectionHeader>
-					<SectionTitle>Speaker frame</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Speaker frame"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Horizontal position"
 							value={draftNumber({ key: "positionX", fallback: 0 })}
 							min={-960}
 							max={960}
 							step={10}
 							format={(value) => `${Math.round(value)} px`}
-							onChange={(value) =>
-								updateNumber({ key: "positionX", value })
-							}
+							onChange={(value) => updateNumber({ key: "positionX", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Vertical position"
 							value={draftNumber({ key: "positionY", fallback: 410 })}
 							min={-540}
 							max={1080}
 							step={10}
 							format={(value) => `${Math.round(value)} px`}
-							onChange={(value) =>
-								updateNumber({ key: "positionY", value })
-							}
+							onChange={(value) => updateNumber({ key: "positionY", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Scale"
 							value={draftNumber({ key: "scaleX", fallback: 0.7 })}
 							min={0.2}
@@ -392,31 +423,33 @@ export function SpeakerFrameBreakoutPropertiesTab({
 							}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Frame top crop"
 							value={draftNumber({ key: "cropTop", fallback: 0.22 })}
 							min={0}
 							max={0.8}
 							step={0.01}
 							format={(value) => `${Math.round(value * 100)}%`}
-							onChange={(value) =>
-								updateNumber({ key: "cropTop", value })
-							}
+							onChange={(value) => updateNumber({ key: "cropTop", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Corner radius"
 							value={draftNumber({ key: "cornerRadius", fallback: 0.08 })}
 							min={0}
 							max={0.3}
 							step={0.01}
 							format={(value) => `${Math.round(value * 100)}%`}
-							onChange={(value) =>
-								updateNumber({ key: "cornerRadius", value })
-							}
+							onChange={(value) => updateNumber({ key: "cornerRadius", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Fade in"
 							value={draftNumber({
 								key: "fadeInDuration",
@@ -431,7 +464,9 @@ export function SpeakerFrameBreakoutPropertiesTab({
 							}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Fade out"
 							value={draftNumber({
 								key: "fadeOutDuration",
@@ -452,11 +487,17 @@ export function SpeakerFrameBreakoutPropertiesTab({
 
 			<Section sectionKey={`${element.id}:smart-matte`}>
 				<SectionHeader>
-					<SectionTitle>Person matte</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Person matte"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<SectionFields>
-						<SectionField label="Quality">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Quality"
+						>
 							<Select
 								value={String(draft.matteQuality ?? "precise")}
 								onValueChange={(matteQuality) =>
@@ -468,13 +509,21 @@ export function SpeakerFrameBreakoutPropertiesTab({
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="fast">Fast · 256px</SelectItem>
-									<SelectItem value="balanced">Balanced · 384px</SelectItem>
-									<SelectItem value="precise">Precise · 512px</SelectItem>
+									<SelectItem value="fast">
+										<UiMessage text={"Fast · 256px"} />
+									</SelectItem>
+									<SelectItem value="balanced">
+										<UiMessage text={"Balanced · 384px"} />
+									</SelectItem>
+									<SelectItem value="precise">
+										<UiMessage text={"Precise · 512px"} />
+									</SelectItem>
 								</SelectContent>
 							</Select>
-						</SectionField>
-						<NumberSlider
+						</UiLocalized>
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Mask threshold"
 							value={draftNumber({ key: "maskThreshold", fallback: 0.5 })}
 							min={0.05}
@@ -486,31 +535,33 @@ export function SpeakerFrameBreakoutPropertiesTab({
 							}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Edge detail"
 							value={draftNumber({ key: "edgeContrast", fallback: 1 })}
 							min={0.5}
 							max={2.5}
 							step={0.05}
 							format={(value) => `${Math.round(value * 100)}%`}
-							onChange={(value) =>
-								updateNumber({ key: "edgeContrast", value })
-							}
+							onChange={(value) => updateNumber({ key: "edgeContrast", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Edge feather"
 							value={draftNumber({ key: "edgeFeather", fallback: 0.5 })}
 							min={0}
 							max={8}
 							step={0.25}
 							format={(value) => `${value.toFixed(2)} px`}
-							onChange={(value) =>
-								updateNumber({ key: "edgeFeather", value })
-							}
+							onChange={(value) => updateNumber({ key: "edgeFeather", value })}
 							disabled={isApplying}
 						/>
-						<NumberSlider
+						<UiLocalized<typeof NumberSlider>
+							element={NumberSlider}
+							messageProps={["label"]}
 							label="Temporal stability"
 							value={draftNumber({
 								key: "temporalSmoothing",
@@ -548,34 +599,43 @@ function SmartLayerStatus({
 	if (!hasSource) {
 		return (
 			<p className="text-xs text-destructive">
-				No visible video is located below this layer.
+				<UiMessage text={"No visible video is located below this layer."} />
 			</p>
 		);
 	}
 	if (isDirty) {
 		return (
 			<p className="text-xs text-amber-500">
-				Settings changed · press Reapply to commit the new look.
+				<UiMessage
+					text={"Settings changed · press Reapply to commit the new look."}
+				/>
 			</p>
 		);
 	}
 	if (!isAppliedAndCurrent) {
 		return (
 			<p className="text-xs text-amber-500">
-				Apply required · the layer range or source has changed.
+				<UiMessage
+					text={"Apply required · the layer range or source has changed."}
+				/>
 			</p>
 		);
 	}
 	if (!hasPreparedOutput) {
 		return (
 			<p className="text-xs text-emerald-500">
-				Ready; mattes will restore automatically during preview and export.
+				<UiMessage
+					text={
+						"Ready; mattes will restore automatically during preview and export."
+					}
+				/>
 			</p>
 		);
 	}
 	return (
 		<p className="text-xs text-emerald-500">
-			Ready for smooth playback{backend ? ` · ${backend.toUpperCase()}` : ""}
+			<UiMessage text={"Ready for smooth playback"} />
+			{backend ? ` · ${backend.toUpperCase()}` : ""}
 		</p>
 	);
 }

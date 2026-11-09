@@ -1,5 +1,5 @@
 import type { EditorCore } from "@/core";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { MediaAsset } from "@/media/types";
 import { storageService } from "@/services/storage/service";
 import { generateUUID } from "@/utils/id";

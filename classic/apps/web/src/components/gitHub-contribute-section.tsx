@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import { SOCIAL_LINKS } from "@/site/social";
@@ -8,8 +9,8 @@ export function GitHubContributeSection({
 	title,
 	description,
 }: {
-	title: string;
-	description: string;
+	title: React.ReactNode;
+	description: React.ReactNode;
 }) {
 	return (
 		<div className="flex flex-col gap-6">
@@ -25,7 +26,7 @@ export function GitHubContributeSection({
 				>
 					<Button className="w-full" size="lg">
 						<HugeiconsIcon icon={GithubIcon} />
-						Start contributing
+						<UiMessage text={"Start contributing"} />
 					</Button>
 				</Link>
 				<Link
@@ -35,7 +36,7 @@ export function GitHubContributeSection({
 				>
 					<Button variant="outline" className="w-full" size="lg">
 						<HugeiconsIcon icon={Link04Icon} />
-						Report issues
+						<UiMessage text={"Report issues"} />
 					</Button>
 				</Link>
 			</div>

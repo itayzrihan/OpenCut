@@ -311,6 +311,8 @@ async function resolveSpeakerFrameBreakoutNode({
 		getSourceTimeAtClipTime({
 			clipTime: sourceClipTime,
 			retime: source.retime,
+			trimStart: source.trimStart,
+			ticks: true,
 		});
 	const sourceTime = mediaTimeToSeconds({
 		time: roundMediaTime({ time: sourceTimeTicks }),
@@ -492,6 +494,8 @@ async function resolvePersonCutoutLayerNode({
 		getSourceTimeAtClipTime({
 			clipTime: sourceClipTime,
 			retime: source.retime,
+			trimStart: source.trimStart,
+			ticks: true,
 		});
 	const sourceTime = mediaTimeToSeconds({
 		time: roundMediaTime({ time: sourceTimeTicks }),
@@ -775,6 +779,8 @@ async function resolveVideoNode({
 		getSourceTimeAtClipTime({
 			clipTime,
 			retime: node.params.retime,
+			trimStart: node.params.trimStart,
+			ticks: true,
 		});
 	const frame = await videoCache.getFrameAt({
 		mediaId: node.previewDecoderId ?? node.params.mediaId,
@@ -1130,6 +1136,8 @@ async function resolveBackdropSource({
 			getSourceTimeAtClipTime({
 				clipTime,
 				retime: node.params.retime,
+				trimStart: node.params.trimStart,
+				ticks: true,
 			});
 		const frame = await videoCache.getFrameAt({
 			mediaId: node.params.mediaId,

@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo } from "react";
@@ -97,9 +101,15 @@ function buildOverlayMovementTimelineItems({
 
 export function OverlayMovementView() {
 	return (
-		<PanelView title="Overlay Movement">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Overlay Movement"
+		>
 			<ClassicZooms />
-			<h3 className="mb-3 text-sm font-medium">Overlay Movements</h3>
+			<h3 className="mb-3 text-sm font-medium">
+				<UiMessage text={"Overlay Movements"} />
+			</h3>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(118px, 1fr))" }}
@@ -108,7 +118,7 @@ export function OverlayMovementView() {
 					<OverlayMovementItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -228,13 +238,15 @@ function OverlayMovementPreview({ preset }: { preset: OverlayMovementPreset }) {
 				<div className="absolute inset-0 bg-[radial-gradient(circle,transparent_34%,rgba(0,0,0,0.72)_100%)]" />
 			)}
 			{preset.spec.defaultSfx?.autoInsert ? (
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["title", "aria-label"]}
 					className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full bg-black/65 text-white/90"
 					title="Includes sound effect"
 					aria-label="Includes sound effect"
 				>
 					<HugeiconsIcon icon={VolumeHighIcon} size={14} />
-				</div>
+				</UiLocalized>
 			) : null}
 			<div className="absolute right-3 bottom-3 left-3">
 				<div className="truncate text-[11px] font-medium leading-tight text-white">

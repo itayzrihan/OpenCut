@@ -1,3 +1,4 @@
+import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
 /** Bounded model transport. Rust validates every proposal; no timeline edits here. */
 import { z } from "zod";
 import {
@@ -73,9 +74,10 @@ export async function requestPodcastPlan({
 			throw new Error(
 				typeof value.error === "string" ? value.error : "Connect ChatGPT first",
 			);
-		const model = z
-			.object({ models: z.array(z.object({ id: z.string() })) })
-			.parse(value).models[0]?.id;
+		const { models } = z
+			.object({ models: z.array(agentModelSchema).max(200) })
+			.parse(value);
+		const { model, reasoningEffort } = preferredAgentModel(models);
 		if (!model) throw new Error("No ChatGPT model available");
 		const askRaw = async ({
 			instructions,
@@ -115,6 +117,7 @@ export async function requestPodcastPlan({
 							headers,
 							body: JSON.stringify({
 								model,
+								reasoningEffort,
 								instructions,
 								input: [{ role: "user", content: prompt }],
 								tools: [],
@@ -150,7 +153,7 @@ export async function requestPodcastPlan({
 				clearTimeout(timeout);
 			}
 		};
-		onStage(`מנוע עריכת פודקאסט · ${model}`);
+		onStage(`Podcast editing model · ${model}`);
 		const videos = await runPodcastEditorial({
 			source,
 			options,

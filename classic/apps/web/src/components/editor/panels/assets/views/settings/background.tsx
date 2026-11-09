@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import {
 	Section,
@@ -152,7 +156,9 @@ function CustomColorPreview({
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
-				<button
+				<UiLocalized<"button">
+					element={"button"}
+					messageProps={["aria-label"]}
 					className={cn(
 						"border-foreground/15 hover:border-primary relative aspect-square size-20 cursor-pointer overflow-hidden rounded-sm border",
 						isSelected && "border-primary border-2",
@@ -168,7 +174,7 @@ function CustomColorPreview({
 						className="absolute right-1 bottom-1 size-5 rounded-sm border border-white/70 shadow-sm"
 						style={{ backgroundColor: currentBackgroundColor }}
 					/>
-				</button>
+				</UiLocalized>
 			</PopoverTrigger>
 			<ColorPickerContent
 				value={currentBackgroundColor.replace(/^#/, "").toUpperCase()}
@@ -279,7 +285,9 @@ export function BackgroundContent() {
 				showTopBorder={false}
 			>
 				<SectionHeader>
-					<SectionTitle>Blur</SectionTitle>
+					<SectionTitle>
+						<UiMessage text={"Blur"} />
+					</SectionTitle>
 				</SectionHeader>
 				<SectionContent>
 					<div className="flex flex-wrap gap-2">{blurPreviews}</div>

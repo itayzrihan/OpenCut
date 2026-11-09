@@ -1,5 +1,10 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
+import { ElectronBackButton } from "@/components/electron-back-button";
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "motion/react";
@@ -52,13 +57,15 @@ export function Header() {
 		<header className="bg-background shadow-background/85 sticky top-0 z-10 shadow-[0_30px_35px_15px_rgba(0,0,0,1)]">
 			<div className="relative flex w-full items-center justify-between px-6 pt-4">
 				<div className="relative z-10 flex items-center gap-6">
+					<ElectronBackButton />
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
 							<Link href="/" className="flex items-center gap-3">
-								<Image
+								<UiLocalized<typeof Image>
+									element={Image}
+									messageProps={["alt"]}
 									src={DEFAULT_LOGO_URL}
-									alt="OpenCut Logo"
-									className="invert dark:invert-0"
+									alt="POCUT Logo"
 									width={32}
 									height={32}
 								/>
@@ -73,23 +80,23 @@ export function Header() {
 								}}
 							>
 								<HugeiconsIcon icon={Copy01Icon} />
-								Copy SVG
+								<UiMessage text={"Copy SVG"} />
 							</ContextMenuItem>
 							<ContextMenuItem
 								onClick={() => {
 									const a = document.createElement("a");
 									a.href = DEFAULT_LOGO_URL;
-									a.download = "opencut-logo.svg";
+									a.download = "pocut-mark.svg";
 									a.click();
 								}}
 							>
 								<HugeiconsIcon icon={Download01Icon} />
-								Download SVG
+								<UiMessage text={"Download SVG"} />
 							</ContextMenuItem>
 							<Link href="/brand">
 								<ContextMenuItem>
 									<HugeiconsIcon icon={LinkSquare02Icon} />
-									Brand assets
+									<UiMessage text={"Brand assets"} />
 								</ContextMenuItem>
 							</Link>
 						</ContextMenuContent>
@@ -126,7 +133,7 @@ export function Header() {
 						</Link>
 						<Link href="/projects">
 							<Button className="text-sm">
-								Projects
+								<UiMessage text={"Projects"} />
 								<ArrowRight className="size-4" />
 							</Button>
 						</Link>
@@ -141,7 +148,9 @@ export function Header() {
 					)}
 				>
 					<div className="relative h-full">
-						<button
+						<UiLocalized<"button">
+							element={"button"}
+							messageProps={["aria-label"]}
 							type="button"
 							aria-label="Close menu"
 							className="absolute inset-0"

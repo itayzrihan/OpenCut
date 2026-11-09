@@ -4,6 +4,11 @@ import { streamChatGPTResponse } from "./chatgpt";
 const requestSchema = z
 	.object({
 		model: z.string().min(1).max(100),
+		reasoningEffort: z
+			.string()
+			.max(32)
+			.regex(/^[a-z][a-z0-9_]*$/)
+			.optional(),
 		instructions: z.string().min(1).max(32_000),
 		input: z.array(z.unknown()).min(1).max(256),
 		tools: z
@@ -64,11 +69,15 @@ export async function handleEditorAgentResponse(
 	const input = requestSchema.safeParse(json);
 	if (!input.success)
 		return Response.json({ error: "Invalid agent request" }, { status: 400 });
+	const { reasoningEffort, ...body } = input.data;
 	try {
 		return await streamChatGPTResponse({
 			body: {
-				...input.data,
-				reasoning: { effort: "high", summary: "auto" },
+				...body,
+				reasoning: {
+					...(reasoningEffort ? { effort: reasoningEffort } : {}),
+					summary: "auto",
+				},
 				include: ["reasoning.encrypted_content"],
 				parallel_tool_calls: false,
 			},

@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TrackControlsResizer } from "./track-controls-resizer";
 import { CanonicalButton } from "@/components/editor/canonical-button";
@@ -888,12 +892,15 @@ function TimelineContent() {
 	);
 
 	return (
-		<section
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
 			className={
 				"panel bg-background relative flex h-full flex-col overflow-hidden rounded-sm border"
 			}
 			{...dragProps}
 			aria-label="Timeline"
+			dir="ltr"
 		>
 			<TimelineToolbar
 				zoomLevel={zoomLevel}
@@ -1133,7 +1140,7 @@ function TimelineContent() {
 				/>
 			</div>
 			<AiRangeDialog />
-		</section>
+		</UiLocalized>
 	);
 }
 
@@ -1284,7 +1291,9 @@ function TrackLabelsPanel({
 				className="flex shrink-0 items-end justify-between gap-1 px-2 pb-1"
 				style={{ height: timelineHeaderHeight || 48 }}
 			>
-				<button
+				<UiLocalized<"button">
+					element={"button"}
+					messageProps={["aria-label", "title"]}
 					type="button"
 					aria-label="Scroll track controls left"
 					title="Scroll track controls left"
@@ -1296,11 +1305,13 @@ function TrackLabelsPanel({
 					}
 				>
 					←
-				</button>
+				</UiLocalized>
 				<span className="truncate text-[10px] text-muted-foreground">
-					Tracks
+					<UiMessage text={"Tracks"} />
 				</span>
-				<button
+				<UiLocalized<"button">
+					element={"button"}
+					messageProps={["aria-label", "title"]}
 					type="button"
 					aria-label="Scroll track controls right"
 					title="Scroll track controls right"
@@ -1312,10 +1323,12 @@ function TrackLabelsPanel({
 					}
 				>
 					→
-				</button>
+				</UiLocalized>
 			</div>
 			<div ref={trackLabelsRef} className="min-h-0 flex-1 overflow-hidden">
-				<div
+				<UiLocalized<"div">
+					element={"div"}
+					messageProps={["aria-label"]}
 					ref={trackLabelsScrollRef}
 					role="region"
 					aria-label="Track controls"
@@ -1340,7 +1353,7 @@ function TrackLabelsPanel({
 									}}
 								>
 									<span className="truncate text-xs font-medium text-red-200/80">
-										Words
+										<UiMessage text={"Words"} />
 									</span>
 								</div>
 							)}
@@ -1356,7 +1369,7 @@ function TrackLabelsPanel({
 									}`}
 								>
 									<span className="truncate text-xs font-medium text-violet-200/80">
-										AI edits
+										<UiMessage text={"AI edits"} />
 									</span>
 								</div>
 							)}
@@ -1376,7 +1389,7 @@ function TrackLabelsPanel({
 							})}
 						</div>
 					)}
-				</div>
+				</UiLocalized>
 			</div>
 			<div
 				className="bg-background shrink-0"
@@ -1717,7 +1730,7 @@ function TimelineTrackRowComponent({
 						icon={<HugeiconsIcon icon={Delete02Icon} />}
 						onClick={() => timeline.closeGap(clickedGap)}
 					>
-						Delete gap
+						<UiMessage text={"Delete gap"} />
 					</ContextMenuItem>
 				)}
 				<ContextMenuItem
@@ -1727,7 +1740,7 @@ function TimelineTrackRowComponent({
 						invokeAction("paste-copied");
 					}}
 				>
-					Paste elements
+					<UiMessage text={"Paste elements"} />
 				</ContextMenuItem>
 				{canTrackHaveAudio(track) && (
 					<ContextMenuItem
@@ -1737,7 +1750,11 @@ function TimelineTrackRowComponent({
 							timeline.toggleTrackMute({ trackId: track.id });
 						}}
 					>
-						{track.muted ? "Unmute track" : "Mute track"}
+						{track.muted ? (
+							<UiMessage text={"Unmute track"} />
+						) : (
+							<UiMessage text={"Mute track"} />
+						)}
 					</ContextMenuItem>
 				)}
 				{canTrackBeHidden(track) && (
@@ -1748,7 +1765,11 @@ function TimelineTrackRowComponent({
 							timeline.toggleTrackVisibility({ trackId: track.id });
 						}}
 					>
-						{track.hidden ? "Show track" : "Hide track"}
+						{track.hidden ? (
+							<UiMessage text={"Show track"} />
+						) : (
+							<UiMessage text={"Hide track"} />
+						)}
 					</ContextMenuItem>
 				)}
 				{track.id !== mainTrackId && (
@@ -1760,7 +1781,7 @@ function TimelineTrackRowComponent({
 						}}
 						variant="destructive"
 					>
-						Delete track
+						<UiMessage text={"Delete track"} />
 					</ContextMenuItem>
 				)}
 			</ContextMenuContent>
@@ -1975,7 +1996,9 @@ function ParallaxTrackControls({
 	timeline: TrackLabelTimelineActions;
 }) {
 	return (
-		<div
+		<UiLocalized<"div">
+			element={"div"}
+			messageProps={["title"]}
 			className="mr-auto flex min-w-0 items-center gap-0.5"
 			title="W = with camera, A = against camera. Tracks below inherit this speed percentage."
 		>
@@ -2010,7 +2033,7 @@ function ParallaxTrackControls({
 					})
 				}
 			/>
-		</div>
+		</UiLocalized>
 	);
 }
 

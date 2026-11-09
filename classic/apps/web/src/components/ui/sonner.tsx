@@ -2,17 +2,23 @@
 
 import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
+import { interfaceDirection } from "@/i18n/locales";
+import { useInterfaceLanguage } from "@/i18n/provider";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
 	const { theme = "system" } = useTheme();
+	const { locale, t } = useInterfaceLanguage();
+	const dir = interfaceDirection(locale);
 
 	return (
 		<Sonner
 			theme={theme as ToasterProps["theme"]}
 			className="toaster group"
-			position="bottom-right"
+			dir={dir}
+			position={dir === "rtl" ? "bottom-left" : "bottom-right"}
+			containerAriaLabel={t("Notifications")}
 			offset={20}
 			toastOptions={{
 				classNames: {

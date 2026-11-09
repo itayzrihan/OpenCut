@@ -1,6 +1,7 @@
 import { afterAll, expect, mock, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
-import { mkdir, mkdtemp, readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, writeFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
 import sharp from "sharp";
 import type { NextRequest } from "next/server";
@@ -11,9 +12,6 @@ await mkdir(root, { recursive: true });
 const evidence = await mkdtemp(join(root, "run-"));
 const account = new AsyncLocalStorage<string>();
 const media = new Map<string, { path: string; size: number }>();
-let connected = true;
-let calls = 0;
-let failProvider = false;
 const png = await sharp({
 	create: {
 		width: 2,
@@ -28,71 +26,9 @@ mock.module("@/accounts/server", () => ({
 	requireAccount: () => ({ id: account.getStore() ?? "anonymous" }),
 	accountDataRoot: () => join(evidence, account.getStore() ?? "anonymous"),
 }));
-mock.module("@/editor-agent/server/project-write", () => ({
-	withEditorProjectWrite: async ({
-		write,
-	}: {
-		write: (context: { assertWrite: () => void }) => Promise<unknown>;
-	}) => write({ assertWrite: () => {} }),
-}));
-mock.module("@/ai/server/openai-codex-oauth", () => ({
-	getOpenAIOAuthStatus: async () => ({
-		status: { authenticated: connected },
-		credentials: connected ? { access: "test-only" } : undefined,
-	}),
-	forwardCodexResponsesRequest: async ({
-		body,
-		allowModelFallback,
-	}: {
-		body: Record<string, unknown>;
-		allowModelFallback: boolean;
-	}) => {
-		calls++;
-		expect(allowModelFallback).toBe(false);
-		expect(body.tools).toEqual([
-			{
-				type: "image_generation",
-				output_format: "png",
-				background: "transparent",
-			},
-		]);
-		expect(body.tool_choice).toEqual({ type: "image_generation" });
-		if (failProvider) throw new Error("Provider reply lost after dispatch");
-		return {
-			output: [
-				{
-					type: "image_generation_call",
-					status: "completed",
-					result: png.toString("base64"),
-				},
-			],
-		};
-	},
-}));
 mock.module("@/services/local-drive/server", () => ({
 	listProjectMetadata: async () =>
 		account.getStore() === "alice" ? [{ id: "project" }, { id: "other" }] : [],
-	storeUploadedMedia: async ({
-		projectId,
-		mediaId,
-		body,
-	}: {
-		projectId: string;
-		mediaId: string;
-		body: ReadableStream<Uint8Array>;
-	}) => {
-		const { writeFile } = await import("node:fs/promises");
-		const path = join(
-			evidence,
-			`${account.getStore()}-${projectId}-${mediaId}.png`,
-		);
-		const bytes = await new Response(body).arrayBuffer();
-		await writeFile(path, new Uint8Array(bytes));
-		media.set(JSON.stringify([account.getStore(), projectId, mediaId]), {
-			path,
-			size: bytes.byteLength,
-		});
-	},
 	getMediaFile: async (...[projectId, mediaId]: [string, string]) => {
 		const file = media.get(
 			JSON.stringify([account.getStore(), projectId, mediaId]),
@@ -135,69 +71,87 @@ const generate = ({
 		}),
 	);
 
-test("completed PNG is decoded, stored, recovered after a revision change and scoped to its owner", async () => {
-	const before = calls;
-	const result = await generate({ operationId: "completed" });
-	expect(calls).toBe(before + 1);
-	expect(result.width).toBe(2);
-	expect(result.height).toBe(2);
-	const saved = await account.run("alice", () =>
-		readSubscriptionImage({ projectId: "project", jobKey: result.jobKey }),
+const jobs = join(evidence, "alice", "image-jobs");
+await mkdir(jobs, { recursive: true });
+
+test("retirement preserves completed PNG recovery and account boundaries", async () => {
+	const initial = glue.subscriptionImagePlan(
+		input("completed"),
+		null,
+		null,
+		Date.now(),
 	);
-	expect(saved.equals(png)).toBe(true);
+	const result = {
+		mediaId: initial.mediaId,
+		fileName: initial.fileName,
+		width: 2,
+		height: 2,
+		byteSize: png.length,
+		lastModified: Date.now(),
+		sha256: createHash("sha256").update(png).digest("hex"),
+	};
+	const completed = glue.subscriptionImagePlan(
+		input("completed"),
+		initial.journal,
+		result,
+		Date.now(),
+	);
+	await writeFile(
+		join(jobs, `${initial.jobKey}.json`),
+		JSON.stringify(completed.journal),
+	);
+	const path = join(evidence, "prior-image.png");
+	await writeFile(path, png);
+	media.set(JSON.stringify(["alice", "project", result.mediaId]), {
+		path,
+		size: png.length,
+	});
 	expect(
 		await generate({
 			operationId: "completed",
 			overrides: { expectedRevision: 200 },
 		}),
-	).toEqual(result);
-	expect(calls).toBe(before + 1);
+	).toEqual({ ...result, projectId: "project", jobKey: initial.jobKey });
+	expect(
+		await account.run("alice", () =>
+			readSubscriptionImage({ projectId: "project", jobKey: initial.jobKey }),
+		),
+	).toEqual(png);
 	await expect(
-		generate({ operationId: "completed", overrides: { prompt: "Changed" } }),
+		generate({
+			operationId: "completed",
+			overrides: { prompt: "Changed" },
+		}),
 	).rejects.toThrow("different image content");
 	await expect(
 		account.run("bob", () =>
-			readSubscriptionImage({ projectId: "project", jobKey: result.jobKey }),
+			readSubscriptionImage({ projectId: "project", jobKey: initial.jobKey }),
 		),
 	).rejects.toThrow("does not own");
 	await expect(
 		account.run("alice", () =>
-			readSubscriptionImage({ projectId: "other", jobKey: result.jobKey }),
+			readSubscriptionImage({ projectId: "other", jobKey: initial.jobKey }),
 		),
 	).rejects.toThrow();
-	const journal = await readFile(
-		join(evidence, "alice", "image-jobs", `${result.jobKey}.json`),
-		"utf8",
-	);
-	expect(journal).not.toContain("Blue shape");
-	expect(journal).not.toContain("test-only");
 });
-test("an uncertain provider reply never dispatches again, including a concurrent recovery", async () => {
-	const before = calls;
-	failProvider = true;
-	await expect(generate({ operationId: "lost-reply" })).rejects.toThrow(
-		"reply lost",
+
+test("no new image is dispatched and an uncertain job stays uncertain", async () => {
+	const initial = glue.subscriptionImagePlan(
+		input("lost-reply"),
+		null,
+		null,
+		Date.now(),
 	);
-	failProvider = false;
+	await writeFile(
+		join(jobs, `${initial.jobKey}.json`),
+		JSON.stringify(initial.journal),
+	);
+	const before = await readdir(jobs);
 	await expect(generate({ operationId: "lost-reply" })).rejects.toThrow(
 		"already dispatched",
 	);
-	expect(calls).toBe(before + 1);
-	const race = await Promise.allSettled([
-		generate({ operationId: "race" }),
-		generate({ operationId: "race" }),
-	]);
-	expect(race.some((value) => value.status === "fulfilled")).toBe(true);
-	expect(calls).toBe(before + 2);
-});
-test("missing subscription is explicit and does not claim or charge an image operation", async () => {
-	connected = false;
-	const before = calls;
-	await expect(generate({ operationId: "not-connected" })).rejects.toThrow(
-		"No paid API fallback",
+	await expect(generate({ operationId: "new" })).rejects.toThrow(
+		"Image generation is unavailable",
 	);
-	expect(calls).toBe(before);
-	connected = true;
-	expect((await generate({ operationId: "not-connected" })).width).toBe(2);
-	expect(calls).toBe(before + 1);
+	expect(await readdir(jobs)).toEqual(before);
 });

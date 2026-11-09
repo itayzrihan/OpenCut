@@ -1,0 +1,100 @@
+:global(.dark body):has(.editor) {
+	--background: var(--pocut-canvas);
+	--foreground: var(--pocut-ink);
+	--card: var(--pocut-panel);
+	--card-foreground: var(--pocut-ink);
+	--popover: var(--pocut-panel);
+	--popover-foreground: var(--pocut-ink);
+	--popover-hover: var(--pocut-raised);
+	--muted: var(--pocut-raised);
+	--muted-foreground: var(--pocut-muted);
+	--accent: var(--pocut-raised);
+	--accent-foreground: var(--pocut-ink);
+	--primary: var(--pocut-button);
+	--primary-foreground: var(--pocut-button-ink);
+	--secondary: #241938;
+	--secondary-border: var(--pocut-line);
+	--secondary-foreground: var(--pocut-button);
+	--border: var(--pocut-line);
+	--input: #201830;
+	--ring: var(--pocut-violet);
+}
+
+:global(.light body):has(.editor) {
+	--primary: #6436bd;
+	--secondary: #f1eafd;
+	--secondary-border: #e2d4f8;
+	--secondary-foreground: #572c9d;
+	--ring: #8050d9;
+}
+
+:global(body):has(.editor) {
+	overflow: hidden;
+}
+
+.editor > header[data-pocut-editor-header] {
+	background: var(--background);
+	border-bottom: 1px solid var(--border);
+}
+
+.editor [data-pocut-editor-wordmark] {
+	border-inline-end: 1px solid var(--border);
+	color: var(--foreground);
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0.07em;
+	padding-inline: 3px 10px;
+	margin-inline-end: 4px;
+}
+
+.workspace {
+	padding: 10px 12px 40px;
+}
+
+.rows,
+.columns {
+	gap: 4px;
+}
+
+.pane > :global(.panel) {
+	--background: var(--card);
+	--foreground: var(--card-foreground);
+	border-radius: 11px;
+}
+
+:global(.dark) .pane > :global(.panel) {
+	--background: var(--pocut-panel);
+	--foreground: var(--pocut-ink);
+	--card: var(--pocut-panel);
+	--card-foreground: var(--pocut-ink);
+	--muted: var(--pocut-raised);
+	--muted-foreground: var(--pocut-muted);
+	--accent: var(--pocut-raised);
+	--accent-foreground: var(--pocut-ink);
+	--secondary: #241938;
+	--secondary-border: var(--pocut-line);
+	--secondary-foreground: var(--pocut-button);
+	--border: var(--pocut-line);
+	--input: var(--pocut-raised);
+	--ring: var(--pocut-violet);
+}
+
+:global(.dark) .preview > :global(.panel) {
+	--background: #100d19;
+}
+
+.divider:hover,
+.divider:focus-visible,
+.divider[data-resize-handle-active] {
+	background: var(--ring);
+}
+
+@media (max-width: 720px) {
+	.editor [data-pocut-editor-wordmark] {
+		display: none;
+	}
+
+	.workspace {
+		padding-inline: 6px;
+	}
+}

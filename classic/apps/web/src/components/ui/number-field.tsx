@@ -1,5 +1,6 @@
 "use client";
 
+import { LocalizedElement as UiLocalized } from "@/i18n/message";
 import { NumberScrubHandle } from "./number-scrub-handle";
 import { cn } from "@/utils/ui";
 import { clamp } from "@/utils/math";
@@ -291,14 +292,16 @@ function NumberField({
 			</span>
 			{onReset && !isDefault && (
 				<div className="shrink-0 pr-2 flex items-center">
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label"]}
 						variant="text"
 						size="text"
 						aria-label="Reset to default"
 						onClick={onReset}
 					>
 						<HugeiconsIcon icon={ArrowTurnBackwardIcon} className="size-3.5!" />
-					</Button>
+					</UiLocalized>
 				</div>
 			)}
 		</div>

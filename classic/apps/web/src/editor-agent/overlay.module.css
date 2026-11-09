@@ -14,7 +14,7 @@
 	display: flex;
 	flex-direction: column;
 	color: var(--foreground);
-	background: var(--background);
+	background: var(--card);
 	border: 1px solid var(--border);
 	font-size: 13px;
 	overflow: hidden;
@@ -41,10 +41,10 @@
 }
 .docked {
 	position: relative;
-	flex: 0 0 380px;
-	max-width: 44vw;
-	min-width: 300px;
-	margin: 0 12px 12px 0;
+	flex: 0 1 clamp(240px, 27vw, 380px);
+	max-width: 44%;
+	min-width: 0;
+	margin-inline-start: 10px;
 	border-radius: 12px;
 }
 .header {
@@ -60,7 +60,12 @@
 .floating .header {
 	cursor: grab;
 }
+.docked .header {
+	flex-wrap: wrap;
+}
+
 .header strong {
+	white-space: nowrap;
 	font-weight: 550;
 	font-size: 13px;
 	flex: 1;
@@ -86,6 +91,25 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+.settings {
+	display: flex;
+	flex: 1;
+	min-height: 0;
+	flex-direction: column;
+	overflow-y: auto;
+}
+.connectionNote {
+	flex-wrap: wrap;
+}
+.connectionNote > span {
+	flex-basis: 100%;
+	white-space: normal;
+}
+.connectionNote a {
+	color: var(--foreground);
+	text-decoration: underline;
+	cursor: pointer;
 }
 .messages {
 	flex: 1;
@@ -412,9 +436,23 @@
 }
 .controls {
 	display: flex;
+	flex-wrap: wrap;
 	gap: 6px;
 	align-items: center;
 	margin-top: 9px;
+}
+.providerControls {
+	display: flex;
+	flex: 1 1 150px;
+	gap: 6px;
+	min-width: 0;
+}
+.effort {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--muted-foreground);
+	font-size: 11px;
 }
 .controls select {
 	min-width: 0;
@@ -426,19 +464,16 @@
 	border-radius: 5px;
 	padding: 5px 0;
 }
+.effort select {
+	width: auto;
+}
 .footer {
 	display: flex;
 	justify-content: space-between;
-	padding-top: 9px;
 	font-size: 9px;
 	color: var(--muted-foreground);
 	flex-wrap: wrap;
 	gap: 6px;
-}
-.footer kbd {
-	border: 1px solid var(--border);
-	border-radius: 3px;
-	padding: 1px 3px;
 }
 @media (hover: none) {
 	.messageActions {

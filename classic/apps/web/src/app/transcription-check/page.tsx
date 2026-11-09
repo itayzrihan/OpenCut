@@ -1,13 +1,22 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { transcribeTimelineAudioBlob } from "@/transcription/browser-client";
+import { BrowserTranscriptionPicker } from "@/transcription/browser-model-picker";
+import {
+	DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
+	type BrowserTranscriptionModel,
+} from "@/transcription/models";
 import type { TranscriptionResult } from "@/transcription/types";
 
 export default function TranscriptionCheck() {
 	const controller = useRef<AbortController | null>(null);
 	const [busy, setBusy] = useState(false);
+	const [browserModel, setBrowserModel] = useState<BrowserTranscriptionModel>(
+		DEFAULT_BROWSER_TRANSCRIPTION_MODEL,
+	);
 	const [status, setStatus] = useState("Ready to test this browser.");
 	const [result, setResult] = useState<TranscriptionResult | null>(null);
 	useEffect(() => () => controller.current?.abort(), []);
@@ -29,7 +38,12 @@ export default function TranscriptionCheck() {
 			if (!audioBlob) throw new Error("Audio unavailable");
 			const value = await transcribeTimelineAudioBlob({
 				audioBlob,
-				language: file ? "he" : "en",
+				browserModel,
+				language: file
+					? browserModel === DEFAULT_BROWSER_TRANSCRIPTION_MODEL
+						? "he"
+						: "auto"
+					: "en",
 				signal: abort.signal,
 				onProgress: (p) => setStatus(p.message || p.status),
 			});
@@ -53,33 +67,46 @@ export default function TranscriptionCheck() {
 	return (
 		<main className="mx-auto max-w-3xl space-y-6 p-8">
 			<Link href="/projects" className="underline">
-				Back to projects
+				<UiMessage text={"Back to projects"} />
 			</Link>
-			<h1 className="text-2xl font-semibold">Browser transcription check</h1>
+			<h1 className="text-2xl font-semibold">
+				<UiMessage text={"Browser transcription check"} />
+			</h1>
 			<p>
-				ivrit-ai Large v3 Turbo downloads automatically and runs on this device.
-				WebGPU uses your GPU when supported; on Mac, the browser manages Metal.
-				Otherwise this uses the CPU locally, which is slower.
+				<UiMessage
+					text={
+						"The selected model downloads automatically and runs on this device. WebGPU uses your GPU when supported; on Mac, the browser manages Metal. Otherwise this uses the CPU locally, which is slower."
+					}
+				/>
 			</p>
 			<p>
-				The reduced-memory GPU model downloads approximately 760 MB. Public
-				model weights are cached in this browser. Your audio and transcript are
-				not uploaded or saved by this check.
+				<UiMessage
+					text={
+						"Public model weights are cached in this browser. Your audio and transcript are not uploaded or saved by this check."
+					}
+				/>
 			</p>
+			<BrowserTranscriptionPicker
+				value={browserModel}
+				onChange={setBrowserModel}
+				disabled={busy}
+			/>
 			<div className="flex flex-wrap gap-3">
 				<Button disabled={busy} onClick={() => void run()}>
-					Test with sample speech
+					<UiMessage text={"Test with sample speech"} />
 				</Button>
 				<Button
 					variant="outline"
 					disabled={!busy}
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel
+					<UiMessage text={"Cancel"} />
 				</Button>
 			</div>
 			<label className="block space-y-2">
-				<span>Or test a Hebrew audio file from your device</span>
+				<span>
+					<UiMessage text={"Or test an audio file from your device"} />
+				</span>
 				<input
 					className="block"
 					type="file"
@@ -103,9 +130,15 @@ export default function TranscriptionCheck() {
 					<table className="w-full text-sm">
 						<thead>
 							<tr>
-								<th>Word</th>
-								<th>Start (s)</th>
-								<th>End (s)</th>
+								<th>
+									<UiMessage text={"Word"} />
+								</th>
+								<th>
+									<UiMessage text={"Start (s)"} />
+								</th>
+								<th>
+									<UiMessage text={"End (s)"} />
+								</th>
 							</tr>
 						</thead>
 						<tbody>

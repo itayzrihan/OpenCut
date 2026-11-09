@@ -1,5 +1,7 @@
 "use client";
 
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,7 +63,9 @@ export function HyperframesSourceSection({
 	return (
 		<Section collapsible sectionKey="hyperframes-source">
 			<SectionHeader>
-				<SectionTitle>Source files</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Source files"} />
+				</SectionTitle>
 			</SectionHeader>
 			<SectionContent className="flex flex-col gap-3">
 				<Button
@@ -78,7 +82,7 @@ export function HyperframesSourceSection({
 							});
 					}}
 				>
-					Edit source
+					<UiMessage text={"Edit source"} />
 				</Button>
 				{draft &&
 					draft.projectId === state.projectId &&
@@ -221,33 +225,62 @@ export function HyperframesSourceEditor({
 			<DialogContent className="max-w-4xl max-h-[90vh] flex flex-col">
 				<DialogHeader>
 					<DialogTitle>
-						{layerTarget ? "Edit layer source" : "Edit composition source"}
+						{layerTarget ? (
+							<UiMessage text={"Edit layer source"} />
+						) : (
+							<UiMessage text={"Edit composition source"} />
+						)}
 					</DialogTitle>
 					<DialogDescription>
-						Change this clip’s HTML, styles or animation code. Changes are
-						checked before applying and can be undone.
+						<UiMessage
+							text={
+								"Change this clip’s HTML, styles or animation code. Changes are checked before applying and can be undone."
+							}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="min-h-0 overflow-auto">
 					{layerTarget && (
 						<div className="text-sm text-muted-foreground" role="status">
-							{locating
-								? "Finding the layer’s source…"
-								: target?.location
-									? `${target.file}: opening tag at line ${target.location.line}, column ${target.location.column}.`
-									: "No unique opening tag was found for this layer. You can still edit the source files."}
+							{locating ? (
+								<UiMessage text={"Finding the layer’s source…"} />
+							) : target?.location ? (
+								<UiMessage
+									text={"{v0}: opening tag at line {v1}, column {v2}."}
+									values={{
+										v0: String(target.file),
+										v1: String(target.location.line),
+										v2: String(target.location.column),
+									}}
+								/>
+							) : (
+								<UiMessage
+									text={
+										"No unique opening tag was found for this layer. You can still edit the source files."
+									}
+								/>
+							)}
 							{!locating && (
 								<p>
-									File edits affect every use of that file within this clip.
-									{target && target.reportedOccurrences > 1
-										? ` This tag appears in ${target.reportedOccurrences} reported layers.`
-										: ""}
+									<UiMessage
+										text={
+											"File edits affect every use of that file within this clip."
+										}
+									/>
+									{target && target.reportedOccurrences > 1 ? (
+										<UiMessage
+											text={" This tag appears in {v0} reported layers."}
+											values={{ v0: String(target.reportedOccurrences) }}
+										/>
+									) : (
+										""
+									)}
 								</p>
 							)}
 						</div>
 					)}
 					<label htmlFor={`${id}-file`} className="text-sm font-medium">
-						Source file
+						<UiMessage text={"Source file"} />
 					</label>
 					<select
 						id={`${id}-file`}
@@ -261,7 +294,14 @@ export function HyperframesSourceEditor({
 							.map((path) => (
 								<option key={path} value={path}>
 									{path}
-									{Object.hasOwn(changes, path) ? " · edited" : ""}
+									{Object.hasOwn(changes, path) ? (
+										<>
+											{" "}
+											<UiMessage text={"· edited"} />
+										</>
+									) : (
+										""
+									)}
 								</option>
 							))}
 					</select>
@@ -282,7 +322,7 @@ export function HyperframesSourceEditor({
 					/>
 					{busy && (
 						<p role="status" className="text-sm">
-							Checking the updated animation…
+							<UiMessage text={"Checking the updated animation…"} />
 						</p>
 					)}
 					{error && (
@@ -290,19 +330,24 @@ export function HyperframesSourceEditor({
 							role="alert"
 							className="max-h-28 overflow-auto break-words text-sm text-destructive"
 						>
-							{error}
+							<UiValue>{error}</UiValue>
 						</p>
 					)}
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="outline" onClick={close}>
-						{busy ? "Cancel check" : "Cancel"}
+						{busy ? (
+							<UiMessage text={"Cancel check"} />
+						) : (
+							<UiMessage text={"Cancel"} />
+						)}
 					</Button>
 					<Button
 						disabled={busy || locating || !changedCount}
 						onClick={() => void apply()}
 					>
-						Apply changes{changedCount ? ` (${changedCount})` : ""}
+						<UiMessage text={"Apply changes"} />
+						{changedCount ? ` (${changedCount})` : ""}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

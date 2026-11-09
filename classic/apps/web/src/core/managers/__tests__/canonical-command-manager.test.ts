@@ -5796,6 +5796,108 @@ test(
 );
 
 test(
+	"split at the playhead resolves the live selection after earlier cuts",
+	async () => {
+		const { TimelineManager } =
+			await import("@/core/managers/timeline-manager");
+		const host = createHost();
+		const audioClip = ({
+			id,
+			start,
+			end,
+		}: {
+			id: string;
+			start: number;
+			end: number;
+		}): AudioElement => ({
+			id,
+			name: id,
+			type: "audio",
+			sourceType: "upload",
+			mediaId: "video-asset",
+			startTime: mediaTime({ ticks: start }),
+			duration: mediaTime({ ticks: end - start }),
+			trimStart: mediaTime({ ticks: 0 }),
+			trimEnd: mediaTime({ ticks: 0 }),
+			params: { volume: 0 },
+		});
+		host.project().scenes[0].tracks.audio.push(
+			{
+				id: "dialogue",
+				name: "Dialogue",
+				type: "audio",
+				muted: false,
+				elements: [
+					audioClip({ id: "early", start: 0, end: 600000 }),
+					audioClip({ id: "later", start: 600000, end: 1200000 }),
+				],
+			},
+			{
+				id: "ambience",
+				name: "Ambience",
+				type: "audio",
+				muted: false,
+				elements: [audioClip({ id: "background", start: 0, end: 1200000 })],
+			},
+			{
+				id: "late-only",
+				name: "Later audio",
+				type: "audio",
+				muted: false,
+				elements: [audioClip({ id: "outside", start: 1320000, end: 1440000 })],
+			},
+		);
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		const timeline = new TimelineManager(host.editor);
+		const tracks = () => host.project().scenes[0].tracks;
+		let time = 720000;
+		host.editor.playback.getCurrentTime = () => mediaTime({ ticks: time });
+		host.editor.selection.getSelectedElements = () =>
+			host.selection().selectedElements;
+		const select = (trackId: string, elementId: string) =>
+			host.editor.selection.applySelectionPatch({
+				patch: { selectedElements: [{ trackId, elementId }] },
+			});
+		select("dialogue", "early");
+		expect(timeline.splitAtPlayhead()).toBe(true);
+		expect(
+			tracks().audio[0].elements.map(({ startTime }) => startTime),
+		).toEqual([0, 600000, 720000]);
+		expect(tracks().main.elements).toHaveLength(1);
+		expect(tracks().audio[1].elements).toHaveLength(1);
+		const afterFirstCut = host.manager.captureProjectSnapshot();
+		expect(timeline.splitAtPlayhead()).toBe(false);
+		expect(host.manager.captureProjectSnapshot()).toEqual(afterFirstCut);
+
+		time = 240000;
+		expect(timeline.splitAtPlayhead()).toBe(true);
+		expect(
+			tracks().audio[0].elements.map(({ startTime }) => startTime),
+		).toEqual([0, 240000, 600000, 720000]);
+		select("video-track", "item-2");
+		expect(timeline.splitAtPlayhead()).toBe(true);
+		expect(tracks().main.elements).toHaveLength(2);
+		expect(tracks().audio[1].elements).toHaveLength(1);
+
+		select("late-only", "outside");
+		time = 480000;
+		expect(timeline.splitAtPlayhead()).toBe(true);
+		expect(tracks().main.elements).toHaveLength(3);
+		expect(tracks().audio[0].elements).toHaveLength(5);
+		expect(tracks().audio[1].elements).toHaveLength(2);
+		expect(tracks().audio[2].elements).toHaveLength(1);
+		host.manager.undo();
+		expect(tracks().main.elements).toHaveLength(2);
+		expect(tracks().audio[1].elements).toHaveLength(1);
+		assertCoherent({ host, runtime });
+		await host.manager.flushHistory();
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
 	"clipboard UI shares scoped snapshots, exact group placement, fresh animation IDs and reopened undo",
 	async () => {
 		const { ElementsClipboardHandler } =
@@ -7365,6 +7467,108 @@ test(
 		expect(host.manager.canUndo()).toBe(false);
 		host.manager.redo();
 		expect(host.manager.captureProjectSnapshot()).toEqual(after);
+		await host.manager.flushHistory();
+		host.manager.detachCanonical();
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"speed edits ripple like a right trim and keep linked video and audio aligned",
+	async () => {
+		const { TimelineManager } =
+			await import("@/core/managers/timeline-manager");
+		const host = createHost();
+		const timeline = new TimelineManager(host.editor);
+		Object.defineProperty(host.editor, "timeline", { value: timeline });
+		const initial = host.project().scenes[0].tracks;
+		const source = initial.main.elements[0] as VideoElement;
+		const oldEnd = source.duration;
+		initial.main.elements.push({
+			...source,
+			id: "later-video",
+			startTime: mediaTime({ ticks: oldEnd + 120000 }),
+		});
+		initial.overlay[0].elements[0].startTime = mediaTime({ ticks: oldEnd });
+		const runtime = await createCanonicalTestRuntime();
+		await host.manager.enableCanonical({ runtime });
+		timeline.toggleSourceAudioSeparation({
+			trackId: initial.main.id,
+			elementId: source.id,
+		});
+		const extracted =
+			host.manager.captureProjectSnapshot()!.scenes[0].tracks.audio[0];
+		const audioTrack = extracted;
+		const audio = audioTrack.elements[0];
+		// A replacement stem starts at a different source position than the video.
+		timeline.updateElements({
+			updates: [
+				{
+					trackId: initial.main.id,
+					elementId: source.id,
+					patch: { duration: oldEnd },
+				},
+				{
+					trackId: audioTrack.id,
+					elementId: audio.id,
+					patch: {
+						trimStart: mediaTime({ ticks: 0 }),
+						trimEnd: mediaTime({ ticks: source.trimStart + source.trimEnd }),
+					},
+				},
+			],
+		});
+		const before = host.manager.captureProjectSnapshot()!;
+		for (const rate of [0.625, 2.5]) {
+			const retime = {
+				rate,
+				speedKeyframes: [
+					{
+						time: mediaTime({ ticks: 0 }),
+						rate,
+						interpolation: "easeInOut" as const,
+					},
+					{
+						time: mediaTime({ ticks: 750000 }),
+						rate,
+						interpolation: "linear" as const,
+					},
+				],
+			};
+			timeline.updateElementRetime({
+				trackId: audioTrack.id,
+				elementId: audio.id,
+				retime,
+			});
+			const after = host.manager.captureProjectSnapshot()!;
+			const tracks = after.scenes[0].tracks;
+			const target = tracks.main.elements[0] as VideoElement;
+			const delta = target.duration - oldEnd;
+			expect(delta).toBe(rate < 1 ? oldEnd : -oldEnd / 2);
+			expect(target.trimStart).toBe(source.trimStart);
+			expect(target.trimEnd).toBe(source.trimEnd);
+			expect(target.retime).toEqual({
+				...retime,
+				speedKeyframes: retime.speedKeyframes.map((key) => ({
+					...key,
+					time: key.time + source.trimStart,
+				})),
+			});
+			expect(tracks.main.elements[1].startTime).toBe(oldEnd + 120000 + delta);
+			expect(tracks.overlay[0].elements[0].startTime).toBe(oldEnd + delta);
+			expect(tracks.audio[0].elements[0].duration).toBe(target.duration);
+			expect(tracks.audio[0].elements[0].retime).toEqual(retime);
+			assertCoherent({ host, runtime });
+			host.manager.undo();
+			expect(host.manager.captureProjectSnapshot()!.scenes[0].tracks).toEqual(
+				before.scenes[0].tracks,
+			);
+			host.manager.redo();
+			expect(host.manager.captureProjectSnapshot()!.scenes[0].tracks).toEqual(
+				after.scenes[0].tracks,
+			);
+			host.manager.undo();
+		}
 		await host.manager.flushHistory();
 		host.manager.detachCanonical();
 	},

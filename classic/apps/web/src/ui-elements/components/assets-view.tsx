@@ -1,11 +1,15 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { generateUiElementPreset } from "@/ai/preset-generation";
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
@@ -55,7 +59,12 @@ export function UiElementsView() {
 	}, [loadLibrary]);
 
 	return (
-		<PanelView title="UI Elements" actions={<AiUiElementButton />}>
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="UI Elements"
+			actions={<AiUiElementButton />}
+		>
 			<div
 				className="grid gap-2"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))" }}
@@ -64,7 +73,7 @@ export function UiElementsView() {
 					<UiElementPresetItem key={preset.id} preset={preset} />
 				))}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -108,14 +117,21 @@ function AiUiElementButton() {
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create reusable UI element</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Create reusable UI element"} />
+					</DialogTitle>
 					<DialogDescription>
-						Describe a compact product-style overlay. OpenCut will give it
-						editable settings, semantic motion, and save it in UI Elements.
+						<UiMessage
+							text={
+								"Describe a compact product-style overlay. POCUT will give it editable settings, semantic motion, and save it in UI Elements."
+							}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
-					<Textarea
+					<UiLocalized<typeof Textarea>
+						element={Textarea}
+						messageProps={["placeholder"]}
 						value={prompt}
 						onChange={(event) => setPrompt(event.target.value)}
 						placeholder="A black goal card showing $25,000 with blue progress at 68%"
@@ -124,10 +140,14 @@ function AiUiElementButton() {
 				</DialogBody>
 				<DialogFooter>
 					<Button variant="text" onClick={() => setIsOpen(false)}>
-						Cancel
+						<UiMessage text={"Cancel"} />
 					</Button>
 					<Button onClick={() => void handleGenerate()} disabled={isGenerating}>
-						{isGenerating ? "Generating..." : "Create & save"}
+						{isGenerating ? (
+							<UiMessage text={"Generating..."} />
+						) : (
+							<UiMessage text={"Create & save"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -204,7 +224,7 @@ function UiElementPresetItem({ preset }: { preset: UiElementPreset }) {
 						<div className="relative size-full overflow-hidden bg-[linear-gradient(90deg,#777_0_20%,#32a6ff_20%_100%)]">
 							<div className="absolute inset-y-0 left-[20%] w-[3px] bg-white shadow-[0_0_8px_3px_rgba(255,255,255,0.8)]" />
 							<div className="absolute left-2 top-2 rounded bg-black/55 px-1.5 py-1 text-[9px] font-medium tracking-wide text-white">
-								3S REVEAL
+								<UiMessage text={"3S REVEAL"} />
 							</div>
 						</div>
 					) : (
@@ -218,13 +238,15 @@ function UiElementPresetItem({ preset }: { preset: UiElementPreset }) {
 						/>
 					)}
 					{preset.bundle?.audio.length ? (
-						<div
+						<UiLocalized<"div">
+							element={"div"}
+							messageProps={["title", "aria-label"]}
 							className="absolute bottom-8 right-2 flex size-6 items-center justify-center rounded-full bg-black/65 text-white/90"
 							title="Includes sound effects"
 							aria-label="Includes sound effects"
 						>
 							<HugeiconsIcon icon={VolumeHighIcon} size={14} />
-						</div>
+						</UiLocalized>
 					) : null}
 					<div className="absolute inset-x-0 bottom-0 bg-black/55 px-1.5 py-1">
 						<p className="truncate text-[10px] leading-none text-white/85">

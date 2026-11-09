@@ -1021,7 +1021,7 @@ export const UI_ELEMENT_PRESETS: UiElementPreset[] = [
 		name: "Direction Shift",
 		description: "Magical sci-fi reversal arrows",
 		template: "hud-direction-shift",
-		label: "שינוי כיוון",
+		label: "Direction Shift",
 		secondary: "DIRECTION SHIFT",
 		accent: "#83FFE8",
 		background: "#0B0714",

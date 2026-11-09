@@ -1,3 +1,4 @@
+import { Message as UiMessage } from "@/i18n/message";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const release = getReleaseByVersion({ version });
 	if (!release) return {};
 	return {
-		title: `${release.title} (${release.version}) - OpenCut Changelog`,
+		title: `${release.title} (${release.version}) - POCUT Changelog`,
 		description: release.description,
 	};
 }
@@ -46,7 +47,7 @@ export default async function ReleaseDetailPage({ params }: Props) {
 					className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 w-fit"
 				>
 					<ChevronLeftIcon className="size-4" />
-					All releases
+					<UiMessage text={"All releases"} />
 				</Link>
 
 				<ReleaseArticle variant="detail">
@@ -74,7 +75,9 @@ export default async function ReleaseDetailPage({ params }: Props) {
 						>
 							<ChevronLeftIcon className="size-4" />
 							<div className="flex flex-col">
-								<span className="text-xs text-muted-foreground/60">Older</span>
+								<span className="text-xs text-muted-foreground/60">
+									<UiMessage text={"Older"} />
+								</span>
 								<span className="font-medium">{older.title}</span>
 							</div>
 						</Link>
@@ -87,7 +90,9 @@ export default async function ReleaseDetailPage({ params }: Props) {
 							className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground group text-right"
 						>
 							<div className="flex flex-col">
-								<span className="text-xs text-muted-foreground/60">Newer</span>
+								<span className="text-xs text-muted-foreground/60">
+									<UiMessage text={"Newer"} />
+								</span>
 								<span className="font-medium">{newer.title}</span>
 							</div>
 							<ChevronRightIcon className="size-4" />

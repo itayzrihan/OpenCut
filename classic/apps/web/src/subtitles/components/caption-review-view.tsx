@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { Button } from "@/components/ui/button";
@@ -163,7 +167,9 @@ export function CaptionReviewView() {
 	);
 	const captionSourceTrack = useMemo(
 		() =>
-			activeScene ? findCaptionSourceTrack({ tracks: activeScene.tracks }) : null,
+			activeScene
+				? findCaptionSourceTrack({ tracks: activeScene.tracks })
+				: null,
 		[activeScene],
 	);
 
@@ -196,7 +202,9 @@ export function CaptionReviewView() {
 		patch,
 	}: {
 		item: CaptionReviewItem;
-		patch: Partial<NonNullable<ReturnType<typeof findCaptionReviewTextElement>>>;
+		patch: Partial<
+			NonNullable<ReturnType<typeof findCaptionReviewTextElement>>
+		>;
 	}) => {
 		editor.timeline.updateElements({
 			updates: [
@@ -393,12 +401,16 @@ export function CaptionReviewView() {
 	};
 
 	return (
-		<PanelView
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
 			title="See captions"
 			contentClassName="pb-3"
 			actions={
 				<div className="flex items-center gap-1.5">
-					<Button
+					<UiLocalized<typeof Button>
+						element={Button}
+						messageProps={["aria-label", "title"]}
 						variant="outline"
 						size="sm"
 						className="h-6 gap-1 rounded-sm px-1.5 text-xs"
@@ -416,7 +428,7 @@ export function CaptionReviewView() {
 							<AlignLeft className="size-3" />
 						)}
 						{textDirection.toUpperCase()}
-					</Button>
+					</UiLocalized>
 					{items.length > 0 && (
 						<span className="text-muted-foreground rounded-sm border px-1.5 py-0.5 text-xs tabular-nums">
 							{items.length}
@@ -434,7 +446,7 @@ export function CaptionReviewView() {
 			>
 				{items.length === 0 ? (
 					<div className="text-muted-foreground flex h-32 w-full items-center justify-center text-sm">
-						No text captions
+						<UiMessage text={"No text captions"} />
 					</div>
 				) : (
 					items.flatMap((item, index) => {
@@ -454,7 +466,9 @@ export function CaptionReviewView() {
 								?.excludeFromPunctuationHiding;
 						const insertControl =
 							index === 0 ? null : (
-								<button
+								<UiLocalized<"button">
+									element={"button"}
+									messageProps={["aria-label", "title"]}
 									key={`${key}:insert-before`}
 									type="button"
 									className="group/insert inline-flex h-8 w-3 items-center justify-center rounded-full focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
@@ -465,7 +479,7 @@ export function CaptionReviewView() {
 									<span className="bg-primary text-primary-foreground flex size-5 scale-90 items-center justify-center rounded-full opacity-0 shadow-sm transition group-hover/insert:opacity-100 group-focus-visible/insert:opacity-100">
 										<Plus className="size-3" />
 									</span>
-								</button>
+								</UiLocalized>
 							);
 
 						if (isEditing) {
@@ -475,7 +489,9 @@ export function CaptionReviewView() {
 									key={key}
 									className="inline-flex min-w-20 max-w-full rounded-full border border-primary/60 bg-background p-0.5"
 								>
-									<Input
+									<UiLocalized<typeof Input>
+										element={Input}
+										messageProps={["aria-label"]}
 										ref={inputRef}
 										value={draft}
 										onChange={(event) => setDraft(event.target.value)}
@@ -531,7 +547,9 @@ export function CaptionReviewView() {
 										{displayText(item.text)}
 									</span>
 								</button>
-								<button
+								<UiLocalized<"button">
+									element={"button"}
+									messageProps={["title"]}
 									type="button"
 									className={cn(
 										"flex h-7 w-7 shrink-0 items-center justify-center border-s focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
@@ -554,8 +572,10 @@ export function CaptionReviewView() {
 									) : (
 										<EyeOff className="size-3.5" />
 									)}
-								</button>
-								<button
+								</UiLocalized>
+								<UiLocalized<"button">
+									element={"button"}
+									messageProps={["title"]}
 									type="button"
 									className="text-muted-foreground hover:bg-destructive/15 hover:text-destructive flex h-7 w-7 shrink-0 items-center justify-center border-s focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									onClick={() => removeWord(item)}
@@ -563,12 +583,12 @@ export function CaptionReviewView() {
 									title="Remove word"
 								>
 									<X className="size-3.5" />
-								</button>
+								</UiLocalized>
 							</div>,
 						].filter(Boolean);
 					})
 				)}
 			</div>
-		</PanelView>
+		</UiLocalized>
 	);
 }

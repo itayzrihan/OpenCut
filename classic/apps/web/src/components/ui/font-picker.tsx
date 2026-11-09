@@ -1,5 +1,6 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import {
 	type CSSProperties,
 	useCallback,
@@ -208,7 +209,7 @@ export function FontPicker({
 						<HugeiconsIcon icon={TextIcon} />
 					</span>
 					<span className="truncate" style={{ fontFamily: defaultValue }}>
-						{defaultValue ?? "Select a font"}
+						{defaultValue ?? <UiMessage text={"Select a font"} />}
 					</span>
 				</div>
 				<ChevronDown className="size-3 shrink-0 opacity-50" />
@@ -281,13 +282,13 @@ export function FontPicker({
 							) : (
 								<Upload className="size-3.5" />
 							)}
-							Import fonts
+							<UiMessage text={"Import fonts"} />
 						</Button>
 					</div>
 				)}
 				{status === "loading" && activeTab === "all" && (
 					<div className="py-8 text-center text-sm text-muted-foreground">
-						Loading fonts...
+						<UiMessage text={"Loading fonts..."} />
 					</div>
 				)}
 				{status === "error" &&
@@ -295,10 +296,10 @@ export function FontPicker({
 					filteredFonts.length === 0 && (
 						<div className="flex flex-col items-center gap-3 py-8 px-4">
 							<p className="text-sm text-muted-foreground text-center">
-								Failed to load font previews.
+								<UiMessage text={"Failed to load font previews."} />
 							</p>
 							<Button variant="outline" size="sm" onClick={handleRetry}>
-								Retry
+								<UiMessage text={"Retry"} />
 							</Button>
 						</div>
 					)}
@@ -306,26 +307,26 @@ export function FontPicker({
 					fontNames.length > 0 &&
 					filteredFonts.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							No fonts found.
+							<UiMessage text={"No fonts found."} />
 						</div>
 					)}
 				{activeTab === "my-fonts" && fontNames.length === 0 && (
 					<div className="py-6 text-center text-sm text-muted-foreground">
-						No fonts imported.
+						<UiMessage text={"No fonts imported."} />
 					</div>
 				)}
 				{activeTab === "adobe" &&
 					typekitStatus === "loading" &&
 					fontNames.length === 0 && (
 						<div className="py-8 text-center text-sm text-muted-foreground">
-							Loading Adobe fonts...
+							<UiMessage text={"Loading Adobe fonts..."} />
 						</div>
 					)}
 				{activeTab === "adobe" &&
 					typekitStatus === "error" &&
 					fontNames.length === 0 && (
 						<div className="py-6 text-center text-sm text-muted-foreground">
-							No Adobe fonts found.
+							<UiMessage text={"No Adobe fonts found."} />
 						</div>
 					)}
 				{(status === "idle" ||

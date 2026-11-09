@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { useEditor } from "@/editor/use-editor";
 import { storageService } from "@/services/storage/service";
 import { synchronizeDrivePreferences } from "@/services/local-drive/preferences";

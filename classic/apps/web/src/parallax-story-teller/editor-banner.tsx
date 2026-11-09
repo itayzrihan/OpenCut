@@ -1,5 +1,10 @@
 "use client";
 
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	Message as UiMessage,
+	LocalizedElement as UiLocalized,
+} from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import { useEditor, useEditorTimelineScenes } from "@/editor/use-editor";
 import {
@@ -26,7 +31,7 @@ import {
 	easeCameraManSamples,
 	spreadCameraManSamples,
 } from "./camera-man";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { getDisplayTracks } from "@/timeline";
 
 export function ParallaxCanvasEditorBanner() {
@@ -179,7 +184,9 @@ export function ParallaxCanvasEditorBanner() {
 		useCameraManStore.getState().reset();
 		toast.success(
 			mode === "ease"
-				? `Camera move eased to ${samples.length} keyframes`
+				? localizeClientMessage("Camera move eased to {v0} keyframes", {
+						v0: String(samples.length),
+					})
 				: "Camera move spread evenly across the scene",
 		);
 	};
@@ -230,11 +237,13 @@ export function ParallaxCanvasEditorBanner() {
 				onClick={() => void handleExit()}
 			>
 				<ArrowLeft className="size-3.5" />
-				Back to story
+				<UiMessage text={"Back to story"} />
 			</Button>
 			<div className="flex min-w-0 items-center gap-1.5 font-medium text-cyan-100">
 				<Camera className="size-3.5" />
-				<span className="truncate">Editing {scene.name}</span>
+				<span className="truncate">
+					<UiMessage text={"Editing"} /> {scene.name}
+				</span>
 			</div>
 			<Button
 				size="sm"
@@ -245,9 +254,12 @@ export function ParallaxCanvasEditorBanner() {
 				}
 			>
 				<Expand className="size-3.5" />
-				Expand world · {scene.parallax.worldWidthFrames} frames
+				<UiMessage text={"Expand world ·"} /> {scene.parallax.worldWidthFrames}{" "}
+				<UiMessage text={"frames"} />
 			</Button>
-			<input
+			<UiLocalized<"input">
+				element={"input"}
+				messageProps={["aria-label", "title"]}
 				aria-label="World width in camera frames"
 				title="World width in camera frames"
 				type="number"
@@ -258,7 +270,9 @@ export function ParallaxCanvasEditorBanner() {
 					handleWorldSize({ width: Number(event.target.value) })
 				}
 			/>
-			<input
+			<UiLocalized<"input">
+				element={"input"}
+				messageProps={["aria-label", "title"]}
 				aria-label="World height in camera frames"
 				title="World height in camera frames"
 				type="number"
@@ -276,7 +290,7 @@ export function ParallaxCanvasEditorBanner() {
 				onClick={handleAddParallaxTrack}
 			>
 				<Layers3 className="size-3.5" />
-				Add Parallax
+				<UiMessage text={"Add Parallax"} />
 			</Button>
 			<Button
 				size="sm"
@@ -285,7 +299,11 @@ export function ParallaxCanvasEditorBanner() {
 				onClick={handleCameraMan}
 			>
 				<Camera className="size-3.5" />
-				{cameraMan.phase === "recording" ? "Stop" : "Camera Man"}
+				{cameraMan.phase === "recording" ? (
+					<UiMessage text={"Stop"} />
+				) : (
+					<UiMessage text={"Camera Man"} />
+				)}
 			</Button>
 			{cameraMan.phase === "review" && cameraMan.sceneId === scene.id && (
 				<>
@@ -295,7 +313,8 @@ export function ParallaxCanvasEditorBanner() {
 						className="h-7 gap-1"
 						onClick={() => commitCameraMan("ease")}
 					>
-						<Sparkles className="size-3.5" /> Ease Keyframes
+						<Sparkles className="size-3.5" />{" "}
+						<UiMessage text={"Ease Keyframes"} />
 					</Button>
 					<Button
 						size="sm"
@@ -303,7 +322,8 @@ export function ParallaxCanvasEditorBanner() {
 						className="h-7 gap-1"
 						onClick={() => commitCameraMan("spread")}
 					>
-						<Maximize2 className="size-3.5" /> Spread all over
+						<Maximize2 className="size-3.5" />{" "}
+						<UiMessage text={"Spread all over"} />
 					</Button>
 					<Button
 						size="sm"
@@ -311,23 +331,29 @@ export function ParallaxCanvasEditorBanner() {
 						className="h-7 gap-1"
 						onClick={cancelCameraMan}
 					>
-						<X className="size-3.5" /> Cancel
+						<X className="size-3.5" /> <UiMessage text={"Cancel"} />
 					</Button>
 				</>
 			)}
-			<Button
+			<UiLocalized<typeof Button>
+				element={Button}
+				messageProps={["title"]}
 				size="sm"
 				variant="ghost"
 				className="h-7 gap-1 text-amber-200"
 				onClick={restoreCameraBeforeCameraMan}
 				title="Restore the camera state from before Camera Man, or the template route for older recordings"
 			>
-				<RotateCcw className="size-3.5" /> Undo Camera Man
-			</Button>
+				<RotateCcw className="size-3.5" />{" "}
+				<UiMessage text={"Undo Camera Man"} />
+			</UiLocalized>
 			<div className="ml-auto hidden items-center gap-1.5 text-muted-foreground xl:flex">
 				<MousePointer2 className="size-3.5" />
-				Add text, images and video to this timeline — their position is pinned
-				to the world
+				<UiMessage
+					text={
+						"Add text, images and video to this timeline — their position is pinned to the world"
+					}
+				/>
 			</div>
 		</div>
 	);

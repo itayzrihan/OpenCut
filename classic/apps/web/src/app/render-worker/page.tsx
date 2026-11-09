@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect } from "react";
 import { renderQueueRequest } from "@/export/queue/client";
 import { executeQueuedRender } from "@/export/queue/worker";
@@ -46,5 +47,9 @@ export default function RenderWorker() {
 			void run();
 		}
 	}, []);
-	return <main>OpenCut background renderer</main>;
+	return (
+		<main>
+			<UiMessage text={"POCUT background renderer"} />
+		</main>
+	);
 }

@@ -1,7 +1,8 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticMusic } from "@/ai/automatic-music";
@@ -55,10 +56,14 @@ export function AutomaticMusicButton({
 				disabled={disabled || running}
 			>
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
-				Automatic Music
+				<UiMessage text={"Automatic Music"} />
 			</Button>
 			<p className="text-muted-foreground text-xs">
-				Local Music matched to the video, cut to its full length at −31 dB.
+				<UiMessage
+					text={
+						"Local Music matched to the video, cut to its full length at −31 dB."
+					}
+				/>
 			</p>
 			{status && (
 				<p role="status" className="text-xs">
@@ -71,7 +76,7 @@ export function AutomaticMusicButton({
 					size="sm"
 					onClick={() => controller.current?.abort()}
 				>
-					Cancel music
+					<UiMessage text={"Cancel music"} />
 				</Button>
 			)}
 		</div>

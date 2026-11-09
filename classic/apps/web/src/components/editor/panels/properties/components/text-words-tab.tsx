@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { VolumeHighIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
@@ -214,7 +218,11 @@ export function TextWordsTab({
 			<SectionContent className="pt-4">
 				<SectionFields>
 					{canEditLineBreaks && (
-						<SectionField label="Line breaks">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Line breaks"
+						>
 							<div className="flex flex-col gap-2">
 								{lineRows.map((row, rowIndex) => (
 									<div
@@ -222,7 +230,7 @@ export function TextWordsTab({
 										className="border-border bg-input/30 rounded-sm border px-2 py-2"
 									>
 										<div className="text-muted-foreground mb-1.5 text-xs">
-											Line {rowIndex + 1}
+											<UiMessage text={"Line"} /> {rowIndex + 1}
 										</div>
 										<div className="flex flex-wrap gap-1.5">
 											{row.words.map((word) => {
@@ -234,7 +242,9 @@ export function TextWordsTab({
 														? "join-previous"
 														: "start-line";
 												return (
-													<button
+													<UiLocalized<"button">
+														element={"button"}
+														messageProps={["title"]}
 														key={word.id}
 														type="button"
 														disabled={isFirstWord}
@@ -254,17 +264,21 @@ export function TextWordsTab({
 														<span className="block max-w-28 truncate">
 															{word.text}
 														</span>
-													</button>
+													</UiLocalized>
 												);
 											})}
 										</div>
 									</div>
 								))}
 							</div>
-						</SectionField>
+						</UiLocalized>
 					)}
 
-					<SectionField label="Word animation">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Word animation"
+					>
 						<Select
 							value={values.wordAnimationId}
 							onValueChange={(wordAnimationId) =>
@@ -290,9 +304,13 @@ export function TextWordsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
+					</UiLocalized>
 
-					<SectionField label="Reveal">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Reveal"
+					>
 						<Select
 							value={values.revealMode}
 							onValueChange={(revealMode) =>
@@ -314,10 +332,14 @@ export function TextWordsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
+					</UiLocalized>
 
 					{usesTransitionIn(values.revealMode) && (
-						<SectionField label="Transition in">
+						<UiLocalized<typeof SectionField>
+							element={SectionField}
+							messageProps={["label"]}
+							label="Transition in"
+						>
 							<Select
 								value={values.transitionIn}
 								onValueChange={(transitionIn) =>
@@ -337,10 +359,14 @@ export function TextWordsTab({
 									))}
 								</SelectContent>
 							</Select>
-						</SectionField>
+						</UiLocalized>
 					)}
 
-					<SectionField label="Accent">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Accent"
+					>
 						<Select
 							value={values.accentColor}
 							onValueChange={(accentColor) =>
@@ -358,9 +384,13 @@ export function TextWordsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
+					</UiLocalized>
 
-					<SectionField label="Direction">
+					<UiLocalized<typeof SectionField>
+						element={SectionField}
+						messageProps={["label"]}
+						label="Direction"
+					>
 						<Select
 							value={values.wordDirection}
 							onValueChange={(wordDirection) =>
@@ -380,7 +410,7 @@ export function TextWordsTab({
 								))}
 							</SelectContent>
 						</Select>
-					</SectionField>
+					</UiLocalized>
 
 					{(!element.wordRuns?.length || (isBulk && !isBulkWordScope)) && (
 						<Button
@@ -388,9 +418,11 @@ export function TextWordsTab({
 							variant="outline"
 							onClick={() => updateScopedSettings({})}
 						>
-							{isBulk
-								? "Apply word controls to selected layers"
-								: "Enable word controls"}
+							{isBulk ? (
+								<UiMessage text={"Apply word controls to selected layers"} />
+							) : (
+								<UiMessage text={"Enable word controls"} />
+							)}
 						</Button>
 					)}
 
@@ -401,7 +433,8 @@ export function TextWordsTab({
 							disabled={!hasOverride}
 							onClick={clearOverride}
 						>
-							Clear {effectiveScope.type} override
+							<UiMessage text={"Clear"} /> {effectiveScope.type}{" "}
+							<UiMessage text={"override"} />
 						</Button>
 					)}
 				</SectionFields>
@@ -419,7 +452,9 @@ function RevealModeLabel({
 	return (
 		<span className="flex items-center gap-2">
 			{revealMode === "letter-by-letter" ? (
-				<HugeiconsIcon
+				<UiLocalized<typeof HugeiconsIcon>
+					element={HugeiconsIcon}
+					messageProps={["aria-label"]}
 					icon={VolumeHighIcon}
 					size={14}
 					aria-label="Includes typing sound"

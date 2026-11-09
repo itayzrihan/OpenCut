@@ -25,6 +25,7 @@ function retainTrackElements<T extends TimelineTrack>({
 
 export class UpdateElementsCommand extends Command {
 	private savedState: SceneTracks | null = null;
+	private readonly editor?: EditorCore;
 	private readonly captionTimeEdit?: GroupResizeResult["timeEdit"];
 	private readonly removedElementIds: Set<string>;
 	private readonly updates: Array<{
@@ -34,10 +35,12 @@ export class UpdateElementsCommand extends Command {
 	}>;
 
 	constructor({
+		editor,
 		updates,
 		captionTimeEdit,
 		removedElementIds = [],
 	}: {
+		editor?: EditorCore;
 		captionTimeEdit?: GroupResizeResult["timeEdit"];
 		removedElementIds?: string[];
 		updates: Array<{
@@ -47,13 +50,14 @@ export class UpdateElementsCommand extends Command {
 		}>;
 	}) {
 		super();
+		this.editor = editor;
 		this.updates = updates;
 		this.captionTimeEdit = captionTimeEdit;
 		this.removedElementIds = new Set(removedElementIds);
 	}
 
 	execute(): CommandResult | undefined {
-		const editor = EditorCore.getInstance();
+		const editor = this.editor ?? EditorCore.getInstance();
 		this.savedState = editor.scenes.getActiveScene().tracks;
 		let updatedTracks = this.savedState;
 		if (this.removedElementIds.size) {
@@ -131,7 +135,7 @@ export class UpdateElementsCommand extends Command {
 
 	undo(): void {
 		if (this.savedState) {
-			const editor = EditorCore.getInstance();
+			const editor = this.editor ?? EditorCore.getInstance();
 			editor.timeline.updateTracks(this.savedState, {
 				captionsAlreadySynced: Boolean(this.captionTimeEdit),
 			});

@@ -1,4 +1,10 @@
 "use client";
+import { ACCOUNT_WORKSPACE_HREF } from "@/accounts/workspace-route";
+import { LocalizedValue as UiValue } from "@/i18n/message";
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import type { EditorCore } from "@/core";
 import { invokePeerMedia, type EditorPullJob } from "./editor-client";
@@ -201,58 +207,75 @@ export function ProjectMediaPullPanel({
 		.getAssets()
 		.filter((asset) => asset.missing && !asset.unifiedAngles);
 	return (
-		<section
+		<UiLocalized<"section">
+			element={"section"}
+			messageProps={["aria-label"]}
 			className="space-y-2 rounded border p-3"
 			aria-label="Pull missing project files"
 		>
 			<h3 className="font-medium">
-				Get missing files from your other computer
+				<UiMessage text={"Get missing files from your other computer"} />
 			</h3>
 			<p>
-				Keep editing here while the originals download. Both computers need
-				sharing enabled under the same Legitate account.
+				<UiMessage
+					text={
+						"Keep editing here while the originals download. Both computers need sharing enabled under the same Legitate account."
+					}
+				/>
 			</p>
 			{!status?.configured || !status.enabled || !status.linked ? (
 				<p>
-					<a className="underline" href="/account">
-						Set up device transfers in account settings
+					<a className="underline" href={ACCOUNT_WORKSPACE_HREF}>
+						<UiMessage text={"Set up device transfers in account settings"} />
 					</a>
 				</p>
 			) : (
 				<>
 					<div className="flex flex-wrap items-center gap-2">
-						<select
+						<UiLocalized<"select">
+							element={"select"}
+							messageProps={["aria-label"]}
 							aria-label="Source computer"
 							className="rounded border bg-background p-1"
 							value={deviceId}
 							disabled={busy}
 							onChange={(event) => setDeviceId(event.target.value)}
 						>
-							<option value="">Choose a computer</option>
+							<UiLocalized<"option">
+								element={"option"}
+								messageProps={["children"]}
+								value=""
+							>
+								{"Choose a computer"}
+							</UiLocalized>
 							{status.devices.map((peer) => (
 								<option key={peer.id} value={peer.id}>
 									{peer.name}
 								</option>
 							))}
-						</select>
+						</UiLocalized>
 						<button
 							disabled={
 								busy || !deviceId || !missing.length || !status.connected
 							}
 							onClick={() => void pullAll()}
 						>
-							Pull {missing.length} missing file(s)
+							<UiMessage text={"Pull"} /> {missing.length}{" "}
+							<UiMessage text={"missing file(s)"} />
 						</button>
 						{busy && (
 							<button className="underline" onClick={() => void cancel()}>
-								Pause download
+								<UiMessage text={"Pause download"} />
 							</button>
 						)}
 					</div>
 					{!status.devices.length && (
 						<p>
-							No other computer is online. Open OpenCut there and keep it signed
-							in.
+							<UiMessage
+								text={
+									"No other computer is online. Open POCUT there and keep it signed in."
+								}
+							/>
 						</p>
 					)}
 				</>
@@ -267,11 +290,13 @@ export function ProjectMediaPullPanel({
 								.getAssets()
 								.find((asset) => asset.id === job.mediaId)?.name || job.mediaId}
 							:{" "}
-							{job.phase === "ready"
-								? "Downloaded and verified"
-								: job.status === "running"
-									? job.phase.replaceAll("-", " ")
-									: job.status}
+							{job.phase === "ready" ? (
+								<UiMessage text={"Downloaded and verified"} />
+							) : job.status === "running" ? (
+								job.phase.replaceAll("-", " ")
+							) : (
+								job.status
+							)}
 						</div>
 						<progress
 							aria-label={`Download progress for ${job.mediaId}`}
@@ -285,18 +310,20 @@ export function ProjectMediaPullPanel({
 						{job.error && <p className="text-red-500">{job.error}</p>}
 						{!busy && job.status !== "running" && (
 							<button className="underline" onClick={() => void pullAll(job)}>
-								{job.status === "ready"
-									? "Link downloaded original"
-									: "Resume this download"}
+								{job.status === "ready" ? (
+									<UiMessage text={"Link downloaded original"} />
+								) : (
+									<UiMessage text={"Resume this download"} />
+								)}
 							</button>
 						)}
 					</div>
 				))}
 			{error && (
 				<p role="alert" className="text-red-500">
-					{error}
+					<UiValue>{error}</UiValue>
 				</p>
 			)}
-		</section>
+		</UiLocalized>
 	);
 }

@@ -60,6 +60,7 @@ describe("Codex model helpers", () => {
 						{ effort: "low", description: "low" },
 						{ effort: "xhigh", description: "xhigh" },
 					],
+					default_reasoning_level: "xhigh",
 					input_modalities: ["text", "image"],
 					context_window: 372_000,
 					max_context_window: 1_000_000,
@@ -79,17 +80,33 @@ describe("Codex model helpers", () => {
 					id: "gpt-5.5",
 					display_name: "GPT-5.5",
 					supportedReasoningLevels: ["low", "medium"],
+					defaultReasoningLevel: "high",
+				},
+				{
+					id: "app-server-model",
+					displayName: "App Server Model",
+					supportedReasoningEfforts: [{ reasoningEffort: "medium" }],
+					defaultReasoningEffort: "medium",
+				},
+				{
+					id: "hidden-app-server-model",
+					hidden: true,
 				},
 			],
 		});
 
-		expect(models.map((model) => model.id)).toEqual(["gpt-5.6-sol", "gpt-5.5"]);
+		expect(models.map((model) => model.id)).toEqual([
+			"gpt-5.6-sol",
+			"gpt-5.5",
+			"app-server-model",
+		]);
 		expect(models[0]).toMatchObject({
 			label: "GPT-5.6 Sol",
 			recommended: true,
 			source: "live",
 			inputModalities: ["text", "image"],
 			reasoningEfforts: ["low", "xhigh"],
+			defaultReasoningEffort: "xhigh",
 			contextTokens: 372_000,
 			contextWindow: 1_000_000,
 			maxOutputTokens: 128_000,
@@ -97,6 +114,12 @@ describe("Codex model helpers", () => {
 		expect(models[1]).toMatchObject({
 			id: "gpt-5.5",
 			reasoningEfforts: ["low", "medium"],
+		});
+		expect(models[1]?.defaultReasoningEffort).toBeUndefined();
+		expect(models[2]).toMatchObject({
+			label: "App Server Model",
+			reasoningEfforts: ["medium"],
+			defaultReasoningEffort: "medium",
 		});
 	});
 });

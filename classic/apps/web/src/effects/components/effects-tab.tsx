@@ -1,7 +1,8 @@
 "use client";
 
+import { Message as UiMessage } from "@/i18n/message";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import type { ParamValues } from "@/params";
 import type { Effect } from "@/effects/types";
 import type { EffectElement, VisualElement } from "@/timeline";
@@ -63,7 +64,9 @@ export function StandaloneEffectTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Effect</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Effect"} />
+				</SectionTitle>
 			</div>
 			<EffectSection
 				effect={effect}
@@ -151,7 +154,9 @@ export function ClipEffectsTab({
 	return (
 		<div className="flex flex-col h-full">
 			<div className="border-b px-3.5 h-11 shrink-0 flex items-center">
-				<SectionTitle>Effects</SectionTitle>
+				<SectionTitle>
+					<UiMessage text={"Effects"} />
+				</SectionTitle>
 			</div>
 			{effects.length === 0 ? (
 				<EmptyView />
@@ -222,9 +227,13 @@ function EmptyView() {
 				strokeWidth={1}
 			/>
 			<div className="flex flex-col gap-2">
-				<h3 className="font-medium text-foreground">No effects</h3>
+				<h3 className="font-medium text-foreground">
+					<UiMessage text={"No effects"} />
+				</h3>
 				<p className="text-muted-foreground text-sm text-balance max-w-44">
-					Add effects to this layer from the Assets panel.
+					<UiMessage
+						text={"Add effects to this layer from the Assets panel."}
+					/>
 				</p>
 			</div>
 			<Button
@@ -232,7 +241,7 @@ function EmptyView() {
 				size="sm"
 				onClick={() => setActiveTab("effects")}
 			>
-				Open effects
+				<UiMessage text={"Open effects"} />
 			</Button>
 		</div>
 	);
@@ -427,7 +436,14 @@ function OverlayMovementSfxButton({ element }: { element: EffectElement }) {
 				disabled={isAdding}
 			>
 				<HugeiconsIcon icon={PlusSignIcon} />
-				{isAdding ? "Adding SFX..." : `Add ${defaultSfx.name} SFX`}
+				{isAdding ? (
+					<UiMessage text={"Adding SFX..."} />
+				) : (
+					<UiMessage
+						text={"Add {v0} SFX"}
+						values={{ v0: String(defaultSfx.name) }}
+					/>
+				)}
 			</Button>
 		</div>
 	);

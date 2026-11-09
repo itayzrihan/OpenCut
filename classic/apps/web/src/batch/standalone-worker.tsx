@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useState } from "react";
 import { batchRequest } from "./client";
 import { executeBatch } from "./worker";
@@ -8,7 +9,7 @@ import type { BatchState } from "./types";
 /** An independent browsing context owns model/decoder IO. The editor can reload
  * or navigate without destroying this executor or taking its write lease. */
 export function StandaloneWorker({ ownerId }: { ownerId: string }) {
-	const [message, setMessage] = useState("ממתין לעבודות העריכה…");
+	const [message, setMessage] = useState("Waiting for editing jobs…");
 	useEffect(() => {
 		let stopped = false;
 		let timer: ReturnType<typeof setTimeout>;
@@ -28,7 +29,7 @@ export function StandaloneWorker({ ownerId }: { ownerId: string }) {
 				if (task) {
 					hasRun = true;
 					idleSince = Date.now();
-					setMessage(`עורך כעת: ${task.run.jobs[0]?.name ?? "סצנה"}`);
+					setMessage(`Editing: ${task.run.jobs[0]?.name ?? "scene"}`);
 					try {
 						await executeBatch(task);
 						const after = await batchRequest<BatchState>();
@@ -66,7 +67,9 @@ export function StandaloneWorker({ ownerId }: { ownerId: string }) {
 					);
 					if (pending) idleSince = Date.now();
 					else if (Date.now() - idleSince > (hasRun ? 5000 : 30000)) {
-						setMessage(lastFailure ?? "העבודות נשמרו. אפשר לסגור את החלון.");
+						setMessage(
+							lastFailure ?? "Edits saved. You can close this window.",
+						);
 						if (!lastFailure) window.close();
 						return;
 					}
@@ -83,11 +86,17 @@ export function StandaloneWorker({ ownerId }: { ownerId: string }) {
 		};
 	}, [ownerId]);
 	return (
-		<main className="p-6 space-y-4" dir="rtl">
-			<h1 className="text-xl font-semibold">עריכות ברקע</h1>
+		<main className="p-6 space-y-4">
+			<h1 className="text-xl font-semibold">
+				<UiMessage text={"Background Edits"} />
+			</h1>
 			<p role="status">{message}</p>
 			<p className="text-sm text-muted-foreground">
-				אפשר למזער חלון זה ולהמשיך לעבוד ב־OpenCut. התוצאות נשמרות כסצנות חדשות.
+				<UiMessage
+					text={
+						"You can minimize this window and keep working in POCUT. Results are saved as new scenes."
+					}
+				/>
 			</p>
 		</main>
 	);

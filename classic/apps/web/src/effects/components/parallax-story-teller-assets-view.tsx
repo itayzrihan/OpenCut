@@ -1,7 +1,11 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/i18n/toast";
 import { PanelView } from "@/components/editor/panels/assets/views/base-panel";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +26,14 @@ import {
 import { CreateCanvasPanStoryCommand } from "@/commands/parallax/create-canvas-pan-story";
 import { cn } from "@/utils/ui";
 
-type StoryType = "blank" | "pan" | "zoom-in" | "zoom-out" | "dolly" | "tour" | "speaker";
+type StoryType =
+	| "blank"
+	| "pan"
+	| "zoom-in"
+	| "zoom-out"
+	| "dolly"
+	| "tour"
+	| "speaker";
 
 const STORY_TYPES: Array<{
 	id: ParallaxTemplateId;
@@ -79,7 +90,11 @@ export function ParallaxStoryTellerView() {
 	const [selectedTemplate, setSelectedTemplate] =
 		useState<ParallaxTemplateId>("canvas-pan");
 	return (
-		<PanelView title="Parallax Story Teller">
+		<UiLocalized<typeof PanelView>
+			element={PanelView}
+			messageProps={["title"]}
+			title="Parallax Story Teller"
+		>
 			<div
 				className="grid gap-2 pb-3"
 				style={{ gridTemplateColumns: "repeat(auto-fill, minmax(142px, 1fr))" }}
@@ -134,7 +149,7 @@ export function ParallaxStoryTellerView() {
 					50% { transform: translate(0, 0) scale(1); }
 				}
 			`}</style>
-		</PanelView>
+		</UiLocalized>
 	);
 }
 
@@ -148,7 +163,9 @@ function StoryTypeCard({
 	onSelect: () => void;
 }) {
 	return (
-		<button
+		<UiLocalized<"button">
+			element={"button"}
+			messageProps={["title"]}
 			type="button"
 			className={cn(
 				"group relative min-w-0 select-none overflow-hidden rounded-md border bg-card/60 text-left transition",
@@ -171,11 +188,20 @@ function StoryTypeCard({
 				<div className="mt-1 line-clamp-2 min-h-7 text-[9px] leading-tight text-muted-foreground">
 					{story.use}
 				</div>
-				<div className={cn("mt-2 text-[9px] font-medium uppercase tracking-[0.12em]", enabled ? "text-cyan-300" : "text-muted-foreground/70")}>
-					{enabled ? "Create story" : "Soon"}
+				<div
+					className={cn(
+						"mt-2 text-[9px] font-medium uppercase tracking-[0.12em]",
+						enabled ? "text-cyan-300" : "text-muted-foreground/70",
+					)}
+				>
+					{enabled ? (
+						<UiMessage text={"Create story"} />
+					) : (
+						<UiMessage text={"Soon"} />
+					)}
 				</div>
 			</div>
-		</button>
+		</UiLocalized>
 	);
 }
 
@@ -192,11 +218,11 @@ function CanvasPanWizard({
 	useEditorTimelineScenes((value) => value.scenes.getActiveSceneOrNull());
 	const [step, setStep] = useState<1 | 2>(1);
 	const [setup, setSetup] = useState<CanvasPanSetup>(() => ({
-			...getDefaultCanvasPanSetup(),
-			templateId,
-			worldWidthFrames: templateId === "world-canvas-tour" ? 6 : 3,
-			worldHeightFrames: templateId === "world-canvas-tour" ? 3 : 1,
-		}));
+		...getDefaultCanvasPanSetup(),
+		templateId,
+		worldWidthFrames: templateId === "world-canvas-tour" ? 6 : 3,
+		worldHeightFrames: templateId === "world-canvas-tour" ? 3 : 1,
+	}));
 
 	const handleOpenChange = (nextOpen: boolean) => {
 		onOpenChange(nextOpen);
@@ -229,21 +255,30 @@ function CanvasPanWizard({
 		<Dialog open={open} onOpenChange={handleOpenChange}>
 			<DialogContent className="sm:max-w-md">
 				<DialogHeader>
-					<DialogTitle>Parallax Story Wizard</DialogTitle>
+					<DialogTitle>
+						<UiMessage text={"Parallax Story Wizard"} />
+					</DialogTitle>
 					<DialogDescription>
-						Step {step} of 2 · Create a nested world with its own timeline.
+						<UiMessage text={"Step"} /> {step}{" "}
+						<UiMessage
+							text={"of 2 · Create a nested world with its own timeline."}
+						/>
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className="space-y-4">
 					{step === 1 ? (
 						<div className="space-y-3">
-							<div className="text-sm font-medium">Where should the camera travel?</div>
+							<div className="text-sm font-medium">
+								<UiMessage text={"Where should the camera travel?"} />
+							</div>
 							<div className="grid grid-cols-2 gap-2">
 								{(["right", "left"] as const).map((direction) => (
 									<button
 										type="button"
 										key={direction}
-										onClick={() => setSetup((value) => ({ ...value, direction }))}
+										onClick={() =>
+											setSetup((value) => ({ ...value, direction }))
+										}
 										className={cn(
 											"rounded-md border p-4 text-left text-sm transition",
 											setup.direction === direction
@@ -251,8 +286,15 @@ function CanvasPanWizard({
 												: "hover:bg-muted/50",
 										)}
 									>
-										<div className="font-medium capitalize">Pan {direction}</div>
-										<div className="mt-1 text-xs text-muted-foreground">Start in the center and reveal the world on the {direction}.</div>
+										<div className="font-medium capitalize">
+											<UiMessage text={"Pan"} /> {direction}
+										</div>
+										<div className="mt-1 text-xs text-muted-foreground">
+											<UiMessage
+												text={"Start in the center and reveal the world on the"}
+											/>{" "}
+											{direction}.
+										</div>
 									</button>
 								))}
 							</div>
@@ -260,50 +302,99 @@ function CanvasPanWizard({
 					) : (
 						<div className="space-y-4">
 							<label className="block space-y-1.5 text-sm">
-								<span className="font-medium">Story duration</span>
+								<span className="font-medium">
+									<UiMessage text={"Story duration"} />
+								</span>
 								<div className="flex items-center gap-2">
-									<input className="h-9 w-full rounded-md border bg-background px-3" type="range" min="2" max="30" step="0.5" value={setup.durationSeconds} onChange={(event) => setSetup((value) => ({ ...value, durationSeconds: Number(event.target.value) }))} />
-									<span className="w-12 text-right tabular-nums">{setup.durationSeconds}s</span>
+									<input
+										className="h-9 w-full rounded-md border bg-background px-3"
+										type="range"
+										min="2"
+										max="30"
+										step="0.5"
+										value={setup.durationSeconds}
+										onChange={(event) =>
+											setSetup((value) => ({
+												...value,
+												durationSeconds: Number(event.target.value),
+											}))
+										}
+									/>
+									<span className="w-12 text-right tabular-nums">
+										{setup.durationSeconds}s
+									</span>
 								</div>
 							</label>
 							<label className="block space-y-1.5 text-sm">
-								<span className="font-medium">World width</span>
+								<span className="font-medium">
+									<UiMessage text={"World width"} />
+								</span>
 								<input
 									className="h-9 w-full rounded-md border bg-background px-3"
 									type="number"
 									min="1"
 									step="1"
 									value={setup.worldWidthFrames}
-									onChange={(event) => setSetup((value) => ({
-										...value,
-										worldWidthFrames: Math.max(1, Number(event.target.value) || 1),
-									}))}
+									onChange={(event) =>
+										setSetup((value) => ({
+											...value,
+											worldWidthFrames: Math.max(
+												1,
+												Number(event.target.value) || 1,
+											),
+										}))
+									}
 								/>
 							</label>
 							<label className="block space-y-1.5 text-sm">
-								<span className="font-medium">World height</span>
+								<span className="font-medium">
+									<UiMessage text={"World height"} />
+								</span>
 								<input
 									className="h-9 w-full rounded-md border bg-background px-3"
 									type="number"
 									min="1"
 									step="1"
 									value={setup.worldHeightFrames ?? 1}
-									onChange={(event) => setSetup((value) => ({
-										...value,
-										worldHeightFrames: Math.max(1, Number(event.target.value) || 1),
-									}))}
+									onChange={(event) =>
+										setSetup((value) => ({
+											...value,
+											worldHeightFrames: Math.max(
+												1,
+												Number(event.target.value) || 1,
+											),
+										}))
+									}
 								/>
 							</label>
 							<div className="rounded-md border bg-muted/30 p-3 text-xs leading-relaxed text-muted-foreground">
-								After creation, select the clip and choose <span className="font-medium text-foreground">Edit Canvas</span>. Every layer you place there is pinned to world coordinates.
+								<UiMessage
+									text={"After creation, select the clip and choose"}
+								/>{" "}
+								<span className="font-medium text-foreground">
+									<UiMessage text={"Edit Canvas"} />
+								</span>
+								<UiMessage
+									text={
+										". Every layer you place there is pinned to world coordinates."
+									}
+								/>
 							</div>
 						</div>
 					)}
 				</DialogBody>
 				<DialogFooter>
-					{step === 2 && <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>}
+					{step === 2 && (
+						<Button variant="ghost" onClick={() => setStep(1)}>
+							<UiMessage text={"Back"} />
+						</Button>
+					)}
 					<Button onClick={() => (step === 1 ? setStep(2) : handleCreate())}>
-						{step === 1 ? "Continue" : "Create Parallax Story"}
+						{step === 1 ? (
+							<UiMessage text={"Continue"} />
+						) : (
+							<UiMessage text={"Create Parallax Story"} />
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>
@@ -332,7 +423,7 @@ function BlankThumbnail() {
 		<div className="absolute inset-0 flex items-center justify-center">
 			<div className="h-16 w-10 rounded border-2 border-cyan-300/70 shadow-[0_0_20px_rgba(103,232,249,0.18)]" />
 			<div className="absolute bottom-4 text-[8px] uppercase tracking-[0.2em] text-white/55">
-				blank world
+				<UiMessage text={"blank world"} />
 			</div>
 		</div>
 	);
@@ -376,7 +467,11 @@ function ZoomParallaxThumbnail({ direction }: { direction: "in" | "out" }) {
 				)}
 			/>
 			<div className="absolute right-3 bottom-3 left-3 text-center text-[8px] uppercase tracking-[0.16em] text-white/60">
-				{direction === "in" ? "forward depth" : "world reveal"}
+				{direction === "in" ? (
+					<UiMessage text={"forward depth"} />
+				) : (
+					<UiMessage text={"world reveal"} />
+				)}
 			</div>
 		</div>
 	);
@@ -388,7 +483,7 @@ function DollyThumbnail() {
 			<div className="absolute h-24 w-24 rounded-full border-8 border-fuchsia-300/45 animate-[story-dolly_2.6s_ease-in-out_infinite]" />
 			<div className="h-12 w-16 rounded border border-cyan-200/60 bg-cyan-300/25" />
 			<div className="absolute bottom-4 text-[8px] uppercase tracking-[0.2em] text-white/60">
-				deeper world
+				<UiMessage text={"deeper world"} />
 			</div>
 		</div>
 	);
@@ -405,7 +500,7 @@ function TourThumbnail() {
 			<div className="absolute top-[62%] left-[40%] h-7 w-9 rounded border border-violet-200/40 bg-violet-300/15" />
 			<div className="absolute top-[25%] left-[70%] h-7 w-9 rounded border border-amber-200/40 bg-amber-300/15" />
 			<div className="absolute inset-x-8 bottom-3 text-center text-[8px] uppercase tracking-[0.18em] text-white/60">
-				world route
+				<UiMessage text={"world route"} />
 			</div>
 		</div>
 	);
@@ -418,7 +513,7 @@ function SpeakerThumbnail() {
 			<div className="absolute bottom-14 h-16 w-12 rounded-full border border-cyan-200/65 bg-cyan-300/20" />
 			<div className="absolute bottom-2 left-1/2 h-8 w-px -translate-x-1/2 bg-cyan-200/60" />
 			<div className="absolute right-3 bottom-3 left-3 text-center text-[8px] uppercase tracking-[0.16em] text-white/60">
-				speaker tile
+				<UiMessage text={"speaker tile"} />
 			</div>
 		</div>
 	);
@@ -426,6 +521,11 @@ function SpeakerThumbnail() {
 
 function Station({ className }: { className?: string }) {
 	return (
-		<div className={cn("h-16 w-20 shrink-0 rounded border border-white/25", className)} />
+		<div
+			className={cn(
+				"h-16 w-20 shrink-0 rounded border border-white/25",
+				className,
+			)}
+		/>
 	);
 }

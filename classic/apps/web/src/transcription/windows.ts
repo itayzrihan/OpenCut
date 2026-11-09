@@ -5,6 +5,7 @@ import {
 } from "opencut-wasm";
 import { extractCompactAudioFeatures } from "@/timeline/audio-silence-analysis";
 import { transcriptionService } from "@/services/transcription/service";
+import type { BrowserTranscriptionModel } from "./models";
 import type {
 	TranscriptionLanguage,
 	TranscriptionProgress,
@@ -21,6 +22,7 @@ export async function transcribeAudioWindows({
 	duration,
 	signal,
 	language,
+	browserModel,
 	onProgress,
 	load,
 	cache,
@@ -38,6 +40,7 @@ export async function transcribeAudioWindows({
 	}) => Promise<TranscriptionResult>;
 	onChunk?: (chunk: TranscriptionWindow) => Promise<void>;
 	completedChunks?: Record<string, TranscriptionWord[]>;
+	browserModel?: BrowserTranscriptionModel;
 	duration: number;
 	signal: AbortSignal;
 	language: TranscriptionLanguage;
@@ -164,7 +167,9 @@ export async function transcribeAudioWindows({
 							message: `Section ${index + 1}/${count} · Checking missed speech`,
 						});
 						const recovered = await (externalTranscribe ?? transcribe)({
-							...(externalTranscribe ? { signal: activeSignal } : {}),
+							...(externalTranscribe
+								? { signal: activeSignal }
+								: { recovery: true }),
 							language,
 							load: () =>
 								load({
@@ -245,5 +250,5 @@ export async function transcribeAudioWindows({
 	};
 	return externalTranscribe
 		? run(externalTranscribe, signal)
-		: transcriptionService.withChunkSession({ signal, run });
+		: transcriptionService.withChunkSession({ signal, browserModel, run });
 }

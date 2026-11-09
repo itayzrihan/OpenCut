@@ -1,5 +1,9 @@
 "use client";
 
+import {
+	LocalizedElement as UiLocalized,
+	Message as UiMessage,
+} from "@/i18n/message";
 import { useState } from "react";
 import { CheckIcon, ClipboardIcon } from "lucide-react";
 import {
@@ -77,7 +81,9 @@ export function CopyMarkdownButton({
 	};
 
 	return (
-		<Button
+		<UiLocalized<typeof Button>
+			element={Button}
+			messageProps={["title"]}
 			size="sm"
 			variant="text"
 			onClick={handleCopy}
@@ -92,7 +98,11 @@ export function CopyMarkdownButton({
 			) : (
 				<ClipboardIcon className="size-4" />
 			)}
-			{copied ? "Copied!" : "Copy markdown"}
-		</Button>
+			{copied ? (
+				<UiMessage text={"Copied!"} />
+			) : (
+				<UiMessage text={"Copy markdown"} />
+			)}
+		</UiLocalized>
 	);
 }

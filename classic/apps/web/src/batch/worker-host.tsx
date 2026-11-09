@@ -1,4 +1,5 @@
 "use client";
+import { Message as UiMessage } from "@/i18n/message";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { BatchRun, BatchSource } from "./types";
@@ -134,7 +135,11 @@ export function AutomationWorkerHost({
 							);
 						}}
 					>
-						{retrying ? "Saving…" : "Retry saving"}
+						{retrying ? (
+							<UiMessage text={"Saving…"} />
+						) : (
+							<UiMessage text={"Retry saving"} />
+						)}
 					</Button>
 				</div>
 			)}

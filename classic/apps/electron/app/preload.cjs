@@ -8,11 +8,12 @@ const { contextBridge, ipcRenderer } = require("electron");
 // window relationship to the Electron shell — that dialog ends up with no owner window and
 // never comes to the front over the app. Routing through the main process here fixes that.
 contextBridge.exposeInMainWorld("opencutElectron", {
+	openChatGPTSignIn: (url) => ipcRenderer.invoke("opencut:chatgpt-sign-in", url),
 	setComputerAccess: (scope) => ipcRenderer.invoke("opencut:agent-computer-permissions",scope),
 	executeComputerOperation: (request) => ipcRenderer.invoke("opencut:agent-computer-execute",request),
 	cancelComputerOperations: () => ipcRenderer.invoke("opencut:agent-computer-cancel"),
 	revokeComputerAccess: () => ipcRenderer.invoke("opencut:agent-computer-revoke"),
-	pickMediaFiles: () => ipcRenderer.invoke("opencut:pick-media-files"),
+	pickMediaFiles: (labels) => ipcRenderer.invoke("opencut:pick-media-files", labels),
 	goBack: () => ipcRenderer.invoke("opencut:go-back"),
 	canGoBack: () => ipcRenderer.invoke("opencut:can-go-back"),
 	captureEditorScreenshot: (scope) => ipcRenderer.invoke("opencut:editor-screenshot", scope),
