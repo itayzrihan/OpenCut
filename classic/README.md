@@ -1,8 +1,8 @@
-# OpenCut (Legacy)
+# POCUT
 
-This is the original OpenCut codebase. It's archived and no longer maintained.
-
-The rewrite is happening at [opencut-app/opencut](https://github.com/opencut-app/opencut).
+This directory contains the maintained POCUT editor, based on the original
+OpenCut codebase. See the [workspace README](../README.md) for product scope
+and the upstream rewrite recovery link.
 
 ## Sponsors
 

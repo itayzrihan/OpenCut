@@ -4,8 +4,8 @@
       <img src="https://assets.opencut.app/branding/symbol.svg" alt="OpenCut Logo" width="100" />
     </td>
     <td align="right">
-      <h1>OpenCut</h1>
-      <h3 style="margin-top: -10px;">A free and open source video editor for web, desktop, and mobile.</h3>
+      <h1>POCUT</h1>
+      <h3 style="margin-top: -10px;">An open-source video editor for the browser and Electron.</h3>
     </td>
   </tr>
 </table>
@@ -16,27 +16,17 @@
 
 ## Status
 
-This repository is now the canonical, unified OpenCut workspace. It contains:
+This repository maintains POCUT. The product lives in `classic/` and ships the
+same Next.js editor in the browser and Electron. The shared Rust engine, account
+policy, editor agent, and MCP projection live in `crates/`. The local MCP
+executable lives in `apps/mcp/`.
 
-- `classic/` — the current full TypeScript/Next.js editor, including silence
-  cutting, timeline editing, AI workflows, local-drive persistence, and the
-  production web application.
-- `apps/` and `crates/` — the Rust/GPUI rewrite, Editor API, desktop shell, and
-  self-describing MCP control plane.
+### Retired rewrite
 
-The two implementations are kept in one Git history so a normal clone or pull
-cannot silently omit product work. They are not yet one runtime: the current
-MCP controls the rewrite runtime, and classic features must be migrated or
-bridged explicitly before the MCP can operate the production editor.
-
-The rewrite roadmap includes:
-
-- An Editor API
-- First-class third party plugins (made possible by a plugin-first architecture)
-- Desktop, mobile, and browser from one codebase (Rust core)
-- A self-describing MCP server (for AI agents)
-- Headless mode (automation, batch rendering)
-- A scripting tab directly in the editor
+We removed the separate rewrite applications `apps/web`, `apps/desktop`, and
+`apps/api` from `main`. To recover the upstream rewrite, start from the
+[original OpenCut repository](https://github.com/OpenCut-app/OpenCut).
+The shared Rust and MCP components listed above continue to power POCUT.
 
 See [UNIFIED_WORKSPACE.md](UNIFIED_WORKSPACE.md) for the source-of-truth,
 development, synchronization, and migration rules.
@@ -70,13 +60,10 @@ proto use    # installs the tools pinned in .prototools
 ```
 
 ```sh
-moon run web:dev       # localhost:5173
-moon run api:dev       # localhost:8787
-moon run desktop:dev   # see apps/desktop/README.md
 moon run mcp:dev       # MCP over stdio
 ```
 
-To run the current full editor:
+To run POCUT:
 
 ```sh
 cd classic
@@ -86,7 +73,7 @@ bun install --frozen-lockfile
 bun run dev:web
 ```
 
-### Classic browser and Electron targets
+### Browser and Electron targets
 
 The complete editor under `classic/` has one UI and one editor state model, but
 two optimized delivery targets. No product feature is copied between them.
@@ -110,14 +97,12 @@ Its HTTP cache budget defaults to 512 MiB and can be changed with
 `OPENCUT_ELECTRON_DISK_CACHE_BYTES`. Browser source maps remain off in release
 builds; set `OPENCUT_BROWSER_SOURCE_MAPS=true` only for a diagnostic build.
 
-The Electron distribution is currently **classic-only**. It wraps the full
-classic product and does not replace the GPUI rewrite under `apps/desktop`.
 See [classic/apps/electron/README.md](classic/apps/electron/README.md) for
 packaging and platform details.
 
 ## MCP / Editor API
 
-The rewrite includes a transport-neutral Editor API and an MCP adapter. Editor
+POCUT uses a transport-neutral Editor API and an MCP adapter. Editor
 features register one versioned capability with the shared Rust runtime; MCP
 then exposes it automatically as a typed tool, a discoverable operation, and a
 readable contract resource. This keeps new editor work available to agents
@@ -127,16 +112,15 @@ The runtime now models multiple open project tabs, exact media time, assets,
 tracks, layers, clips, text/captions, shapes, masks, effects, keyframes,
 transitions, markers, selection, playback, workspace state, history,
 persistence, media analysis, preview artifacts, jobs, and FFmpeg export.
-Desktop panels and MCP use the same in-memory runtime, so an authenticated
-agent can inspect the semantic UI, receive preview/window images directly, and
-edit the active project while the desktop is open.
+The local MCP bridge connects to the live POCUT runtime so an authenticated
+agent can inspect and edit the active project.
 
 See [apps/mcp/README.md](apps/mcp/README.md) for architecture, client
 configuration, the feature-registration contract, and security controls.
 
-### Automatic MCP startup for Classic
+### Automatic MCP startup
 
-The Classic development launchers start the authenticated loopback MCP bridge
+The development launchers start the authenticated loopback MCP bridge
 automatically:
 
 ```sh

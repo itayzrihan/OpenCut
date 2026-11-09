@@ -274,26 +274,6 @@ Network transport must not be enabled without authentication, loopback binding,
 Host/Origin validation, and an explicit policy. The shipped HTTP mode enforces
 the first three and uses the same configurable `AccessPolicy` as stdio.
 
-### Active desktop instance
-
-The desktop can opt in to an authenticated Streamable HTTP endpoint backed by
-its exact live `OpenCutRuntime`:
-
-```sh
-OPENCUT_MCP_HTTP_ADDR=127.0.0.1:32123
-OPENCUT_MCP_HTTP_TOKEN=replace-with-a-random-secret-at-least-32-characters
-moon run desktop:dev
-```
-
-Connect the MCP client to `http://127.0.0.1:32123/mcp` with
-`Authorization: Bearer <the token>`. The server refuses non-loopback binds,
-requires a token of at least 32 characters, validates Host/Origin through the
-MCP transport, and does not start unless both environment variables are
-present.
-
-Use the desktop endpoint when the agent must see live selection, playback, UI,
-or in-memory project state. Use stdio for headless automation.
-
 Mutating MCP tools advertise `projectId` as required so edits cannot drift to a
 different tab. They also accept `expectedRevision` and `idempotencyKey`.
 Omitting `projectId` still targets the sole active tab for one compatibility

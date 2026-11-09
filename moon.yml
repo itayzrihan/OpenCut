@@ -17,7 +17,7 @@ tasks:
       : "${R2_BUCKET:?Set R2_BUCKET in .env.local}"
 
       for file in "$root"/brand/marks/*.svg; do
-        bun run --cwd apps/web wrangler r2 object put \
+        bun run --cwd classic/apps/web wrangler r2 object put \
           "$R2_BUCKET/${file##*/}" \
           --file "$file" \
           --content-type 'image/svg+xml' \
@@ -25,7 +25,7 @@ tasks:
       done
     inputs:
       - 'brand/marks/*.svg'
-      - 'apps/web/package.json'
+      - 'classic/apps/web/package.json'
       - '.env.example'
     options:
       cache: false

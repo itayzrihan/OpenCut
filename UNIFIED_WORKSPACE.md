@@ -1,14 +1,14 @@
 # Unified OpenCut workspace
 
-`itayzrihan/OpenCut` is the single repository of record for OpenCut.
+`itayzrihan/OpenCut` is the single repository of record for POCUT.
 
 ## Layout
 
 ```text
 OpenCut/
-├── classic/       Current full web editor and its Rust/WASM business logic
-├── apps/          Rewrite desktop, web/API placeholders, and MCP executable
-├── crates/        Rewrite Editor API and MCP projection
+├── classic/       POCUT browser and Electron editor and its Rust/WASM logic
+├── apps/mcp/      MCP executable and local session policy
+├── crates/        Shared Editor API, agent, account policy, and MCP projection
 └── brand/         Shared brand assets
 ```
 
@@ -22,13 +22,12 @@ no submodule initialization step.
 | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
 | Full editor UI and timeline                                            | `classic/apps/web`                                                                                       |
 | Silence cutting                                                        | `classic/apps/web/src/timeline` and `classic/rust/crates/timeline`                                       |
-| Virtual camera, depth, speaker tiles, learned UI assets                | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
-| Speaker Frame Breakout smart layer and Paper Grid                      | Classic UI/rendering; typed create/update/inspect/apply contract in `crates/editor-api` and projected MCP; rewrite UI/rendering pending |
-| Unified Angles virtual multicam                                        | Classic UI/preview/export supports 2+ angles, uniform multi-selection switching, and cyclic multi-cut assignment; typed `media.angles.unify`, `timeline.item.angle.set`, `timeline.items.angle.set`, and `timeline.items.angles.cycle` contracts live in `crates/editor-api`; rewrite UI migration pending |
-| Video framing for aspect-ratio conversion                              | Classic Settings and renderer support per-clip contain or crop-to-fill framing; typed `timeline.items.fit.set` contract and serialized state live in `crates/editor-api`; rewrite UI/rendering migration pending |
-| Editorial edge feather and feathered text assets                       | Classic-native and bridged through the live Classic MCP/AI capability catalog; rewrite migration pending |
+| Virtual camera, depth, speaker tiles, learned UI assets                | Classic editor and its live MCP/AI capability catalog |
+| Speaker Frame Breakout smart layer and Paper Grid                      | Classic UI/rendering and typed create/update/inspect/apply contracts in `crates/editor-api` |
+| Unified Angles virtual multicam                                        | Classic UI/preview/export and typed angle contracts in `crates/editor-api` |
+| Video framing for aspect-ratio conversion                              | Classic Settings and renderer, with the `timeline.items.fit.set` contract and serialized state in `crates/editor-api` |
+| Editorial edge feather and feathered text assets                       | Classic editor and its live MCP/AI capability catalog |
 | Current project/local-drive persistence                                | `classic/apps/web/src/services/local-drive`                                                              |
-| Rewrite desktop UI                                                     | `apps/desktop`                                                                                           |
 | Typed Editor API                                                       | `crates/editor-api`                                                                                      |
 | HyperFrames project source import                                    | Typed import and folder planning in `crates/editor-api`, lazy WASM, canonical Classic history and compact archives; isolated official runtime verified with eight Brag projects. Import UI, Classic compositing/audio/export and native MCP forwarding remain pending; see `HYPERFRAMES-INTEGRATION.md` |
 | MCP server and projection                                              | `apps/mcp` and `crates/mcp`                                                                              |
@@ -36,13 +35,9 @@ no submodule initialization step.
 The local Classic editor connects to the stdio MCP through an authenticated
 loopback bridge. It publishes the active project, playhead, timeline, selection,
 semantic UI state, and its live AI tool catalog; those tools are projected
-dynamically through the canonical MCP capability registry. Rewrite-native tools
-still operate the rewrite runtime, while `classic.*` capabilities explicitly
-target the connected Classic browser session. Remote deployments do not expose
-this local bridge. The Classic and rewrite document models are not yet
-state-synchronized: the live Classic smart layer is controlled through the
-Classic bridge, while the typed Rust smart-layer contract controls the rewrite
-document until that synchronization and renderer migration are completed.
+dynamically through the canonical MCP capability registry. Use the connected
+Classic session for live browser or Electron edits. The native runtime also
+supports headless operations. Remote deployments do not expose the local bridge.
 
 ## Development
 
@@ -63,14 +58,13 @@ cd classic
 bun test
 ```
 
-Rewrite desktop and MCP:
+MCP server:
 
 ```sh
-cargo run -p opencut-desktop
 cargo run -p opencut-mcp-server
 ```
 
-Rewrite validation:
+Shared Rust validation:
 
 ```sh
 cargo test --workspace
@@ -81,14 +75,14 @@ cargo clippy --workspace --all-targets -- -D warnings
 
 1. New work is committed to this repository, including changes under
    `classic/`.
-2. A feature is not considered migrated merely because a similarly named
-   capability exists in the rewrite.
+2. Verify a capability through the POCUT browser or Electron entry point
+   before claiming product support.
 3. Keep the standalone `itayzrihan/opencut-classic` repository as a read-only
-   recovery mirror until classic-to-rewrite parity is complete.
+   recovery mirror.
 4. Preserve experiments on named branches instead of mixing older storage or
    timeline implementations into current production code.
-5. Never remove the classic implementation until its feature inventory,
-   projects, preview/export output, and MCP operations pass migration tests.
+5. Verify projects, preview/export output, and MCP operations before replacing
+   an existing editor feature.
 
 ## Updating the recovery mirror
 

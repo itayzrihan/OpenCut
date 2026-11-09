@@ -4,17 +4,16 @@
 
 `itayzrihan/OpenCut` is the canonical repository for all OpenCut work.
 
-- `classic/` contains the current complete product. Its nearest `AGENTS.md`
+- `classic/` contains POCUT, the complete product. Its nearest `AGENTS.md`
   governs work inside that directory.
-- `apps/` and `crates/` contain the rewrite and MCP control plane.
+- `crates/` contains the shared Rust runtime, account policy, editor agent, and
+  MCP projection. `apps/mcp/` contains the MCP executable used by POCUT.
 - Do not develop against a separate clone of `opencut-classic`. Make product
   changes under `classic/` in this repository so one commit can track the
   complete project state.
-- Do not copy the same feature into both implementations without a migration
-  contract and tests. Record whether a capability is classic-only,
-  rewrite-only, bridged, or fully migrated.
-- Never delete classic functionality merely because a rewrite scaffold exists.
-  Removal requires verified feature parity and a recorded migration.
+- Keep browser and Electron features on the same editor runtime and document
+  which hosts support each capability. Verify feature parity before replacing
+  or removing existing product functionality.
 
 ## Canonical editor runtime
 

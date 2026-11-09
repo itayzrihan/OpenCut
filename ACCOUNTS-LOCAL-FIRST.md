@@ -40,11 +40,10 @@ the owner's personal library.
 
 ## Migration contract
 
-The complete classic editor remains the shipped product. The rewrite is not
-feature-complete and must not replace it. Shared account policy and transactions
-must have one Rust implementation consumed by the canonical Editor API and
-classic WASM; platform filesystem, browser, identity and transport adapters may
-live in their respective hosts. No feature removal is justified by this work.
+POCUT ships the editor under `classic/`. The canonical Editor API and Classic
+WASM share one Rust implementation of account policy and transactions.
+Platform filesystem, browser, identity and transport adapters may live in
+their respective hosts.
 
 This document records requirements, not a claim that the release gates pass.
 

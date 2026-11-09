@@ -76,8 +76,6 @@ not require Developer Mode or administrator privileges. Set
 `OPENCUT_WINDOWS_SIGNING=true` in a properly configured release environment to
 enable it.
 
-## Migration status
+## Product scope
 
-This capability is **classic-only**: it is an Electron distribution of the
-complete classic web product. It does not replace or remove the in-progress
-GPUI desktop rewrite in `apps/desktop`.
+Electron packages the same POCUT editor and shared runtime used by the browser.

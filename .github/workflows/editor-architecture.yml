@@ -4,15 +4,25 @@ on:
   pull_request:
     paths:
       - "classic/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/mcp/**"
+      - "crates/account-core/**"
       - "crates/editor-api/**"
       - "crates/editor-agent/**"
+      - "crates/mcp/**"
       - ".github/workflows/editor-architecture.yml"
   push:
     branches: [main]
     paths:
       - "classic/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "apps/mcp/**"
+      - "crates/account-core/**"
       - "crates/editor-api/**"
       - "crates/editor-agent/**"
+      - "crates/mcp/**"
       - ".github/workflows/editor-architecture.yml"
 
 jobs:
