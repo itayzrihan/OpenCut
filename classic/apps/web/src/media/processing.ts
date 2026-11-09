@@ -1,3 +1,4 @@
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { localizeClientMessage } from "@/i18n/client-messages";
 import { toast } from "@/i18n/toast";
 import { getMediaTypeFromFile } from "@/media/media-utils";
@@ -93,7 +94,7 @@ export async function processMediaAssets({
 		}
 
 		if (
-			mediaStorageDisposition({
+			!isHostedBrowserWorkspace() && mediaStorageDisposition({
 				size: file.size,
 				hasSourcePath: false,
 				preserveLink: false,

@@ -1,4 +1,6 @@
 "use client";
+
+import { useWorkspaceAccount } from "@/accounts/gate";
 import { LocalizedValue as UiValue } from "@/i18n/message";
 import {
 	Message as UiMessage,
@@ -35,6 +37,7 @@ export function TranscriptionSource({
 	onImport: () => void;
 }) {
 	const editor = useEditor();
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
 	const engine = useEditorProject(
 		(e) => e.project.getActive().transcriptionEngine ?? "local",
 	);
@@ -97,8 +100,8 @@ export function TranscriptionSource({
 				<UiMessage text={"Transcription engine"} />
 			</label>
 			<Select
-				value={engine}
-				disabled={disabled || busy}
+				value={hosted ? "local" : engine}
+				disabled={hosted || disabled || busy}
 				onValueChange={(value) => {
 					if (value === "local" || value === "external") {
 						setBusy(true);
@@ -121,12 +124,14 @@ export function TranscriptionSource({
 					<SelectItem value="local">
 						<UiMessage text={"Local · this device"} />
 					</SelectItem>
-					<SelectItem value="external">
-						<UiMessage text={"External API"} />
-					</SelectItem>
+					{!hosted && (
+						<SelectItem value="external">
+							<UiMessage text={"External API"} />
+						</SelectItem>
+					)}
 				</SelectContent>
 			</Select>
-			{engine === "external" ? (
+			{!hosted && engine === "external" ? (
 				<>
 					<Button
 						variant="outline"

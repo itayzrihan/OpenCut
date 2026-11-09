@@ -56,6 +56,7 @@ export function AccountGate({ children }: { children: ReactNode }) {
 					setLegitateConfigured(!!configured);
 					setLegitateOnly(!!only);
 					setHostedLegitate(!!hosted);
+					window.__opencutHostedLegitate = hosted === true;
 					if ((current?.id ?? null) !== window.__opencutAccountId) {
 						console.info("[workspace] Reloading after account change");
 						window.__opencutActivateAccount(current?.id ?? null);

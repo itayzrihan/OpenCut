@@ -1,4 +1,6 @@
 "use client";
+
+import { useWorkspaceAccount } from "@/accounts/gate";
 import { localizeClientMessage } from "@/i18n/client-messages";
 import {
 	LocalizedElement as UiLocalized,
@@ -273,6 +275,7 @@ function MediaViewContent() {
 		}
 	};
 
+	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
 	const importFromDrive = async () => {
 		if (!activeProject || isProcessing) return;
 		setIsProcessing(true);
@@ -321,6 +324,8 @@ function MediaViewContent() {
 			multiple: true,
 			onFilesSelected: (files) => processFiles({ files }),
 		});
+
+	const importMedia = hosted ? openFilePicker : () => void importFromDrive();
 
 	const handleRemove = useCallback(
 		({ event, ids }: { event: React.MouseEvent; ids: string[] }) => {
@@ -577,8 +582,8 @@ function MediaViewContent() {
 						sortBy={mediaSortBy}
 						sortOrder={mediaSortOrder}
 						onSort={handleSort}
-						onImport={() => void importFromDrive()}
-						onImportBrowser={openFilePicker}
+						onImport={importMedia}
+						onImportBrowser={hosted ? undefined : openFilePicker}
 						onImportHyperframes={() => setHyperframesImportOpen(true)}
 						selectedCount={selectedMediaIds.length}
 						onPodcastSync={handlePodcastSyncSelected}
@@ -698,7 +703,7 @@ function MediaViewContent() {
 							isVisible={true}
 							isProcessing={isProcessing}
 							progress={progress}
-							onClick={() => void importFromDrive()}
+							onClick={importMedia}
 						/>
 					) : filteredMediaItems.length === 0 &&
 					  sequenceScenes.length === 0 &&
@@ -1490,7 +1495,7 @@ function MediaActions({
 	sortOrder: MediaSortOrder;
 	onSort: ({ key }: { key: MediaSortKey }) => void;
 	onImport: () => void;
-	onImportBrowser: () => void;
+	onImportBrowser?: () => void;
 	onImportHyperframes: () => void;
 	selectedCount: number;
 	onPodcastSync: () => void;
@@ -1665,9 +1670,11 @@ function MediaActions({
 						<DropdownMenuItem onSelect={onImport}>
 							<UiMessage text={"Media files…"} />
 						</DropdownMenuItem>
-						<DropdownMenuItem onSelect={onImportBrowser}>
-							<UiMessage text={"Upload media files…"} />
-						</DropdownMenuItem>
+						{onImportBrowser && (
+							<DropdownMenuItem onSelect={onImportBrowser}>
+								<UiMessage text={"Upload media files…"} />
+							</DropdownMenuItem>
+						)}
 						<DropdownMenuItem onSelect={onImportHyperframes}>
 							<UiMessage text={"HyperFrames project folder…"} />
 						</DropdownMenuItem>

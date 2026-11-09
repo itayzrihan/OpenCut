@@ -29,6 +29,7 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Button } from "@/components/ui/button";
 import { ParallaxCanvasEditorBanner } from "@/parallax-story-teller/editor-banner";
+import { useWorkspaceAccount } from "@/accounts/gate";
 import { EditorAgentWorkspace } from "@/editor-agent/overlay";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 import { WorkspaceLoading } from "@/components/workspace-loading";
@@ -44,12 +45,13 @@ export default function Editor() {
 			useAssetsPanelStore.getState().setActiveTab("catalog");
 	}, [projectId, view]);
 	const batch = useBatchEdit();
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
 	const job = batch.state.runs
 		.flatMap((r) => r.jobs)
 		.find((j) => j.projectId === projectId);
 	const readOnly = !!job && batchEditIsLocked({ status: job.status });
 	const preparing = batch.preparingProjectId === projectId;
-	if (!batch.loaded) return <WorkspaceLoading />;
+	if (!hosted && !batch.loaded) return <WorkspaceLoading />;
 
 	return (
 		<MobileGate>
@@ -84,14 +86,22 @@ export default function Editor() {
 					<DegradedRendererBanner />
 					<EditorHeader />
 					<div className={`min-h-0 min-w-0 flex-1 ${styles.workspace}`}>
-						<EditorAgentWorkspace>
-							<EditorLayout />
-						</EditorAgentWorkspace>
+						<EditorWorkspace />
 					</div>
 					<MigrationDialog />
 				</div>
 			</EditorProvider>
 		</MobileGate>
+	);
+}
+
+function EditorWorkspace() {
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
+	if (hosted) return <EditorLayout />;
+	return (
+		<EditorAgentWorkspace>
+			<EditorLayout />
+		</EditorAgentWorkspace>
 	);
 }
 

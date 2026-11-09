@@ -1,5 +1,5 @@
 import type { ProjectFontAsset } from "@/fonts/types";
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
 import type { MediaAsset } from "@/media/types";
 import type { TProject, TProjectMetadata } from "@/project/types";
 import type { SavedSound, SavedSoundsData, SoundEffect } from "@/sounds/types";
@@ -7,6 +7,7 @@ import type { Bookmark, SceneTracks, TScene } from "@/timeline";
 import { getProjectDurationFromScenes } from "@/timeline/scenes";
 import { roundMediaTime } from "@/wasm";
 import {
+	assertLocalDriveWriteScope,
 	captureLocalDriveWriteScope,
 	pinLocalDriveWriteScope,
 	loadLocalFontFile,
@@ -24,8 +25,9 @@ import {
 } from "@/services/local-drive/adapters";
 import { IndexedDBAdapter } from "./indexeddb-adapter";
 import { OPFSAdapter } from "./opfs-adapter";
+import { hostedMedia } from "./hosted-media";
 import type { StorageCapacityCheckResult } from "./quota";
-import { isStorageQuotaExceededError } from "./quota";
+import { evaluateStorageCapacity, isStorageQuotaExceededError, readStorageQuotaStatus } from "./quota";
 import type {
 	MediaAssetData,
 	ProjectFontData,
@@ -223,6 +225,14 @@ export class StorageService {
 			}),
 			files: new OPFSAdapter(`media-files-${projectId}`),
 		};
+	}
+
+	private hostedFonts(projectId: string) {
+		const accountId = window.__opencutAccountId;
+		if (!accountId) throw new Error("Sign in before opening account storage");
+		return new IndexedDBAdapter<Omit<ProjectFontAsset, "url">>({
+			dbName: `hosted-fonts-${projectId}`, storeName: "fonts", accountId,
+		});
 	}
 
 	private getLegacyFontAdapters(projectId: string) {
@@ -439,10 +449,12 @@ export class StorageService {
 	}
 
 	async canStoreFile({
-		size: _size,
+		size,
 	}: {
 		size: number;
 	}): Promise<StorageCapacityCheckResult> {
+		if (isHostedBrowserWorkspace())
+			return evaluateStorageCapacity({ requiredBytes: size, quotaStatus: await readStorageQuotaStatus() });
 		await localDriveRequest({ operation: "status" });
 		return {
 			canStore: true,
@@ -556,10 +568,13 @@ export class StorageService {
 	}
 
 	async deleteProject({ id }: { id: string }): Promise<void> {
+		const browser = isHostedBrowserWorkspace() ? hostedMedia(id) : undefined;
+		const fonts = browser ? this.hostedFonts(id) : undefined;
 		await localDriveRequest({
 			operation: "project.delete",
 			payload: { projectId: id },
 		});
+		await Promise.all([browser?.clear(), fonts?.clear()]);
 	}
 
 	async saveCommandHistory({
@@ -601,6 +616,16 @@ export class StorageService {
 		scope?: LocalDriveRequestScope;
 	}): Promise<void> {
 		scope = pinLocalDriveWriteScope({ projectId, scope });
+		if (isHostedBrowserWorkspace()) {
+			assertLocalDriveWriteScope({ projectId, scope });
+			scope.signal?.throwIfAborted();
+			const browser = hostedMedia(projectId, scope.accountId);
+			if (mediaAsset.file || mediaAsset.unifiedAngles || mediaAsset.sourcePath ||
+				(await browser.records.get(mediaAsset.id))) {
+				Object.assign(mediaAsset, await browser.save(mediaAsset, scope.uploadToken));
+				return;
+			}
+		}
 		const targetUrl = localMediaUrl({
 			projectId,
 			id: mediaAsset.id,
@@ -684,6 +709,11 @@ export class StorageService {
 	}
 
 	async loadMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+		if (isHostedBrowserWorkspace()) {
+			const browser = hostedMedia(projectId);
+			const record = await browser.records.get(id);
+			if (record) return record.deleted ? null : browser.hydrate(record);
+		}
 		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
 			payload: { projectId },
@@ -697,11 +727,18 @@ export class StorageService {
 	}: {
 		projectId: string;
 	}): Promise<MediaAsset[]> {
+		const browser = isHostedBrowserWorkspace() ? hostedMedia(projectId) : undefined;
+		const stored = await browser?.records.getAll() ?? [];
 		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
 			payload: { projectId },
 		});
-		return records.map((record) => this.hydrateMedia({ projectId, record }));
+		const browserIds = new Set(stored.map(({ id }) => id));
+		return [
+			...records.filter(({ id }) => !browserIds.has(id))
+				.map((record) => this.hydrateMedia({ projectId, record })),
+			...stored.filter(({ deleted }) => !deleted).map((record) => browser!.hydrate(record)),
+		];
 	}
 
 	async deleteMediaAsset({
@@ -713,6 +750,15 @@ export class StorageService {
 		id: string;
 		scope?: LocalDriveRequestScope;
 	}) {
+		if (isHostedBrowserWorkspace()) {
+			const browser = hostedMedia(projectId, scope?.accountId);
+			const record = await browser.records.get(id);
+			if (record) {
+				if (scope) assertLocalDriveWriteScope({ projectId, scope });
+				await browser.records.set({ key: id, value: { ...record, deleted: true } });
+				return;
+			}
+		}
 		await localDriveRequest({
 			operation: "media.delete",
 			scope,
@@ -731,6 +777,10 @@ export class StorageService {
 		discard: boolean;
 		scope: LocalDriveRequestScope;
 	}) {
+		if (isHostedBrowserWorkspace()) {
+			assertLocalDriveWriteScope({ projectId, scope });
+			return hostedMedia(projectId, scope.accountId).finishImport(uploadToken, discard);
+		}
 		await localDriveRequest({
 			operation: "media.finishUpload",
 			scope,
@@ -749,6 +799,10 @@ export class StorageService {
 		draft: import("@/hyperframes/import-recovery-types").HyperframesImportDraft;
 		scope: LocalDriveRequestScope;
 	}) {
+		if (isHostedBrowserWorkspace()) {
+			assertLocalDriveWriteScope({ projectId, scope });
+			return hostedMedia(projectId, scope.accountId).beginImport(uploadToken, draft);
+		}
 		await localDriveRequest({
 			operation: "media.beginUpload",
 			payload: { projectId, uploadToken, draft },
@@ -765,6 +819,8 @@ export class StorageService {
 		uploadToken: string;
 		scope: LocalDriveRequestScope;
 	}) {
+		if (isHostedBrowserWorkspace())
+			return hostedMedia(projectId, scope.accountId).readImport(uploadToken);
 		return localDriveRequest<
 			import("@/hyperframes/import-recovery-types").HyperframesImportRecovery
 		>({
@@ -781,16 +837,20 @@ export class StorageService {
 		projectId: string;
 		scope: LocalDriveRequestScope;
 	}) {
+		if (isHostedBrowserWorkspace())
+			return hostedMedia(projectId, scope.accountId).listImports();
 		return localDriveRequest<
 			import("@/hyperframes/import-recovery-types").HyperframesImportRecoverySummary[]
 		>({ operation: "media.listUploads", payload: { projectId }, scope });
 	}
 
 	async deleteProjectMedia({ projectId }: { projectId: string }) {
+		const browser = isHostedBrowserWorkspace() ? hostedMedia(projectId) : undefined;
 		await localDriveRequest({
 			operation: "media.clear",
 			payload: { projectId },
 		});
+		await browser?.clear();
 	}
 
 	async saveProjectFont({
@@ -801,6 +861,11 @@ export class StorageService {
 		font: ProjectFontAsset;
 	}) {
 		const scope = captureLocalDriveWriteScope({ projectId });
+		if (isHostedBrowserWorkspace()) {
+			const { url: _url, ...stored } = font;
+			await this.hostedFonts(projectId).set({ key: font.id, value: stored });
+			return;
+		}
 		const storedPath = await uploadLocalFont({
 			projectId,
 			scope,
@@ -865,6 +930,10 @@ export class StorageService {
 	}
 
 	async loadProjectFont({ projectId, id }: { projectId: string; id: string }) {
+		if (isHostedBrowserWorkspace()) {
+			const local = await this.hostedFonts(projectId).get(id);
+			if (local) return { ...local, url: URL.createObjectURL(local.file) };
+		}
 		const fonts = await localDriveRequest<ProjectFontData[]>({
 			operation: "font.list",
 			payload: { projectId },
@@ -876,19 +945,22 @@ export class StorageService {
 	}
 
 	async loadAllProjectFonts({ projectId }: { projectId: string }) {
+		const local = isHostedBrowserWorkspace() ? await this.hostedFonts(projectId).getAll() : [];
+		const ids = new Set(local.map(({ id }) => id));
 		const fonts = await localDriveRequest<ProjectFontData[]>({
 			operation: "font.list",
 			payload: { projectId },
 		});
-		return Promise.all(
-			fonts.map(
+		return Promise.all([
+			...fonts.filter(({ id }) => !ids.has(id)).map(
 				async (font): Promise<ProjectFontAsset> => ({
 					...font,
 					file: await loadLocalFontFile({ projectId, font }),
 					url: localFontUrl({ projectId, id: font.id }),
 				}),
 			),
-		);
+			...local.map((font) => ({ ...font, url: URL.createObjectURL(font.file) })),
+		]);
 	}
 
 	async deleteProjectFont({
@@ -898,6 +970,13 @@ export class StorageService {
 		projectId: string;
 		id: string;
 	}) {
+		if (isHostedBrowserWorkspace()) {
+			const local = this.hostedFonts(projectId);
+			if (await local.get(id)) {
+				await local.remove(id);
+				return;
+			}
+		}
 		await localDriveRequest({
 			operation: "font.delete",
 			payload: { projectId, id },
@@ -905,10 +984,12 @@ export class StorageService {
 	}
 
 	async deleteProjectFonts({ projectId }: { projectId: string }) {
+		const local = isHostedBrowserWorkspace() ? this.hostedFonts(projectId) : undefined;
 		await localDriveRequest({
 			operation: "font.clear",
 			payload: { projectId },
 		});
+		await local?.clear();
 	}
 
 	async clearAllData(): Promise<void> {

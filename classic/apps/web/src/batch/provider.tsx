@@ -1,4 +1,6 @@
 "use client";
+
+import { useWorkspaceAccount } from "@/accounts/gate";
 import {
 	Message as UiMessage,
 	LocalizedElement as UiLocalized,
@@ -83,7 +85,8 @@ const Context = createContext<{
 export const useBatchEdit = () => useContext(Context);
 export function BatchEditProvider({ children }: { children: ReactNode }) {
 	const path = usePathname();
-	if (path === "/batch-worker" || path === "/render-queue") return children;
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
+	if (hosted || path === "/batch-worker" || path === "/render-queue") return children;
 	return <BatchEditHost>{children}</BatchEditHost>;
 }
 function BatchEditHost({ children }: { children: ReactNode }) {
@@ -727,6 +730,7 @@ function BatchEditHost({ children }: { children: ReactNode }) {
 }
 export function BatchEditButton() {
 	const batch = useBatchEdit();
+	if (useWorkspaceAccount()?.hostedLegitate) return null;
 	return (
 		<Button size="lg" variant="outline" onClick={batch.open}>
 			<UiMessage text={"Batch"} />

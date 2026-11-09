@@ -1,3 +1,4 @@
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import type { EditorCore } from "@/core";
 import { extractTimelineAudio } from "@/media/mediabunny";
 import {
@@ -199,7 +200,9 @@ export class TranscriptionManager {
 				},
 			};
 			let job: TranscriptionJob | undefined;
-			const engine =
+			if (isHostedBrowserWorkspace() && resumeJob?.engine === "external")
+				throw new Error("Start a new transcription using the browser model");
+			const engine = isHostedBrowserWorkspace() ? "local" :
 				resumeJob?.engine ??
 				(browserModel ? "local" : this.editor.project.getActive().transcriptionEngine) ??
 				"local";

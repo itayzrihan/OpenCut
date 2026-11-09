@@ -1,13 +1,17 @@
 declare global {
 	interface Window {
 		__opencutAccountId: string | null;
+		__opencutHostedLegitate?: boolean;
 		__opencutActivateAccount: (id: string | null, path?: string) => void;
 		__opencutLegacyPreferences: () => Record<string, string>;
 	}
 }
-export function accountNamespace(name: string): string {
+export function isHostedBrowserWorkspace(): boolean {
+	return typeof window !== "undefined" && window.__opencutHostedLegitate === true;
+}
+export function accountNamespace(name: string, pinnedAccount?: string): string {
 	if (typeof window === "undefined") return name;
-	const account = window.__opencutAccountId;
+	const account = pinnedAccount ?? window.__opencutAccountId;
 	if (!account) throw new Error("Sign in before opening account storage");
 	return `opencut-account-${account}-${name}`;
 }

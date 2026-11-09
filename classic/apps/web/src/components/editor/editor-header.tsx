@@ -1,5 +1,7 @@
 "use client";
 
+import { useWorkspaceAccount } from "@/accounts/gate";
+
 import { localizeClientMessage } from "@/i18n/client-messages";
 import {
 	Message as UiMessage,
@@ -51,6 +53,7 @@ import {
 import { useAssetsPanelStore } from "./panels/assets/assets-panel-store";
 
 export function EditorHeader() {
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
 	return (
 		<header
 			data-pocut-editor-header
@@ -73,7 +76,7 @@ export function EditorHeader() {
 				>
 					<UiMessage text={"Catalog"} />
 				</Button>
-				<FeedbackPopover />
+				{!hosted && <FeedbackPopover />}
 				<ExportButton />
 				<ThemeToggle />
 			</nav>
@@ -210,8 +213,9 @@ function ProjectDropdown() {
 		setIsArchiveImporting(true);
 		try {
 			editor.playback.pause();
-			await editor.project.prepareExit();
 			const result = await editor.project.importProjectArchive({ file });
+			await editor.project.prepareExit();
+			editor.project.closeProject();
 			const linkedSharedCount =
 				result.sharedAudioLinked + result.sharedStickersLinked;
 			const importedSharedCount =

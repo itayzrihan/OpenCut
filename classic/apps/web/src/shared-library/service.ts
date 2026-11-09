@@ -1,5 +1,5 @@
 import { IndexedDBAdapter } from "@/services/storage/indexeddb-adapter";
-import { accountAssetUrl, accountNamespace } from "@/accounts/browser";
+import { accountAssetUrl, accountNamespace, isHostedBrowserWorkspace } from "@/accounts/browser";
 import { OPFSAdapter } from "@/services/storage/opfs-adapter";
 import {
 	LocalDriveFileAdapter,
@@ -535,6 +535,17 @@ export class SharedLibraryService {
 			copiedFiles.push({ id, file: copiedFile });
 		}
 
+		if (isHostedBrowserWorkspace()) {
+			for (const [index, file] of copiedFiles.entries()) {
+				const asset = metadata[index];
+				asset.storageKind = "browser";
+				asset.fileName = file.file.name;
+				await this.audioFiles.set({ key: asset.id, value: file.file });
+				await this.audioMetadata.set({ key: asset.id, value: asset });
+			}
+			return metadata;
+		}
+
 		const formData = new FormData();
 		formData.set("action", "importAudio");
 		formData.set("metadata", JSON.stringify(metadata));
@@ -615,10 +626,8 @@ export class SharedLibraryService {
 		};
 
 		if (file) {
-			const repositoryImport = await this.importRepositoryAudioAsset({
-				asset: normalized,
-				file,
-			});
+			const repositoryImport = isHostedBrowserWorkspace() ? null :
+				await this.importRepositoryAudioAsset({ asset: normalized, file });
 			if (repositoryImport) {
 				await this.audioFiles.set({
 					key: repositoryImport.asset.id,
@@ -774,6 +783,18 @@ export class SharedLibraryService {
 			copiedFiles.push({ id, file: copiedFile, dataUrl });
 		}
 
+		if (isHostedBrowserWorkspace()) {
+			for (const [index, file] of copiedFiles.entries()) {
+				const asset = metadata[index];
+				asset.storageKind = "browser";
+				asset.fileName = file.file.name;
+				asset.dataUrl = file.dataUrl;
+				await this.stickerFiles.set({ key: asset.id, value: file.file });
+				await this.stickerMetadata.set({ key: asset.id, value: asset });
+			}
+			return metadata;
+		}
+
 		const formData = new FormData();
 		formData.set("action", "importStickers");
 		formData.set("metadata", JSON.stringify(metadata));
@@ -824,10 +845,8 @@ export class SharedLibraryService {
 		};
 
 		if (file) {
-			const repositoryImport = await this.importRepositoryStickerAsset({
-				asset: normalized,
-				file,
-			});
+			const repositoryImport = isHostedBrowserWorkspace() ? null :
+				await this.importRepositoryStickerAsset({ asset: normalized, file });
 			if (repositoryImport) {
 				await this.stickerFiles.set({
 					key: repositoryImport.asset.id,

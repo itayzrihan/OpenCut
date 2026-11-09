@@ -1,5 +1,7 @@
 "use client";
 
+import { useWorkspaceAccount } from "@/accounts/gate";
+
 import { Message as UiMessage } from "@/i18n/message";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -32,6 +34,8 @@ import { TemplatesView } from "@/templates/components/assets-view";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
+	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
+	const visibleTab = hosted && (activeTab === "generative" || activeTab === "ai") ? "media" : activeTab;
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
@@ -64,10 +68,10 @@ export function AssetsPanel() {
 
 	return (
 		<div className="panel bg-background relative flex h-full rounded-sm border overflow-hidden">
-			<GenerativeResultImporter />
+			{!hosted && <GenerativeResultImporter />}
 			<TabBar />
 			<Separator orientation="vertical" />
-			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[activeTab]}</div>
+			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[visibleTab]}</div>
 		</div>
 	);
 }

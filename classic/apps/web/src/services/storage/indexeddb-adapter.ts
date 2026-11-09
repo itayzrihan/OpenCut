@@ -17,24 +17,31 @@ export class IndexedDBAdapter<T> implements StorageAdapter<T> {
 	private dbName: string;
 	private storeName: string;
 	private version: number;
+	private accountId?: string;
 
 	constructor({
 		dbName,
 		storeName,
 		version = 1,
+		accountId,
 	}: {
 		dbName: string;
 		storeName: string;
 		version?: number;
+		accountId?: string;
 	}) {
 		this.dbName = dbName;
 		this.storeName = storeName;
 		this.version = version;
+		this.accountId = accountId;
 	}
 
 	private async getDB(): Promise<IDBDatabase> {
 		return new Promise((resolve, reject) => {
-			const request = indexedDB.open(accountNamespace(this.dbName), this.version);
+			const request = indexedDB.open(
+				accountNamespace(this.dbName, this.accountId),
+				this.version,
+			);
 
 			request.onerror = () => reject(request.error);
 			request.onsuccess = () => {

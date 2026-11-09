@@ -1,5 +1,6 @@
 "use client";
 
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { localizeClientMessage } from "@/i18n/client-messages";
 import {
 	LocalizedElement as UiLocalized,
@@ -1247,7 +1248,7 @@ function TimelineElementMenuContent({
 					<UiMessage text={"Link audio and video"} />
 				</ContextMenuItem>
 			)}
-			{element.type === "audio" &&
+			{!isHostedBrowserWorkspace() && element.type === "audio" &&
 				element.sourceType === "upload" &&
 				(
 					[

@@ -9,8 +9,9 @@ export class OPFSAdapter implements StorageAdapter<File> {
 	}
 
 	private async getDirectory(): Promise<FileSystemDirectoryHandle> {
+		const name = accountNamespace(this.directoryName);
 		const opfsRoot = await navigator.storage.getDirectory();
-		return await opfsRoot.getDirectoryHandle(accountNamespace(this.directoryName), {
+		return await opfsRoot.getDirectoryHandle(name, {
 			create: true,
 		});
 	}

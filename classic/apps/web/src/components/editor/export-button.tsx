@@ -1,5 +1,7 @@
 "use client";
 
+import { useWorkspaceAccount } from "@/accounts/gate";
+
 import { LocalizedValue as UiValue } from "@/i18n/message";
 import { localizeClientMessage } from "@/i18n/client-messages";
 import {
@@ -46,6 +48,7 @@ import { enqueueCurrentRender, openRenderQueue } from "@/export/queue/client";
 import { DEFAULT_EXPORT_OPTIONS } from "@/export/defaults";
 
 export function ExportButton() {
+	const hosted = useWorkspaceAccount()?.hostedLegitate;
 	const [isExportPopoverOpen, setIsExportPopoverOpen] = useState(false);
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActiveOrNull());
@@ -59,7 +62,7 @@ export function ExportButton() {
 
 	return (
 		<div className="flex items-center gap-1">
-			<UiLocalized<typeof Button>
+			{!hosted && <UiLocalized<typeof Button>
 				element={Button}
 				messageProps={["aria-label", "title"]}
 				variant="ghost"
@@ -69,7 +72,7 @@ export function ExportButton() {
 				onClick={openRenderQueue}
 			>
 				<ListVideo />
-			</UiLocalized>
+			</UiLocalized>}
 			<Popover
 				open={isExportPopoverOpen}
 				onOpenChange={(open) => handlePopoverOpenChange({ open })}
@@ -100,7 +103,7 @@ export function ExportButton() {
 						</div>
 					</button>
 				</PopoverTrigger>
-				{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} />}
+				{hasProject && <ExportPopover onOpenChange={setIsExportPopoverOpen} showQueue={!hosted} />}
 			</Popover>
 		</div>
 	);
@@ -108,7 +111,9 @@ export function ExportButton() {
 
 function ExportPopover({
 	onOpenChange,
+	showQueue,
 }: {
+	showQueue: boolean;
 	onOpenChange: (open: boolean) => void;
 }) {
 	const editor = useEditor();
@@ -346,6 +351,7 @@ function ExportPopover({
 									)}
 								</div>
 								<div className="p-3 pt-0 space-y-2">
+									{showQueue && <>
 									<Button
 										onClick={handleEnqueue}
 										disabled={
@@ -371,6 +377,7 @@ function ExportPopover({
 											}
 										/>
 									</p>
+									</>}
 									<Button
 										onClick={handleExport}
 										variant="outline"

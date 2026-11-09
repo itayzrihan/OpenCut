@@ -1,7 +1,9 @@
 /* eslint-disable opencut/prefer-object-params -- Adapter internals mirror the Storage API's key/value signatures. */
 import type { StorageAdapter } from "@/services/storage/types";
 import { localDriveRequest } from "./client";
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
+import { IndexedDBAdapter } from "@/services/storage/indexeddb-adapter";
+import { OPFSAdapter } from "@/services/storage/opfs-adapter";
 
 type ListableStorageAdapter<T> = StorageAdapter<T> & { getAll(): Promise<T[]> };
 
@@ -26,14 +28,16 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 		legacy?: ListableStorageAdapter<T>;
 	}) {
 		this.collection = collection;
+		this.hosted = new IndexedDBAdapter<T>({ dbName: `hosted-shared-${collection}`, storeName: "records" });
 		this.legacy = legacy;
 	}
 
 	private collection: string;
+	private hosted: IndexedDBAdapter<T>;
 	private legacy?: ListableStorageAdapter<T>;
 
 	private async ensureMigrated() {
-		if (!this.legacy) return;
+		if (!this.legacy || isHostedBrowserWorkspace()) return;
 		if (this.migrationPromise) return this.migrationPromise;
 		this.migrationPromise = (async () => {
 			const marker = `pocut-local-drive-shared-${this.collection}-v1`;
@@ -70,6 +74,10 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 	}
 
 	async get(key: string): Promise<T | null> {
+		if (isHostedBrowserWorkspace()) {
+			const value = await this.hosted.get(key);
+			if (value !== null) return value;
+		}
 		await this.ensureMigrated();
 		return localDriveRequest({
 			operation: "shared.get",
@@ -78,6 +86,7 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 	}
 
 	async set({ key, value }: { key: string; value: T }): Promise<void> {
+		if (isHostedBrowserWorkspace()) return this.hosted.set({ key, value });
 		await this.ensureMigrated();
 		await localDriveRequest({
 			operation: "shared.put",
@@ -86,6 +95,8 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 	}
 
 	async remove(key: string): Promise<void> {
+		if (isHostedBrowserWorkspace() && (await this.hosted.get(key)) !== null)
+			return this.hosted.remove(key);
 		await this.ensureMigrated();
 		await localDriveRequest({
 			operation: "shared.delete",
@@ -102,10 +113,14 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 
 	async getAll(): Promise<T[]> {
 		await this.ensureMigrated();
-		return localDriveRequest({
+		const values = await localDriveRequest<T[]>({
 			operation: "shared.list",
 			payload: { collection: this.collection },
 		});
+		if (!isHostedBrowserWorkspace()) return values;
+		const local = await this.hosted.getAll();
+		const ids = new Set(local.map((item) => (item as { id?: string }).id));
+		return [...values.filter((item) => !ids.has((item as { id?: string }).id)), ...local];
 	}
 
 	async clear(): Promise<void> {
@@ -114,6 +129,7 @@ export class LocalDriveJsonAdapter<T> implements StorageAdapter<T> {
 			operation: "shared.clear",
 			payload: { collection: this.collection },
 		});
+		if (isHostedBrowserWorkspace()) await this.hosted.clear();
 	}
 }
 
@@ -128,9 +144,11 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 		legacy?: StorageAdapter<File>;
 	}) {
 		this.kind = kind;
+		this.hosted = new OPFSAdapter(`hosted-shared-files-${kind}`);
 		this.legacy = legacy;
 	}
 
+	private hosted: OPFSAdapter;
 	private kind: "audio" | "fonts" | "stickers";
 	private legacy?: StorageAdapter<File>;
 
@@ -149,7 +167,7 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 	}
 
 	private async ensureMigrated() {
-		if (!this.legacy) return;
+		if (!this.legacy || isHostedBrowserWorkspace()) return;
 		if (this.migrationPromise) return this.migrationPromise;
 		this.migrationPromise = (async () => {
 			const marker = `pocut-local-drive-shared-files-${this.kind}-v1`;
@@ -179,6 +197,10 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 	}
 
 	async get(key: string): Promise<File | null> {
+		if (isHostedBrowserWorkspace()) {
+			const file = await this.hosted.get(key);
+			if (file) return file;
+		}
 		await this.ensureMigrated();
 		const response = await fetch(this.url(key), { cache: "no-store" });
 		if (response.status === 404) return null;
@@ -192,11 +214,14 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 	}
 
 	async set({ key, value }: { key: string; value: File }): Promise<void> {
+		if (isHostedBrowserWorkspace()) return this.hosted.set({ key, value });
 		await this.ensureMigrated();
 		await this.putFile(key, value);
 	}
 
 	async remove(key: string): Promise<void> {
+		if (isHostedBrowserWorkspace() && await this.hosted.get(key))
+			return this.hosted.remove(key);
 		await this.ensureMigrated();
 		await localDriveRequest({
 			operation: "sharedFile.delete",
@@ -206,10 +231,12 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 
 	async list(): Promise<string[]> {
 		await this.ensureMigrated();
-		return localDriveRequest({
+		const ids = await localDriveRequest<string[]>({
 			operation: "sharedFile.list",
 			payload: { kind: this.kind },
 		});
+		if (!isHostedBrowserWorkspace()) return ids;
+		return [...new Set([...ids, ...await this.hosted.list()])];
 	}
 
 	async getAll(): Promise<File[]> {
@@ -225,5 +252,6 @@ export class LocalDriveFileAdapter implements StorageAdapter<File> {
 			operation: "sharedFile.clear",
 			payload: { kind: this.kind },
 		});
+		if (isHostedBrowserWorkspace()) await this.hosted.clear();
 	}
 }
