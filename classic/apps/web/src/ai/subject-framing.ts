@@ -1,4 +1,5 @@
-/** Local source decoding + OpenCV + local pose inference. Rust owns detection acceptance and crop math. */
+/** Local source decoding and inference. Rust owns detection acceptance and crop math. */
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { resolveUnifiedAnglesVideoTiming } from "@/media/unified-angles";
 import type { EditorCore } from "@/core";
 import {
@@ -11,7 +12,10 @@ import {
 	parseTimelineDocumentV2,
 } from "./timeline-document-v2";
 import { updateSceneInArray } from "@/timeline/scenes";
-import { requestSubjectDetections } from "./subject-detector-client";
+import {
+	requestBrowserSubjectDetections,
+	requestSubjectDetections,
+} from "./subject-detector-client";
 function waitForVideo({
 	video,
 	event,
@@ -99,6 +103,8 @@ export async function detectSubjectFraming({
 		video.muted = true;
 		video.preload = "auto";
 		video.crossOrigin = "anonymous";
+		const browser = isHostedBrowserWorkspace();
+		const bitmaps: ImageBitmap[] = [];
 		try {
 			const loaded = waitForVideo({ video, event: "loadeddata", signal });
 			video.src = ownedUrl ?? asset.url!;
@@ -127,9 +133,12 @@ export async function detectSubjectFraming({
 				const ctx = canvas.getContext("2d");
 				if (!ctx) throw new Error("Frame capture unavailable");
 				ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-				frames.push(canvas.toDataURL("image/jpeg", 0.85).split(",")[1]);
+				if (browser) bitmaps.push(await createImageBitmap(canvas));
+				else frames.push(canvas.toDataURL("image/jpeg", 0.85).split(",")[1]);
 			}
-			const detection = await requestSubjectDetections({ frames, signal });
+			const detection = browser
+				? await requestBrowserSubjectDetections({ frames: bitmaps, signal })
+				: await requestSubjectDetections({ frames, signal });
 			if (!detection.available && !allowFallback)
 				throw new Error(detection.error);
 			const resolved = resolveLocalSubjectFraming({
@@ -171,6 +180,7 @@ export async function detectSubjectFraming({
 				});
 			onProgress(warnings[warnings.length - 1]);
 		} finally {
+			for (const bitmap of bitmaps) bitmap.close();
 			video.pause();
 			video.removeAttribute("src");
 			video.load();

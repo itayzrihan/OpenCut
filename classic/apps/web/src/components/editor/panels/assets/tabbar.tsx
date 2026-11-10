@@ -56,7 +56,7 @@ export function TabBar() {
 				ref={scrollRef}
 				className="scrollbar-hidden relative flex size-full p-1 flex-col items-center justify-start gap-0.5 overflow-y-auto"
 			>
-				{TAB_KEYS.filter((key) => !hosted || (key !== "generative" && key !== "ai")).map((tabKey) => {
+				{TAB_KEYS.filter((key) => !hosted || key !== "generative").map((tabKey) => {
 					const tab = tabs[tabKey];
 					return (
 						<Tooltip key={tabKey} delayDuration={10}>

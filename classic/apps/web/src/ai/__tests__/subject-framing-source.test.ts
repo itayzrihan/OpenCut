@@ -39,6 +39,9 @@ mock.module("@/ai/timeline-document-v2", () => ({
 }));
 mock.module("@/timeline/scenes", () => ({ updateSceneInArray: () => {} }));
 mock.module("@/ai/subject-detector-client", () => ({
+	requestBrowserSubjectDetections: async () => {
+		throw new Error("Desktop framing should use the local desktop detector");
+	},
 	requestSubjectDetections: async () => ({
 		available: false,
 		error: "No face",

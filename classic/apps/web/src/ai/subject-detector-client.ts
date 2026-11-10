@@ -1,13 +1,53 @@
-/** Host detector transport. The recipe decides whether centered-cover fallback is allowed. */
+type Detections =
+	| { available: true; data: unknown }
+	| { available: false; error: string };
+
+export function requestBrowserSubjectDetections({
+	frames,
+	signal,
+}: {
+	frames: ImageBitmap[];
+	signal: AbortSignal;
+}): Promise<Detections> {
+	signal.throwIfAborted();
+	const worker = new Worker("/browser-models/subject-worker.js");
+	return new Promise((resolve, reject) => {
+		const stop = () => {
+			clearTimeout(timer);
+			signal.removeEventListener("abort", abort);
+			worker.terminate();
+		};
+		const abort = () => {
+			stop();
+			reject(signal.reason);
+		};
+		const fail = (error: string) => {
+			stop();
+			resolve({ available: false, error });
+		};
+		const timer = setTimeout(() => fail("Browser subject detection timed out"), 90_000);
+		signal.addEventListener("abort", abort, { once: true });
+		worker.onmessage = ({ data }: MessageEvent<Detections>) => {
+			stop();
+			resolve(data);
+		};
+		worker.onerror = ({ message }) => fail(message || "Browser subject detector could not start");
+		try {
+			worker.postMessage(frames, frames);
+		} catch (error) {
+			fail(error instanceof Error ? error.message : String(error));
+		}
+	});
+}
+
+/** Desktop detector transport. The recipe decides whether centered cover is allowed. */
 export async function requestSubjectDetections({
 	frames,
 	signal,
 }: {
 	frames: string[];
 	signal: AbortSignal;
-}): Promise<
-	{ available: true; data: unknown } | { available: false; error: string }
-> {
+}): Promise<Detections> {
 	const response = await fetch("/api/local-subject-framing", {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },

@@ -1,6 +1,6 @@
 # Local subject framing
 
-Classic-only; uses the existing canonical EditorCore / CommandManager source transaction. OpenCV + MediaPipe Pose run locally in an isolated Python environment. No LLM, OAuth, cloud inference or upload to an AI provider is used for framing. Python only runs the fixed face classifier and CPU pose model; Rust owns score gates, temporal consistency, subject ambiguity, crop math and document changes.
+Classic-only; uses the existing canonical EditorCore / CommandManager source transaction. The hosted workspace runs BlazeFace and MediaPipe Pose Lite in a browser Web Worker. Desktop runs OpenCV and MediaPipe Pose in an isolated local Python environment. Both process media on the user's device. Rust owns score gates, temporal consistency, subject ambiguity, crop math and document changes.
 
 Both Full Auto Edit's framing stage and the standalone **Center Subject Horizontally** button call `runLocalSubjectFraming`. Full Auto first sets vertical cover; the standalone button centers existing 1080x1920 cover video without changing other transforms, cuts, captions, zooms, sounds or settings. Unsupported rotated/scaled/retimed/keyframed main clips stop without applying.
 
@@ -10,7 +10,9 @@ This is a stable sampled crop, not continuous subject tracking or an identity re
 
 ## Runtime
 
-Installed once with `python classic/scripts/local-subject-framing/setup.py`, using pinned OpenCV 4.12.0.88 NumPy 2.2.6 and MediaPipe 0.10.35 inside ignored `classic/.local/subject-framing`. Setup downloads the official version-1 Pose Lite task once and verifies SHA-256 `59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`. The local backend serves a bounded same-origin loopback-only inference endpoint accepting image data, not caller-chosen filesystem paths or commands. The worker is fixed, cancellable, timeout-limited and cleans temporary inputs/outputs. Other deployments must run the setup before using this feature; no dependencies are silently downloaded during editing.
+The hosted build prepares pinned MediaPipe WebAssembly and model assets using `node classic/scripts/prepare-browser-vision.mjs`. The browser downloads them from the app origin and passes decoded frames to its worker.
+
+The desktop runtime is installed once with `python classic/scripts/local-subject-framing/setup.py`, using pinned OpenCV 4.12.0.88 NumPy 2.2.6 and MediaPipe 0.10.35 inside ignored `classic/.local/subject-framing`. Setup downloads the official version-1 Pose Lite task once and verifies SHA-256 `59929e1d1ee95287735ddd833b19cf4ac46d29bc7afddbbf6753c459690d574a`. The local backend serves a bounded same-origin loopback-only inference endpoint accepting image data, not caller-chosen filesystem paths or commands. The worker is fixed, cancellable, timeout-limited and cleans temporary inputs/outputs. The desktop setup is required before first use.
 
 References: [MediaPipe Pose Landmarker](https://developers.google.com/edge/mediapipe/solutions/vision/pose_landmarker/python), [OpenCV CascadeClassifier](https://docs.opencv.org/4.5.5/d1/de5/classcv_1_1CascadeClassifier.html).
 

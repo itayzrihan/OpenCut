@@ -29,18 +29,25 @@ import { LoopsView } from "@/loops/components/assets-view";
 import { GenerativeView } from "@/generative/components/generative-view";
 import { GenerativeResultImporter } from "@/generative/components/result-importer";
 import { AiChatView } from "@/ai/components/ai-chat-view";
+import { LocalSubjectFramingButton } from "@/ai/components/local-subject-framing-button";
 import { TimelineCodeView } from "@/ai/components/timeline-code-view";
 import { TemplatesView } from "@/templates/components/assets-view";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
 	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
-	const visibleTab = hosted && (activeTab === "generative" || activeTab === "ai") ? "media" : activeTab;
+	const visibleTab = hosted && activeTab === "generative" ? "media" : activeTab;
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
 		catalog: <CatalogView />,
-		ai: <AiChatView />,
+		ai: hosted ? (
+			<div className="p-3">
+				<LocalSubjectFramingButton disabled={false} />
+			</div>
+		) : (
+			<AiChatView />
+		),
 		generative: <GenerativeView />,
 		"timeline-code": <TimelineCodeView />,
 		sounds: <SoundsView />,
