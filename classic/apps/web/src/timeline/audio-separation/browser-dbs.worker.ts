@@ -54,7 +54,15 @@ async function separate(channels: [Float32Array, Float32Array]) {
 				const input = new Float32Array(size);
 				input.set(channels[channel].subarray(start, start + valid));
 				if (!input.some(Boolean)) continue;
-				const tensor = new ort.Tensor("float32", fft.analyze(input), [
+				const spectrum = fft.analyze(input);
+				// ONNX lowers atan2 to atan(y / x). At an exact complex zero,
+				// preserve Torch's zero phase with a negligible positive real value.
+				const plane = spectrum.length / 2;
+				for (let i = 0; i < plane; i++) {
+					if (spectrum[i] === 0 && spectrum[i + plane] === 0)
+						spectrum[i] = 1e-12;
+				}
+				const tensor = new ort.Tensor("float32", spectrum, [
 					1,
 					2,
 					bins,
