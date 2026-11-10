@@ -4,6 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 pub const KEY: &str = "generative";
 pub const INSTRUCTIONS: &str = include_str!("generative-director.md");
+pub mod storyboard;
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct GenerativeDocument {
@@ -17,6 +18,9 @@ pub struct GenerativeDocument {
     pub transcript: String,
     #[serde(default)]
     pub jobs: Vec<Job>,
+    /// Client-facing proposal copy. Generation prompts remain in `direction`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub storyboard: Option<storyboard::Storyboard>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -106,6 +110,9 @@ impl GenerativeDocument {
             {
                 return Err(fail());
             }
+        }
+        if let Some(storyboard) = &self.storyboard {
+            storyboard.validate(&self.references)?;
         }
         Ok(())
     }

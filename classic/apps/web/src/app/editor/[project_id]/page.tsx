@@ -96,8 +96,6 @@ export default function Editor() {
 }
 
 function EditorWorkspace() {
-	const hosted = useWorkspaceAccount()?.hostedLegitate;
-	if (hosted) return <EditorLayout />;
 	return (
 		<EditorAgentWorkspace>
 			<EditorLayout />

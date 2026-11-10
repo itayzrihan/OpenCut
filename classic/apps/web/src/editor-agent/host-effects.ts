@@ -8,6 +8,7 @@ import { controlEditorUi } from "./ui-control";
 import { editorWriteHeaders } from "./write-authority";
 import type { EditorCore } from "@/core";
 import { performPeerMediaEffect } from "@/peer-sync/editor-effect";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 
 /** Adapter routing only, never a capability/tool table. Rust constructs the
  * bounded effect after live registry validation; the server owns authorization. */
@@ -46,15 +47,31 @@ export async function performHostEffect({
 	editor?: EditorCore;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
+	if (effect.adapter === "hyperframesEmbedding" && isHostedBrowserWorkspace()) {
+		return {
+			type: "rejected",
+			message:
+				"Semantic reference embeddings are not installed in this browser. Use the registered keyword reference search; no model runs on the server.",
+		};
+	}
 	if (effect.adapter === "generativeReview") {
-		const { performGenerativeReviewEffect } = await import("@/generative/host-effect");
+		const { performGenerativeReviewEffect } =
+			await import("@/generative/host-effect");
 		return performGenerativeReviewEffect({
-			effect, accountId, signal, activeProjectId, currentRevision,
+			effect,
+			accountId,
+			signal,
+			activeProjectId,
+			currentRevision,
 		});
 	}
 
 	if (effect.adapter === "peerMedia") {
-		if (!editor) return { type: "rejected", message: "The scoped media-transfer editor is unavailable" };
+		if (!editor)
+			return {
+				type: "rejected",
+				message: "The scoped media-transfer editor is unavailable",
+			};
 		return performPeerMediaEffect({ effect, editor, accountId, signal });
 	}
 	if (effect.adapter === "computer") {

@@ -8,6 +8,7 @@ use schemars::{JsonSchema, schema_for};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::Arc;
+mod storyboard_export;
 
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -140,5 +141,6 @@ pub fn register_generative_host(
             Ok(CapabilityResult::data(data))
         })
     })))?;
-    host.install(&d).map_err(RegistryError::Capability)
+    host.install(&d).map_err(RegistryError::Capability)?;
+    storyboard_export::register(rt, host)
 }

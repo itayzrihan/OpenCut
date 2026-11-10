@@ -23,6 +23,8 @@ import { DeleteProjectDialog } from "@/project/components/delete-project-dialog"
 import { useRouter } from "next/navigation";
 import { FaDiscord } from "react-icons/fa6";
 import { ExportButton } from "./export-button";
+import { NotesButton } from "@/project-notes/notes-button";
+import { PreviewButton } from "@/client-review/preview-button";
 import { FeedbackPopover } from "@/feedback/components/feedback-popover";
 import { ThemeToggle } from "../theme-toggle";
 import { DEFAULT_LOGO_URL } from "@/site/brand";
@@ -77,6 +79,8 @@ export function EditorHeader() {
 					<UiMessage text={"Catalog"} />
 				</Button>
 				{!hosted && <FeedbackPopover />}
+				<NotesButton />
+				<PreviewButton />
 				<ExportButton />
 				<ThemeToggle />
 			</nav>

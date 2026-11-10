@@ -50,10 +50,12 @@ export async function requestAgentResponse({
 	beforeAttempt,
 	onEvent,
 	onRetry,
+	allowRetry = true,
 	planRetry,
 	wait = waitForRetry,
 }: {
 	send: () => Promise<Response>;
+	allowRetry?: boolean;
 	signal: AbortSignal;
 	beforeAttempt: () => void;
 	onEvent: (event: AgentStreamEvent) => void;
@@ -75,6 +77,7 @@ export async function requestAgentResponse({
 			return await readAgentResponse({ response, signal, onEvent });
 		} catch (error) {
 			signal.throwIfAborted();
+			if (!allowRetry) throw error;
 			const failure: ProviderFailureInput =
 				error instanceof AgentStreamDisconnected
 					? { attempt, kind: "disconnect", responseApplied: false }

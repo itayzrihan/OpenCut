@@ -158,6 +158,14 @@ const perform = (value: EditingAgentHostEffect) =>
 		signal: controller.signal,
 	});
 
+test("hosted workspace rejects desktop recipes before storage or network IO", async () => {
+	window.__opencutHostedLegitate = true;
+	const result = await perform(effect());
+	expect(result).toMatchObject({ type: "rejected" });
+	expect(saveProject).not.toHaveBeenCalled();
+	expect(globalThis.fetch).not.toHaveBeenCalled();
+});
+
 test("starts through existing iframe queue and exact retries never overwrite the worker", async () => {
 	const first = await perform(effect());
 	expect(first.type).toBe("success");

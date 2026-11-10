@@ -1,11 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-	chatGPTModels,
-	chatGPTStatus,
-	requireLocalChatGPT,
-	streamChatGPTResponse,
-} from "@/editor-agent/server/chatgpt";
+	agentProviderModels,
+	agentProviderStatus,
+	requireAgentOrigin,
+	usesHostedProvider,
+	streamAgentProvider,
+} from "@/editor-agent/server/provider";
 import { AgentProviderFailure, readAgentResponse } from "@/editor-agent/stream";
 import { ALLOWED_AI_TOOL_WIRE_NAMES } from "@/ai/tool-wire-names";
 import { retryOverload } from "@/ai/server/retry-overload";
@@ -52,7 +53,7 @@ const chatRequestSchema = z
 	);
 
 export async function handleAiChatRequest(request: NextRequest) {
-	const denied = requireLocalChatGPT(request);
+	const denied = requireAgentOrigin(request);
 	if (denied) return denied;
 	const contentLength = Number(request.headers.get("content-length") ?? "0");
 	if (
@@ -84,10 +85,12 @@ export async function handleAiChatRequest(request: NextRequest) {
 		);
 	}
 
-	const { sharing } = await chatGPTStatus();
+	const { sharing } = await agentProviderStatus();
 	if (!sharing) {
 		return NextResponse.json(
-			{ error: "Connect ChatGPT in the POCUT Agent to use AI editing." },
+			{
+				error: "Connect your AI provider in the POCUT Agent to use AI editing.",
+			},
 			{ status: 401 },
 		);
 	}
@@ -109,36 +112,39 @@ export async function handleAiChatRequest(request: NextRequest) {
 	);
 	try {
 		const model =
-			parsed.data.model ?? (await chatGPTModels(request.signal))[0]?.id;
+			parsed.data.model ?? (await agentProviderModels(request.signal))[0]?.id;
 		if (!model)
-			throw new Error("No models are available for this ChatGPT connection.");
+			throw new Error("No models are available for this provider connection.");
 		const providerTools = webSearch ? [{ type: "web_search" }] : tools;
-		const responseBody = await retryOverload({
-			request: async () =>
-				readAgentResponse({
-					response: await streamChatGPTResponse({
-						body: {
-							model,
-							input: providerInput,
-							...(instructions.length
-								? { instructions: instructions.join("\n\n") }
-								: {}),
-							...(providerTools?.length ? { tools: providerTools } : {}),
-							...(webSearch
-								? { include: ["web_search_call.action.sources"] }
-								: {}),
-							...(reasoningEffort
-								? { reasoning: { effort: reasoningEffort } }
-								: {}),
-							parallel_tool_calls: !webSearch,
-						},
-						signal: request.signal,
-					}),
+		const requestProvider = async () =>
+			readAgentResponse({
+				response: await streamAgentProvider({
+					body: {
+						model,
+						input: providerInput,
+						...(instructions.length
+							? { instructions: instructions.join("\n\n") }
+							: {}),
+						...(providerTools?.length ? { tools: providerTools } : {}),
+						...(webSearch
+							? { include: ["web_search_call.action.sources"] }
+							: {}),
+						...(reasoningEffort
+							? { reasoning: { effort: reasoningEffort } }
+							: {}),
+						parallel_tool_calls: !webSearch,
+					},
 					signal: request.signal,
-					onEvent: () => {},
 				}),
-			signal: request.signal,
-		});
+				signal: request.signal,
+				onEvent: () => {},
+			});
+		const responseBody = usesHostedProvider()
+			? await requestProvider()
+			: await retryOverload({
+					request: requestProvider,
+					signal: request.signal,
+				});
 		return NextResponse.json({ response: responseBody });
 	} catch (error) {
 		if (request.signal.aborted) {

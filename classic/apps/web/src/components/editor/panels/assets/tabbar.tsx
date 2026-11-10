@@ -1,6 +1,5 @@
 "use client";
 
-import { useWorkspaceAccount } from "@/accounts/gate";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	Tooltip,
@@ -20,7 +19,6 @@ import {
 export function TabBar() {
 	const { t, locale } = useInterfaceLanguage();
 	const { activeTab, setActiveTab } = useAssetsPanelStore();
-	const hosted = useWorkspaceAccount()?.hostedLegitate;
 	const [showTopFade, setShowTopFade] = useState(false);
 	const [showBottomFade, setShowBottomFade] = useState(false);
 	const scrollRef = useRef<HTMLDivElement>(null);
@@ -56,7 +54,7 @@ export function TabBar() {
 				ref={scrollRef}
 				className="scrollbar-hidden relative flex size-full p-1 flex-col items-center justify-start gap-0.5 overflow-y-auto"
 			>
-				{TAB_KEYS.filter((key) => !hosted || key !== "generative").map((tabKey) => {
+				{TAB_KEYS.map((tabKey) => {
 					const tab = tabs[tabKey];
 					return (
 						<Tooltip key={tabKey} delayDuration={10}>

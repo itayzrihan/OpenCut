@@ -1,6 +1,7 @@
 /** Host IO for canonical scene intents. No editor mutations, tool registry or
  * AI provider calls here: the existing background worker executes the recipe. */
 import type { EditorCore } from "@/core";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import type {
 	EditingAgentHostEffect,
 	EditingAgentHostResult,
@@ -83,6 +84,12 @@ export async function performSceneAutomationEffect({
 	accountId: string;
 	signal: AbortSignal;
 }): Promise<EditingAgentHostResult> {
+	if (isHostedBrowserWorkspace())
+		return {
+			type: "rejected",
+			message:
+				"Background scene recipes require the desktop worker. Use the registered browser editing, audio preview and render operations in this workspace.",
+		};
 	const parsed = requestSchema.safeParse(effect.request);
 	if (!parsed.success)
 		return {

@@ -1,6 +1,28 @@
 {
   "schemaVersion": 2,
   "verification": {
+    "client-review-ai": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/client-review/server.test.ts",
+        "src/client-review/timeline-projection.test.ts",
+        "src/editor-agent/__tests__/hosted-provider.test.ts",
+        "src/editor-agent/__tests__/transport.test.ts",
+        "src/editor-agent/__tests__/scene-automation-effects.test.ts",
+        "src/generative/server/provider.test.ts",
+        "src/generative/result-import.test.ts",
+        "src/generative/storyboard-pdf.test.ts",
+        "src/generative/storyboard-pdf-browser.test.ts",
+        "src/generative/storyboard-pdf-wasm.test.ts",
+        "src/core/__tests__/canonical-notes-review.test.ts",
+        "--jobs=2",
+        "--timeout=120000",
+        "--test-timeout=120000",
+        "--report=.local/client-review-ai-qa/configured"
+      ],
+      "timeoutMs": 240000
+    },
     "dip-public-site": {
       "command": [
         "node",

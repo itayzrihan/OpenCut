@@ -191,6 +191,8 @@ impl ClassicProject {
 
     pub fn validate(&self) -> Result<(), ModelError> {
         self.id()?;
+        crate::classic_notes::read(self.document.get("notes")).map_err(|e| invalid(&e))?;
+        crate::classic_review::read(self.document.get("clientReview")).map_err(|e| invalid(&e))?;
         crate::operations::classic_transcription::validate_engine(self.document.get("transcriptionEngine")).map_err(|e| invalid(&e))?;
         crate::operations::classic_transcription::validate_jobs(self.document.get("transcriptionJobs")).map_err(|e| invalid(&e))?;
         self.name()?;

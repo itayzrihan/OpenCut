@@ -622,6 +622,19 @@ export class CanonicalClassicSession {
 		this.runtime.pinArtifact(artifact.id);
 		return this.runtime.artifactMetadata(artifact.id) as { id: string };
 	}
+	storeStoryboardPdf({
+		bytes,
+		retainForConversation,
+	}: {
+		bytes: Uint8Array;
+		retainForConversation: boolean;
+	}): { id: string } {
+		const artifact = this.runtime.storeArtifact(
+			bytes, "application/pdf", undefined, undefined, undefined,
+		) as { id: string };
+		if (retainForConversation) this.runtime.pinArtifact(artifact.id);
+		return this.runtime.artifactMetadata(artifact.id) as { id: string };
+	}
 	storeAgentImage({
 		bytes,
 		width,

@@ -61,6 +61,8 @@ mod classic_automation_host;
 pub use classic_automation_host::register_classic_automation_host;
 mod classic_background_removal;
 mod classic_bookmarks;
+mod classic_notes;
+mod classic_review;
 mod classic_caption_cues;
 mod classic_captions;
 mod classic_clipboard;
@@ -202,6 +204,8 @@ pub(crate) fn register_all(
         state.clone(),
         events.clone(),
     )?;
+    classic_notes::register_notes(registry, state.clone(), events.clone())?;
+    classic_review::register_review(registry, state.clone(), events.clone())?;
     classic_settings::register_classic_settings(registry, state.clone(), events.clone())?;
     classic_export::register_export(registry, state.clone())?;
     render_queue::register_queue(registry, state.clone(), events.clone())?;

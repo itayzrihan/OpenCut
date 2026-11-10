@@ -93,6 +93,7 @@ import { useElementSelection } from "@/timeline/hooks/element/use-element-select
 import { useTimelineSeek } from "@/timeline/hooks/use-timeline-seek";
 import { useTimelineDragDrop } from "@/timeline/hooks/use-timeline-drag-drop";
 import { TimelineRuler } from "./timeline-ruler";
+import { TimelineReviewMarkers } from "@/client-review/timeline-review-markers";
 import { DragLine } from "./drag-line";
 import {
 	TimelineBookmarksRow,
@@ -994,6 +995,13 @@ function TimelineContent() {
 									}
 									handlePlayheadRulerMouseDown(event);
 								}}
+							/>
+							<TimelineReviewMarkers
+								zoomLevel={zoomLevel}
+								dynamicTimelineWidth={dynamicTimelineWidth}
+								scrollLeft={tracksScrollLeft}
+								viewportWidth={tracksViewportWidth}
+								disabled={isRangeSelectionLocked}
 							/>
 						</div>
 					</div>

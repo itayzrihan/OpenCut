@@ -341,7 +341,7 @@ export function AiChatView() {
 						) : identityLabel ? (
 							identityLabel
 						) : (
-							<UiMessage text={"Connect ChatGPT in the Agent"} />
+							<UiMessage text={"Connect AI in the Agent"} />
 						)}
 					</div>
 				</div>

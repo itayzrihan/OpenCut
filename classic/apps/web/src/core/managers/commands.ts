@@ -2580,6 +2580,29 @@ export class CommandManager {
 			throw new Error("Start an editing agent first");
 		return this.canonical.storeAgentRender(input);
 	}
+	/** UI, internal agent and MCP publish the same bounded PDF artifact. */
+	storeCanonicalStoryboardPdf(input: {
+		projectId: string;
+		accountId: string;
+		bytes: Uint8Array;
+		retainForConversation?: boolean;
+	}): { id: string } {
+		if (
+			!this.canonical || this.canonical.projectId !== input.projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== input.projectId ||
+			this.agentAccountId() !== input.accountId
+		)
+			throw new Error("The storyboard artifact account or project changed");
+		if (
+			input.bytes.length > 15 * 1024 * 1024 ||
+			new TextDecoder().decode(input.bytes.subarray(0, 5)) !== "%PDF-"
+		)
+			throw new Error("Invalid or oversized storyboard PDF artifact");
+		return this.canonical.storeStoryboardPdf({
+			bytes: input.bytes,
+			retainForConversation: input.retainForConversation === true,
+		});
+	}
 	storeEditingAgentImage(input: {
 		bytes: Uint8Array;
 		width: number;

@@ -4,13 +4,13 @@ import {
 	Message as UiMessage,
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
+import { useWorkspaceAccount } from "@/accounts/gate";
+import { HostedConnectionSettings } from "./hosted-connection-settings";
 import { McpInstallationSettings } from "./mcp-installation-settings";
 import {
 	readAgentModelPreference,
 	saveAgentModelPreference,
 } from "./model-preference";
-
-/* eslint-disable jsx-a11y/no-noninteractive-tabindex -- The conversation log is a focusable scroll region so keyboard users can review earlier messages. */
 
 import {
 	useCallback,
@@ -100,6 +100,7 @@ function clampFloatingPosition({
 }
 
 function AgentPanel() {
+	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
 	const [open, setOpen] = useState(true);
 	const [mode, setMode] = useState<"floating" | "docked">("docked");
 	const editor = useEditor();
@@ -281,7 +282,7 @@ function AgentPanel() {
 			const video = entry.export
 				? readUrl({
 						id: entry.export.artifactId,
-						allowed: ["video/webm", "video/mp4"],
+						allowed: ["video/webm", "video/mp4", "application/pdf"],
 					})
 				: null;
 			if (images.length || video)
@@ -723,91 +724,109 @@ function AgentPanel() {
 						className={styles.settings}
 						aria-label="Agent settings"
 					>
-						<div className={styles.connection}>
-							{connection?.sharing ? (
-								<>
-									<span title={connection.identity?.email}>
-										{connection.identity?.name ??
-											connection.identity?.email ?? (
-												<UiMessage text={"ChatGPT connected"} />
-											)}
-									</span>
-									<Button
-										variant="text"
-										size="sm"
-										onClick={() => {
-											stop();
-											void connectionRequest({
-												operation: "disconnect",
-												schema: connectionSchemas.disconnect,
-											})
-												.then(() => {
-													setEffortOverride("");
-													return refresh();
-												})
-												.catch((e) => setError(String(e)));
-										}}
-									>
-										<UiMessage text={"Disconnect"} />
-									</Button>
-								</>
-							) : (
-								<>
+						{hosted ? (
+							<HostedConnectionSettings
+								connection={connection}
+								refresh={refresh}
+								stop={stop}
+							/>
+						) : (
+							<>
+								<div className={styles.connection}>
+									{connection?.sharing ? (
+										<>
+											<span title={connection.identity?.email}>
+												{connection.identity?.name ??
+													connection.identity?.email ?? (
+														<UiMessage text={"ChatGPT connected"} />
+													)}
+											</span>
+											<Button
+												variant="text"
+												size="sm"
+												onClick={() => {
+													stop();
+													void connectionRequest({
+														operation: "disconnect",
+														schema: connectionSchemas.disconnect,
+													})
+														.then(() => {
+															setEffortOverride("");
+															return refresh();
+														})
+														.catch((e) => setError(String(e)));
+												}}
+											>
+												<UiMessage text={"Disconnect"} />
+											</Button>
+										</>
+									) : (
+										<>
+											<span>
+												{connection?.connected ? (
+													<UiMessage text={"Enable ChatGPT plan usage"} />
+												) : (
+													<UiMessage text={"Connect your ChatGPT account"} />
+												)}
+											</span>
+											<Button
+												size="sm"
+												disabled={connecting}
+												onClick={() => void signIn()}
+											>
+												{connecting ? (
+													<UiMessage text={"Connecting…"} />
+												) : (
+													<UiMessage text={"Connect"} />
+												)}
+											</Button>
+										</>
+									)}
+								</div>
+								<div
+									className={`${styles.connection} ${styles.connectionNote}`}
+								>
 									<span>
-										{connection?.connected ? (
-											<UiMessage text={"Enable ChatGPT plan usage"} />
-										) : (
-											<UiMessage text={"Connect your ChatGPT account"} />
-										)}
+										<UiMessage
+											text={
+												"The ChatGPT connection also powers eligible features in the AI tab. Image generation is unavailable on this connection."
+											}
+										/>
 									</span>
-									<Button
-										size="sm"
-										disabled={connecting}
-										onClick={() => void signIn()}
+									{connection?.sharing && (
+										<a
+											href={connection.usageUrl}
+											target="_blank"
+											rel="noreferrer"
+										>
+											<UiMessage text={"ChatGPT usage"} />
+										</a>
+									)}
+								</div>
+								<div
+									className={`${styles.connection} ${styles.connectionNote}`}
+								>
+									<span>
+										<UiMessage
+											text={
+												"Claude Code runs locally and is unavailable on the public web app. Using a Claude subscription for POCUT features requires Anthropic authorization."
+											}
+										/>
+									</span>
+									<a
+										href="https://code.claude.com/docs/en/legal-and-compliance"
+										target="_blank"
+										rel="noreferrer"
 									>
-										{connecting ? (
-											<UiMessage text={"Connecting…"} />
-										) : (
-											<UiMessage text={"Connect"} />
-										)}
-									</Button>
-								</>
-							)}
-						</div>
-						<div className={`${styles.connection} ${styles.connectionNote}`}>
-							<span>
-								<UiMessage
-									text={
-										"The ChatGPT connection also powers eligible features in the AI tab. Image generation is unavailable on this connection."
-									}
+										<UiMessage text={"Claude Code terms"} />
+									</a>
+								</div>
+								<McpInstallationSettings
+									key={editor.project.getActive().metadata.id}
+									projectId={editor.project.getActive().metadata.id}
 								/>
-							</span>
-							{connection?.sharing && (
-								<a href={connection.usageUrl} target="_blank" rel="noreferrer">
-									<UiMessage text={"ChatGPT usage"} />
-								</a>
-							)}
-						</div>
-						<div className={`${styles.connection} ${styles.connectionNote}`}>
-							<span>
-								<UiMessage
-									text={
-										"Claude Code runs locally and is unavailable on the public web app. Using a Claude subscription for POCUT features requires Anthropic authorization."
-									}
-								/>
-							</span>
-							<a
-								href="https://code.claude.com/docs/en/legal-and-compliance"
-								target="_blank"
-								rel="noreferrer"
-							>
-								<UiMessage text={"Claude Code terms"} />
-							</a>
-						</div>
-						<McpInstallationSettings
-							key={editor.project.getActive().metadata.id}
-							projectId={editor.project.getActive().metadata.id}
-						/>
+							</>
+						)}
 						<KnowledgePanel
 							projectId={editor.project.getActive().metadata.id}
 						/>
@@ -834,6 +853,11 @@ function AgentPanel() {
 					{entries.length === 0 && (
 						<div className={styles.empty}>
 							<Bot size={28} />
+							{connection && !connection.sharing && (
+								<Button variant="outline" onClick={() => setSettingsOpen(true)}>
+									<UiMessage text="Connect AI provider" />
+								</Button>
+							)}
 							<h2>
 								<UiMessage text={"What should change in your video?"} />
 							</h2>
@@ -1419,7 +1443,6 @@ function EntryView({ entry }: { entry: Entry }) {
 			{entry.export && (
 				<div>
 					{/* The exported composition owns its captions; no separate caption track is available. */}
-					{/* eslint-disable-next-line jsx-a11y/media-has-caption */}
 					<UiLocalized<"video">
 						element={"video"}
 						messageProps={["aria-label"]}

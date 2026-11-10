@@ -2,6 +2,7 @@ import { cp, mkdir, readFile, copyFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
+await import("./restore-hyperframes-runtime.mjs");
 const audit = fileURLToPath(new URL("../../scripts/hyperframes/audit.mjs", import.meta.url));
 const result = spawnSync(process.execPath, [audit], { stdio: "inherit" });
 if (result.status !== 0) throw new Error("Pinned HyperFrames reference audit failed");

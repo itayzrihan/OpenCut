@@ -1,7 +1,5 @@
 "use client";
 
-import { useWorkspaceAccount } from "@/accounts/gate";
-
 import { Message as UiMessage } from "@/i18n/message";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -29,25 +27,16 @@ import { LoopsView } from "@/loops/components/assets-view";
 import { GenerativeView } from "@/generative/components/generative-view";
 import { GenerativeResultImporter } from "@/generative/components/result-importer";
 import { AiChatView } from "@/ai/components/ai-chat-view";
-import { LocalSubjectFramingButton } from "@/ai/components/local-subject-framing-button";
 import { TimelineCodeView } from "@/ai/components/timeline-code-view";
 import { TemplatesView } from "@/templates/components/assets-view";
 
 export function AssetsPanel() {
 	const { activeTab } = useAssetsPanelStore();
-	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
-	const visibleTab = hosted && activeTab === "generative" ? "media" : activeTab;
 
 	const viewMap: Record<Tab, React.ReactNode> = {
 		media: <MediaView />,
 		catalog: <CatalogView />,
-		ai: hosted ? (
-			<div className="p-3">
-				<LocalSubjectFramingButton disabled={false} />
-			</div>
-		) : (
-			<AiChatView />
-		),
+		ai: <AiChatView />,
 		generative: <GenerativeView />,
 		"timeline-code": <TimelineCodeView />,
 		sounds: <SoundsView />,
@@ -75,10 +64,10 @@ export function AssetsPanel() {
 
 	return (
 		<div className="panel bg-background relative flex h-full rounded-sm border overflow-hidden">
-			{!hosted && <GenerativeResultImporter />}
+			<GenerativeResultImporter />
 			<TabBar />
 			<Separator orientation="vertical" />
-			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[visibleTab]}</div>
+			<div className="min-w-0 flex-1 overflow-hidden">{viewMap[activeTab]}</div>
 		</div>
 	);
 }

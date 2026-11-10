@@ -86,6 +86,8 @@ export interface AiEditPlanRecord {
 }
 
 export interface TProject {
+	notes?: import("@/project-notes/types").ProjectNote[];
+	clientReview?: import("@/client-review/canonical").ClientReviewState;
 	automationSource?: {
 		projectId: string;
 		jobId: string;

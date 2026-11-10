@@ -23,6 +23,21 @@ export interface DirectorDocument {
 	direction: string;
 	transcript: string;
 	jobs: DirectorJobLink[];
+	storyboard?: ClientStoryboard | null;
+}
+export interface ClientStoryboardScene {
+	id: string;
+	title: string;
+	description: string;
+	startSeconds?: number | null;
+	endSeconds?: number | null;
+	imageReferenceId?: string | null;
+}
+export interface ClientStoryboard {
+	title: string;
+	summary: string;
+	sheetReferenceIds: string[];
+	scenes: ClientStoryboardScene[];
 }
 export interface DirectorJob {
 	id: string;

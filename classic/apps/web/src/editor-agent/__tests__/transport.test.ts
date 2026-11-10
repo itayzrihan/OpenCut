@@ -71,6 +71,33 @@ test("retries network disconnects at most twice", async () => {
 	expect(sends).toBe(3);
 });
 
+test("paid hosted sessions never retry an uncertain network or partial stream", async () => {
+	for (const sendResponse of [
+		async (): Promise<Response> => {
+			throw new TypeError("Connection lost after sending");
+		},
+		async () =>
+			stream(event({ type: "response.output_text.delta", delta: "Partial" })),
+		async () => new Response('{"error":"Unavailable"}', { status: 503 }),
+	]) {
+		let sends = 0;
+		await expect(
+			requestAgentResponse({
+				...options(),
+				allowRetry: false,
+				send: async () => {
+					sends++;
+					return sendResponse();
+				},
+				planRetry: () => {
+					throw new Error("Paid attempts must not enter retry planning");
+				},
+			}),
+		).rejects.toThrow();
+		expect(sends).toBe(1);
+	}
+});
+
 test("does not retry auth, malformed protocol or explicit provider failure", async () => {
 	for (const response of [
 		new Response('{"error":"Unauthorized"}', { status: 401 }),

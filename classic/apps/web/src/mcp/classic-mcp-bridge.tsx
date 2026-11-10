@@ -8,6 +8,7 @@ import {
 	type CanonicalInvocationOptions,
 } from "./canonical-transport";
 import { performHostEffect } from "@/editor-agent/host-effects";
+import { performStoryboardPdfEffect } from "@/generative/storyboard-pdf-effect";
 import { performEarshotPreviewEffect } from "@/editor-agent/earshot-preview-effect";
 import { performSceneAutomationEffect } from "@/editor-agent/scene-automation-effects";
 
@@ -369,6 +370,8 @@ export function ClassicMcpBridge({ editor }: { editor: EditorCore }) {
 								return performEarshotPreviewEffect(scope);
 							if (effect.adapter === "sceneAutomation")
 								return performSceneAutomationEffect(scope);
+							if (effect.adapter === "storyboardPdf")
+								return performStoryboardPdfEffect(scope);
 							return performHostEffect({
 								effect,
 								editor,

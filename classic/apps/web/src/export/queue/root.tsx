@@ -20,6 +20,7 @@ export function RenderQueueRoot({ children }: { children: React.ReactNode }) {
 	// It must not hydrate account preferences, batch tasks or editable projects.
 	if (
 		path === "/render-worker" ||
+		path.startsWith("/review/") ||
 		path === "/" ||
 		Object.values(legalRoutes).some(({ href }) => href === path)
 	)

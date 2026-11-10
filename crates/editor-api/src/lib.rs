@@ -19,6 +19,8 @@ mod hyperframes_authoring;
 mod editor_render;
 mod earshot_preview;
 mod classic;
+mod classic_notes;
+mod classic_review;
 mod classic_procedural;
 mod classic_effects;
 mod classic_masks;

@@ -3,6 +3,8 @@ import type {
 	EditingAgentSnapshot,
 	EditingAgentProviderRound,
 } from "@/core/agent-protocol";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { performStoryboardPdfEffect } from "@/generative/storyboard-pdf-effect";
 import { mediaTime } from "@/wasm/media-time";
 import { type AgentStreamEvent } from "./stream";
 import { requestAgentResponse } from "./transport";
@@ -22,6 +24,9 @@ export interface AgentConnection {
 	identity: { name?: string; email?: string } | null;
 	error: string | null;
 	usageUrl: string;
+	provider?: "openrouter";
+	sessionSeconds?: number;
+	remainingRequests?: number;
 }
 function isTerminalRun(
 	snapshot: EditingAgentSnapshot | null | undefined,
@@ -40,6 +45,9 @@ export const connectionSchemas = {
 			.nullable(),
 		error: z.string().nullable(),
 		usageUrl: z.string().url(),
+		provider: z.literal("openrouter").optional(),
+		sessionSeconds: z.number().nonnegative().optional(),
+		remainingRequests: z.number().int().nonnegative().optional(),
 	}),
 	models: z.object({
 		models: z.array(namedAgentModelSchema).max(200),
@@ -82,10 +90,12 @@ function accountId() {
 
 export async function connectionRequest<T>({
 	operation,
+	input,
 	signal,
 	schema,
 }: {
-	operation?: "signIn" | "disconnect" | "models";
+	operation?: "signIn" | "disconnect" | "models" | "connectHosted";
+	input?: { pin: string; apiKey?: string; confirmed: true };
 	signal?: AbortSignal;
 	schema: z.ZodType<T>;
 }): Promise<T> {
@@ -99,7 +109,7 @@ export async function connectionRequest<T>({
 			"Content-Type": "application/json",
 			"X-OpenCut-Account": account,
 		},
-		...(operation ? { body: JSON.stringify({ operation }) } : {}),
+		...(operation ? { body: JSON.stringify({ operation, ...input }) } : {}),
 	});
 	if (accountId() !== account) throw new Error("The active account changed");
 	const value: unknown = await response.json();
@@ -445,46 +455,60 @@ export class EditorAgentClient {
 		const exports: Array<{ blob: Blob; filename: string; artifactId: string }> =
 			[];
 		const result =
-			effect.adapter === "sceneAutomation"
-				? await performSceneAutomationEffect({
+			effect.adapter === "storyboardPdf"
+				? await performStoryboardPdfEffect({
 						effect,
+						retainForConversation: true,
 						editor: this.editor,
 						accountId: this.account,
 						signal,
+						onExport: (value) => exports.push(value),
 					})
-				: effect.adapter === "earshotPreview"
-					? await performEarshotPreviewEffect({
+				: effect.adapter === "sceneAutomation"
+					? await performSceneAutomationEffect({
 							effect,
 							editor: this.editor,
 							accountId: this.account,
 							signal,
 						})
-					: effect.adapter === "hyperframesAuthoring" ||
-						  effect.adapter === "editorRender"
-						? await performRenderEffect({
+					: effect.adapter === "earshotPreview"
+						? await performEarshotPreviewEffect({
 								effect,
 								editor: this.editor,
 								accountId: this.account,
 								signal,
-								onExport: (value) => exports.push(value),
 							})
-						: await performHostEffect({
-								effect,
-								editor: this.editor,
-								accountId: this.account,
-								signal,
-								activeProjectId: () =>
-									this.editor.project.getActiveOrNull()?.metadata.id,
-								currentRevision: () =>
-									this.editor.command.getCanonicalRevision(),
-								storeScreenshot: (capture) =>
-									this.editor.command.storeEditingAgentScreenshot(capture),
-								storeImage: (image) =>
-									this.editor.command.storeEditingAgentImage(image),
-							});
+						: effect.adapter === "hyperframesAuthoring" ||
+							  effect.adapter === "editorRender"
+							? await performRenderEffect({
+									effect,
+									editor: this.editor,
+									accountId: this.account,
+									signal,
+									onExport: (value) => exports.push(value),
+								})
+							: await performHostEffect({
+									effect,
+									editor: this.editor,
+									accountId: this.account,
+									signal,
+									activeProjectId: () =>
+										this.editor.project.getActiveOrNull()?.metadata.id,
+									currentRevision: () =>
+										this.editor.command.getCanonicalRevision(),
+									storeScreenshot: (capture) =>
+										this.editor.command.storeEditingAgentScreenshot(capture),
+									storeImage: (image) =>
+										this.editor.command.storeEditingAgentImage(image),
+								});
 		// Preview cannot commit: settle its definitive rejection even when the
 		// request was stopped, so the shared host slot can accept another tool.
-		if (!(effect.adapter === "earshotPreview" && result.type === "rejected")) {
+		if (
+			!(
+				["earshotPreview", "storyboardPdf"].includes(effect.adapter) &&
+				result.type === "rejected"
+			)
+		) {
 			signal.throwIfAborted();
 			this.assertScope();
 		}
@@ -546,6 +570,7 @@ export class EditorAgentClient {
 		signal.throwIfAborted();
 		const expectedRevision = this.editor.command.getCanonicalRevision();
 		return requestAgentResponse({
+			allowRetry: !isHostedBrowserWorkspace(),
 			beforeAttempt: () => {
 				this.assertScope();
 				if (this.editor.command.getCanonicalRevision() !== expectedRevision)

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { streamChatGPTResponse } from "./chatgpt";
+import { streamAgentProvider, usesHostedProvider } from "./provider";
 
 const requestSchema = z
 	.object({
@@ -71,7 +71,7 @@ export async function handleEditorAgentResponse(
 		return Response.json({ error: "Invalid agent request" }, { status: 400 });
 	const { reasoningEffort, ...body } = input.data;
 	try {
-		return await streamChatGPTResponse({
+		return await streamAgentProvider({
 			body: {
 				...body,
 				reasoning: {
@@ -89,7 +89,14 @@ export async function handleEditorAgentResponse(
 				error:
 					error instanceof Error ? error.message : "ChatGPT request failed",
 			},
-			{ status: 502 },
+			{
+				status: usesHostedProvider() ? 409 : 502,
+				headers: {
+					"X-OpenCut-Provider-Retry": usesHostedProvider()
+						? "never"
+						: "bounded",
+				},
+			},
 		);
 	}
 }

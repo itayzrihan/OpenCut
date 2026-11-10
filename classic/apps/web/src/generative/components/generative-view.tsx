@@ -32,6 +32,7 @@ import { useInterfaceLanguage } from "@/i18n/provider";
 import { CHATGPT_STORYBOARD_LABEL } from "../storyboard-model";
 import { imageObservation, videoObservations } from "../vision";
 import { aiClientFetch } from "@/ai/client-transport";
+import { exportStoryboardPdf } from "../storyboard-pdf-effect";
 import {
 	api,
 	canonical,
@@ -94,6 +95,10 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		[catalog, setCatalog] = useState<Array<{ id: string; name?: string }>>([]),
 		[transcript, setTranscript] = useState(""),
 		[boardUpload, setBoardUpload] = useState(false);
+	const [exportingPdf, setExportingPdf] = useState(false);
+	const pdfAbort = useRef<AbortController | null>(null);
+	const documentAccount = useRef<string | null>(null);
+	useEffect(() => () => pdfAbort.current?.abort(), []);
 	const directionDirty = useRef(false);
 	const transcriptDirty = useRef(false);
 	const uploadRef = useRef<HTMLInputElement>(null),
@@ -123,6 +128,16 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		if (!projectId) return;
 		try {
 			const snapshot = canonical({ editor: editor }).document;
+			if (
+				documentAccount.current &&
+				documentAccount.current !== window.__opencutAccountId
+			) {
+				pdfAbort.current?.abort();
+				directionDirty.current = false;
+				transcriptDirty.current = false;
+				setText("");
+			}
+			documentAccount.current = window.__opencutAccountId ?? null;
 			setDocument(snapshot);
 			if (!directionDirty.current) setDirection(snapshot.direction);
 			if (!transcriptDirty.current) setTranscript(snapshot.transcript ?? "");
@@ -176,6 +191,33 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 			error(e);
 		} finally {
 			setBusy(false);
+		}
+	}
+	async function exportProposal() {
+		if (pdfAbort.current || busy) return;
+		const controller = new AbortController();
+		pdfAbort.current = controller;
+		setExportingPdf(true);
+		try {
+			if (
+				!documentAccount.current ||
+				documentAccount.current !== window.__opencutAccountId
+			)
+				throw new Error(
+					"The storyboard account changed. Reload the Director before exporting.",
+				);
+			if (direction !== document.direction) {
+				canonical({ editor, change: { type: "direction", text: direction } });
+				directionDirty.current = false;
+				refresh();
+			}
+			await exportStoryboardPdf({ editor, signal: controller.signal });
+			toast.success("Storyboard PDF is ready");
+		} catch (cause) {
+			if (!controller.signal.aborted) error(cause);
+		} finally {
+			if (pdfAbort.current === controller) pdfAbort.current = null;
+			setExportingPdf(false);
 		}
 	}
 	async function upload(files: File[]) {
@@ -740,6 +782,35 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					</p>
 					<div className="flex flex-wrap gap-2">
 						<Button
+							variant="outline"
+							disabled={
+								busy ||
+								exportingPdf ||
+								(!document.references.some((r) => r.storyboard) &&
+									!document.storyboard?.scenes.length &&
+									!direction.trim())
+							}
+							onClick={() => void exportProposal()}
+						>
+							{exportingPdf ? (
+								<Loader2 className="mr-2 size-4 animate-spin" />
+							) : (
+								<Download className="mr-2 size-4" />
+							)}
+							<UiMessage
+								text={
+									exportingPdf
+										? "Preparing storyboard PDF…"
+										: "Export storyboard PDF"
+								}
+							/>
+						</Button>
+						{exportingPdf && (
+							<Button variant="ghost" onClick={() => pdfAbort.current?.abort()}>
+								<UiMessage text="Cancel" />
+							</Button>
+						)}
+						<Button
 							disabled={
 								busy ||
 								!direction.trim() ||
@@ -825,15 +896,23 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 												"Wait for the generated video to appear in Media",
 											);
 										const input = { editor, job: j, mediaId };
-										const inserted = j.replacement ? applyReplacement(input) : insertSeamless(input);
+										const inserted = j.replacement
+											? applyReplacement(input)
+											: insertSeamless(input);
 										if (inserted)
 											toast.success(
-												j.replacement ? "Clip replaced at its original duration" : "Seamless Connect inserted on the timeline",
+												j.replacement
+													? "Clip replaced at its original duration"
+													: "Seamless Connect inserted on the timeline",
 											);
 									})
 								}
 							>
-								{j.replacement ? <UiMessage text={"Apply replacement"} /> : <UiMessage text={"Insert at original cut"} />}
+								{j.replacement ? (
+									<UiMessage text={"Apply replacement"} />
+								) : (
+									<UiMessage text={"Insert at original cut"} />
+								)}
 							</Button>
 						)}
 					</section>
@@ -1070,8 +1149,13 @@ function ReviewDialog({
 			<div className="flex justify-between border-b p-3">
 				<h3 className="font-semibold">
 					<UiMessage text={"Approve one generation ·"} />{" "}
-					{job.replacement ? <UiMessage text={"Replace clip"} /> : job.referenceImage
-						? <UiMessage text={"Replacement reference image"} /> : job.kind}
+					{job.replacement ? (
+						<UiMessage text={"Replace clip"} />
+					) : job.referenceImage ? (
+						<UiMessage text={"Replacement reference image"} />
+					) : (
+						job.kind
+					)}
 				</h3>
 				<Button variant="ghost" size="icon" onClick={close}>
 					<X size={16} />
@@ -1095,7 +1179,11 @@ function ReviewDialog({
 				</p>
 				{job.replacement && (
 					<p className="text-xs">
-						<UiMessage text={"Timeline duration"} /> · {Number((job.replacement.durationTicks / TICKS_PER_SECOND).toFixed(5))}s
+						<UiMessage text={"Timeline duration"} /> ·{" "}
+						{Number(
+							(job.replacement.durationTicks / TICKS_PER_SECOND).toFixed(5),
+						)}
+						s
 					</p>
 				)}
 				<p className="rounded border p-2 text-sm">
@@ -1182,11 +1270,15 @@ function ReviewDialog({
 					const value = pin.current?.value;
 					if (pin.current) pin.current.value = "";
 					void run(async () => {
-						if (job.replacement && (
-							scope(editor).projectId !== job.projectId ||
-							planReplace({ editor, target: job.replacement }).anchor !== job.replacement.anchor
-						))
-							throw new Error("The selected clip changed. Prepare the replacement again.");
+						if (
+							job.replacement &&
+							(scope(editor).projectId !== job.projectId ||
+								planReplace({ editor, target: job.replacement }).anchor !==
+									job.replacement.anchor)
+						)
+							throw new Error(
+								"The selected clip changed. Prepare the replacement again.",
+							);
 						if (job.seamless) {
 							const { anchor, ...target } = job.seamless;
 							if (

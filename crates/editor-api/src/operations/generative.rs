@@ -21,6 +21,7 @@ enum Change {
     Direction { text: String },
     Transcript { text: String },
     Job { job: Job },
+    Storyboard { storyboard: Option<crate::generative::storyboard::Storyboard> },
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -40,6 +41,26 @@ pub(super) fn register_generative(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    let plan_state = state.clone();
+    register::<ReadInput, crate::generative::storyboard::Plan, _, _>(
+        registry, DocumentSupport::Both, crate::CapabilityExecution::Immediate,
+        "project.generative.storyboard.plan", "Read the client storyboard proposal",
+        "Project-scoped client proposal from canonical storyboard copy, or existing direction shots and storyboard sheets. Contains client descriptions and owned image references only, never internal generation prompts, credentials or provider debug metadata. Use project.generative.edit change type storyboard to prepare explicit client summaries and scene image bindings, then project.generative.storyboard.export for a PDF artifact.",
+        "generative", AccessLevel::Read, false, false, &["storyboard", "pdf", "proposal", "export"],
+        move |context, i| { let state = plan_state.clone(); async move {
+            let s = state.read().map_err(|_| CapabilityError::Failed("State lock".into()))?;
+            let p = s.document.project.as_ref().ok_or_else(|| CapabilityError::InvalidInput("Open a project".into()))?;
+            if p.id != i.project_id || i.expected_revision.is_some_and(|r| r != s.document.revision)
+                || context.metadata.get("opencut/projectId").is_some_and(|v| v.as_str() != Some(&i.project_id)) {
+                return Err(CapabilityError::Conflict("Storyboard project or revision changed".into()));
+            }
+            let document: GenerativeDocument = serde_json::from_value(p.extensions.get(KEY).cloned().unwrap_or_else(|| serde_json::json!({})))
+                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+            let plan = crate::generative::storyboard::plan(&document, &p.id, s.document.revision, &p.name)
+                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+            Ok(OperationSuccess::new(plan))
+        }},
+    )?;
     let read = state.clone();
     register::<ReadInput, ReadOutput, _, _>(
         registry,
@@ -137,6 +158,7 @@ pub(super) fn register_generative(
                             }
                             Change::Direction { text } => value.direction = text,
                             Change::Transcript { text } => value.transcript = text,
+                            Change::Storyboard { storyboard } => value.storyboard = storyboard,
                             Change::Job { job } => {
                                 if let Some(old) = value.jobs.iter_mut().find(|j| j.id == job.id) {
                                     *old = job
