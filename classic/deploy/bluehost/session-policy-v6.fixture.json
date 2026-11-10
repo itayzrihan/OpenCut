@@ -1,0 +1,3769 @@
+{
+  "description": "Synthetic schema-v6 production workspace; no real accounts, images or provider calls.",
+  "wasmSha256": "2bad1bac5c50b31a7339aa637b069cf0a20ab2e4e89c0863be1c653cb1613264",
+  "projectId": "qa-release-policy-project",
+  "expected": {
+    "sourceText": "שלום לעולם",
+    "latinTransliteration": "Shalom la-olam",
+    "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "handoffId": "release-handoff"
+  },
+  "archives": [
+    {
+      "name": "full",
+      "archive": {
+        "classic": {
+          "document": {
+            "aiEditHistory": [
+              {
+                "id": "edit-1",
+                "title": "Existing agent edit"
+              }
+            ],
+            "currentSceneId": "main-scene",
+            "customFonts": [
+              {
+                "id": "font-1",
+                "name": "My font"
+              }
+            ],
+            "futureFeature": {
+              "preserve": [
+                1,
+                "שלום",
+                {
+                  "nested": true
+                }
+              ]
+            },
+            "metadata": {
+              "createdAt": "2026-10-03T00:00:00.000Z",
+              "duration": 1200000,
+              "id": "qa-release-policy-project",
+              "name": "Synthetic release verification — no customer data",
+              "thumbnail": "existing-thumbnail",
+              "updatedAt": "2026-10-03T00:00:00.000Z"
+            },
+            "scenes": [
+              {
+                "bookmarks": [
+                  {
+                    "note": "Keep",
+                    "time": 120000
+                  }
+                ],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "main-scene",
+                "isMain": true,
+                "name": "Main",
+                "parallax": {
+                  "camera": {
+                    "depth": 0.7
+                  },
+                  "version": 1
+                },
+                "tracks": {
+                  "audio": [],
+                  "futureTrackLayout": {
+                    "height": 87
+                  },
+                  "main": {
+                    "elements": [
+                      {
+                        "duration": 1200000,
+                        "effects": [
+                          {
+                            "id": "effect",
+                            "params": {
+                              "amount": 2
+                            },
+                            "type": "blur"
+                          }
+                        ],
+                        "id": "item-2",
+                        "masks": [
+                          {
+                            "id": "mask",
+                            "points": [
+                              [
+                                0,
+                                0
+                              ],
+                              [
+                                1,
+                                1
+                              ]
+                            ]
+                          }
+                        ],
+                        "mediaId": "video-asset",
+                        "name": "Original video",
+                        "params": {
+                          "audioSyncOffset": 0.1,
+                          "transform.scaleX": 1.2
+                        },
+                        "retime": {
+                          "rate": 1.25
+                        },
+                        "startTime": 0,
+                        "trimEnd": 240000,
+                        "trimStart": 480000,
+                        "type": "video"
+                      }
+                    ],
+                    "hidden": false,
+                    "id": "video-track",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "titles",
+                    "video-track"
+                  ],
+                  "overlay": [
+                    {
+                      "captionSource": {
+                        "settings": {},
+                        "words": [
+                          {
+                            "end": 1,
+                            "start": 0,
+                            "text": "שלום"
+                          }
+                        ]
+                      },
+                      "elements": [
+                        {
+                          "duration": 120000,
+                          "id": "text-1",
+                          "name": "שלום",
+                          "params": {
+                            "fontFamily": "My font"
+                          },
+                          "startTime": 0,
+                          "trimEnd": 0,
+                          "trimStart": 0,
+                          "type": "text",
+                          "wordRuns": [
+                            {
+                              "id": "word-1",
+                              "text": "שלום"
+                            }
+                          ]
+                        }
+                      ],
+                      "hidden": false,
+                      "id": "titles",
+                      "name": "Captions",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              },
+              {
+                "bookmarks": [],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "other-scene",
+                "isMain": false,
+                "name": "Other scene",
+                "tracks": {
+                  "audio": [],
+                  "main": {
+                    "elements": [],
+                    "hidden": false,
+                    "id": "other-main",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "other-main"
+                  ],
+                  "overlay": []
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              }
+            ],
+            "settings": {
+              "background": {
+                "blurIntensity": 0.3,
+                "type": "blur"
+              },
+              "canvasSize": {
+                "height": 1080,
+                "width": 1920
+              },
+              "canvasSizeMode": "custom",
+              "fps": {
+                "denominator": 1001,
+                "numerator": 30000
+              }
+            },
+            "version": 33
+          },
+          "mediaAssets": [
+            {
+              "bindingRevision": 3,
+              "duration": 16,
+              "id": "video-asset",
+              "name": "Footage",
+              "sourcePath": "C:/selected/footage.mp4",
+              "storageKind": "linked",
+              "type": "video"
+            }
+          ],
+          "projectExtensions": {
+            "generative": {
+              "chapterPlans": [],
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "jobs": [],
+              "messages": [],
+              "productionHandoff": {
+                "createdAt": "2026-11-10T12:16:31.818Z",
+                "durationMs": 8000,
+                "id": "release-handoff",
+                "referenceIds": [
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ],
+                "referenceSlots": [
+                  {
+                    "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "slotId": "presenter",
+                    "slotVersion": 3,
+                    "version": 1
+                  }
+                ],
+                "request": "Preserve exact source and Latin pronunciation",
+                "rows": [
+                  {
+                    "content": {
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    },
+                    "rowId": "release-1",
+                    "version": 2
+                  },
+                  {
+                    "content": {
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "visualDescription": ""
+                    },
+                    "rowId": "release-2",
+                    "version": 1
+                  }
+                ],
+                "sourceRevision": 7,
+                "storyboardRecommended": false
+              },
+              "references": [
+                {
+                  "bytes": 17,
+                  "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "kind": "image",
+                  "mime": "image/png",
+                  "name": "synthetic.png",
+                  "storyboard": false
+                }
+              ],
+              "transcript": "שלום לעולם\nمرحبا بالعالم"
+            },
+            "productionStudio": {
+              "analyses": [],
+              "referenceSlots": [
+                {
+                  "approvedVersion": 1,
+                  "id": "presenter",
+                  "label": "Synthetic presenter",
+                  "purpose": "",
+                  "selectedVersion": 1,
+                  "slotVersion": 3,
+                  "versions": [
+                    {
+                      "caption": "",
+                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "source": "uploaded",
+                      "version": 1
+                    }
+                  ]
+                }
+              ],
+              "scriptRows": [
+                {
+                  "currentVersion": 2,
+                  "id": "release-1",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    },
+                    {
+                      "changeNote": "",
+                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 2,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    }
+                  ]
+                },
+                {
+                  "currentVersion": 1,
+                  "id": "release-2",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "historyEncoding": "full",
+        "projectId": "qa-release-policy-project",
+        "redoStack": [
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "generative": {
+                  "chapterPlans": [],
+                  "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+                  "jobs": [],
+                  "messages": [],
+                  "productionHandoff": {
+                    "createdAt": "2026-11-10T12:16:31.818Z",
+                    "durationMs": 8000,
+                    "id": "release-handoff",
+                    "referenceIds": [
+                      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                    ],
+                    "referenceSlots": [
+                      {
+                        "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                        "slotId": "presenter",
+                        "slotVersion": 3,
+                        "version": 1
+                      }
+                    ],
+                    "request": "Preserve exact source and Latin pronunciation",
+                    "rows": [
+                      {
+                        "content": {
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        },
+                        "rowId": "release-1",
+                        "version": 2
+                      },
+                      {
+                        "content": {
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "visualDescription": ""
+                        },
+                        "rowId": "release-2",
+                        "version": 1
+                      }
+                    ],
+                    "sourceRevision": 7,
+                    "storyboardRecommended": false
+                  },
+                  "references": [
+                    {
+                      "bytes": 17,
+                      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "kind": "image",
+                      "mime": "image/png",
+                      "name": "synthetic.png",
+                      "storyboard": false
+                    }
+                  ],
+                  "transcript": "שלום לעולם\nمرحبا بالعالم"
+                },
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [
+                    {
+                      "approvedVersion": 1,
+                      "id": "presenter",
+                      "label": "Synthetic presenter",
+                      "purpose": "",
+                      "selectedVersion": 1,
+                      "slotVersion": 3,
+                      "versions": [
+                        {
+                          "caption": "",
+                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          "source": "uploaded",
+                          "version": 1
+                        }
+                      ]
+                    },
+                    {
+                      "approvedVersion": null,
+                      "id": "unused",
+                      "label": "Undo/redo coverage",
+                      "purpose": "",
+                      "selectedVersion": null,
+                      "slotVersion": 1,
+                      "versions": []
+                    }
+                  ],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          }
+        ],
+        "revision": 10,
+        "schemaVersion": 6,
+        "sources": {},
+        "undoStack": [
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 1,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit The Director"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "generative": {
+                  "chapterPlans": [],
+                  "direction": "",
+                  "jobs": [],
+                  "messages": [],
+                  "references": [
+                    {
+                      "bytes": 17,
+                      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "kind": "image",
+                      "mime": "image/png",
+                      "name": "synthetic.png",
+                      "storyboard": false
+                    }
+                  ],
+                  "transcript": ""
+                },
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "generative": {
+                  "chapterPlans": [],
+                  "direction": "",
+                  "jobs": [],
+                  "messages": [],
+                  "references": [
+                    {
+                      "bytes": 17,
+                      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "kind": "image",
+                      "mime": "image/png",
+                      "name": "synthetic.png",
+                      "storyboard": false
+                    }
+                  ],
+                  "transcript": ""
+                },
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [
+                    {
+                      "approvedVersion": null,
+                      "id": "presenter",
+                      "label": "Synthetic presenter",
+                      "purpose": "",
+                      "selectedVersion": null,
+                      "slotVersion": 1,
+                      "versions": []
+                    }
+                  ],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "generative": {
+                  "chapterPlans": [],
+                  "direction": "",
+                  "jobs": [],
+                  "messages": [],
+                  "references": [
+                    {
+                      "bytes": 17,
+                      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "kind": "image",
+                      "mime": "image/png",
+                      "name": "synthetic.png",
+                      "storyboard": false
+                    }
+                  ],
+                  "transcript": ""
+                },
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [
+                    {
+                      "approvedVersion": null,
+                      "id": "presenter",
+                      "label": "Synthetic presenter",
+                      "purpose": "",
+                      "selectedVersion": 1,
+                      "slotVersion": 2,
+                      "versions": [
+                        {
+                          "caption": "",
+                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          "source": "uploaded",
+                          "version": 1
+                        }
+                      ]
+                    }
+                  ],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "document": {
+                "aiEditHistory": [
+                  {
+                    "id": "edit-1",
+                    "title": "Existing agent edit"
+                  }
+                ],
+                "currentSceneId": "main-scene",
+                "customFonts": [
+                  {
+                    "id": "font-1",
+                    "name": "My font"
+                  }
+                ],
+                "futureFeature": {
+                  "preserve": [
+                    1,
+                    "שלום",
+                    {
+                      "nested": true
+                    }
+                  ]
+                },
+                "metadata": {
+                  "createdAt": "2026-10-03T00:00:00.000Z",
+                  "duration": 1200000,
+                  "id": "qa-release-policy-project",
+                  "name": "Synthetic release verification — no customer data",
+                  "thumbnail": "existing-thumbnail",
+                  "updatedAt": "2026-10-03T00:00:00.000Z"
+                },
+                "scenes": [
+                  {
+                    "bookmarks": [
+                      {
+                        "note": "Keep",
+                        "time": 120000
+                      }
+                    ],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "main-scene",
+                    "isMain": true,
+                    "name": "Main",
+                    "parallax": {
+                      "camera": {
+                        "depth": 0.7
+                      },
+                      "version": 1
+                    },
+                    "tracks": {
+                      "audio": [],
+                      "futureTrackLayout": {
+                        "height": 87
+                      },
+                      "main": {
+                        "elements": [
+                          {
+                            "duration": 1200000,
+                            "effects": [
+                              {
+                                "id": "effect",
+                                "params": {
+                                  "amount": 2
+                                },
+                                "type": "blur"
+                              }
+                            ],
+                            "id": "item-2",
+                            "masks": [
+                              {
+                                "id": "mask",
+                                "points": [
+                                  [
+                                    0,
+                                    0
+                                  ],
+                                  [
+                                    1,
+                                    1
+                                  ]
+                                ]
+                              }
+                            ],
+                            "mediaId": "video-asset",
+                            "name": "Original video",
+                            "params": {
+                              "audioSyncOffset": 0.1,
+                              "transform.scaleX": 1.2
+                            },
+                            "retime": {
+                              "rate": 1.25
+                            },
+                            "startTime": 0,
+                            "trimEnd": 240000,
+                            "trimStart": 480000,
+                            "type": "video"
+                          }
+                        ],
+                        "hidden": false,
+                        "id": "video-track",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "titles",
+                        "video-track"
+                      ],
+                      "overlay": [
+                        {
+                          "captionSource": {
+                            "settings": {},
+                            "words": [
+                              {
+                                "end": 1,
+                                "start": 0,
+                                "text": "שלום"
+                              }
+                            ]
+                          },
+                          "elements": [
+                            {
+                              "duration": 120000,
+                              "id": "text-1",
+                              "name": "שלום",
+                              "params": {
+                                "fontFamily": "My font"
+                              },
+                              "startTime": 0,
+                              "trimEnd": 0,
+                              "trimStart": 0,
+                              "type": "text",
+                              "wordRuns": [
+                                {
+                                  "id": "word-1",
+                                  "text": "שלום"
+                                }
+                              ]
+                            }
+                          ],
+                          "hidden": false,
+                          "id": "titles",
+                          "name": "Captions",
+                          "type": "text"
+                        }
+                      ]
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  },
+                  {
+                    "bookmarks": [],
+                    "createdAt": "2026-10-03T00:00:00.000Z",
+                    "id": "other-scene",
+                    "isMain": false,
+                    "name": "Other scene",
+                    "tracks": {
+                      "audio": [],
+                      "main": {
+                        "elements": [],
+                        "hidden": false,
+                        "id": "other-main",
+                        "muted": false,
+                        "name": "Video",
+                        "type": "video"
+                      },
+                      "order": [
+                        "other-main"
+                      ],
+                      "overlay": []
+                    },
+                    "updatedAt": "2026-10-03T00:00:00.000Z"
+                  }
+                ],
+                "settings": {
+                  "background": {
+                    "blurIntensity": 0.3,
+                    "type": "blur"
+                  },
+                  "canvasSize": {
+                    "height": 1080,
+                    "width": 1920
+                  },
+                  "canvasSizeMode": "custom",
+                  "fps": {
+                    "denominator": 1001,
+                    "numerator": 30000
+                  }
+                },
+                "version": 33
+              },
+              "mediaAssets": [
+                {
+                  "bindingRevision": 3,
+                  "duration": 16,
+                  "id": "video-asset",
+                  "name": "Footage",
+                  "sourcePath": "C:/selected/footage.mp4",
+                  "storageKind": "linked",
+                  "type": "video"
+                }
+              ],
+              "projectExtensions": {
+                "generative": {
+                  "chapterPlans": [],
+                  "direction": "",
+                  "jobs": [],
+                  "messages": [],
+                  "references": [
+                    {
+                      "bytes": 17,
+                      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "kind": "image",
+                      "mime": "image/png",
+                      "name": "synthetic.png",
+                      "storyboard": false
+                    }
+                  ],
+                  "transcript": ""
+                },
+                "productionStudio": {
+                  "analyses": [],
+                  "referenceSlots": [
+                    {
+                      "approvedVersion": 1,
+                      "id": "presenter",
+                      "label": "Synthetic presenter",
+                      "purpose": "",
+                      "selectedVersion": 1,
+                      "slotVersion": 3,
+                      "versions": [
+                        {
+                          "caption": "",
+                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                          "source": "uploaded",
+                          "version": 1
+                        }
+                      ]
+                    }
+                  ],
+                  "scriptRows": [
+                    {
+                      "currentVersion": 2,
+                      "id": "release-1",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        },
+                        {
+                          "changeNote": "",
+                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "endMs": 4000,
+                          "latinTransliteration": "Shalom la-olam",
+                          "sourceLanguage": "he",
+                          "sourceText": "שלום לעולם",
+                          "speaker": "QA",
+                          "startMs": 0,
+                          "timingEstimated": false,
+                          "version": 2,
+                          "visualDescription": "The synthetic presenter opens a door"
+                        }
+                      ]
+                    },
+                    {
+                      "currentVersion": 1,
+                      "id": "release-2",
+                      "versions": [
+                        {
+                          "changeNote": "Imported script",
+                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "endMs": 8000,
+                          "latinTransliteration": "",
+                          "sourceLanguage": "he",
+                          "sourceText": "مرحبا بالعالم",
+                          "speaker": "",
+                          "startMs": 4000,
+                          "timingEstimated": false,
+                          "version": 1,
+                          "visualDescription": ""
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            "hostContext": {},
+            "label": "Send production workspace to Director"
+          }
+        ]
+      }
+    },
+    {
+      "name": "base",
+      "archive": {
+        "classic": {
+          "document": {
+            "aiEditHistory": [
+              {
+                "id": "edit-1",
+                "title": "Existing agent edit"
+              }
+            ],
+            "currentSceneId": "main-scene",
+            "customFonts": [
+              {
+                "id": "font-1",
+                "name": "My font"
+              }
+            ],
+            "futureFeature": {
+              "preserve": [
+                1,
+                "שלום",
+                {
+                  "nested": true
+                }
+              ]
+            },
+            "metadata": {
+              "createdAt": "2026-10-03T00:00:00.000Z",
+              "duration": 1200000,
+              "id": "qa-release-policy-project",
+              "name": "Synthetic release verification — no customer data",
+              "thumbnail": "existing-thumbnail",
+              "updatedAt": "2026-10-03T00:00:00.000Z"
+            },
+            "scenes": [
+              {
+                "bookmarks": [
+                  {
+                    "note": "Keep",
+                    "time": 120000
+                  }
+                ],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "main-scene",
+                "isMain": true,
+                "name": "Main",
+                "parallax": {
+                  "camera": {
+                    "depth": 0.7
+                  },
+                  "version": 1
+                },
+                "tracks": {
+                  "audio": [],
+                  "futureTrackLayout": {
+                    "height": 87
+                  },
+                  "main": {
+                    "elements": [
+                      {
+                        "duration": 1200000,
+                        "effects": [
+                          {
+                            "id": "effect",
+                            "params": {
+                              "amount": 2
+                            },
+                            "type": "blur"
+                          }
+                        ],
+                        "id": "item-2",
+                        "masks": [
+                          {
+                            "id": "mask",
+                            "points": [
+                              [
+                                0,
+                                0
+                              ],
+                              [
+                                1,
+                                1
+                              ]
+                            ]
+                          }
+                        ],
+                        "mediaId": "video-asset",
+                        "name": "Original video",
+                        "params": {
+                          "audioSyncOffset": 0.1,
+                          "transform.scaleX": 1.2
+                        },
+                        "retime": {
+                          "rate": 1.25
+                        },
+                        "startTime": 0,
+                        "trimEnd": 240000,
+                        "trimStart": 480000,
+                        "type": "video"
+                      }
+                    ],
+                    "hidden": false,
+                    "id": "video-track",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "titles",
+                    "video-track"
+                  ],
+                  "overlay": [
+                    {
+                      "captionSource": {
+                        "settings": {},
+                        "words": [
+                          {
+                            "end": 1,
+                            "start": 0,
+                            "text": "שלום"
+                          }
+                        ]
+                      },
+                      "elements": [
+                        {
+                          "duration": 120000,
+                          "id": "text-1",
+                          "name": "שלום",
+                          "params": {
+                            "fontFamily": "My font"
+                          },
+                          "startTime": 0,
+                          "trimEnd": 0,
+                          "trimStart": 0,
+                          "type": "text",
+                          "wordRuns": [
+                            {
+                              "id": "word-1",
+                              "text": "שלום"
+                            }
+                          ]
+                        }
+                      ],
+                      "hidden": false,
+                      "id": "titles",
+                      "name": "Captions",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              },
+              {
+                "bookmarks": [],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "other-scene",
+                "isMain": false,
+                "name": "Other scene",
+                "tracks": {
+                  "audio": [],
+                  "main": {
+                    "elements": [],
+                    "hidden": false,
+                    "id": "other-main",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "other-main"
+                  ],
+                  "overlay": []
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              }
+            ],
+            "settings": {
+              "background": {
+                "blurIntensity": 0.3,
+                "type": "blur"
+              },
+              "canvasSize": {
+                "height": 1080,
+                "width": 1920
+              },
+              "canvasSizeMode": "custom",
+              "fps": {
+                "denominator": 1001,
+                "numerator": 30000
+              }
+            },
+            "version": 33
+          },
+          "mediaAssets": [
+            {
+              "bindingRevision": 3,
+              "duration": 16,
+              "id": "video-asset",
+              "name": "Footage",
+              "sourcePath": "C:/selected/footage.mp4",
+              "storageKind": "linked",
+              "type": "video"
+            }
+          ],
+          "projectExtensions": {
+            "generative": {
+              "chapterPlans": [],
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "jobs": [],
+              "messages": [],
+              "productionHandoff": {
+                "createdAt": "2026-11-10T12:16:31.818Z",
+                "durationMs": 8000,
+                "id": "release-handoff",
+                "referenceIds": [
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ],
+                "referenceSlots": [
+                  {
+                    "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "slotId": "presenter",
+                    "slotVersion": 3,
+                    "version": 1
+                  }
+                ],
+                "request": "Preserve exact source and Latin pronunciation",
+                "rows": [
+                  {
+                    "content": {
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    },
+                    "rowId": "release-1",
+                    "version": 2
+                  },
+                  {
+                    "content": {
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "visualDescription": ""
+                    },
+                    "rowId": "release-2",
+                    "version": 1
+                  }
+                ],
+                "sourceRevision": 7,
+                "storyboardRecommended": false
+              },
+              "references": [
+                {
+                  "bytes": 17,
+                  "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "kind": "image",
+                  "mime": "image/png",
+                  "name": "synthetic.png",
+                  "storyboard": false
+                }
+              ],
+              "transcript": "שלום לעולם\nمرحبا بالعالم"
+            },
+            "productionStudio": {
+              "analyses": [],
+              "referenceSlots": [
+                {
+                  "approvedVersion": 1,
+                  "id": "presenter",
+                  "label": "Synthetic presenter",
+                  "purpose": "",
+                  "selectedVersion": 1,
+                  "slotVersion": 3,
+                  "versions": [
+                    {
+                      "caption": "",
+                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "source": "uploaded",
+                      "version": 1
+                    }
+                  ]
+                }
+              ],
+              "scriptRows": [
+                {
+                  "currentVersion": 2,
+                  "id": "release-1",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    },
+                    {
+                      "changeNote": "",
+                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 2,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    }
+                  ]
+                },
+                {
+                  "currentVersion": 1,
+                  "id": "release-2",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "historyEncoding": "base",
+        "projectId": "qa-release-policy-project",
+        "redoStack": [
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/1",
+                  "value": {
+                    "approvedVersion": null,
+                    "id": "unused",
+                    "label": "Undo/redo coverage",
+                    "purpose": "",
+                    "selectedVersion": null,
+                    "slotVersion": 1,
+                    "versions": []
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          }
+        ],
+        "revision": 10,
+        "schemaVersion": 6,
+        "sources": {},
+        "undoStack": [
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0"
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/scriptRows/0/currentVersion",
+                  "value": 1
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/productionStudio/scriptRows/0/versions/1"
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0"
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit The Director"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/direction",
+                  "value": ""
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/transcript",
+                  "value": ""
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative/productionHandoff"
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/direction",
+                  "value": ""
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/transcript",
+                  "value": ""
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative/productionHandoff"
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/approvedVersion",
+                  "value": null
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/selectedVersion",
+                  "value": null
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/slotVersion",
+                  "value": 1
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/versions/0"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/direction",
+                  "value": ""
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/transcript",
+                  "value": ""
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative/productionHandoff"
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/approvedVersion",
+                  "value": null
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/slotVersion",
+                  "value": 2
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/direction",
+                  "value": ""
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/generative/transcript",
+                  "value": ""
+                },
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions/generative/productionHandoff"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Send production workspace to Director"
+          }
+        ]
+      }
+    },
+    {
+      "name": "chained",
+      "archive": {
+        "classic": {
+          "document": {
+            "aiEditHistory": [
+              {
+                "id": "edit-1",
+                "title": "Existing agent edit"
+              }
+            ],
+            "currentSceneId": "main-scene",
+            "customFonts": [
+              {
+                "id": "font-1",
+                "name": "My font"
+              }
+            ],
+            "futureFeature": {
+              "preserve": [
+                1,
+                "שלום",
+                {
+                  "nested": true
+                }
+              ]
+            },
+            "metadata": {
+              "createdAt": "2026-10-03T00:00:00.000Z",
+              "duration": 1200000,
+              "id": "qa-release-policy-project",
+              "name": "Synthetic release verification — no customer data",
+              "thumbnail": "existing-thumbnail",
+              "updatedAt": "2026-10-03T00:00:00.000Z"
+            },
+            "scenes": [
+              {
+                "bookmarks": [
+                  {
+                    "note": "Keep",
+                    "time": 120000
+                  }
+                ],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "main-scene",
+                "isMain": true,
+                "name": "Main",
+                "parallax": {
+                  "camera": {
+                    "depth": 0.7
+                  },
+                  "version": 1
+                },
+                "tracks": {
+                  "audio": [],
+                  "futureTrackLayout": {
+                    "height": 87
+                  },
+                  "main": {
+                    "elements": [
+                      {
+                        "duration": 1200000,
+                        "effects": [
+                          {
+                            "id": "effect",
+                            "params": {
+                              "amount": 2
+                            },
+                            "type": "blur"
+                          }
+                        ],
+                        "id": "item-2",
+                        "masks": [
+                          {
+                            "id": "mask",
+                            "points": [
+                              [
+                                0,
+                                0
+                              ],
+                              [
+                                1,
+                                1
+                              ]
+                            ]
+                          }
+                        ],
+                        "mediaId": "video-asset",
+                        "name": "Original video",
+                        "params": {
+                          "audioSyncOffset": 0.1,
+                          "transform.scaleX": 1.2
+                        },
+                        "retime": {
+                          "rate": 1.25
+                        },
+                        "startTime": 0,
+                        "trimEnd": 240000,
+                        "trimStart": 480000,
+                        "type": "video"
+                      }
+                    ],
+                    "hidden": false,
+                    "id": "video-track",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "titles",
+                    "video-track"
+                  ],
+                  "overlay": [
+                    {
+                      "captionSource": {
+                        "settings": {},
+                        "words": [
+                          {
+                            "end": 1,
+                            "start": 0,
+                            "text": "שלום"
+                          }
+                        ]
+                      },
+                      "elements": [
+                        {
+                          "duration": 120000,
+                          "id": "text-1",
+                          "name": "שלום",
+                          "params": {
+                            "fontFamily": "My font"
+                          },
+                          "startTime": 0,
+                          "trimEnd": 0,
+                          "trimStart": 0,
+                          "type": "text",
+                          "wordRuns": [
+                            {
+                              "id": "word-1",
+                              "text": "שלום"
+                            }
+                          ]
+                        }
+                      ],
+                      "hidden": false,
+                      "id": "titles",
+                      "name": "Captions",
+                      "type": "text"
+                    }
+                  ]
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              },
+              {
+                "bookmarks": [],
+                "createdAt": "2026-10-03T00:00:00.000Z",
+                "id": "other-scene",
+                "isMain": false,
+                "name": "Other scene",
+                "tracks": {
+                  "audio": [],
+                  "main": {
+                    "elements": [],
+                    "hidden": false,
+                    "id": "other-main",
+                    "muted": false,
+                    "name": "Video",
+                    "type": "video"
+                  },
+                  "order": [
+                    "other-main"
+                  ],
+                  "overlay": []
+                },
+                "updatedAt": "2026-10-03T00:00:00.000Z"
+              }
+            ],
+            "settings": {
+              "background": {
+                "blurIntensity": 0.3,
+                "type": "blur"
+              },
+              "canvasSize": {
+                "height": 1080,
+                "width": 1920
+              },
+              "canvasSizeMode": "custom",
+              "fps": {
+                "denominator": 1001,
+                "numerator": 30000
+              }
+            },
+            "version": 33
+          },
+          "mediaAssets": [
+            {
+              "bindingRevision": 3,
+              "duration": 16,
+              "id": "video-asset",
+              "name": "Footage",
+              "sourcePath": "C:/selected/footage.mp4",
+              "storageKind": "linked",
+              "type": "video"
+            }
+          ],
+          "projectExtensions": {
+            "generative": {
+              "chapterPlans": [],
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "jobs": [],
+              "messages": [],
+              "productionHandoff": {
+                "createdAt": "2026-11-10T12:16:31.818Z",
+                "durationMs": 8000,
+                "id": "release-handoff",
+                "referenceIds": [
+                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+                ],
+                "referenceSlots": [
+                  {
+                    "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "slotId": "presenter",
+                    "slotVersion": 3,
+                    "version": 1
+                  }
+                ],
+                "request": "Preserve exact source and Latin pronunciation",
+                "rows": [
+                  {
+                    "content": {
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    },
+                    "rowId": "release-1",
+                    "version": 2
+                  },
+                  {
+                    "content": {
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "visualDescription": ""
+                    },
+                    "rowId": "release-2",
+                    "version": 1
+                  }
+                ],
+                "sourceRevision": 7,
+                "storyboardRecommended": false
+              },
+              "references": [
+                {
+                  "bytes": 17,
+                  "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "kind": "image",
+                  "mime": "image/png",
+                  "name": "synthetic.png",
+                  "storyboard": false
+                }
+              ],
+              "transcript": "שלום לעולם\nمرحبا بالعالم"
+            },
+            "productionStudio": {
+              "analyses": [],
+              "referenceSlots": [
+                {
+                  "approvedVersion": 1,
+                  "id": "presenter",
+                  "label": "Synthetic presenter",
+                  "purpose": "",
+                  "selectedVersion": 1,
+                  "slotVersion": 3,
+                  "versions": [
+                    {
+                      "caption": "",
+                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                      "source": "uploaded",
+                      "version": 1
+                    }
+                  ]
+                }
+              ],
+              "scriptRows": [
+                {
+                  "currentVersion": 2,
+                  "id": "release-1",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    },
+                    {
+                      "changeNote": "",
+                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "endMs": 4000,
+                      "latinTransliteration": "Shalom la-olam",
+                      "sourceLanguage": "he",
+                      "sourceText": "שלום לעולם",
+                      "speaker": "QA",
+                      "startMs": 0,
+                      "timingEstimated": false,
+                      "version": 2,
+                      "visualDescription": "The synthetic presenter opens a door"
+                    }
+                  ]
+                },
+                {
+                  "currentVersion": 1,
+                  "id": "release-2",
+                  "versions": [
+                    {
+                      "changeNote": "Imported script",
+                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "endMs": 8000,
+                      "latinTransliteration": "",
+                      "sourceLanguage": "he",
+                      "sourceText": "مرحبا بالعالم",
+                      "speaker": "",
+                      "startMs": 4000,
+                      "timingEstimated": false,
+                      "version": 1,
+                      "visualDescription": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        "historyEncoding": "chained",
+        "projectId": "qa-release-policy-project",
+        "redoStack": [
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/1",
+                  "value": {
+                    "approvedVersion": null,
+                    "id": "unused",
+                    "label": "Undo/redo coverage",
+                    "purpose": "",
+                    "selectedVersion": null,
+                    "slotVersion": 1,
+                    "versions": []
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          }
+        ],
+        "revision": 10,
+        "schemaVersion": 6,
+        "sources": {},
+        "undoStack": [
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "remove",
+                  "path": "/projectExtensions"
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "add",
+                  "path": "/projectExtensions",
+                  "value": {
+                    "productionStudio": {
+                      "analyses": [],
+                      "referenceSlots": [],
+                      "scriptRows": [
+                        {
+                          "currentVersion": 1,
+                          "id": "release-1",
+                          "versions": [
+                            {
+                              "changeNote": "Imported script",
+                              "createdAt": "2026-11-10T12:16:31.807Z",
+                              "endMs": 4000,
+                              "latinTransliteration": "",
+                              "sourceLanguage": "he",
+                              "sourceText": "שלום לעולם",
+                              "speaker": "",
+                              "startMs": 0,
+                              "timingEstimated": false,
+                              "version": 1,
+                              "visualDescription": ""
+                            }
+                          ]
+                        },
+                        {
+                          "currentVersion": 1,
+                          "id": "release-2",
+                          "versions": [
+                            {
+                              "changeNote": "Imported script",
+                              "createdAt": "2026-11-10T12:16:31.807Z",
+                              "endMs": 8000,
+                              "latinTransliteration": "",
+                              "sourceLanguage": "he",
+                              "sourceText": "مرحبا بالعالم",
+                              "speaker": "",
+                              "startMs": 4000,
+                              "timingEstimated": false,
+                              "version": 1,
+                              "visualDescription": ""
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/scriptRows/0/currentVersion",
+                  "value": 2
+                },
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/productionStudio/scriptRows/0/versions/1",
+                  "value": {
+                    "changeNote": "",
+                    "createdAt": "2026-11-10T12:16:31.811Z",
+                    "endMs": 4000,
+                    "latinTransliteration": "Shalom la-olam",
+                    "sourceLanguage": "he",
+                    "sourceText": "שלום לעולם",
+                    "speaker": "QA",
+                    "startMs": 0,
+                    "timingEstimated": false,
+                    "version": 2,
+                    "visualDescription": "The synthetic presenter opens a door"
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit The Director"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/generative",
+                  "value": {
+                    "chapterPlans": [],
+                    "direction": "",
+                    "jobs": [],
+                    "messages": [],
+                    "references": [
+                      {
+                        "bytes": 17,
+                        "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                        "kind": "image",
+                        "mime": "image/png",
+                        "name": "synthetic.png",
+                        "storyboard": false
+                      }
+                    ],
+                    "transcript": ""
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0",
+                  "value": {
+                    "approvedVersion": null,
+                    "id": "presenter",
+                    "label": "Synthetic presenter",
+                    "purpose": "",
+                    "selectedVersion": null,
+                    "slotVersion": 1,
+                    "versions": []
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/selectedVersion",
+                  "value": 1
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/slotVersion",
+                  "value": 2
+                },
+                {
+                  "op": "add",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/versions/0",
+                  "value": {
+                    "caption": "",
+                    "createdAt": "2026-11-10T12:16:31.817Z",
+                    "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                    "source": "uploaded",
+                    "version": 1
+                  }
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Edit production workspace"
+          },
+          {
+            "classic": {
+              "delta": [
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/approvedVersion",
+                  "value": 1
+                },
+                {
+                  "op": "replace",
+                  "path": "/projectExtensions/productionStudio/referenceSlots/0/slotVersion",
+                  "value": 3
+                }
+              ]
+            },
+            "hostContext": {},
+            "label": "Send production workspace to Director"
+          }
+        ]
+      }
+    }
+  ]
+}
