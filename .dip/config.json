@@ -564,6 +564,10 @@
       ],
       "timeoutMs": 600000
     },
+    "web-build-types": {
+      "command": ["node", "classic/apps/web/node_modules/typescript/bin/tsc", "--noEmit", "--project", "classic/apps/web/tsconfig.build.json", "--incremental", "false"],
+      "timeoutMs": 120000
+    },
     "agent-production-studio": {
       "command": [
         "node",

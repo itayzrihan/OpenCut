@@ -134,10 +134,11 @@ const SelectContent = React.forwardRef<
 	React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => (
 	<SelectPrimitive.Portal>
+		{/* The body portal must sit above Dialog and Sheet surfaces at z-250. */}
 		<SelectPrimitive.Content
 			ref={ref}
 			className={cn(
-				"bg-popover text-popover-foreground z-50 max-h-(--radix-select-content-available-height) min-w-32 overflow-hidden rounded-md border p-1 shadow-lg",
+				"bg-popover text-popover-foreground z-300 max-h-(--radix-select-content-available-height) min-w-32 overflow-hidden rounded-md border p-1 shadow-lg",
 				className,
 			)}
 			position={position}
