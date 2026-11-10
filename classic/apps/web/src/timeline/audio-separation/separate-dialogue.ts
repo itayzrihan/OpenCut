@@ -121,10 +121,10 @@ export async function separateDialogue({
 					frames,
 					leadingFrames,
 					signal: controller.signal,
-					onProgress: (fraction) => {
+					onProgress: (fraction, provider) => {
 						toast.loading("Separating speech locally with DBS-TIGER…", {
 							id: toastId,
-							description: `${Math.round(fraction * 100)}%`,
+							description: `${provider === "webgpu" ? "WebGPU" : "CPU / WASM"} · ${Math.round(fraction * 100)}%`,
 							cancel,
 						});
 					},

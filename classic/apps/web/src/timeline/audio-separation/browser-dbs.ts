@@ -5,6 +5,8 @@ const sourceRate = 48_000;
 const modelRate = 44_100;
 const stemNames = ["music", "effects", "dialogue"] as const;
 type ChannelPair = [Float32Array, Float32Array];
+export type DbsProvider = "wasm" | "webgpu";
+type Progress = (fraction: number, provider: DbsProvider) => void;
 
 async function readAudio({
 	asset,
@@ -75,14 +77,42 @@ async function readAudio({
 	}
 }
 
-function infer({
+async function infer({
 	channels,
 	signal,
 	onProgress,
 }: {
 	channels: ChannelPair;
 	signal: AbortSignal;
-	onProgress: (fraction: number) => void;
+	onProgress: Progress;
+}): Promise<ChannelPair[]> {
+	if (navigator.gpu) {
+		try {
+			return await runInference({
+				channels,
+				signal,
+				onProgress,
+				provider: "webgpu",
+			});
+		} catch {
+			signal.throwIfAborted();
+			// A fresh worker releases GPU resources and can retry on the original
+			// PCM without involving any network inference endpoint.
+		}
+	}
+	return runInference({ channels, signal, onProgress, provider: "wasm" });
+}
+
+function runInference({
+	channels,
+	signal,
+	onProgress,
+	provider,
+}: {
+	channels: ChannelPair;
+	signal: AbortSignal;
+	onProgress: Progress;
+	provider: DbsProvider;
 }): Promise<ChannelPair[]> {
 	signal.throwIfAborted();
 	const worker = new Worker(
@@ -100,6 +130,14 @@ function infer({
 			reject(error);
 		};
 		const abort = () => fail(signal.reason);
+		const runTimeout = () =>
+			setTimeout(
+				() =>
+					fail(
+						new Error("DBS-TIGER exceeded the browser processing time limit"),
+					),
+				provider === "webgpu" ? 90_000 : 15 * 60_000,
+			);
 		let timeout = setTimeout(
 			() => fail(new Error("DBS-TIGER worker did not start")),
 			20_000,
@@ -117,17 +155,14 @@ function infer({
 		>) => {
 			if ("ready" in data) {
 				clearTimeout(timeout);
-				timeout = setTimeout(
-					() =>
-						fail(
-							new Error("DBS-TIGER exceeded the browser processing time limit"),
-						),
-					15 * 60_000,
-				);
+				timeout = runTimeout();
 				try {
+					onProgress(0, provider);
 					worker.postMessage(
-						channels,
-						channels.map((channel) => channel.buffer),
+						{ channels, provider },
+						provider === "wasm"
+							? channels.map((channel) => channel.buffer)
+							: [],
 					);
 				} catch (error) {
 					fail(error);
@@ -135,7 +170,11 @@ function infer({
 			} else if ("error" in data) {
 				fail(new Error(data.error));
 			} else if ("progress" in data) {
-				onProgress(data.progress);
+				if (provider === "webgpu") {
+					clearTimeout(timeout);
+					timeout = runTimeout();
+				}
+				onProgress(data.progress, provider);
 			} else {
 				close();
 				resolve(data.stems);
@@ -211,7 +250,7 @@ export async function separateBrowserAudio({
 	frames: number;
 	leadingFrames: number;
 	signal: AbortSignal;
-	onProgress: (fraction: number) => void;
+	onProgress: Progress;
 }): Promise<FormData> {
 	signal.throwIfAborted();
 	const length = frames - leadingFrames;

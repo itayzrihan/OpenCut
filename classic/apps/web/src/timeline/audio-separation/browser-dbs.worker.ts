@@ -1,3 +1,5 @@
+import type { DbsProvider } from "./browser-dbs";
+
 const bins = 1025;
 const hop = 512;
 const chunk = 6 * 44_100;
@@ -11,7 +13,11 @@ type Ort = {
 	InferenceSession: {
 		create(
 			model: string,
-			options: { executionProviders: string[] },
+			options: {
+				executionProviders: DbsProvider[];
+				graphOptimizationLevel?: "basic";
+				freeDimensionOverrides?: { time: number };
+			},
 		): Promise<{
 			run(input: { spectrum: Tensor }): Promise<{ stems: Tensor }>;
 			release(): Promise<void>;
@@ -19,7 +25,12 @@ type Ort = {
 	};
 };
 
-async function separate(channels: [Float32Array, Float32Array]) {
+type InferenceRequest = {
+	channels: [Float32Array, Float32Array];
+	provider: DbsProvider;
+};
+
+async function separate({ channels, provider }: InferenceRequest) {
 	for (const channel of channels) {
 		for (let i = 0; i < channel.length; i++) {
 			if (!Number.isFinite(channel[i])) channel[i] = 0;
@@ -31,13 +42,28 @@ async function separate(channels: [Float32Array, Float32Array]) {
 		() => [new Float32Array(length), new Float32Array(length)] as const,
 	);
 	if (channels.every((channel) => !channel.some(Boolean))) return output;
-	const ort: Ort = await import(
-		/* webpackIgnore: true */ `${root}ort.wasm.min.mjs`
-	);
-	ort.env.wasm.wasmPaths = new URL("/onnxruntime/", self.location.href).href;
+	const gpu = provider === "webgpu";
+	if (gpu) {
+		const adapter = await navigator.gpu?.requestAdapter();
+		if (!adapter || adapter.info?.isFallbackAdapter)
+			throw new Error("Hardware WebGPU is unavailable");
+	}
+	const runtime = gpu ? "webgpu/ort.webgpu.min.mjs" : "ort.wasm.min.mjs";
+	const ort: Ort = await import(/* webpackIgnore: true */ `${root}${runtime}`);
+	ort.env.wasm.wasmPaths = new URL(
+		gpu ? `${root}webgpu/` : "/onnxruntime/",
+		self.location.href,
+	).href;
 	ort.env.wasm.numThreads = 1;
+	// All windows in one job have the same spectral length. Supplying it
+	// before optimization folds the large graph's time-dependent shape math.
+	const size = length > stride && length < chunk ? length : chunk;
+	const time = Math.floor(size / hop) + 1;
 	const session = await ort.InferenceSession.create(`${root}dbs-tiger.onnx`, {
-		executionProviders: ["wasm"],
+		executionProviders: [provider],
+		...(gpu
+			? { graphOptimizationLevel: "basic", freeDimensionOverrides: { time } }
+			: {}),
 	});
 	const { DbsSpectrum } = await import(
 		/* webpackMode: "eager" */ "opencut-wasm"
@@ -48,8 +74,6 @@ async function separate(channels: [Float32Array, Float32Array]) {
 		const weights = new Uint8Array(length);
 		for (let start = 0; start < length; start += stride) {
 			const valid = Math.min(length - start, chunk);
-			const size =
-				start === 0 && length > stride && length < chunk ? valid : chunk;
 			for (let channel = 0; channel < (same ? 1 : 2); channel++) {
 				const input = new Float32Array(size);
 				input.set(channels[channel].subarray(start, start + valid));
@@ -62,12 +86,7 @@ async function separate(channels: [Float32Array, Float32Array]) {
 					if (spectrum[i] === 0 && spectrum[i + plane] === 0)
 						spectrum[i] = 1e-12;
 				}
-				const tensor = new ort.Tensor("float32", spectrum, [
-					1,
-					2,
-					bins,
-					Math.floor(size / hop) + 1,
-				]);
+				const tensor = new ort.Tensor("float32", spectrum, [1, 2, bins, time]);
 				try {
 					const { stems } = await session.run({ spectrum: tensor });
 					try {
@@ -105,9 +124,7 @@ async function separate(channels: [Float32Array, Float32Array]) {
 	}
 }
 
-self.onmessage = async ({
-	data,
-}: MessageEvent<[Float32Array, Float32Array]>) => {
+self.onmessage = async ({ data }: MessageEvent<InferenceRequest>) => {
 	try {
 		const stems = await separate(data);
 		self.postMessage(
