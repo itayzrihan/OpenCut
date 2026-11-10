@@ -17,6 +17,7 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 		__opencutAccountId: "alice",
 		localStorage: {
 			getItem: (key: string) => saved.get(key) ?? null,
+			// eslint-disable-next-line opencut/prefer-object-params -- Browser Storage.setItem requires positional key and value arguments.
 			setItem: (key: string, value: string) => saved.set(key, value),
 		},
 		location: {
@@ -45,13 +46,13 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 	});
 	try {
 		const alice = prepareClientAiPairing();
-		saveAgentModelPreference({ model: "agent-test", reasoningEffort: "high" });
+		saveAgentModelPreference({ model: "test/vision-selected", reasoningEffort: "high" });
 		await aiClientFetch({ path: "/api/ai/chat", init: { method: "POST", body: "{}" } });
 		expect(requests[0].url).toBe("/api/ai/chat");
 		expect(requests[0].headers.get("authorization")).toBeNull();
 		expect(requests[0].headers.get("x-opencut-account")).toBe("alice");
 		expect(JSON.parse(String(requests[0].body))).toEqual({
-			model: "agent-test",
+			model: "test/vision-selected",
 			reasoningEffort: "high",
 		});
 		win.__opencutAccountId = "bob";
@@ -72,7 +73,7 @@ test("browser AI uses authenticated same-origin requests and discards responses 
 			throw new TypeError("network unavailable");
 		});
 		await expect(aiClientFetch({ path: "/api/ai/chat" })).rejects.toThrow(
-			"Could not reach OpenCut",
+			"Could not reach POCUT",
 		);
 		expect(requests).toHaveLength(2);
 		win.__opencutAccountId = "";

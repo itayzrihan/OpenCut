@@ -483,9 +483,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 				</div>
 				{!oauth.status?.authenticated && (
 					<Button variant="outline" onClick={() => void oauth.login()}>
-						<UiMessage
-							text={"Connect ChatGPT to The Director through the Agent"}
-						/>
+						<UiMessage text={"Connect AI to The Director through the Agent"} />
 					</Button>
 				)}
 				<div className="space-y-3" aria-live="polite">
@@ -776,7 +774,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					<p className="text-xs text-muted-foreground">
 						<UiMessage
 							text={
-								"The Agent connection to ChatGPT supports text direction. You can upload an existing image as a storyboard."
+								"The Agent's AI connection supports text direction and reference analysis. Upload storyboard images or export a scene plan as PDF; this connection does not generate images."
 							}
 						/>
 					</p>
