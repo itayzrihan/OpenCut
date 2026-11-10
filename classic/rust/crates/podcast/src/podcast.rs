@@ -1,3 +1,5 @@
+mod dbs_spectrum;
+pub use dbs_spectrum::DbsSpectrum;
 mod camera_groups;
 pub use camera_groups::*;
 mod advanced;

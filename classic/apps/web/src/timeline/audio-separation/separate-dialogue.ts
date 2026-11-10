@@ -1,3 +1,4 @@
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { toast } from "@/i18n/toast";
 import type { EditorCore } from "@/core";
 import { getClipAudioTiming } from "@/media/audio-sync";
@@ -13,6 +14,7 @@ import type { UploadAudioElement } from "../types";
 
 const sampleRate = 48_000;
 const active = new Set<string>();
+let activeBrowserJob = false;
 const tracks = [
 	["background", "Music + effects"],
 	["dialogue", "Speech"],
@@ -96,35 +98,46 @@ export async function separateDialogue({
 		throw new Error("Select a clip with up to 30 seconds of source audio");
 	const key = `${accountId}:${projectId}:${element.id}`;
 	if (active.has(key)) return;
+	const browser = isHostedBrowserWorkspace();
+	if (browser && activeBrowserJob)
+		throw new Error("Wait for the current local speech separation to finish");
+	if (browser) activeBrowserJob = true;
 	active.add(key);
 	const controller = new AbortController();
+	const cancel = { label: "Cancel", onClick: () => controller.abort() };
 	const toastId = toast.loading("Separating speech locally with DBS-TIGER…", {
-		cancel: { label: "Cancel", onClick: () => controller.abort() },
+		cancel,
 	});
 	const imported: MediaAsset[] = [];
 	const staged: string[] = [];
 	let published = false;
 	try {
-		const response = await fetch("/api/audio-separation", {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-				"X-OpenCut-Account": accountId,
-			},
-			body: JSON.stringify({
-				projectId,
-				mediaId: source.id,
-				sourceStart: timing.trimStart,
-				frames,
-				leadingFrames,
-			}),
-			signal: controller.signal,
-		});
-		if (!response.ok) {
-			const body: { error?: string } = await response.json().catch(() => ({}));
-			throw new Error(body.error || "DBS-TIGER could not separate the clip");
-		}
-		const stems = await response.formData();
+		const stems = browser
+			? await (
+					await import("./browser-dbs")
+				).separateBrowserAudio({
+					asset: source,
+					start: timing.trimStart,
+					frames,
+					leadingFrames,
+					signal: controller.signal,
+					onProgress: (fraction) => {
+						toast.loading("Separating speech locally with DBS-TIGER…", {
+							id: toastId,
+							description: `${Math.round(fraction * 100)}%`,
+							cancel,
+						});
+					},
+				})
+			: await requestDesktopStems({
+					accountId,
+					projectId,
+					mediaId: source.id,
+					sourceStart: timing.trimStart,
+					frames,
+					leadingFrames,
+					signal: controller.signal,
+				});
 		assertCurrent();
 		for (const [key, label] of mode === "split" ? tracks.slice(0, 2) : tracks) {
 			const blob = stems.get(key);
@@ -203,5 +216,35 @@ export async function separateDialogue({
 			);
 		}
 		active.delete(key);
+		if (browser) activeBrowserJob = false;
 	}
+}
+
+async function requestDesktopStems({
+	accountId,
+	signal,
+	...clip
+}: {
+	accountId: string;
+	projectId: string;
+	mediaId: string;
+	sourceStart: number;
+	frames: number;
+	leadingFrames: number;
+	signal: AbortSignal;
+}) {
+	const response = await fetch("/api/audio-separation", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-OpenCut-Account": accountId,
+		},
+		body: JSON.stringify(clip),
+		signal,
+	});
+	if (!response.ok) {
+		const body: { error?: string } = await response.json().catch(() => ({}));
+		throw new Error(body.error || "DBS-TIGER could not separate the clip");
+	}
+	return response.formData();
 }
