@@ -1,9 +1,10 @@
 /** HTTP/credential adapter only. Canonical editing state lives in Rust. */
-import { writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
+import lockfile from "proper-lockfile";
 import type { DirectorJob, DirectorReference } from "../types";
-import { REPLACE_IMAGE_MODEL, REPLACE_MAX_REFERENCES, REPLACE_VIDEO_MODEL } from "../replace-model";
+import { REPLACE_MAX_REFERENCES, REPLACE_VIDEO_MODEL } from "../replace-model";
 import {
 	supportsSeamless,
 	type VideoGenerationModel,
@@ -36,28 +37,50 @@ const targetId = z.string().min(1).max(256);
 const settingsSchema = z
 	.object({
 		projectId: z.string().min(1).max(256),
+		operationId: z
+			.string()
+			.regex(/^[A-Za-z0-9_-]{1,128}$/)
+			.optional(),
 		kind: z.enum(["video", "storyboard"]),
 		model: z.string().min(1).max(200),
 		prompt: z
 			.string()
 			.max(100_000)
 			.refine((prompt) => !!prompt.trim()),
-		duration: z.number().int().min(1).max(30).optional(),
-		resolution: z.enum(["480p", "720p", "1080p"]).optional(),
+		duration: z.number().int().min(1).max(120).optional(),
+		videoMode: z.enum(["text", "references", "frames"]).optional(),
+		chapter: z
+			.object({
+				planId: z.string().min(1).max(128),
+				planVersion: z.number().int().positive(),
+				chapterId: z.string().min(1).max(128),
+				index: z.number().int().min(0).max(31),
+				total: z.number().int().min(1).max(32),
+				title: z.string().min(1).max(200),
+				sourceStartMs: z.number().int().nonnegative().max(86400000).optional(),
+				sourceEndMs: z.number().int().positive().max(86400000).optional(),
+				timingEstimated: z.boolean().optional(),
+			})
+			.strict()
+			.optional(),
+		resolution: z.string().min(1).max(30).optional(),
 		aspectRatio: z
 			.enum(["9:16", "16:9", "4:3", "3:4", "1:1", "21:9", "9:21"])
 			.optional(),
 		referenceIds: z.array(z.string().regex(/^[a-f0-9]{32}$/)).max(12),
 		httpsReferences: z.record(z.string(), z.string().url()).optional(),
 		referenceImage: z.literal(true).optional(),
-		replacement: z.object({
-			sceneId: targetId,
-			trackId: targetId,
-			elementId: targetId,
-			anchor: z.string().regex(/^[a-f0-9]{64}$/),
-			durationTicks: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
-			mode: z.enum(["full", "refine"]),
-		}).strict().optional(),
+		replacement: z
+			.object({
+				sceneId: targetId,
+				trackId: targetId,
+				elementId: targetId,
+				anchor: z.string().regex(/^[a-f0-9]{64}$/),
+				durationTicks: z.number().int().min(1).max(Number.MAX_SAFE_INTEGER),
+				mode: z.enum(["full", "refine"]),
+			})
+			.strict()
+			.optional(),
 		seamless: z
 			.object({
 				sceneId: targetId,
@@ -78,6 +101,48 @@ export async function models(net: Fetcher = fetch): Promise<Model[]> {
 	});
 	if (!r.ok) throw new Error("Video model catalog unavailable");
 	return (await r.json()).data;
+}
+export interface ImageGenerationModel {
+	id: string;
+	name: string;
+	inputModalities: string[];
+	outputModalities: string[];
+}
+export async function imageModels(
+	net: Fetcher = fetch,
+): Promise<ImageGenerationModel[]> {
+	const response = await net(API + "/models", {
+		redirect: "error",
+		signal: AbortSignal.timeout(20000),
+	});
+	if (!response.ok) throw new Error("Image model catalog unavailable");
+	const catalog = z
+		.object({
+			data: z.array(
+				z.object({
+					id: z.string(),
+					name: z.string().optional(),
+					architecture: z.object({
+						input_modalities: z.array(z.string()),
+						output_modalities: z.array(z.string()),
+					}),
+					endpoints: z.array(z.string()).optional(),
+				}),
+			),
+		})
+		.parse(await response.json());
+	return catalog.data
+		.filter(
+			(m) =>
+				m.architecture.output_modalities.includes("image") &&
+				m.endpoints?.includes("/api/v1/chat/completions"),
+		)
+		.map((m) => ({
+			id: m.id,
+			name: m.name ?? m.id,
+			inputModalities: m.architecture.input_modalities,
+			outputModalities: m.architecture.output_modalities,
+		}));
 }
 async function bodyBytes({
 	r,
@@ -148,16 +213,21 @@ export async function prepare({
 		i.replacement &&
 		(i.kind !== "video" ||
 			i.model !== REPLACE_VIDEO_MODEL ||
-			i.seamless || i.httpsReferences || i.referenceImage ||
+			i.seamless ||
+			i.httpsReferences ||
+			i.referenceImage ||
 			i.referenceIds.length > REPLACE_MAX_REFERENCES ||
 			new Set(i.referenceIds).size !== i.referenceIds.length ||
 			(i.replacement.mode === "refine" && i.referenceIds.length === 0))
 	)
-		throw new Error("Replace requires Wan 3.0 and up to ten distinct image references");
+		throw new Error(
+			"Replace requires Wan 3.0 and up to ten distinct image references",
+		);
 	if (
 		i.referenceImage &&
-		(i.kind !== "storyboard" || i.model !== REPLACE_IMAGE_MODEL ||
-			i.referenceIds.length > REPLACE_MAX_REFERENCES || i.httpsReferences)
+		(i.kind !== "storyboard" ||
+			i.referenceIds.length > REPLACE_MAX_REFERENCES ||
+			i.httpsReferences)
 	)
 		throw new Error("Unsupported replacement reference image request");
 	if (
@@ -169,15 +239,22 @@ export async function prepare({
 			i.seamless.leftId === i.seamless.rightId)
 	)
 		throw new Error("Seamless Connect requires two distinct boundary images");
-	if (
-		!i.seamless && !i.replacement &&
-		((i.duration !== undefined && i.duration < 4) ||
-			i.resolution === "1080p" ||
-			i.aspectRatio === "9:21")
-	)
-		throw new Error("Unsupported Director generation settings");
 	const chatgpt =
 		i.kind === "storyboard" && i.model === CHATGPT_STORYBOARD_MODEL;
+	const imageModel =
+		i.kind === "storyboard" && !chatgpt
+			? (await imageModels(net)).find((model) => model.id === i.model)
+			: undefined;
+	if (
+		i.kind === "storyboard" &&
+		!chatgpt &&
+		(!imageModel ||
+			(i.referenceIds.length > 0 &&
+				!imageModel.inputModalities.includes("image")))
+	)
+		throw new Error(
+			"Selected image model is unavailable or does not accept these references. Refresh the live catalog.",
+		);
 	const refs = [];
 	const bindings = [];
 	const imageUrls: string[] = [];
@@ -264,15 +341,22 @@ export async function prepare({
 		}
 		bindings.push({ type: ref.kind + "_url", [ref.kind + "_url"]: { url } });
 	}
+	const mode = i.seamless
+		? "frames"
+		: (i.videoMode ?? (refs.length ? "references" : "text"));
 	if (
 		i.kind === "video" &&
-		!i.seamless &&
-		!i.replacement &&
-		!refs.some((r) => r.storyboard && r.kind === "image")
+		((mode === "text" && refs.length > 0) ||
+			(mode === "references" && refs.length === 0) ||
+			(mode === "frames" &&
+				(refs.length < 1 ||
+					refs.length > 2 ||
+					refs.some((r) => r.kind !== "image"))))
 	)
 		throw new Error(
-			"Attach a physical storyboard image before preparing a video",
+			"Choose either text only, references, or one/two exact frame images; these modes cannot be combined",
 		);
+
 	let body: Record<string, unknown>;
 	if (i.kind === "video") {
 		const catalog = await models(net);
@@ -280,6 +364,10 @@ export async function prepare({
 		if (
 			!model ||
 			(i.seamless && !supportsSeamless(model)) ||
+			(mode === "frames" &&
+				(!model.supported_frame_images?.includes("first_frame") ||
+					(refs.length === 2 &&
+						!model.supported_frame_images?.includes("last_frame")))) ||
 			!model.supported_durations?.includes(i.duration ?? 0) ||
 			!model.supported_resolutions?.includes(i.resolution ?? "") ||
 			!model.supported_aspect_ratios?.includes(i.aspectRatio ?? "")
@@ -293,15 +381,18 @@ export async function prepare({
 			duration: i.duration,
 			resolution: i.resolution,
 			aspect_ratio: i.aspectRatio,
-			generate_audio: !i.seamless && !i.replacement,
-			...(i.seamless
+			generate_audio:
+				!i.seamless && !i.replacement && model.generate_audio !== false,
+			...(mode === "frames"
 				? {
 						frame_images: bindings.map((image, index) => ({
 							...image,
 							frame_type: index === 0 ? "first_frame" : "last_frame",
 						})),
 					}
-				: bindings.length ? { input_references: bindings } : {}),
+				: bindings.length
+					? { input_references: bindings }
+					: {}),
 		};
 	} else if (chatgpt) {
 		body = {
@@ -328,7 +419,9 @@ export async function prepare({
 	} else {
 		body = {
 			model: i.model,
-			modalities: ["image", "text"],
+			modalities: imageModel!.outputModalities.filter(
+				(m) => m === "image" || m === "text",
+			),
 			messages: [
 				{
 					role: "user",
@@ -339,7 +432,9 @@ export async function prepare({
 	}
 	const bytes = JSON.stringify(body),
 		j: DirectorJob = {
-			id: store.id(),
+			id: i.operationId
+				? store.sha(i.projectId + "\0" + i.operationId).slice(0, 32)
+				: store.id(),
 			projectId: i.projectId,
 			kind: i.kind,
 			status: "review",
@@ -350,6 +445,8 @@ export async function prepare({
 			...(i.seamless ? { seamless: i.seamless } : {}),
 			...(i.replacement ? { replacement: i.replacement } : {}),
 			...(i.referenceImage ? { referenceImage: i.referenceImage } : {}),
+			...(i.kind === "video" ? { videoMode: mode } : {}),
+			...(i.chapter ? { chapter: i.chapter } : {}),
 			duration: i.duration,
 			resolution: i.resolution,
 			aspectRatio: i.aspectRatio,
@@ -360,9 +457,50 @@ export async function prepare({
 				: "Review the exact request, references and cost before approving with your PIN.",
 		};
 	const directory = store.jobRoot({ root: root, jobId: j.id });
-	await store.saveJson({ root: directory, name: "payload.json", value: body });
-	await store.saveJson({ root: directory, name: "review.json", value: j });
-	return j;
+	await mkdir(directory, { recursive: true, mode: 0o700 });
+	const release = await lockfile.lock(directory, {
+		realpath: false,
+		retries: 3,
+	});
+	try {
+		if (i.operationId) {
+			try {
+				const old = await store.json<DirectorJob>({
+					root: directory,
+					name: "review.json",
+				});
+				if (
+					old.projectId !== j.projectId ||
+					old.digest !== j.digest ||
+					JSON.stringify(old.chapter) !== JSON.stringify(j.chapter) ||
+					JSON.stringify(old.seamless) !== JSON.stringify(j.seamless) ||
+					JSON.stringify(old.replacement) !== JSON.stringify(j.replacement)
+				)
+					throw new Error(
+						"Generation operation ID already has a different frozen request",
+					);
+				return old;
+			} catch (error) {
+				if (
+					!(
+						error instanceof Error &&
+						"code" in error &&
+						error.code === "ENOENT"
+					)
+				)
+					throw error;
+			}
+		}
+		await store.saveJson({
+			root: directory,
+			name: "payload.json",
+			value: body,
+		});
+		await store.saveJson({ root: directory, name: "review.json", value: j });
+		return j;
+	} finally {
+		await release();
+	}
 }
 
 type ChatGptGenerator = (body: Record<string, unknown>) => Promise<Buffer>;
@@ -376,6 +514,7 @@ export async function approve({
 	pin,
 	digest,
 	authorizeChatGpt,
+	waitForCompletion = false,
 	net = fetch,
 }: {
 	root: string;
@@ -384,6 +523,7 @@ export async function approve({
 	pin: unknown;
 	digest: string;
 	authorizeChatGpt?: () => Promise<ChatGptGenerator>;
+	waitForCompletion?: boolean;
 	net?: Fetcher;
 }) {
 	const token = root + "/" + jobId;
@@ -441,7 +581,24 @@ export async function approve({
 				throw error;
 			}
 		} else {
-			await vault.unlock({ root: root, pin: pin });
+			await vault.unlock({ root, pin });
+			// One durable claim per frozen paid request across processes and restarts.
+			try {
+				await writeFile(join(directory, "provider-approval"), digest, {
+					flag: "wx",
+					mode: 0o600,
+				});
+			} catch (error) {
+				if (
+					error instanceof Error &&
+					"code" in error &&
+					error.code === "EEXIST"
+				)
+					throw new Error(
+						"This paid request was already claimed. Check provider activity; it will not be submitted again.",
+					);
+				throw error;
+			}
 		}
 		j.status = "submitting";
 		j.message = generate
@@ -457,6 +614,7 @@ export async function approve({
 			.catch(() => {
 				// The durable submitting state is reconciled on the next status read.
 			});
+		if (waitForCompletion) await submission;
 		return j;
 	} finally {
 		approvals.delete(token);
@@ -525,9 +683,10 @@ async function submit({
 			const image =
 				typeof url === "string" &&
 				/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/.exec(url);
-			if (!image)
-				throw new Error("Image provider returned no inline image");
-			const imageName = j.referenceImage ? "Replace reference image" : "Director storyboard";
+			if (!image) throw new Error("Image provider returned no inline image");
+			const imageName = j.referenceImage
+				? "Replace reference image"
+				: "Director storyboard";
 			j.output = await store.artifact({
 				root: root,
 				projectId: j.projectId,
@@ -660,13 +819,44 @@ async function monitor({
 export async function resume({
 	root,
 	projectId,
+	net = fetch,
 }: {
 	root: string;
 	projectId: string;
+	net?: Fetcher;
 }) {
 	for (const j of await store.jobs({ root: root, projectId: projectId })) {
 		const token = root + "/" + j.id;
-		if (workers.has(token)) continue;
+		if (workers.has(token) || approvals.has(token)) continue;
+		if (j.status === "review") {
+			let claimed = false;
+			try {
+				await access(
+					join(store.jobRoot({ root, jobId: j.id }), "provider-approval"),
+				);
+				claimed = true;
+			} catch (error) {
+				if (
+					!(
+						error instanceof Error &&
+						"code" in error &&
+						error.code === "ENOENT"
+					)
+				)
+					throw error;
+			}
+			if (claimed) {
+				j.status = "uncertain";
+				j.message =
+					"Approval was interrupted before a receipt was recorded. Check provider activity; this request will not be submitted again.";
+				await store.saveJson({
+					root: store.jobRoot({ root, jobId: j.id }),
+					name: "review.json",
+					value: j,
+				});
+				continue;
+			}
+		}
 		if (
 			failedVideoStatuses.some(
 				(status) =>
@@ -695,7 +885,7 @@ export async function resume({
 			["pending", "processing", "session_expired", "error"].includes(j.status)
 		) {
 			workers.add(token);
-			void monitor({ root: root, j: j, net: fetch }).finally(() =>
+			void monitor({ root: root, j: j, net }).finally(() =>
 				workers.delete(token),
 			);
 		} else if (j.status === "submitting") {

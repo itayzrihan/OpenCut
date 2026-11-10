@@ -158,7 +158,10 @@ impl RuntimeAgent {
                 continue;
             }
             for artifact_id in receipt.artifact_ids.iter().rev() {
-                if images >= 2 || !seen.insert(artifact_id) {
+                // Source-video inspection returns up to eight small frames.
+                // Keep the shared binary budget (including user attachments)
+                // authoritative while allowing the model to see every sample.
+                if images >= 8 || !seen.insert(artifact_id) {
                     continue;
                 }
                 let Ok(stored) = self.runtime.artifacts().get(artifact_id) else {

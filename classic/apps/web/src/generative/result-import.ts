@@ -87,9 +87,11 @@ export async function importDirectorResult({
 				if (applyReplacement({ editor, job, mediaId }))
 					notify("Clip replaced at its original duration");
 			} catch {
-				notifyWarning("The replacement is in Media. The original clip was left in place.");
+				notifyWarning(
+					"The replacement is in Media. The original clip was left in place.",
+				);
 			}
-		} else if (job.seamless) {
+		} else if (job.seamless && !job.batchId) {
 			try {
 				if (insertSeamless({ editor, job, mediaId }))
 					notify("Seamless Connect inserted on the timeline");
@@ -100,10 +102,11 @@ export async function importDirectorResult({
 			}
 		} else
 			notify(
-				job.referenceImage ? "Replacement reference image is ready"
-				: job.kind === "storyboard"
-					? "Director storyboard ready for review"
-					: "Generated video added to Media",
+				job.referenceImage
+					? "Replacement reference image is ready"
+					: job.kind === "storyboard"
+						? "Director storyboard ready for review"
+						: "Generated video added to Media",
 			);
 	} finally {
 		imports.delete(key);

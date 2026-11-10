@@ -20,6 +20,8 @@ pub fn register_editor_host_capabilities(
     crate::register_earshot_preview(runtime, bridge)?;
     crate::register_classic_automation_host(runtime, bridge)?;
     crate::register_generative_host(runtime, bridge)?;
+    crate::register_audio_production_host(runtime, bridge)?;
+    crate::register_production_video(runtime, bridge)?;
     crate::register_peer_media(runtime, bridge)?;
     crate::register_editor_render_capabilities(runtime, bridge)
 }

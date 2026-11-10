@@ -11,7 +11,14 @@ const envelope = z
 		expectedRevision: z.number().int().nonnegative(),
 		operationId: z.string(),
 		operation: z
-			.object({ type: z.enum(["importReference", "prepare", "status"]) })
+			.object({
+				type: z.enum([
+					"importReference",
+					"prepare",
+					"prepareChapters",
+					"status",
+				]),
+			})
 			.passthrough(),
 	})
 	.strict();
@@ -29,6 +36,14 @@ const replySchema = z
 			})
 			.nullable(),
 		jobs: z.array(z.unknown()).max(200),
+		batch: z
+			.object({
+				id: z.string(),
+				planId: z.string(),
+				version: z.number().int(),
+				jobIds: z.array(z.string()).max(32),
+			})
+			.optional(),
 	})
 	.strict();
 /** No arbitrary endpoint/action forwarding. This adapter cannot submit paid work. */
@@ -85,9 +100,20 @@ export async function performGenerativeReviewEffect({
 		throw new Error("Director MCP reply scope changed");
 	if (i.operation.type !== "status") {
 		if (out.job)
-			useDirectorReviewFocus
-				.getState()
-				.reveal({ accountId, projectId: i.projectId, jobId: out.job.id });
+			useDirectorReviewFocus.getState().reveal({
+				accountId,
+				projectId: i.projectId,
+				jobId: out.job.id,
+				surface: "agent",
+			});
+		if (out.batch)
+			useDirectorReviewFocus.getState().reveal({
+				accountId,
+				projectId: i.projectId,
+				jobId: out.batch.jobIds[0],
+				batchId: out.batch.id,
+				surface: "agent",
+			});
 		useAssetsPanelStore.getState().setActiveTab("generative");
 	}
 	return { type: "success", data: out };

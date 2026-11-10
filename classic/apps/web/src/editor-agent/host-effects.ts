@@ -47,6 +47,32 @@ export async function performHostEffect({
 	editor?: EditorCore;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
+	if (effect.adapter === "productionVideoFrames") {
+		if (!editor)
+			return {
+				type: "rejected",
+				message: "The scoped video inspection editor is unavailable",
+			};
+		const { performProductionVideoInspection } =
+			await import("@/production-studio/video-inspection");
+		return performProductionVideoInspection({
+			effect,
+			editor,
+			accountId,
+			signal,
+		});
+	}
+	if (effect.adapter === "audioProduction") {
+		const { performAudioProductionEffect } =
+			await import("@/audio-production/host-effect");
+		return performAudioProductionEffect({
+			effect,
+			accountId,
+			signal,
+			activeProjectId,
+			currentRevision,
+		});
+	}
 	if (effect.adapter === "hyperframesEmbedding" && isHostedBrowserWorkspace()) {
 		return {
 			type: "rejected",
@@ -126,6 +152,18 @@ export async function performHostEffect({
 				type: "rejected",
 				message: "The scoped image artifact host is unavailable",
 			};
+		const { readLocalProvider } = await import("@/ai/local-connection");
+		if (readLocalProvider() === "codex") {
+			const { performNativeImageEffect } =
+				await import("@/ai/native-image-effect");
+			return performNativeImageEffect({
+				effect,
+				accountId,
+				signal,
+				scopeIsCurrent,
+				storeImage,
+			});
+		}
 		const response = await fetch("/api/editor-agent/subscription-image", {
 			method: "POST",
 			credentials: "same-origin",

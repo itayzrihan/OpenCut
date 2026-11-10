@@ -1,8 +1,12 @@
 import { z } from "zod";
 import type { EditorCore } from "@/core";
-import type { TimelineElement, TimelineTrack, VideoElement } from "@/timeline/types";
+import type {
+	TimelineElement,
+	TimelineTrack,
+	VideoElement,
+} from "@/timeline/types";
 import { TICKS_PER_SECOND } from "@/wasm";
-import { api, scope, uploadDirectorReference } from "./client";
+import { api, canonical, scope, uploadDirectorReference } from "./client";
 import type { DirectorJob, SeamlessTarget } from "./types";
 import type { VideoGenerationModel } from "./seamless-models";
 
@@ -30,7 +34,8 @@ export function getSeamlessPair(
 		first.element.type !== "video" ||
 		second.element.type !== "video" ||
 		first.track.id !== second.track.id
-	) return null;
+	)
+		return null;
 	const [left, right] =
 		first.element.startTime <= second.element.startTime
 			? [first.element, second.element]
@@ -135,7 +140,12 @@ export async function prepareSeamless({
 		["Outgoing last frame.jpg", first.blob],
 		["Incoming first frame.jpg", last.blob],
 	] as const) {
-		const reference = await uploadDirectorReference({ ...original, file: frame, name, signal });
+		const reference = await uploadDirectorReference({
+			...original,
+			file: frame,
+			name,
+			signal,
+		});
 		referenceIds.push(reference.id);
 		check();
 	}
@@ -150,7 +160,10 @@ export async function prepareSeamless({
 				model: model.id,
 				duration,
 				resolution,
-				aspectRatio: nearestVideoAspect({ ...project.settings.canvasSize, model }),
+				aspectRatio: nearestVideoAspect({
+					...project.settings.canvasSize,
+					model,
+				}),
 				prompt: prompt.trim() || defaultSeamlessPrompt,
 				referenceIds,
 				seamless: { ...target, anchor },
@@ -198,6 +211,93 @@ export function insertSeamless({
 			...job.seamless,
 			mediaId,
 			duration: Math.min(sourceTicks, requestedTicks),
+		},
+	});
+	return true;
+}
+
+export type SeamlessSelection = { pairs: SeamlessPair[] };
+/** Selection only; canonical pair planning validates adjacency and locked layers. */
+export function getSeamlessSelection(
+	entries: { track: TimelineTrack; element: TimelineElement }[],
+): SeamlessSelection | null {
+	if (entries.length < 2 || entries.length > 33) return null;
+	const ordered = [...entries].sort(
+		(a, b) => a.element.startTime - b.element.startTime,
+	);
+	const pairs: SeamlessPair[] = [];
+	for (let index = 1; index < ordered.length; index++) {
+		const pair = getSeamlessPair([ordered[index - 1], ordered[index]]);
+		if (!pair) return null;
+		pairs.push(pair);
+	}
+	return { pairs };
+}
+export function insertSeamlessBatch({
+	editor,
+	jobs,
+}: {
+	editor: EditorCore;
+	jobs: DirectorJob[];
+}) {
+	const current = scope(editor);
+	const sceneId = editor.scenes.getActiveSceneOrNull()?.id;
+	const document = canonical({ editor }).document;
+	if (
+		!jobs.length ||
+		jobs.length > 10 ||
+		!sceneId ||
+		jobs.some(
+			(j) =>
+				j.projectId !== current.projectId ||
+				!j.seamless ||
+				j.seamless.sceneId !== sceneId ||
+				j.status !== "ready",
+		)
+	)
+		throw new Error("Open the original scene after every batch video is ready");
+	const batchIds = new Set(jobs.map((j) => j.batchId));
+	if (batchIds.size !== 1 || !jobs[0].batchId)
+		throw new Error("Select one complete Seamless batch");
+	const cuts = jobs.map((job) => {
+		const mediaId = document.jobs.find((j) => j.id === job.id)?.mediaId;
+		const asset = editor.media.getAssets().find((a) => a.id === mediaId);
+		if (!mediaId || !asset?.duration)
+			throw new Error("Wait for every generated video to import into Media");
+		return {
+			...job.seamless!,
+			mediaId,
+			duration: Math.min(
+				Math.round(asset.duration * TICKS_PER_SECOND),
+				Math.round((job.duration ?? 0) * TICKS_PER_SECOND),
+			),
+		};
+	});
+	const tracks = editor.scenes.getActiveScene().tracks;
+	const clips = [tracks.main, ...tracks.overlay].flatMap<TimelineElement>(
+		(t) => t.elements,
+	);
+	const inserted = cuts.filter((c) =>
+		clips.some((e) => e.type === "video" && e.mediaId === c.mediaId),
+	);
+	if (inserted.length === cuts.length) return false;
+	if (inserted.length)
+		throw new Error(
+			"Some connections were already inserted. Undo those insertions before applying the complete batch.",
+		);
+	editor.command.invokeCanonicalControl({
+		...current,
+		capabilityId: "timeline.classic.bridge.batch.insert",
+		input: {
+			sceneId,
+			cuts: cuts.map((c) => ({
+				trackId: c.trackId,
+				leftId: c.leftId,
+				rightId: c.rightId,
+				anchor: c.anchor,
+				mediaId: c.mediaId,
+				duration: c.duration,
+			})),
 		},
 	});
 	return true;

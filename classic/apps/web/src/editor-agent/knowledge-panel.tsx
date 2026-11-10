@@ -53,8 +53,16 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 					includeDisabled: true,
 				},
 				signal: controller.signal,
+			}).catch((cause: unknown) => {
+				if (
+					controller.signal.aborted ||
+					requestController.current !== controller
+				)
+					return undefined;
+				throw cause;
 			});
-			if (!mounted.current || controller.signal.aborted) return;
+			if (!response || !mounted.current || controller.signal.aborted) return;
+			setError("");
 			setRevision(response.revision);
 			setEntries(knowledgeSummarySchema.array().parse(response.data));
 		},

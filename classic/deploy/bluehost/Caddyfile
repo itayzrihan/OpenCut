@@ -32,7 +32,7 @@ pocut.vxu.me {
 		header Content-Security-Policy "sandbox; default-src 'none'"
 		import pocut-backend
 	}
-	@appApi path /api/health /api/accounts /api/accounts/legitate/start /api/accounts/legitate/callback /api/local-drive /api/editor-session /api/project-fonts /api/shared-library /api/brand-kits /api/batch-edit /api/ai/chat /api/ai/models /api/ai/oauth/status /api/editor-agent/connection /api/editor-agent/respond /api/editor-agent/harness /api/editor-agent/knowledge /api/editor-agent/hyperframes-references /api/editor-agent/owned-projects /api/generative /api/generative/share/* /api/client-review/*
+	@appApi path /api/health /api/accounts /api/accounts/legitate/start /api/accounts/legitate/callback /api/local-drive /api/editor-session /api/project-fonts /api/shared-library /api/brand-kits /api/batch-edit /api/ai/chat /api/ai/models /api/ai/oauth/status /api/editor-agent/connection /api/editor-agent/respond /api/editor-agent/harness /api/editor-agent/knowledge /api/editor-agent/hyperframes-references /api/editor-agent/owned-projects /api/generative /api/generative/mcp /api/generative/share/* /api/client-review/* /api/audio-production
 	handle @appApi {
 		import pocut-backend
 	}

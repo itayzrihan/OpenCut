@@ -5,7 +5,7 @@ import {
 } from "@/i18n/message";
 import { SmartTakesControl } from "@/timeline/smart-takes/controls";
 import { SeamlessConnectControl } from "@/generative/components/seamless-connect-control";
-import { getSeamlessPair } from "@/generative/seamless-connect";
+import { getSeamlessSelection } from "@/generative/seamless-connect";
 import {
 	useEditorHistory,
 	useEditorMediaAsset,
@@ -144,7 +144,7 @@ function ToolbarLeftSection() {
 	const selectedTimelineElements = timeline.getElementsWithTracks({
 		elements: selectedElements,
 	});
-	const bridgePair = getSeamlessPair(selectedTimelineElements);
+	const bridgePair = getSeamlessSelection(selectedTimelineElements);
 	const selectedElement =
 		selectedTimelineElements.length === 1 ? selectedTimelineElements[0] : null;
 	const hasSelectedVideo = selectedTimelineElements.some(
@@ -219,7 +219,9 @@ function ToolbarLeftSection() {
 				/>
 				{bridgePair && (
 					<SeamlessConnectControl
-						key={`${bridgePair.left.id}:${bridgePair.right.id}`}
+						key={bridgePair.pairs
+							.map((pair) => `${pair.left.id}:${pair.right.id}`)
+							.join(";")}
 						{...bridgePair}
 					/>
 				)}

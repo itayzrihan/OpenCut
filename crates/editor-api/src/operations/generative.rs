@@ -1,4 +1,5 @@
 use super::*;
+mod chapters;
 use crate::generative::{GenerativeDocument, Job, KEY, Message, Reference};
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -15,13 +16,35 @@ struct Input {
     deny_unknown_fields
 )]
 enum Change {
-    Message { message: Message },
-    Reference { reference: Reference },
-    RemoveReference { id: String },
-    Direction { text: String },
-    Transcript { text: String },
-    Job { job: Job },
-    Storyboard { storyboard: Option<crate::generative::storyboard::Storyboard> },
+    Message {
+        message: Message,
+    },
+    Reference {
+        reference: Reference,
+    },
+    RemoveReference {
+        id: String,
+    },
+    Direction {
+        text: String,
+    },
+    Transcript {
+        text: String,
+    },
+    Job {
+        job: Job,
+    },
+    ChapterBatch {
+        plan_id: String,
+        version: u32,
+        batch_id: String,
+        job_ids: Vec<String>,
+        #[serde(default)]
+        jobs: Vec<Job>,
+    },
+    Storyboard {
+        storyboard: Option<crate::generative::storyboard::Storyboard>,
+    },
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -41,25 +64,60 @@ pub(super) fn register_generative(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    chapters::register_chapters(registry, state.clone(), events.clone())?;
     let plan_state = state.clone();
     register::<ReadInput, crate::generative::storyboard::Plan, _, _>(
-        registry, DocumentSupport::Both, crate::CapabilityExecution::Immediate,
-        "project.generative.storyboard.plan", "Read the client storyboard proposal",
+        registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
+        "project.generative.storyboard.plan",
+        "Read the client storyboard proposal",
         "Project-scoped client proposal from canonical storyboard copy, or existing direction shots and storyboard sheets. Contains client descriptions and owned image references only, never internal generation prompts, credentials or provider debug metadata. Use project.generative.edit change type storyboard to prepare explicit client summaries and scene image bindings, then project.generative.storyboard.export for a PDF artifact.",
-        "generative", AccessLevel::Read, false, false, &["storyboard", "pdf", "proposal", "export"],
-        move |context, i| { let state = plan_state.clone(); async move {
-            let s = state.read().map_err(|_| CapabilityError::Failed("State lock".into()))?;
-            let p = s.document.project.as_ref().ok_or_else(|| CapabilityError::InvalidInput("Open a project".into()))?;
-            if p.id != i.project_id || i.expected_revision.is_some_and(|r| r != s.document.revision)
-                || context.metadata.get("opencut/projectId").is_some_and(|v| v.as_str() != Some(&i.project_id)) {
-                return Err(CapabilityError::Conflict("Storyboard project or revision changed".into()));
+        "generative",
+        AccessLevel::Read,
+        false,
+        false,
+        &["storyboard", "pdf", "proposal", "export"],
+        move |context, i| {
+            let state = plan_state.clone();
+            async move {
+                let s = state
+                    .read()
+                    .map_err(|_| CapabilityError::Failed("State lock".into()))?;
+                let p = s
+                    .document
+                    .project
+                    .as_ref()
+                    .ok_or_else(|| CapabilityError::InvalidInput("Open a project".into()))?;
+                if p.id != i.project_id
+                    || i.expected_revision
+                        .is_some_and(|r| r != s.document.revision)
+                    || context
+                        .metadata
+                        .get("opencut/projectId")
+                        .is_some_and(|v| v.as_str() != Some(&i.project_id))
+                {
+                    return Err(CapabilityError::Conflict(
+                        "Storyboard project or revision changed".into(),
+                    ));
+                }
+                let document: GenerativeDocument = serde_json::from_value(
+                    p.extensions
+                        .get(KEY)
+                        .cloned()
+                        .unwrap_or_else(|| serde_json::json!({})),
+                )
+                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+                let plan = crate::generative::storyboard::plan(
+                    &document,
+                    &p.id,
+                    s.document.revision,
+                    &p.name,
+                )
+                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
+                Ok(OperationSuccess::new(plan))
             }
-            let document: GenerativeDocument = serde_json::from_value(p.extensions.get(KEY).cloned().unwrap_or_else(|| serde_json::json!({})))
-                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-            let plan = crate::generative::storyboard::plan(&document, &p.id, s.document.revision, &p.name)
-                .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
-            Ok(OperationSuccess::new(plan))
-        }},
+        },
     )?;
     let read = state.clone();
     register::<ReadInput, ReadOutput, _, _>(
@@ -136,6 +194,51 @@ pub(super) fn register_generative(
                             ))
                             .map_err(|e| CapabilityError::InvalidInput(e.to_string()))?;
                         match i.change {
+                            Change::ChapterBatch {
+                                plan_id,
+                                version,
+                                batch_id,
+                                job_ids,
+                                jobs,
+                            } => {
+                                let plan = value
+                                    .chapter_plans
+                                    .iter_mut()
+                                    .find(|p| p.id == plan_id && p.version == version)
+                                    .ok_or_else(|| {
+                                        CapabilityError::Conflict("Chapter plan changed".into())
+                                    })?;
+                                if plan.batch_id.as_ref().is_some_and(|id| id != &batch_id)
+                                    || (!plan.job_ids.is_empty() && plan.job_ids != job_ids)
+                                {
+                                    return Err(CapabilityError::Conflict(
+                                        "Chapter requests are already frozen".into(),
+                                    ));
+                                }
+                                plan.batch_id = Some(batch_id);
+                                plan.job_ids = job_ids.clone();
+                                if !jobs.is_empty() {
+                                    if jobs.len() != job_ids.len()
+                                        || jobs.iter().zip(&job_ids).any(|(job, id)| {
+                                            &job.id != id || job.status != "review"
+                                        })
+                                    {
+                                        return Err(CapabilityError::InvalidInput(
+                                            "Chapter host links must match frozen review jobs"
+                                                .into(),
+                                        ));
+                                    }
+                                    for job in jobs {
+                                        if let Some(old) =
+                                            value.jobs.iter_mut().find(|j| j.id == job.id)
+                                        {
+                                            *old = job
+                                        } else {
+                                            value.jobs.push(job)
+                                        }
+                                    }
+                                }
+                            }
                             Change::Message { message } => {
                                 if value.messages.iter().any(|m| m.id == message.id) {
                                     return Err(CapabilityError::Conflict(

@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { startOperationTiming } from "@/diagnostics/operation";
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Rust validates the live registry contracts before returning these JSON projections. */
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
@@ -630,7 +631,11 @@ export class CanonicalClassicSession {
 		retainForConversation: boolean;
 	}): { id: string } {
 		const artifact = this.runtime.storeArtifact(
-			bytes, "application/pdf", undefined, undefined, undefined,
+			bytes,
+			"application/pdf",
+			undefined,
+			undefined,
+			undefined,
 		) as { id: string };
 		if (retainForConversation) this.runtime.pinArtifact(artifact.id);
 		return this.runtime.artifactMetadata(artifact.id) as { id: string };
@@ -1159,6 +1164,45 @@ export class CanonicalClassicSession {
 			this.projectId,
 			archive,
 		);
+	}
+	/** Browser IO view only. Pinned generation bytes already persist in the paired artifact archive. */
+	hydrateGeneratedImage(
+		asset: CanonicalClassicSnapshot["mediaAssets"][number],
+	): MediaAsset | null {
+		const parsed = z
+			.object({
+				type: z.literal("image"),
+				width: z.number().int().min(1).max(4096),
+				height: z.number().int().min(1).max(4096),
+				generation: z.object({
+					artifactId: z.string(),
+					sha256: z.string().regex(/^[a-f0-9]{64}$/),
+				}),
+			})
+			.safeParse(asset);
+		if (!parsed.success) return null;
+		try {
+			const source = parsed.data;
+			const metadata = z
+				.object({
+					mimeType: z.literal("image/png"),
+					sha256: z.literal(source.generation.sha256),
+					width: z.literal(source.width),
+					height: z.literal(source.height),
+					byteSize: z.number().int().min(24).max(16_000_000),
+				})
+				.parse(this.runtime.artifactMetadata(source.generation.artifactId));
+			const bytes = this.runtime.readArtifact(source.generation.artifactId);
+			if (bytes.length !== metadata.byteSize) return null;
+			const file = new File(
+				[Uint8Array.from(bytes)],
+				asset.fileName ?? asset.name,
+				{ type: "image/png", lastModified: asset.lastModified ?? 0 },
+			);
+			return { ...asset, file, url: URL.createObjectURL(file) };
+		} catch {
+			return null;
+		} // Older desktop documents can still hydrate their existing owned file.
 	}
 	readConversationArtifact(id: string): {
 		bytes: Uint8Array;

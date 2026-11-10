@@ -1,4 +1,9 @@
-import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { connectedProviderFetch, readLocalProvider } from "./local-connection";
+import {
+	agentModelSchema,
+	preferredAgentModel,
+} from "@/editor-agent/model-preference";
 /** Bounded model transport. Rust validates every proposal; no timeline edits here. */
 import { z } from "zod";
 import {
@@ -42,6 +47,7 @@ export async function requestPodcastPlan({
 	};
 }): Promise<PodcastVideo[]> {
 	const account = window.__opencutAccountId;
+	const selectedProvider = readLocalProvider();
 	if (!account) throw new Error("Sign in and connect ChatGPT first");
 	const controller = new AbortController();
 	const abort = () => controller.abort();
@@ -51,7 +57,10 @@ export async function requestPodcastPlan({
 		assertScope?.();
 		signal.throwIfAborted();
 		controller.signal.throwIfAborted();
-		if (window.__opencutAccountId !== account)
+		if (
+			window.__opencutAccountId !== account ||
+			readLocalProvider() !== selectedProvider
+		)
 			throw new Error("Account changed; the podcast proposal was discarded");
 	};
 	const headers = {
@@ -60,13 +69,16 @@ export async function requestPodcastPlan({
 	};
 	try {
 		assertCurrent();
-		const response = await fetch("/api/editor-agent/connection", {
-			method: "POST",
-			credentials: "same-origin",
-			cache: "no-store",
-			signal: controller.signal,
-			headers,
-			body: JSON.stringify({ operation: "models" }),
+		const response = await connectedProviderFetch({
+			path: "/api/editor-agent/connection",
+			init: {
+				method: "POST",
+				credentials: "same-origin",
+				cache: "no-store",
+				signal: controller.signal,
+				headers,
+				body: JSON.stringify({ operation: "models" }),
+			},
 		});
 		const value = await response.json();
 		assertCurrent();
@@ -98,6 +110,7 @@ export async function requestPodcastPlan({
 			);
 			try {
 				const raw = await requestAgentResponse({
+					allowRetry: !isHostedBrowserWorkspace() && !selectedProvider,
 					signal: requestSignal,
 					beforeAttempt: assertCurrent,
 					onEvent: assertCurrent,
@@ -109,19 +122,22 @@ export async function requestPodcastPlan({
 						planRetry ?? (() => ({ retry: false, delayMs: 0, maxAttempts: 1 })),
 					send: () => {
 						onProviderRequest?.();
-						return fetch("/api/editor-agent/respond", {
-							method: "POST",
-							credentials: "same-origin",
-							cache: "no-store",
-							signal: requestSignal,
-							headers,
-							body: JSON.stringify({
-								model,
-								reasoningEffort,
-								instructions,
-								input: [{ role: "user", content: prompt }],
-								tools: [],
-							}),
+						return connectedProviderFetch({
+							path: "/api/editor-agent/respond",
+							init: {
+								method: "POST",
+								credentials: "same-origin",
+								cache: "no-store",
+								signal: requestSignal,
+								headers,
+								body: JSON.stringify({
+									model,
+									reasoningEffort,
+									instructions,
+									input: [{ role: "user", content: prompt }],
+									tools: [],
+								}),
+							},
 						});
 					},
 				});

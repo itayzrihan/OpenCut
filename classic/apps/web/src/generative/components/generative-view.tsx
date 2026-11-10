@@ -22,7 +22,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { useAiOAuthStatus } from "@/ai/components/use-ai-oauth-status";
 import { useDirectorReviewFocus } from "../review-focus";
-import { insertSeamless, planSeamless } from "../seamless-connect";
+import {
+	insertSeamless,
+	planSeamless,
+	insertSeamlessBatch,
+} from "../seamless-connect";
 import { applyReplacement, planReplace } from "../replace-clip";
 import { TICKS_PER_SECOND } from "@/wasm";
 import { directorReply } from "../chat-response";
@@ -47,6 +51,15 @@ import type {
 	DirectorJob,
 	DirectorReference,
 } from "../types";
+import { DirectorAudioPanel } from "@/audio-production/panel";
+import { useDirectorStudioTab } from "../studio-tab";
+import { BatchReview } from "./batch-review";
+import {
+	ChapterPlans,
+	ChapterCollections,
+	validateChapterBatch,
+} from "./chapter-plans";
+import type { VideoGenerationModel } from "../seamless-models";
 const empty: DirectorDocument = {
 	messages: [],
 	references: [],
@@ -79,6 +92,8 @@ export function GenerativeView() {
 }
 function DirectorWorkspace({ projectId }: { projectId: string }) {
 	const editor = useEditor();
+	const { t } = useInterfaceLanguage();
+	const studio = useDirectorStudioTab();
 	const [document, setDocument] = useState<DirectorDocument>(empty),
 		[remote, setRemote] = useState<DirectorStatus | null>(null),
 		[text, setText] = useState(""),
@@ -92,9 +107,24 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		[resolution, setResolution] = useState("480p"),
 		[aspect, setAspect] = useState("9:16"),
 		[https, setHttps] = useState<Record<string, string>>({}),
-		[catalog, setCatalog] = useState<Array<{ id: string; name?: string }>>([]),
+		[catalog, setCatalog] = useState<VideoGenerationModel[]>([]),
 		[transcript, setTranscript] = useState(""),
 		[boardUpload, setBoardUpload] = useState(false);
+	const [videoMode, setVideoMode] = useState<"text" | "references" | "frames">(
+		"references",
+	);
+	const chosenModel = catalog.find((m) => m.id === model);
+	const chosenDuration = chosenModel?.supported_durations?.includes(duration)
+		? duration
+		: (chosenModel?.supported_durations?.[0] ?? duration);
+	const chosenResolution = chosenModel?.supported_resolutions?.includes(
+		resolution,
+	)
+		? resolution
+		: (chosenModel?.supported_resolutions?.[0] ?? resolution);
+	const chosenAspect = chosenModel?.supported_aspect_ratios?.includes(aspect)
+		? aspect
+		: (chosenModel?.supported_aspect_ratios?.[0] ?? aspect);
 	const [exportingPdf, setExportingPdf] = useState(false);
 	const pdfAbort = useRef<AbortController | null>(null);
 	const documentAccount = useRef<string | null>(null);
@@ -109,6 +139,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 	const focus = useDirectorReviewFocus();
 	useEffect(() => {
 		if (
+			focus.surface === "agent" ||
 			focus.accountId !== window.__opencutAccountId ||
 			focus.projectId !== projectId ||
 			!focus.jobId
@@ -119,7 +150,7 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 		);
 		if (job) {
 			queueMicrotask(() => {
-				setReview(job);
+				if (!job.batchId) setReview(job);
 				focus.clear();
 			});
 		}
@@ -239,11 +270,14 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 				data.reference.kind === "audio" &&
 				typeof data.durationSeconds === "number"
 			) {
-				if (data.durationSeconds > 30)
+				const supported = (chosenModel?.supported_durations ?? [])
+					.filter((value) => value >= data.durationSeconds)
+					.sort((a, b) => a - b);
+				if (supported.length) setDuration(supported[0]);
+				else
 					toast.info(
-						"The voice track is longer than 30 seconds. Split it before generating.",
+						"The voice track exceeds the selected model duration. Plan chapters from the timed script before generating.",
 					);
-				else setDuration(Math.max(4, Math.ceil(data.durationSeconds)));
 			}
 			if (
 				scope(editor).accountId !== accountId ||
@@ -302,7 +336,11 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 										],
 										references: snapshot.document.references,
 										transcript: transcript.slice(0, 60000) || null,
-										output: { duration, resolution, aspectRatio: aspect },
+										output: {
+											duration: chosenDuration,
+											resolution: chosenResolution,
+											aspectRatio: chosenAspect,
+										},
 										current_direction: direction.slice(0, 60000),
 									}),
 								},
@@ -346,7 +384,12 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 	async function prepareVideo() {
 		if (!projectId) return;
 		const originalScope = scope(editor);
-		const snapshot = canonical({ editor: editor });
+		const snapshot = canonical({ editor });
+		const referenceIds =
+			videoMode === "text"
+				? []
+				: (snapshot.document.productionHandoff?.referenceIds ??
+					snapshot.document.references.map((r) => r.id));
 		const prompt = directorPrompt({
 			kind: "video",
 			direction,
@@ -363,10 +406,14 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					kind: "video",
 					model,
 					prompt,
-					duration,
-					resolution,
-					aspectRatio: aspect,
-					referenceIds: snapshot.document.references.map((r) => r.id),
+					duration: chosenDuration,
+					resolution: chosenResolution,
+					aspectRatio: chosenAspect,
+					referenceIds,
+					videoMode:
+						videoMode === "references" && !referenceIds.length
+							? "text"
+							: videoMode,
 					httpsReferences: https,
 				},
 			},
@@ -459,495 +506,604 @@ function DirectorWorkspace({ projectId }: { projectId: string }) {
 					<Settings size={16} />
 				</UiLocalized>
 			</header>
-			<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
-				<div className="flex items-center justify-between rounded-lg border p-2 text-xs">
-					<span>
-						{remote?.configured ? (
-							remote.sessionSeconds > 0 ? (
-								<UiMessage
-									text={"Unlocked · {v0} min"}
-									values={{ v0: String(Math.ceil(remote.sessionSeconds / 60)) }}
-								/>
-							) : (
-								<UiMessage
-									text={"Vault locked · PIN required for each generation"}
-								/>
-							)
-						) : (
-							<UiMessage text={"Set an OpenRouter key to generate video"} />
-						)}
-					</span>
-					<Button size="sm" variant="ghost" onClick={() => setSettings(true)}>
-						<Lock size={12} /> <UiMessage text={"Settings"} />
-					</Button>
+			<div
+				role="tablist"
+				aria-label="Director studio"
+				className="flex border-b p-2 gap-2"
+			>
+				<Button
+					role="tab"
+					aria-selected={studio.tab === "video"}
+					variant={studio.tab === "video" ? "default" : "ghost"}
+					onClick={() => studio.setTab("video")}
+				>
+					<UiMessage text="Video" />
+				</Button>
+				<Button
+					role="tab"
+					aria-selected={studio.tab === "audio"}
+					variant={studio.tab === "audio" ? "default" : "ghost"}
+					onClick={() => studio.setTab("audio")}
+				>
+					<UiMessage text="Audio" />
+				</Button>
+			</div>
+			{studio.tab === "audio" ? (
+				<div role="tabpanel" className="min-h-0 flex-1 overflow-y-auto">
+					<DirectorAudioPanel />
 				</div>
-				{!oauth.status?.authenticated && (
-					<Button variant="outline" onClick={() => void oauth.login()}>
-						<UiMessage text={"Connect AI to The Director through the Agent"} />
-					</Button>
-				)}
-				<div className="space-y-3" aria-live="polite">
-					{document.messages.map((m) => (
-						<article
-							key={m.id}
-							className={`whitespace-pre-wrap break-words rounded-lg p-3 text-sm ${m.role === "user" ? "bg-secondary" : "border bg-card"}`}
-						>
-							<strong className="mb-1 block text-xs text-muted-foreground">
-								{m.role === "user" ? (
-									<UiMessage text={"You"} />
+			) : (
+				<>
+					<div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-3">
+						<div className="flex items-center justify-between rounded-lg border p-2 text-xs">
+							<span>
+								{remote?.configured ? (
+									remote.sessionSeconds > 0 ? (
+										<UiMessage
+											text={"Unlocked · {v0} min"}
+											values={{
+												v0: String(Math.ceil(remote.sessionSeconds / 60)),
+											}}
+										/>
+									) : (
+										<UiMessage
+											text={"Vault locked · PIN required for each generation"}
+										/>
+									)
 								) : (
-									<UiMessage text={"The Director"} />
+									<UiMessage text={"Set an OpenRouter key to generate video"} />
 								)}
-							</strong>
-							{m.text}
-							{m.role === "assistant" && (
-								<Button
-									size="sm"
-									variant="ghost"
-									className="mt-2 block"
-									disabled={busy}
-									onClick={() =>
-										void action(async () => {
-											canonical({
-												editor,
-												change: { type: "direction", text: m.text },
-											});
-											directionDirty.current = false;
-											setDirection(m.text);
-										})
-									}
-								>
-									<UiMessage text={"Use this reply as direction"} />
-								</Button>
-							)}
-						</article>
-					))}
-				</div>
-				<section>
-					<div className="mb-2 flex justify-between text-sm font-medium">
-						<span>
-							<UiMessage text={"References and files"} />
-						</span>
-						<div className="flex gap-1">
+							</span>
 							<Button
 								size="sm"
-								variant="outline"
-								onClick={() => {
-									setBoardUpload(false);
-									uploadRef.current?.click();
-								}}
+								variant="ghost"
+								onClick={() => setSettings(true)}
 							>
-								<Paperclip size={13} />
-								<UiMessage text={"Files"} />
-							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() => {
-									setBoardUpload(true);
-									uploadRef.current?.click();
-								}}
-							>
-								<UiMessage text={"Storyboard"} />
+								<Lock size={12} /> <UiMessage text={"Settings"} />
 							</Button>
 						</div>
-					</div>
-					<input
-						ref={uploadRef}
-						type="file"
-						multiple
-						hidden
-						accept={
-							boardUpload
-								? "image/png,image/jpeg,image/webp"
-								: "image/png,image/jpeg,image/webp,audio/mpeg,audio/wav,audio/mp4,video/mp4,video/quicktime,video/webm"
-						}
-						onChange={(e) => {
-							const files = Array.from(e.target.files ?? []);
-							void action(() => upload(files));
-							e.target.value = "";
-						}}
-					/>
-					<div className="grid grid-cols-2 gap-2">
-						{document.references.map((r) => (
-							<div
-								key={r.id}
-								className="min-w-0 space-y-1 rounded-lg border p-2"
-							>
-								{r.kind === "image" ? (
-									<img
-										className="h-28 w-full rounded object-contain"
-										src={fileUrl({ projectId: projectId, id: r.id })}
-										alt={r.name}
-									/>
-								) : r.kind === "audio" ? (
-									<audio
-										className="w-full"
-										controls
-										src={fileUrl({ projectId: projectId, id: r.id })}
-									>
-										<UiLocalized<"track">
-											element={"track"}
-											messageProps={["label"]}
-											kind="captions"
-											label="Captions not supplied"
-											srcLang="und"
-										/>
-									</audio>
-								) : (
-									<video
-										className="h-28 w-full"
-										controls
-										src={fileUrl({ projectId: projectId, id: r.id })}
-									>
-										<UiLocalized<"track">
-											element={"track"}
-											messageProps={["label"]}
-											kind="captions"
-											label="Captions not supplied"
-											srcLang="und"
-										/>
-									</video>
-								)}
-								<p className="truncate text-xs" title={r.name}>
-									{r.storyboard ? (
-										<>
-											<UiMessage text={"Storyboard ·"} />{" "}
-										</>
-									) : (
-										""
+						{!oauth.status?.authenticated && (
+							<Button variant="outline" onClick={() => void oauth.login()}>
+								<UiMessage
+									text={"Connect AI to The Director through the Agent"}
+								/>
+							</Button>
+						)}
+						<div className="space-y-3" aria-live="polite">
+							{document.messages.map((m) => (
+								<article
+									key={m.id}
+									className={`whitespace-pre-wrap break-words rounded-lg p-3 text-sm ${m.role === "user" ? "bg-secondary" : "border bg-card"}`}
+								>
+									<strong className="mb-1 block text-xs text-muted-foreground">
+										{m.role === "user" ? (
+											<UiMessage text={"You"} />
+										) : (
+											<UiMessage text={"The Director"} />
+										)}
+									</strong>
+									{m.text}
+									{m.role === "assistant" && (
+										<Button
+											size="sm"
+											variant="ghost"
+											className="mt-2 block"
+											disabled={busy}
+											onClick={() =>
+												void action(async () => {
+													canonical({
+														editor,
+														change: { type: "direction", text: m.text },
+													});
+													directionDirty.current = false;
+													setDirection(m.text);
+												})
+											}
+										>
+											<UiMessage text={"Use this reply as direction"} />
+										</Button>
 									)}
-									{r.name}
-								</p>
-								{r.kind !== "image" && !remote?.publicOrigin && (
-									<UiLocalized<"input">
-										element={"input"}
-										messageProps={["placeholder"]}
-										className="w-full rounded border bg-background p-1 text-xs"
-										dir="ltr"
-										aria-label={`HTTPS link for ${r.name}`}
-										placeholder="POCAST HTTPS download link"
-										value={https[r.id] ?? ""}
-										onChange={(e) =>
-											setHttps({ ...https, [r.id]: e.target.value })
-										}
-									/>
-								)}
-								{r.kind !== "image" && (
+								</article>
+							))}
+						</div>
+						<section>
+							<div className="mb-2 flex justify-between text-sm font-medium">
+								<span>
+									<UiMessage text={"References and files"} />
+								</span>
+								<div className="flex gap-1">
 									<Button
 										size="sm"
-										variant="ghost"
-										disabled={busy}
-										onClick={() => void action(() => transcribe(r))}
+										variant="outline"
+										onClick={() => {
+											setBoardUpload(false);
+											uploadRef.current?.click();
+										}}
 									>
-										<UiMessage text={"Local transcription"} />
+										<Paperclip size={13} />
+										<UiMessage text={"Files"} />
+									</Button>
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={() => {
+											setBoardUpload(true);
+											uploadRef.current?.click();
+										}}
+									>
+										<UiMessage text={"Storyboard"} />
+									</Button>
+								</div>
+							</div>
+							<input
+								ref={uploadRef}
+								type="file"
+								multiple
+								hidden
+								accept={
+									boardUpload
+										? "image/png,image/jpeg,image/webp"
+										: "image/png,image/jpeg,image/webp,audio/mpeg,audio/wav,audio/mp4,video/mp4,video/quicktime,video/webm"
+								}
+								onChange={(e) => {
+									const files = Array.from(e.target.files ?? []);
+									void action(() => upload(files));
+									e.target.value = "";
+								}}
+							/>
+							<div className="grid grid-cols-2 gap-2">
+								{document.references.map((r) => (
+									<div
+										key={r.id}
+										className="min-w-0 space-y-1 rounded-lg border p-2"
+									>
+										{r.kind === "image" ? (
+											<img
+												className="h-28 w-full rounded object-contain"
+												src={fileUrl({ projectId: projectId, id: r.id })}
+												alt={r.name}
+											/>
+										) : r.kind === "audio" ? (
+											<audio
+												className="w-full"
+												controls
+												src={fileUrl({ projectId: projectId, id: r.id })}
+											>
+												<track
+													kind="captions"
+													label={t("Captions not supplied")}
+													srcLang="und"
+												/>
+											</audio>
+										) : (
+											<video
+												className="h-28 w-full"
+												controls
+												src={fileUrl({ projectId: projectId, id: r.id })}
+											>
+												<track
+													kind="captions"
+													label={t("Captions not supplied")}
+													srcLang="und"
+												/>
+											</video>
+										)}
+										<p className="truncate text-xs" title={r.name}>
+											{r.storyboard ? (
+												<>
+													<UiMessage text={"Storyboard ·"} />{" "}
+												</>
+											) : (
+												""
+											)}
+											{r.name}
+										</p>
+										{r.kind !== "image" && !remote?.publicOrigin && (
+											<UiLocalized<"input">
+												element={"input"}
+												messageProps={["placeholder"]}
+												className="w-full rounded border bg-background p-1 text-xs"
+												dir="ltr"
+												aria-label={`HTTPS link for ${r.name}`}
+												placeholder="POCAST HTTPS download link"
+												value={https[r.id] ?? ""}
+												onChange={(e) =>
+													setHttps({ ...https, [r.id]: e.target.value })
+												}
+											/>
+										)}
+										{r.kind !== "image" && (
+											<Button
+												size="sm"
+												variant="ghost"
+												disabled={busy}
+												onClick={() => void action(() => transcribe(r))}
+											>
+												<UiMessage text={"Local transcription"} />
+											</Button>
+										)}
+										<Button
+											size="sm"
+											variant="ghost"
+											aria-label={`Remove ${r.name}`}
+											onClick={() => {
+												canonical({
+													editor: editor,
+													change: { type: "removeReference", id: r.id },
+												});
+												refresh();
+											}}
+										>
+											<X size={12} />
+										</Button>
+									</div>
+								))}
+							</div>
+							<p className="mt-2 text-xs text-muted-foreground">
+								<UiMessage
+									text={
+										"Audio and video are shared with the provider through a temporary HTTPS link. Anyone with the link can access it. Up to 100 MB per file."
+									}
+								/>
+							</p>
+						</section>
+						<details>
+							<summary className="cursor-pointer text-sm">
+								<UiMessage text={"Source transcript"} />
+							</summary>
+							<UiLocalized<typeof Textarea>
+								element={Textarea}
+								messageProps={["aria-label", "placeholder"]}
+								aria-label="Original spoken script"
+								value={transcript}
+								onChange={(e) => {
+									transcriptDirty.current = true;
+									setTranscript(e.target.value);
+								}}
+								onBlur={() => {
+									transcriptDirty.current = false;
+									canonical({
+										editor,
+										change: { type: "transcript", text: transcript },
+									});
+									refresh();
+								}}
+								placeholder="Full transcript. Use the source recording as the reference."
+							/>
+						</details>
+						<section className="space-y-2 rounded-lg border p-3">
+							<div className="flex gap-2">
+								<UiLocalized<"select">
+									element={"select"}
+									messageProps={["aria-label"]}
+									className="min-w-0 flex-1 rounded border bg-background p-1 text-xs"
+									aria-label="Video model"
+									value={model}
+									onChange={(e) => setModel(e.target.value)}
+								>
+									{(catalog.length ? catalog : [{ id: model }]).map((m) => (
+										<option key={m.id} value={m.id}>
+											{m.name ?? m.id}
+										</option>
+									))}
+								</UiLocalized>
+								<UiLocalized<"select">
+									element="select"
+									messageProps={["aria-label"]}
+									className="w-20 rounded border bg-background p-1"
+									aria-label="Duration seconds"
+									value={chosenDuration}
+									onChange={(e) => setDuration(Number(e.target.value))}
+								>
+									{(chosenModel?.supported_durations ?? []).map((value) => (
+										<option key={value} value={value}>
+											{value}s
+										</option>
+									))}
+								</UiLocalized>
+							</div>
+							<div className="flex gap-2">
+								<UiLocalized<"select">
+									element={"select"}
+									messageProps={["aria-label"]}
+									className="rounded border bg-background p-1 text-xs"
+									aria-label="Resolution"
+									value={chosenResolution}
+									onChange={(e) => setResolution(e.target.value)}
+								>
+									{chosenModel?.supported_resolutions?.map((value) => (
+										<option key={value}>{value}</option>
+									))}
+								</UiLocalized>
+								<UiLocalized<"select">
+									element={"select"}
+									messageProps={["aria-label"]}
+									className="rounded border bg-background p-1 text-xs"
+									aria-label="Aspect ratio"
+									value={chosenAspect}
+									onChange={(e) => setAspect(e.target.value)}
+								>
+									{(chosenModel?.supported_aspect_ratios ?? []).map((x) => (
+										<option key={x}>{x}</option>
+									))}
+								</UiLocalized>
+							</div>
+							<label className="grid gap-1 text-xs">
+								{t("Reference mode")}
+								<select
+									className="rounded border bg-background p-2"
+									value={videoMode}
+									onChange={(event) => {
+										const value = event.target.value;
+										if (
+											value === "text" ||
+											value === "references" ||
+											value === "frames"
+										)
+											setVideoMode(value);
+									}}
+								>
+									<option value="references">
+										{t("Use attached references")}
+									</option>
+									<option value="frames">
+										{t("Exact first / last frames")}
+									</option>
+									<option value="text">{t("Text only")}</option>
+								</select>
+							</label>
+							{videoMode === "frames" && (
+								<p className="text-xs text-muted-foreground">
+									{t(
+										"Attach one image for the first frame, or two images in first/last order. Content references cannot be mixed with exact frames.",
+									)}
+								</p>
+							)}
+							<label className="block text-xs" htmlFor="director-prompt">
+								<UiMessage text={"Direction"} />
+								<UiLocalized<typeof Textarea>
+									element={Textarea}
+									messageProps={["placeholder"]}
+									className="mt-1 min-h-36 text-xs"
+									dir="auto"
+									id="director-prompt"
+									placeholder="Write or paste direction as plain text, Markdown or JSON"
+									value={direction}
+									onChange={(e) => {
+										directionDirty.current = true;
+										setDirection(e.target.value);
+									}}
+									onBlur={() => {
+										directionDirty.current = false;
+										if (direction !== document.direction) {
+											canonical({
+												editor: editor,
+												change: { type: "direction", text: direction },
+											});
+											refresh();
+										}
+									}}
+								/>
+							</label>
+							<p className="text-xs text-muted-foreground">
+								<UiMessage
+									text={
+										"The Agent's AI connection supports text direction and reference analysis. Upload storyboard images or export a scene plan as PDF; this connection does not generate images."
+									}
+								/>
+							</p>
+							<div className="flex flex-wrap gap-2">
+								<Button
+									variant="outline"
+									disabled={
+										busy ||
+										exportingPdf ||
+										(!document.references.some((r) => r.storyboard) &&
+											!document.storyboard?.scenes.length &&
+											!direction.trim())
+									}
+									onClick={() => void exportProposal()}
+								>
+									{exportingPdf ? (
+										<Loader2 className="mr-2 size-4 animate-spin" />
+									) : (
+										<Download className="mr-2 size-4" />
+									)}
+									<UiMessage
+										text={
+											exportingPdf
+												? "Preparing storyboard PDF…"
+												: "Export storyboard PDF"
+										}
+									/>
+								</Button>
+								{exportingPdf && (
+									<Button
+										variant="ghost"
+										onClick={() => pdfAbort.current?.abort()}
+									>
+										<UiMessage text="Cancel" />
 									</Button>
 								)}
 								<Button
-									size="sm"
-									variant="ghost"
-									aria-label={`Remove ${r.name}`}
-									onClick={() => {
-										canonical({
-											editor: editor,
-											change: { type: "removeReference", id: r.id },
-										});
-										refresh();
-									}}
+									disabled={busy || !chosenModel || !direction.trim()}
+									onClick={() => void action(() => prepareVideo())}
 								>
-									<X size={12} />
+									<UiMessage text={"Prepare video for approval"} />
 								</Button>
 							</div>
+						</section>
+						<ChapterPlans
+							document={document}
+							model={chosenModel}
+							resolution={chosenResolution}
+							aspectRatio={chosenAspect}
+							refresh={refresh}
+						/>
+						<ChapterCollections document={document} />
+						{[
+							...new Set(
+								remote?.jobs.flatMap((j) => (j.batchId ? [j.batchId] : [])) ??
+									[],
+							),
+						].map((batchId) => {
+							const jobs =
+								remote?.jobs.filter((j) => j.batchId === batchId) ?? [];
+							return (
+								<div key={batchId} className="space-y-2">
+									<BatchReview
+										projectId={projectId}
+										batchId={batchId}
+										jobs={jobs}
+										validate={() => validateChapterBatch({ editor, jobs })}
+									/>
+									{jobs.every((j) => j.seamless && j.status === "ready") && (
+										<Button
+											variant="outline"
+											onClick={() =>
+												void action(async () => {
+													insertSeamlessBatch({ editor, jobs });
+												})
+											}
+										>
+											<UiMessage text="Insert all connections" />
+										</Button>
+									)}
+								</div>
+							);
+						})}
+						{remote?.jobs.map((j) => (
+							<section
+								key={j.id}
+								className="space-y-2 rounded-lg border p-3 text-sm"
+							>
+								<DirectorJobHeading job={j} now={now} />
+								{j.output &&
+									(j.kind === "video" ? (
+										<video
+											controls
+											className="max-h-64 w-full rounded"
+											src={fileUrl({ projectId: projectId, id: j.output.id })}
+										>
+											<track
+												kind="captions"
+												label={t("Captions not supplied")}
+												srcLang="und"
+											/>
+										</video>
+									) : (
+										<UiLocalized<"img">
+											element={"img"}
+											messageProps={["alt"]}
+											className="max-h-64 w-full object-contain"
+											alt="Generated physical storyboard"
+											src={fileUrl({ projectId: projectId, id: j.output.id })}
+										/>
+									))}
+								{j.cost !== undefined && (
+									<p className="text-xs">
+										<UiMessage text={"Actual cost $"} />
+										{j.cost.toFixed(4)}
+									</p>
+								)}
+								{j.status === "review" && !j.batchId && (
+									<Button size="sm" onClick={() => setReview(j)}>
+										<UiMessage text={"Review and approve"} />
+									</Button>
+								)}
+								{j.output && (
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={() =>
+											downloadFile({
+												url: fileUrl({
+													projectId: projectId,
+													id: j.output!.id,
+													download: true,
+												}),
+												name: j.output!.name,
+											})
+										}
+									>
+										<Download size={13} />
+										<UiMessage text={"Download"} />
+									</Button>
+								)}
+								{(j.seamless || j.replacement) &&
+									!j.batchId &&
+									j.status === "ready" && (
+										<Button
+											size="sm"
+											variant="outline"
+											onClick={() =>
+												void action(async () => {
+													const mediaId = canonical({
+														editor,
+													}).document.jobs.find(
+														(link) => link.id === j.id,
+													)?.mediaId;
+													if (!mediaId)
+														throw new Error(
+															"Wait for the generated video to appear in Media",
+														);
+													const input = { editor, job: j, mediaId };
+													const inserted = j.replacement
+														? applyReplacement(input)
+														: insertSeamless(input);
+													if (inserted)
+														toast.success(
+															j.replacement
+																? "Clip replaced at its original duration"
+																: "Seamless Connect inserted on the timeline",
+														);
+												})
+											}
+										>
+											{j.replacement ? (
+												<UiMessage text={"Apply replacement"} />
+											) : (
+												<UiMessage text={"Insert at original cut"} />
+											)}
+										</Button>
+									)}
+							</section>
 						))}
 					</div>
-					<p className="mt-2 text-xs text-muted-foreground">
-						<UiMessage
-							text={
-								"Audio and video are shared with the provider through a temporary HTTPS link. Anyone with the link can access it. Up to 100 MB per file."
-							}
-						/>
-					</p>
-				</section>
-				<details>
-					<summary className="cursor-pointer text-sm">
-						<UiMessage text={"Source transcript"} />
-					</summary>
-					<UiLocalized<typeof Textarea>
-						element={Textarea}
-						messageProps={["aria-label", "placeholder"]}
-						aria-label="Original spoken script"
-						value={transcript}
-						onChange={(e) => {
-							transcriptDirty.current = true;
-							setTranscript(e.target.value);
+					<form
+						className="flex items-end gap-2 border-t p-3"
+						onSubmit={(e) => {
+							e.preventDefault();
+							void action(chat);
 						}}
-						onBlur={() => {
-							transcriptDirty.current = false;
-							canonical({
-								editor,
-								change: { type: "transcript", text: transcript },
-							});
-							refresh();
-						}}
-						placeholder="Full transcript. Use the source recording as the reference."
-					/>
-				</details>
-				<section className="space-y-2 rounded-lg border p-3">
-					<div className="flex gap-2">
-						<UiLocalized<"select">
-							element={"select"}
-							messageProps={["aria-label"]}
-							className="min-w-0 flex-1 rounded border bg-background p-1 text-xs"
-							aria-label="Video model"
-							value={model}
-							onChange={(e) => setModel(e.target.value)}
-						>
-							{(catalog.length ? catalog : [{ id: model }]).map((m) => (
-								<option key={m.id} value={m.id}>
-									{m.name ?? m.id}
-								</option>
-							))}
-						</UiLocalized>
-						<UiLocalized<"input">
-							element={"input"}
-							messageProps={["aria-label"]}
-							className="w-16 rounded border bg-background p-1"
-							type="number"
-							aria-label="Duration seconds"
-							min={4}
-							max={30}
-							value={duration}
-							onChange={(e) => setDuration(Number(e.target.value))}
-						/>
-					</div>
-					<div className="flex gap-2">
-						<UiLocalized<"select">
-							element={"select"}
-							messageProps={["aria-label"]}
-							className="rounded border bg-background p-1 text-xs"
-							aria-label="Resolution"
-							value={resolution}
-							onChange={(e) => setResolution(e.target.value)}
-						>
-							<option>480p</option>
-							<option>720p</option>
-						</UiLocalized>
-						<UiLocalized<"select">
-							element={"select"}
-							messageProps={["aria-label"]}
-							className="rounded border bg-background p-1 text-xs"
-							aria-label="Aspect ratio"
-							value={aspect}
-							onChange={(e) => setAspect(e.target.value)}
-						>
-							{["9:16", "16:9", "1:1", "4:3", "3:4", "21:9"].map((x) => (
-								<option key={x}>{x}</option>
-							))}
-						</UiLocalized>
-					</div>
-					<label className="block text-xs" htmlFor="director-prompt">
-						<UiMessage text={"Direction"} />
+					>
 						<UiLocalized<typeof Textarea>
 							element={Textarea}
-							messageProps={["placeholder"]}
-							className="mt-1 min-h-36 text-xs"
-							dir="auto"
-							id="director-prompt"
-							placeholder="Write or paste direction as plain text, Markdown or JSON"
-							value={direction}
-							onChange={(e) => {
-								directionDirty.current = true;
-								setDirection(e.target.value);
-							}}
-							onBlur={() => {
-								directionDirty.current = false;
-								if (direction !== document.direction) {
-									canonical({
-										editor: editor,
-										change: { type: "direction", text: direction },
-									});
-									refresh();
-								}
-							}}
+							messageProps={["aria-label", "placeholder"]}
+							maxLength={12000}
+							aria-label="Message The Director"
+							placeholder="Describe what you want to see…"
+							value={text}
+							onChange={(e) => setText(e.target.value)}
+							className="max-h-32 min-h-16"
 						/>
-					</label>
-					<p className="text-xs text-muted-foreground">
-						<UiMessage
-							text={
-								"The Agent's AI connection supports text direction and reference analysis. Upload storyboard images or export a scene plan as PDF; this connection does not generate images."
-							}
-						/>
-					</p>
-					<div className="flex flex-wrap gap-2">
-						<Button
-							variant="outline"
-							disabled={
-								busy ||
-								exportingPdf ||
-								(!document.references.some((r) => r.storyboard) &&
-									!document.storyboard?.scenes.length &&
-									!direction.trim())
-							}
-							onClick={() => void exportProposal()}
+						<UiLocalized<typeof Button>
+							element={Button}
+							messageProps={["aria-label"]}
+							type="submit"
+							size="icon"
+							aria-label="Send to The Director"
+							disabled={busy || !text.trim() || !oauth.status?.authenticated}
 						>
-							{exportingPdf ? (
-								<Loader2 className="mr-2 size-4 animate-spin" />
+							{busy ? (
+								<Loader2 size={16} className="animate-spin" />
 							) : (
-								<Download className="mr-2 size-4" />
+								<Send size={16} />
 							)}
-							<UiMessage
-								text={
-									exportingPdf
-										? "Preparing storyboard PDF…"
-										: "Export storyboard PDF"
-								}
-							/>
-						</Button>
-						{exportingPdf && (
-							<Button variant="ghost" onClick={() => pdfAbort.current?.abort()}>
-								<UiMessage text="Cancel" />
-							</Button>
-						)}
-						<Button
-							disabled={
-								busy ||
-								!direction.trim() ||
-								!document.references.some((r) => r.storyboard)
-							}
-							onClick={() => void action(() => prepareVideo())}
-						>
-							<UiMessage text={"Prepare video for approval"} />
-						</Button>
-					</div>
-				</section>
-				{remote?.jobs.map((j) => (
-					<section
-						key={j.id}
-						className="space-y-2 rounded-lg border p-3 text-sm"
-					>
-						<DirectorJobHeading job={j} now={now} />
-						{j.output &&
-							(j.kind === "video" ? (
-								<video
-									controls
-									className="max-h-64 w-full rounded"
-									src={fileUrl({ projectId: projectId, id: j.output.id })}
-								>
-									<UiLocalized<"track">
-										element={"track"}
-										messageProps={["label"]}
-										kind="captions"
-										label="Captions not supplied"
-										srcLang="und"
-									/>
-								</video>
-							) : (
-								<UiLocalized<"img">
-									element={"img"}
-									messageProps={["alt"]}
-									className="max-h-64 w-full object-contain"
-									alt="Generated physical storyboard"
-									src={fileUrl({ projectId: projectId, id: j.output.id })}
-								/>
-							))}
-						{j.cost !== undefined && (
-							<p className="text-xs">
-								<UiMessage text={"Actual cost $"} />
-								{j.cost.toFixed(4)}
-							</p>
-						)}
-						{j.status === "review" && (
-							<Button size="sm" onClick={() => setReview(j)}>
-								<UiMessage text={"Review and approve"} />
-							</Button>
-						)}
-						{j.output && (
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() =>
-									downloadFile({
-										url: fileUrl({
-											projectId: projectId,
-											id: j.output!.id,
-											download: true,
-										}),
-										name: j.output!.name,
-									})
-								}
-							>
-								<Download size={13} />
-								<UiMessage text={"Download"} />
-							</Button>
-						)}
-						{(j.seamless || j.replacement) && j.status === "ready" && (
-							<Button
-								size="sm"
-								variant="outline"
-								onClick={() =>
-									void action(async () => {
-										const mediaId = canonical({ editor }).document.jobs.find(
-											(link) => link.id === j.id,
-										)?.mediaId;
-										if (!mediaId)
-											throw new Error(
-												"Wait for the generated video to appear in Media",
-											);
-										const input = { editor, job: j, mediaId };
-										const inserted = j.replacement
-											? applyReplacement(input)
-											: insertSeamless(input);
-										if (inserted)
-											toast.success(
-												j.replacement
-													? "Clip replaced at its original duration"
-													: "Seamless Connect inserted on the timeline",
-											);
-									})
-								}
-							>
-								{j.replacement ? (
-									<UiMessage text={"Apply replacement"} />
-								) : (
-									<UiMessage text={"Insert at original cut"} />
-								)}
-							</Button>
-						)}
-					</section>
-				))}
-			</div>
-			<form
-				className="flex items-end gap-2 border-t p-3"
-				onSubmit={(e) => {
-					e.preventDefault();
-					void action(chat);
-				}}
-			>
-				<UiLocalized<typeof Textarea>
-					element={Textarea}
-					messageProps={["aria-label", "placeholder"]}
-					maxLength={12000}
-					aria-label="Message The Director"
-					placeholder="Describe what you want to see…"
-					value={text}
-					onChange={(e) => setText(e.target.value)}
-					className="max-h-32 min-h-16"
-				/>
-				<UiLocalized<typeof Button>
-					element={Button}
-					messageProps={["aria-label"]}
-					type="submit"
-					size="icon"
-					aria-label="Send to The Director"
-					disabled={busy || !text.trim() || !oauth.status?.authenticated}
-				>
-					{busy ? (
-						<Loader2 size={16} className="animate-spin" />
-					) : (
-						<Send size={16} />
-					)}
-				</UiLocalized>
-			</form>
+						</UiLocalized>
+					</form>
+				</>
+			)}
 			{settings && (
 				<UiLocalized<"div">
 					element={"div"}
@@ -1123,23 +1279,30 @@ function ReviewDialog({
 	busy,
 	close,
 	run,
+	inline = false,
 }: {
 	job: DirectorJob;
 	projectId: string;
 	busy: boolean;
 	close: () => void;
 	run: (f: () => Promise<void>) => Promise<void>;
+	inline?: boolean;
 }) {
 	const editor = useEditor();
+	const { t } = useInterfaceLanguage();
 	const pin = useRef<HTMLInputElement>(null);
 	const chatgpt = job.provider === "chatgpt";
 	return (
 		<UiLocalized<"div">
 			element={"div"}
 			messageProps={["aria-label"]}
-			className="absolute inset-0 z-30 flex flex-col bg-background"
-			role="dialog"
-			aria-modal="true"
+			className={
+				inline
+					? "flex max-h-[70dvh] flex-col rounded-lg border bg-background"
+					: "absolute inset-0 z-30 flex flex-col bg-background"
+			}
+			role={inline ? "region" : "dialog"}
+			aria-modal={inline ? undefined : true}
 			aria-label={
 				chatgpt ? "Review ChatGPT storyboard" : "Review paid generation"
 			}
@@ -1214,11 +1377,9 @@ function ReviewDialog({
 									controls
 									src={fileUrl({ projectId: projectId, id: r.id })}
 								>
-									<UiLocalized<"track">
-										element={"track"}
-										messageProps={["label"]}
+									<track
 										kind="captions"
-										label="Captions not supplied"
+										label={t("Captions not supplied")}
 										srcLang="und"
 									/>
 								</audio>
@@ -1228,11 +1389,9 @@ function ReviewDialog({
 									className="max-h-40 w-full"
 									src={fileUrl({ projectId: projectId, id: r.id })}
 								>
-									<UiLocalized<"track">
-										element={"track"}
-										messageProps={["label"]}
+									<track
 										kind="captions"
-										label="Captions not supplied"
+										label={t("Captions not supplied")}
 										srcLang="und"
 									/>
 								</video>
@@ -1268,6 +1427,7 @@ function ReviewDialog({
 					const value = pin.current?.value;
 					if (pin.current) pin.current.value = "";
 					void run(async () => {
+						validateChapterBatch({ editor, jobs: [job] });
 						if (
 							job.replacement &&
 							(scope(editor).projectId !== job.projectId ||
@@ -1348,5 +1508,65 @@ function ReviewDialog({
 				</p>
 			</form>
 		</UiLocalized>
+	);
+}
+
+/** Same exact frozen-request and human PIN flow in the Director or docked Agent. */
+function DirectorJobReviewBody({
+	job,
+	onUpdated,
+}: {
+	job: DirectorJob;
+	onUpdated?: () => void;
+}) {
+	const editor = useEditor();
+	const [busy, setBusy] = useState(false);
+	const [failure, setFailure] = useState("");
+	const [account] = useState(() => window.__opencutAccountId);
+	async function run(operation: () => Promise<void>) {
+		if (busy) return;
+		setBusy(true);
+		setFailure("");
+		try {
+			const current = scope(editor);
+			if (current.accountId !== account || current.projectId !== job.projectId)
+				throw new Error("Review account or project changed");
+			await operation();
+			onUpdated?.();
+		} catch (error) {
+			setFailure(error instanceof Error ? error.message : String(error));
+		} finally {
+			setBusy(false);
+		}
+	}
+	if (window.__opencutAccountId !== account) return null;
+	return (
+		<div>
+			{failure && (
+				<p role="alert" className="text-xs text-destructive">
+					{failure}
+				</p>
+			)}
+			<ReviewDialog
+				job={job}
+				projectId={job.projectId}
+				busy={busy}
+				close={() => onUpdated?.()}
+				run={run}
+				inline
+			/>
+		</div>
+	);
+}
+
+export function DirectorJobReview(props: {
+	job: DirectorJob;
+	onUpdated?: () => void;
+}) {
+	return (
+		<DirectorJobReviewBody
+			key={`${window.__opencutAccountId}:${props.job.projectId}:${props.job.id}:${props.job.digest}`}
+			{...props}
+		/>
 	);
 }

@@ -31,6 +31,31 @@ struct Insert {
     duration: i64,
 }
 
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Batch {
+    project_id: String,
+    scene_id: String,
+    expected_revision: u64,
+    cuts: Vec<Cut>,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Cut {
+    track_id: String,
+    left_id: String,
+    right_id: String,
+    anchor: String,
+    media_id: String,
+    duration: i64,
+}
+#[derive(Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+struct BatchOutput {
+    #[serde(flatten)]
+    mutation: MutationOutput,
+    element_ids: Vec<String>,
+}
 #[derive(Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 struct Plan {
@@ -359,6 +384,85 @@ pub(super) fn register(
                     scene(&store.document, &pair)?,
                     &pair,
                 )?))
+            }
+        },
+    )?;
+    let batch_state = state.clone();
+    let batch_events = events.clone();
+    super::register::<Batch, BatchOutput, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "timeline.classic.bridge.batch.insert",
+        "Insert up to ten generated connections",
+        "Validate every frozen source pair first, then insert all bridges from right to left in one transaction. Preserves original source anchors and shifts later layers together. Invalid/stale pairs, missing outputs or locked tracks roll back the entire batch. Revision, dry run, cancellation, idempotency and Undo/Redo supported. No network calls.",
+        "timeline",
+        AccessLevel::Write,
+        false,
+        false,
+        &["video", "transition", "seamless", "batch"],
+        move |context, input| {
+            let state = batch_state.clone();
+            let events = batch_events.clone();
+            async move {
+                let mut element_ids = vec![];
+                let mutation = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Insert Seamless batch",
+                    Some(input.expected_revision),
+                    |document| {
+                        if input.cuts.is_empty() || input.cuts.len() > 10 {
+                            return Err(invalid("Connect between one and ten cuts"));
+                        }
+                        let mut ordered = vec![];
+                        let mut seen = HashSet::new();
+                        for cut in &input.cuts {
+                            if !(1..=3600000).contains(&cut.duration)
+                                || !seen.insert((&cut.track_id, &cut.left_id, &cut.right_id))
+                            {
+                                return Err(invalid("Invalid or repeated Seamless cut"));
+                            }
+                            let pair = Pair {
+                                project_id: input.project_id.clone(),
+                                scene_id: input.scene_id.clone(),
+                                expected_revision: input.expected_revision,
+                                track_id: cut.track_id.clone(),
+                                left_id: cut.left_id.clone(),
+                                right_id: cut.right_id.clone(),
+                            };
+                            let p = plan(scene(document, &pair)?, &pair)?;
+                            if p.anchor != cut.anchor {
+                                return Err(CapabilityError::Conflict(
+                                    "The batch source clips changed; prepare again".into(),
+                                ));
+                            }
+                            ordered.push((p.cut_time, cut));
+                        }
+                        ordered.sort_by_key(|(time, _)| std::cmp::Reverse(*time));
+                        for (_, cut) in ordered {
+                            let insert = Insert {
+                                project_id: input.project_id.clone(),
+                                scene_id: input.scene_id.clone(),
+                                expected_revision: input.expected_revision,
+                                track_id: cut.track_id.clone(),
+                                left_id: cut.left_id.clone(),
+                                right_id: cut.right_id.clone(),
+                                anchor: cut.anchor.clone(),
+                                media_id: cut.media_id.clone(),
+                                duration: cut.duration,
+                            };
+                            element_ids.push(apply(document, &insert, &context)?);
+                        }
+                        Ok(element_ids.clone())
+                    },
+                )?;
+                Ok(OperationSuccess::new(BatchOutput {
+                    mutation,
+                    element_ids,
+                })
+                .changed([STATE_RESOURCE, PROJECT_RESOURCE, TIMELINE_RESOURCE]))
             }
         },
     )?;

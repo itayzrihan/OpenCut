@@ -4,6 +4,7 @@ import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { z } from "zod";
 import * as store from "./store";
 import * as provider from "./provider";
+import * as batches from "./batch";
 import { probeReference } from "./probe";
 import type { DirectorJob } from "../types";
 const operationId = z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/);
@@ -24,13 +25,62 @@ const operation = z.discriminatedUnion("type", [
 			kind: z.enum(["video", "storyboard"]),
 			model: z.string().min(1).max(200),
 			prompt: z.string().min(20).max(100_000),
-			duration: z.number().int().min(4).max(30).nullish(),
-			resolution: z.enum(["480p", "720p"]).nullish(),
+			duration: z.number().int().min(1).max(120).nullish(),
+			resolution: z.string().min(1).max(30).nullish(),
 			aspectRatio: z
 				.enum(["9:16", "16:9", "4:3", "3:4", "1:1", "21:9"])
 				.nullish(),
 			referenceIds: z.array(z.string().regex(/^[a-f0-9]{32}$/)).max(12),
 			httpsReferences: z.record(z.string(), z.string().url()).default({}),
+		})
+		.strict(),
+	z
+		.object({
+			type: z.literal("prepareChapters"),
+			planId: operationId,
+			plan: z
+				.object({
+					id: operationId,
+					title: z.string().max(200),
+					version: z.number().int().positive(),
+					model: z.string().max(200),
+					resolution: z.string().max(30),
+					aspectRatio: z.string().max(30),
+					chapters: z
+						.array(
+							z
+								.object({
+									id: operationId,
+									title: z.string().max(200),
+									prompt: z.string().max(100000),
+									duration: z.number().int().min(1).max(120),
+									sourceStartMs: z
+										.number()
+										.int()
+										.nonnegative()
+										.max(86400000)
+										.optional(),
+									sourceEndMs: z
+										.number()
+										.int()
+										.positive()
+										.max(86400000)
+										.optional(),
+									timingEstimated: z.boolean().optional(),
+								})
+								.passthrough(),
+						)
+						.min(1)
+						.max(32),
+					references: z
+						.array(
+							z
+								.object({ referenceId: z.string().regex(/^[a-f0-9]{32}$/) })
+								.passthrough(),
+						)
+						.max(12),
+				})
+				.passthrough(),
 		})
 		.strict(),
 	z.object({ type: z.literal("status") }).strict(),
@@ -54,10 +104,12 @@ export async function mcpRequest({
 	root,
 	raw,
 	referenceUrl,
+	net = fetch,
 }: {
 	root: string;
 	raw: unknown;
 	referenceUrl: Parameters<typeof provider.prepare>[0]["referenceUrl"];
+	net?: provider.Fetcher;
 }) {
 	const i = mcpInput.parse(raw);
 	store.validProject(i.projectId);
@@ -123,11 +175,67 @@ export async function mcpRequest({
 		});
 		await probeReference({ root, projectId: i.projectId, id: reference.id });
 		result = { ...base, reference };
+	} else if (i.operation.type === "prepareChapters") {
+		const plan = i.operation.plan;
+		if (plan.id !== i.operation.planId)
+			throw new Error("Chapter plan identity mismatch");
+		const jobs: DirectorJob[] = [];
+		for (const [index, chapter] of plan.chapters.entries())
+			jobs.push(
+				await provider.prepare({
+					root,
+					net,
+					referenceUrl,
+					raw: {
+						projectId: i.projectId,
+						operationId: store.sha(i.operationId + ":" + index),
+						kind: "video",
+						model: plan.model,
+						resolution: plan.resolution,
+						aspectRatio: plan.aspectRatio,
+						duration: chapter.duration,
+						prompt: chapter.prompt,
+						videoMode: plan.references.length ? "references" : "text",
+						referenceIds: plan.references.map((r) => r.referenceId),
+						chapter: {
+							planId: plan.id,
+							planVersion: plan.version,
+							chapterId: chapter.id,
+							index,
+							total: plan.chapters.length,
+							title: chapter.title,
+							sourceStartMs: chapter.sourceStartMs,
+							sourceEndMs: chapter.sourceEndMs,
+							timingEstimated: chapter.timingEstimated,
+						},
+					},
+				}),
+			);
+		const batch = await batches.prepareBatch({
+			root,
+			projectId: i.projectId,
+			raw: {
+				id: store.sha(i.projectId + ":" + i.operationId).slice(0, 32),
+				kind: "chapters",
+				jobs: jobs.map((j) => ({ id: j.id, digest: j.digest })),
+			},
+		});
+		result = {
+			...base,
+			jobs: jobs.map(link),
+			batch: {
+				id: batch.id,
+				planId: plan.id,
+				version: plan.version,
+				jobIds: jobs.map((j) => j.id),
+			},
+		};
 	} else {
 		const { type, ...request } = i.operation;
 		void type;
 		const job = await provider.prepare({
 			root,
+			net,
 			raw: {
 				...request,
 				projectId: i.projectId,

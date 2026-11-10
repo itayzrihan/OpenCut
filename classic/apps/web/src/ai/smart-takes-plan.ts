@@ -1,4 +1,8 @@
-import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
+import { connectedProviderFetch, readLocalProvider } from "./local-connection";
+import {
+	agentModelSchema,
+	preferredAgentModel,
+} from "@/editor-agent/model-preference";
 import { z } from "zod";
 import { readAgentResponse } from "@/editor-agent/stream";
 import type {
@@ -100,6 +104,7 @@ export async function requestSmartTakePlan({
 	onCheckpoint?: (checkpoint: SmartTakeCheckpoint) => void;
 }): Promise<SmartTakePlan> {
 	const account = window.__opencutAccountId;
+	const selectedProvider = readLocalProvider();
 	if (!account) throw new Error("Sign in and connect ChatGPT first");
 	const controller = new AbortController();
 	const abort = () => controller.abort();
@@ -108,7 +113,10 @@ export async function requestSmartTakePlan({
 	const assertCurrent = () => {
 		signal.throwIfAborted();
 		controller.signal.throwIfAborted();
-		if (window.__opencutAccountId !== account) {
+		if (
+			window.__opencutAccountId !== account ||
+			readLocalProvider() !== selectedProvider
+		) {
 			controller.abort();
 			throw new Error("Account changed. The take proposal was discarded.");
 		}
@@ -120,13 +128,16 @@ export async function requestSmartTakePlan({
 	try {
 		assertCurrent();
 		if (checkpoint.plan) return smartTakePlanSchema.parse(checkpoint.plan);
-		const response = await fetch("/api/editor-agent/connection", {
-			method: "POST",
-			credentials: "same-origin",
-			cache: "no-store",
-			signal: controller.signal,
-			headers,
-			body: JSON.stringify({ operation: "models" }),
+		const response = await connectedProviderFetch({
+			path: "/api/editor-agent/connection",
+			init: {
+				method: "POST",
+				credentials: "same-origin",
+				cache: "no-store",
+				signal: controller.signal,
+				headers,
+				body: JSON.stringify({ operation: "models" }),
+			},
 		});
 		const value = await response.json();
 		if (!response.ok)
@@ -147,19 +158,22 @@ export async function requestSmartTakePlan({
 			prompt: string;
 		}) => {
 			assertCurrent();
-			const response = await fetch("/api/editor-agent/respond", {
-				method: "POST",
-				credentials: "same-origin",
-				cache: "no-store",
-				headers,
-				signal: controller.signal,
-				body: JSON.stringify({
-					model,
-					reasoningEffort,
-					instructions,
-					input: [{ role: "user", content: prompt }],
-					tools: [],
-				}),
+			const response = await connectedProviderFetch({
+				path: "/api/editor-agent/respond",
+				init: {
+					method: "POST",
+					credentials: "same-origin",
+					cache: "no-store",
+					headers,
+					signal: controller.signal,
+					body: JSON.stringify({
+						model,
+						reasoningEffort,
+						instructions,
+						input: [{ role: "user", content: prompt }],
+						tools: [],
+					}),
+				},
 			});
 			const result = await readAgentResponse({
 				response,

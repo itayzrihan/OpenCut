@@ -55,6 +55,9 @@ pub enum Operation {
         #[serde(default)]
         https_references: std::collections::BTreeMap<String, String>,
     },
+    PrepareChapters {
+        plan_id: String,
+    },
     Status {},
 }
 #[derive(Debug, Clone, Serialize, Deserialize, JsonSchema)]
@@ -71,6 +74,8 @@ pub struct Output {
     pub reference: Option<Reference>,
     pub job: Option<Job>,
     pub jobs: Vec<Job>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub batch: Option<crate::generative::chapters::BatchLink>,
 }
 fn bad(s: impl Into<String>) -> CapabilityError {
     CapabilityError::InvalidInput(s.into())
@@ -83,7 +88,7 @@ pub fn register_generative_host(
     let mut d = CapabilityDescriptor::read(
         "project.generative.request",
         "Prepare a Director request in OpenCut",
-        "Import a reference (base64 up to12MiB plus original SHA256), prepare a frozen video/storyboard review, or read existing job status in the OPEN Classic project. NEVER sends a paid generation. Human alone enters PIN and approves in OpenCut Generative. First use project.generative.read for instructions and project.generative.edit for script/direction. Video requires a real marked storyboard; original audio/video must have verified HTTPS. Returns artifact metadata/job ID/digest/status; generation is not complete until ready. Same operationId/input replays a saved result; changed input conflicts. Use a NEW operationId with each current expectedRevision for status polls. Explicit project/revision; host IO is nontransactional, not undoable and has no dryRun. Use project.generative.edit for undoable creative changes. No file paths, credentials, approve/unlock or arbitrary provider endpoints. Keep OpenCut open; later results use normal Media import.",
+        "Import a reference (base64 up to12MiB plus original SHA256), prepare a frozen video/storyboard review, or read existing job status in the OPEN Classic project. NEVER sends a paid generation. Human alone enters PIN and approves in OpenCut Generative. First use project.generative.read for instructions and project.generative.edit for script/direction. Storyboards are optional. Original audio/video references must have verified HTTPS. prepareChapters takes a canonical planId from project.generative.chapters.build and validates captured source versions before creating one frozen review per chapter plus a batch manifest. Human approval remains separate. Returns artifact metadata/job ID/digest/status; generation is not complete until ready. Same operationId/input replays a saved result; changed input conflicts. Use a NEW operationId with each current expectedRevision for status polls. Explicit project/revision; host IO is nontransactional, not undoable and has no dryRun. Use project.generative.edit for undoable creative changes. No file paths, credentials, approve/unlock or arbitrary provider endpoints. Keep OpenCut open; later results use normal Media import.",
         "generative",
         serde_json::to_value(schema_for!(Input)).unwrap(),
         serde_json::to_value(schema_for!(Output)).unwrap(),
@@ -91,6 +96,7 @@ pub fn register_generative_host(
     d.access = AccessLevel::Write;
     d.document_support = DocumentSupport::Classic;
     d.open_world = true;
+    d.cancellable = true;
     d.idempotent = true;
     d.tags = vec![
         "director".into(),
@@ -123,6 +129,13 @@ pub fn register_generative_host(
             if let Operation::Prepare {kind: Kind::Video, ref prompt,..}=args.operation {
                 host_input["operation"]["prompt"]=json!(serde_json::to_string(&json!({"direction":prompt,"priority_instructions":crate::generative::INSTRUCTIONS,"original_transcript":document.transcript})).unwrap());
             }
+            if let Operation::PrepareChapters {ref plan_id}=args.operation {
+                let plan=document.chapter_plans.iter().find(|p|&p.id==plan_id).ok_or_else(||bad("Chapter plan missing"))?;
+                if plan.batch_id.is_some(){return Err(bad("This chapter plan already has prepared requests. Read its existing batch and job status instead."));}
+                let workspace:crate::production::ProductionWorkspace=serde_json::from_value(state.project.as_ref().unwrap().extensions.get(crate::production::KEY).cloned().unwrap_or(json!({}))).map_err(|e|bad(e.to_string()))?;
+                plan.check_sources(&workspace,&document).map_err(|e|bad(e.to_string()))?;
+                host_input["operation"]["plan"]=serde_json::to_value(plan).unwrap();
+            }
             let reply=bridge.execute_preflight("project.generative.request","generativeReview",&args.project_id,host_input,None).await?;
             check()?;
             let out: Output=serde_json::from_value(reply.data).map_err(|e|bad(e.to_string()))?;
@@ -130,6 +143,11 @@ pub fn register_generative_host(
             let change=match &args.operation {
                 Operation::ImportReference{..} => Some(json!({"type":"reference","reference":out.reference.as_ref().ok_or_else(||bad("Missing imported reference"))?})),
                 Operation::Prepare{..} => { let job=out.job.as_ref().filter(|j|j.status=="review").ok_or_else(||bad("Only an unapproved review may be prepared"))?; Some(json!({"type":"job","job":job})) },
+                Operation::PrepareChapters{plan_id} => {
+                    let plan=document.chapter_plans.iter().find(|p|&p.id==plan_id).unwrap();let batch=out.batch.as_ref().filter(|b|&b.plan_id==plan_id&&b.version==plan.version&&b.job_ids.len()==plan.chapters.len()).ok_or_else(||bad("Mismatched chapter batch receipt"))?;
+                    if out.jobs.len()!=batch.job_ids.len()||out.jobs.iter().zip(&batch.job_ids).any(|(j,id)|&j.id!=id||j.status!="review"){return Err(bad("Only unapproved matching chapter requests may be prepared"));}
+                    Some(json!({"type":"chapterBatch","planId":plan_id,"version":plan.version,"batchId":batch.id,"jobIds":batch.job_ids,"jobs":out.jobs}))
+                },
                 Operation::Status{} => None,
             };
             let revision=if let Some(change)=change {

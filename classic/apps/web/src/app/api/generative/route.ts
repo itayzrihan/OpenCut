@@ -10,6 +10,7 @@ import { requestBytes } from "@/generative/server/request";
 import * as vault from "@/generative/server/vault";
 import * as store from "@/generative/server/store";
 import * as provider from "@/generative/server/provider";
+import * as batches from "@/generative/server/batch";
 import { publicOrigin, share } from "@/generative/server/shares";
 import { CHATGPT_STORYBOARD_MODEL } from "@/generative/storyboard-model";
 export const runtime = "nodejs";
@@ -19,8 +20,15 @@ export const GET = withAccount(async (request: Request) => {
 		const url = new URL(request.url),
 			projectId = store.validProject(url.searchParams.get("projectId") ?? ""),
 			root = join(accountDataRoot(), "generative");
+		if (url.searchParams.get("imageModels") === "1")
+			return Response.json({ models: await provider.imageModels() });
 		if (url.searchParams.get("models") === "1")
 			return Response.json({ models: await provider.models() });
+		const batchId = url.searchParams.get("batch");
+		if (batchId)
+			return Response.json({
+				batch: await batches.readBatch({ root, projectId, id: batchId }),
+			});
 		const fileId = url.searchParams.get("file");
 		if (fileId) {
 			const f = await store.fileBytes({
@@ -92,6 +100,33 @@ export const POST = withAccount(async (request: NextRequest) => {
 		const body = JSON.parse(raw);
 		const projectId = store.validProject(body.projectId ?? "");
 		switch (body.action) {
+			case "batch-status":
+				return Response.json({
+					batch: await batches.readBatch({ root, projectId, id: body.id }),
+				});
+			case "prepare-batch":
+				return Response.json({
+					batch: await batches.prepareBatch({
+						root,
+						projectId,
+						raw: body.batch,
+					}),
+				});
+			case "approve-batch":
+				return Response.json({
+					batch: await batches.approveBatch({
+						root,
+						projectId,
+						id: body.id,
+						digest: body.digest,
+						pin: body.pin,
+						confirmed: body.confirmed === true,
+					}),
+				});
+			case "cancel-batch":
+				return Response.json({
+					batch: await batches.cancelBatch({ root, projectId, id: body.id }),
+				});
 			case "setup":
 				await vault.setup({ root: root, pin: body.pin, key: body.apiKey });
 				return Response.json({ ok: true });
@@ -105,8 +140,13 @@ export const POST = withAccount(async (request: NextRequest) => {
 			case "prepare":
 				if (body.request?.projectId !== projectId)
 					throw new Error("Project scope mismatch");
-				if (body.request?.kind === "storyboard" && body.request?.model === CHATGPT_STORYBOARD_MODEL)
-					throw new Error("Image generation is unavailable through the POCUT Agent ChatGPT connection.");
+				if (
+					body.request?.kind === "storyboard" &&
+					body.request?.model === CHATGPT_STORYBOARD_MODEL
+				)
+					throw new Error(
+						"Image generation is unavailable through the POCUT Agent ChatGPT connection.",
+					);
 				return Response.json({
 					job: await provider.prepare({
 						root: root,
@@ -125,7 +165,9 @@ export const POST = withAccount(async (request: NextRequest) => {
 						pin: body.pin,
 						digest: body.digest,
 						authorizeChatGpt: async () => {
-							throw new Error("Image generation is unavailable through the POCUT Agent ChatGPT connection.");
+							throw new Error(
+								"Image generation is unavailable through the POCUT Agent ChatGPT connection.",
+							);
 						},
 					}),
 				});

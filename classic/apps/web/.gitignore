@@ -16,3 +16,7 @@ next-env.d.ts
 
 # Isolated internal testing builds
 .next-*/
+
+# Generated local AI connector; rebuilt by prebuild, no embedded environment.
+/public/downloads/pocut-companion*.mjs
+/public/downloads/pocut-companion*.json

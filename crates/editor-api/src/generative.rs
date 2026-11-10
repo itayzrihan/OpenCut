@@ -4,6 +4,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 pub const KEY: &str = "generative";
 pub const INSTRUCTIONS: &str = include_str!("generative-director.md");
+pub mod chapters;
 pub mod storyboard;
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -21,6 +22,10 @@ pub struct GenerativeDocument {
     /// Client-facing proposal copy. Generation prompts remain in `direction`.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub storyboard: Option<storyboard::Storyboard>,
+    #[serde(default)]
+    pub chapter_plans: Vec<chapters::Plan>,
+    #[serde(default,skip_serializing_if="Option::is_none")]
+    pub production_handoff:Option<crate::production::ProductionHandoff>,
 }
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -64,6 +69,19 @@ pub struct Job {
 }
 impl GenerativeDocument {
     pub fn validate(&self) -> Result<(), ModelError> {
+        if let Some(handoff)=&self.production_handoff {handoff.validate()?;}
+        if self.chapter_plans.len() > 16 {
+            return Err(ModelError::Invalid(
+                "At most 16 chapter collections per project".into(),
+            ));
+        }
+        let mut plans = std::collections::BTreeSet::new();
+        for plan in &self.chapter_plans {
+            plan.validate()?;
+            if !plans.insert(&plan.id) {
+                return Err(ModelError::Invalid("Duplicate chapter collection".into()));
+            }
+        }
         let fail = || ModelError::Invalid("Invalid or oversized Director document".into());
         if self.messages.len() > 200
             || self.references.len() > 100

@@ -97,6 +97,12 @@ pub use runtime::{
 };
 
 pub mod generative;
+pub mod audio_production;
+mod audio_production_host;
+pub use audio_production_host::register_audio_production_host;
+pub mod production;
+mod production_video;
+pub use production_video::register_production_video;
 
 mod generative_host;
 pub use generative_host::register_generative_host;

@@ -1,4 +1,8 @@
-import { agentModelSchema, preferredAgentModel } from "@/editor-agent/model-preference";
+import { connectedProviderFetch, readLocalProvider } from "./local-connection";
+import {
+	agentModelSchema,
+	preferredAgentModel,
+} from "@/editor-agent/model-preference";
 import { readAgentResponse } from "@/editor-agent/stream";
 import { z } from "zod";
 import type { ReorganizeTakesPlan } from "@/timeline/reorganize-takes/apply-reorganize-takes";
@@ -68,10 +72,14 @@ async function requestReorganizeTakesJson({
 	prompt: string;
 }): Promise<unknown> {
 	const account = window.__opencutAccountId;
+	const selectedProvider = readLocalProvider();
 	if (!account) throw new Error("Sign in to POCUT first");
 	const controller = new AbortController();
 	const assertAccount = () => {
-		if (window.__opencutAccountId !== account) {
+		if (
+			window.__opencutAccountId !== account ||
+			readLocalProvider() !== selectedProvider
+		) {
 			controller.abort();
 			throw new Error(
 				"Account changed. Discarded the previous account's take plan.",
@@ -81,16 +89,19 @@ async function requestReorganizeTakesJson({
 	const leaving = () => controller.abort();
 	window.addEventListener("pagehide", leaving, { once: true });
 	try {
-		const modelResponse = await fetch("/api/editor-agent/connection", {
-			method: "POST",
-			credentials: "same-origin",
-			cache: "no-store",
-			signal: controller.signal,
-			headers: {
-				"Content-Type": "application/json",
-				"X-OpenCut-Account": account,
+		const modelResponse = await connectedProviderFetch({
+			path: "/api/editor-agent/connection",
+			init: {
+				method: "POST",
+				credentials: "same-origin",
+				cache: "no-store",
+				signal: controller.signal,
+				headers: {
+					"Content-Type": "application/json",
+					"X-OpenCut-Account": account,
+				},
+				body: JSON.stringify({ operation: "models" }),
 			},
-			body: JSON.stringify({ operation: "models" }),
 		});
 		const modelResult = await modelResponse.json();
 		if (!modelResponse.ok)
@@ -108,22 +119,25 @@ async function requestReorganizeTakesJson({
 		const { model, reasoningEffort } = preferredAgentModel(models);
 		if (!model)
 			throw new Error("No ChatGPT model is available for reorganizing takes");
-		const response = await fetch("/api/editor-agent/respond", {
-			method: "POST",
-			credentials: "same-origin",
-			cache: "no-store",
-			signal: controller.signal,
-			headers: {
-				"Content-Type": "application/json",
-				"X-OpenCut-Account": account,
+		const response = await connectedProviderFetch({
+			path: "/api/editor-agent/respond",
+			init: {
+				method: "POST",
+				credentials: "same-origin",
+				cache: "no-store",
+				signal: controller.signal,
+				headers: {
+					"Content-Type": "application/json",
+					"X-OpenCut-Account": account,
+				},
+				body: JSON.stringify({
+					model,
+					reasoningEffort,
+					instructions: system,
+					input: [{ role: "user", content: prompt }],
+					tools: [],
+				}),
 			},
-			body: JSON.stringify({
-				model,
-				reasoningEffort,
-				instructions: system,
-				input: [{ role: "user", content: prompt }],
-				tools: [],
-			}),
 		});
 		const aiResponse = z
 			.object({

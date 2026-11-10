@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { aiClientFetch } from "@/ai/client-transport";
+import { openAgentSettings } from "@/editor-agent/settings-navigation";
 
 export interface AiOAuthStatus {
 	authenticated: boolean;
@@ -57,7 +58,7 @@ export function useAiOAuthStatus() {
 	}, [refresh]);
 
 	const login = useCallback(() => {
-		window.dispatchEvent(new Event("opencut-agent-connections"));
+		openAgentSettings();
 	}, []);
 
 	return { status, isLoading, refresh, login };

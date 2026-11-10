@@ -272,6 +272,28 @@ async fn future_image_capabilities_feed_bounded_current_revision_pixels_without_
 }
 
 #[tokio::test]
+async fn eight_source_frames_reach_provider_with_attachment_bytes_in_the_same_two_mb_budget() {
+    use base64::{Engine, engine::general_purpose::STANDARD};
+    use opencut_editor_api::{CapabilityDescriptor,CapabilityExecution,CapabilityResult,DocumentSupport,FnCapability};
+    use std::sync::Arc;
+    for attachment_bytes in [0,600_000] {
+        let (runtime,mut agent)=setup().await;
+        let mut descriptor=CapabilityDescriptor::read("test.source-frames","Source video samples","Bounded current image evidence","test",json!({"type":"object"}),json!({"type":"object"}));
+        descriptor.execution=CapabilityExecution::Immediate;descriptor.document_support=DocumentSupport::Classic;
+        let refs=(0..9).map(|index| {let mut bytes=vec![index;180_000];bytes[..3].copy_from_slice(&[255,216,255]);runtime.artifacts().put(bytes,"image/jpeg",Some(640),Some(360),None).unwrap()}).collect::<Vec<_>>();
+        let result_refs=refs.clone();runtime.registry().register(Arc::new(FnCapability::new(descriptor,move|_,_|{let refs=result_refs.clone();Box::pin(async move {let mut result=CapabilityResult::data(json!({"sampledFrames":9}));result.artifacts=refs;Ok(result)})}))).unwrap();
+        if attachment_bytes>0 {let mut bytes=vec![42;attachment_bytes];bytes[..3].copy_from_slice(&[255,216,255]);let image=runtime.artifacts().put(bytes,"image/jpeg",None,None,None).unwrap();agent.set_input_attachments("alice","classic-project",vec![InputAttachment{artifact_id:image.id,filename:"User reference.jpg".into()}]).unwrap();}
+        let epoch=agent.run().epoch();agent.describe(epoch,"test.source-frames").unwrap();agent.model_action(epoch,"inspect",ModelAction::Invoke{id:"test.source-frames".into(),input:json!({})}).unwrap();
+        let request=agent.provider_request("fixture-model").unwrap();
+        let frames=request.body["input"].as_array().unwrap().iter().filter_map(|item|item["content"].as_array()).flatten().filter(|item|item["type"]=="input_text"&&item["text"].as_str().is_some_and(|text|text.starts_with("Host image evidence"))).count();assert_eq!(frames,if attachment_bytes==0{8}else{7});
+        let images=request.body["input"].as_array().unwrap().iter().filter_map(|item|item["content"].as_array()).flatten().filter(|item|item["type"]=="input_image").collect::<Vec<_>>();
+        assert_eq!(images.len(),8);
+        let total:usize=images.iter().map(|image|STANDARD.decode(image["image_url"].as_str().unwrap().split_once(',').unwrap().1).unwrap().len()).sum();
+        assert!(total<=2_000_000);assert!(!agent.checkpoint().unwrap().contains(";base64,"));
+    }
+}
+
+#[tokio::test]
 async fn knowledge_registry_round_reconciles_a_lost_durable_response_while_paused() {
     use opencut_editor_agent::knowledge::*;
     use opencut_editor_api::{HostBridge, HostEffectResult};

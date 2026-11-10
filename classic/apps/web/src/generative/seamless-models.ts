@@ -13,6 +13,7 @@ export interface VideoGenerationModel {
 	supported_resolutions?: string[];
 	supported_aspect_ratios?: string[];
 	supported_frame_images?: string[];
+	generate_audio?: boolean;
 	pricing_skus?: Record<string, string>;
 }
 

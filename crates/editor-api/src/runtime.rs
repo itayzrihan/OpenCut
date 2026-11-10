@@ -38,7 +38,7 @@ pub(crate) enum HistoryDocument {
 impl From<EditorDocument> for HistoryDocument {
     fn from(document: EditorDocument) -> Self {
         if let Some(classic) = document.project.as_ref().and_then(|p| p.classic.as_ref()) {
-            let archive_bytes = classic.to_archive(&mut crate::classic_archive::SourcePool::new())
+            let archive_bytes = classic.to_archive(&mut crate::classic_archive::SourcePool::new(), &document.project.as_ref().unwrap().extensions)
                 .encoded_len().expect("validated Classic archive serializes");
             Self::Classic { revision: document.revision,
                 archive_bytes,

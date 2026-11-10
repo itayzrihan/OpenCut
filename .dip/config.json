@@ -526,28 +526,70 @@
     },
     "classic-export-audio-parity": {
       "command": [
-        "node", "--input-type=module", "--eval",
+        "node",
+        "--input-type=module",
+        "--eval",
         "process.env.OPENCUT_STREAM_EXPORT_TEST = '1'; process.argv.splice(1, 0, 'classic/scripts/test-web.mjs'); await import('./classic/scripts/test-web.mjs');",
         "--",
         "src/export/__tests__/streaming-browser.test.ts",
         "src/retime/__tests__/audio-handles.test.ts",
-        "--jobs=1", "--timeout=360000"
+        "--jobs=1",
+        "--timeout=360000"
       ],
       "timeoutMs": 420000
     },
     "classic-split-playhead": {
       "command": [
-        "node", "classic/scripts/test-web.mjs",
+        "node",
+        "classic/scripts/test-web.mjs",
         "src/core/managers/__tests__/canonical-command-manager.test.ts",
-        "--jobs=1", "--timeout=240000"
+        "--jobs=1",
+        "--timeout=240000"
       ],
       "timeoutMs": 300000
     },
     "classic-linked-audio": {
       "command": [
-        "cargo", "test", "--locked", "-p", "opencut-editor-api", "--test", "classic_source_audio", "--jobs", "1", "--", "--test-threads=1"
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "opencut-editor-api",
+        "--test",
+        "classic_source_audio",
+        "--jobs",
+        "1",
+        "--",
+        "--test-threads=1"
       ],
       "timeoutMs": 600000
+    },
+    "agent-production-studio": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/production-studio/production-wasm.test.ts",
+        "src/production-studio/video-inspection.test.ts",
+        "src/audio-production/server.test.ts",
+        "src/ai/companion/server.test.ts",
+        "src/ai/companion/native-providers.test.ts",
+        "src/ai/__tests__/client-transport.test.ts",
+        "src/ai/__tests__/production-image.test.ts",
+        "src/ai/__tests__/native-image-effect.test.ts",
+        "src/generative/chapters-wasm.test.ts",
+        "src/generative/batch-validation.test.ts",
+        "src/generative/server/batch.test.ts",
+        "src/generative/server/provider.test.ts",
+        "src/generative/server/mcp.test.ts",
+        "src/generative/host-effect.test.ts",
+        "src/generative/result-import.test.ts",
+        "src/generative/canonical-session.test.ts",
+        "--jobs=2",
+        "--timeout=120000",
+        "--test-timeout=120000",
+        "--report=.local/agent-production-studio/configured"
+      ],
+      "timeoutMs": 300000
     }
   },
   "mode": "coordinate",

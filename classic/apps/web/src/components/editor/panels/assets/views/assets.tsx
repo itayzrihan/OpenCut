@@ -1,4 +1,5 @@
 "use client";
+import { AssetChapterCollections } from "@/generative/components/chapter-plans";
 
 import { useWorkspaceAccount } from "@/accounts/gate";
 import { localizeClientMessage } from "@/i18n/client-messages";
@@ -691,6 +692,9 @@ function MediaViewContent() {
 							{library.error}
 						</p>
 					)}
+				</div>
+				<div className="max-h-52 overflow-y-auto">
+					<AssetChapterCollections />
 				</div>
 				<div ref={mediaListViewportRef} className="relative min-h-0 flex-1">
 					{isDragOver ||

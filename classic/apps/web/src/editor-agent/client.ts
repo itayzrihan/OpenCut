@@ -3,6 +3,10 @@ import type {
 	EditingAgentSnapshot,
 	EditingAgentProviderRound,
 } from "@/core/agent-protocol";
+import {
+	connectedProviderFetch,
+	readLocalProvider,
+} from "@/ai/local-connection";
 import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { performStoryboardPdfEffect } from "@/generative/storyboard-pdf-effect";
 import { mediaTime } from "@/wasm/media-time";
@@ -24,7 +28,10 @@ export interface AgentConnection {
 	identity: { name?: string; email?: string } | null;
 	error: string | null;
 	usageUrl: string;
-	provider?: "openrouter";
+	provider?: "openrouter" | "local-codex" | "local-claude";
+	installed?: boolean;
+	imageGenerationSupported?: boolean;
+	authenticationRequired?: boolean;
 	sessionSeconds?: number;
 	remainingRequests?: number;
 }
@@ -45,7 +52,10 @@ export const connectionSchemas = {
 			.nullable(),
 		error: z.string().nullable(),
 		usageUrl: z.string().url(),
-		provider: z.literal("openrouter").optional(),
+		provider: z.enum(["openrouter", "local-codex", "local-claude"]).optional(),
+		installed: z.boolean().optional(),
+		imageGenerationSupported: z.boolean().optional(),
+		authenticationRequired: z.boolean().optional(),
 		sessionSeconds: z.number().nonnegative().optional(),
 		remainingRequests: z.number().int().nonnegative().optional(),
 	}),
@@ -93,23 +103,29 @@ export async function connectionRequest<T>({
 	input,
 	signal,
 	schema,
+	providerOverride,
 }: {
 	operation?: "signIn" | "disconnect" | "models" | "connectHosted";
 	input?: { pin: string; apiKey?: string; confirmed: true };
+	providerOverride?: "codex" | "claude" | null;
 	signal?: AbortSignal;
 	schema: z.ZodType<T>;
 }): Promise<T> {
 	const account = accountId();
-	const response = await fetch("/api/editor-agent/connection", {
-		method: operation ? "POST" : "GET",
-		credentials: "same-origin",
-		cache: "no-store",
-		signal,
-		headers: {
-			"Content-Type": "application/json",
-			"X-OpenCut-Account": account,
+	const response = await connectedProviderFetch({
+		path: "/api/editor-agent/connection",
+		providerOverride,
+		init: {
+			method: operation ? "POST" : "GET",
+			credentials: "same-origin",
+			cache: "no-store",
+			signal,
+			headers: {
+				"Content-Type": "application/json",
+				"X-OpenCut-Account": account,
+			},
+			...(operation ? { body: JSON.stringify({ operation, ...input }) } : {}),
 		},
-		...(operation ? { body: JSON.stringify({ operation, ...input }) } : {}),
 	});
 	if (accountId() !== account) throw new Error("The active account changed");
 	const value: unknown = await response.json();
@@ -443,6 +459,7 @@ export class EditorAgentClient {
 		signal.throwIfAborted();
 		this.assertScope();
 		const effect = this.editor.command.getEditingAgentHostEffect();
+		const runId = this.editor.command.getEditingAgentSnapshot()?.scope.runId;
 		if (!effect) return null;
 		if (effect.projectId !== this.project)
 			throw new Error("Host effect targets another project");
@@ -505,13 +522,27 @@ export class EditorAgentClient {
 		// request was stopped, so the shared host slot can accept another tool.
 		if (
 			!(
-				["earshotPreview", "storyboardPdf"].includes(effect.adapter) &&
-				result.type === "rejected"
+				[
+					"earshotPreview",
+					"storyboardPdf",
+					"subscriptionImage",
+					"productionVideoFrames",
+				].includes(effect.adapter) && result.type === "rejected"
 			)
 		) {
 			signal.throwIfAborted();
-			this.assertScope();
 		}
+		this.assertScope();
+		const currentEffect = this.editor.command.getEditingAgentHostEffect();
+		if (
+			this.disposed ||
+			this.editor.command.getEditingAgentSnapshot()?.scope.runId !== runId ||
+			currentEffect?.id !== effect.id ||
+			currentEffect.adapter !== effect.adapter ||
+			currentEffect.projectId !== effect.projectId ||
+			JSON.stringify(currentEffect.request) !== JSON.stringify(effect.request)
+		)
+			throw new Error("The pending host operation changed before completion");
 		const round = this.editor.command.settleEditingAgentHostEffect({
 			effectId: effect.id,
 			result,
@@ -570,7 +601,7 @@ export class EditorAgentClient {
 		signal.throwIfAborted();
 		const expectedRevision = this.editor.command.getCanonicalRevision();
 		return requestAgentResponse({
-			allowRetry: !isHostedBrowserWorkspace(),
+			allowRetry: !isHostedBrowserWorkspace() && !readLocalProvider(),
 			beforeAttempt: () => {
 				this.assertScope();
 				if (this.editor.command.getCanonicalRevision() !== expectedRevision)
@@ -586,15 +617,18 @@ export class EditorAgentClient {
 					text: `Provider temporarily unavailable. Retrying after attempt ${attempt}… No partial action was applied.`,
 				}),
 			send: () =>
-				fetch("/api/editor-agent/respond", {
-					method: "POST",
-					credentials: "same-origin",
-					headers: {
-						"Content-Type": "application/json",
-						"X-OpenCut-Account": this.account,
+				connectedProviderFetch({
+					path: "/api/editor-agent/respond",
+					init: {
+						method: "POST",
+						credentials: "same-origin",
+						headers: {
+							"Content-Type": "application/json",
+							"X-OpenCut-Account": this.account,
+						},
+						body: JSON.stringify({ ...body, reasoningEffort }),
+						signal,
 					},
-					body: JSON.stringify({ ...body, reasoningEffort }),
-					signal,
 				}),
 			signal,
 			onEvent: (event) => {

@@ -17,6 +17,8 @@ pub(crate) struct ArchivedClassicProject {
     /// ID in the archive source pool. References are resolved before validation.
     document: Map<String, Value>,
     media_assets: Vec<Map<String, Value>>,
+    #[serde(default, skip_serializing_if = "Map::is_empty")]
+    pub(crate) project_extensions: Map<String, Value>,
 }
 
 impl ArchivedClassicProject {
@@ -69,7 +71,7 @@ impl ArchivedHistorySnapshot {
         chained: bool,
         sources: &SourcePool,
         budget: &mut usize,
-    ) -> Result<ClassicProject, ModelError> {
+    ) -> Result<(ClassicProject, Map<String, Value>), ModelError> {
         let classic = match self {
             Self::Full(classic) => {
                 if chained {
@@ -120,7 +122,7 @@ impl ArchivedHistorySnapshot {
 }
 
 impl ClassicProject {
-    pub(crate) fn to_archive(&self, sources: &mut SourcePool) -> ArchivedClassicProject {
+    pub(crate) fn to_archive(&self, sources: &mut SourcePool, extensions: &Map<String, Value>) -> ArchivedClassicProject {
         let mut document = self.document.fields.clone();
         if let Some(compositions) = &self.document.compositions {
             let archived = compositions
@@ -140,6 +142,7 @@ impl ClassicProject {
         ArchivedClassicProject {
             document,
             media_assets: self.media_assets.clone(),
+            project_extensions: extensions.clone(),
         }
     }
 
@@ -160,7 +163,7 @@ impl ClassicProject {
 }
 
 impl ArchivedClassicProject {
-    pub(crate) fn restore(mut self, sources: &SourcePool) -> Result<ClassicProject, ModelError> {
+    pub(crate) fn restore(mut self, sources: &SourcePool) -> Result<(ClassicProject, Map<String, Value>), ModelError> {
         let compositions = self
             .document
             .remove("hyperframesCompositions")
@@ -189,13 +192,13 @@ impl ArchivedClassicProject {
                     .collect::<Result<BTreeMap<_, _>, ModelError>>()
             })
             .transpose()?;
-        Ok(ClassicProject {
+        Ok((ClassicProject {
             document: ClassicDocument {
                 fields: self.document,
                 compositions,
             },
             media_assets: self.media_assets,
-        })
+        }, self.project_extensions))
     }
 }
 

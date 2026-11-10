@@ -10,7 +10,10 @@ import { earshotSourceKey } from "@/earshot/audio";
 import { SmartTakeBadge, SmartTakeMenu } from "@/timeline/smart-takes/controls";
 import { ReplaceDialog } from "@/generative/components/replace-dialog";
 import { SeamlessConnectDialog } from "@/generative/components/seamless-connect-control";
-import { getSeamlessPair, type SeamlessPair } from "@/generative/seamless-connect";
+import {
+	getSeamlessSelection,
+	type SeamlessSelection,
+} from "@/generative/seamless-connect";
 
 import {
 	previewRestoreSilence,
@@ -306,7 +309,9 @@ function TimelineElementComponent({
 	const editor = useEditor();
 	const [replaceOpen, setReplaceOpen] = useState(false);
 	const [replaceStarted, setReplaceStarted] = useState(false);
-	const [seamlessPair, setSeamlessPair] = useState<SeamlessPair | null>(null);
+	const [seamlessPair, setSeamlessPair] = useState<SeamlessSelection | null>(
+		null,
+	);
 	const mediaAsset = useEditorMediaAsset({
 		mediaId: hasMediaId(element) ? element.mediaId : null,
 	});
@@ -466,7 +471,12 @@ function TimelineElementComponent({
 				/>
 			)}
 			{replaceStarted && element.type === "video" && (
-				<ReplaceDialog open={replaceOpen} onOpenChange={setReplaceOpen} trackId={track.id} clip={element} />
+				<ReplaceDialog
+					open={replaceOpen}
+					onOpenChange={setReplaceOpen}
+					trackId={track.id}
+					clip={element}
+				/>
 			)}
 		</PixelsPerSecondContext.Provider>
 	);
@@ -705,7 +715,7 @@ function TimelineElementMenuContent({
 	mediaAsset: MediaAsset | null;
 	isExpanded: boolean;
 	onReplace: () => void;
-	onSeamlessConnect: (pair: SeamlessPair) => void;
+	onSeamlessConnect: (pair: SeamlessSelection) => void;
 }) {
 	const editor = useEditor();
 	const allMediaAssets = useEditorMedia((currentEditor) =>
@@ -735,8 +745,10 @@ function TimelineElementMenuContent({
 			selectedElement.elementId === element.id,
 	);
 	const seamlessPair =
-		isCurrentElementSelected && selectedElementCount === 2
-			? getSeamlessPair(
+		isCurrentElementSelected &&
+		selectedElementCount >= 2 &&
+		selectedElementCount <= 11
+			? getSeamlessSelection(
 					editor.timeline.getElementsWithTracks({ elements: selectedElements }),
 				)
 			: null;

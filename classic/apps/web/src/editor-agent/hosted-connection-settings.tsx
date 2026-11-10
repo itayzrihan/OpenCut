@@ -189,7 +189,7 @@ export function HostedConnectionSettings({
 				</a>
 			</p>
 			<p className="text-xs text-muted-foreground">
-				<UiMessage text="Media processing and local AI models run in your browser. Prompts and selected review images go to your connected provider. ChatGPT subscription sign-in is available in the local desktop app." />
+				<UiMessage text="Media processing and local AI models run in your browser. Prompts and selected review images go to your connected provider. ChatGPT subscription sign-in is available through the local Codex companion on this device." />
 			</p>
 		</div>
 	);

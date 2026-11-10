@@ -339,6 +339,16 @@ impl Project {
             ));
         }
         self.settings.validate()?;
+        if let Some(value) = self.extensions.get(crate::production::KEY) {
+            let workspace: crate::production::ProductionWorkspace = serde_json::from_value(value.clone())
+                .map_err(|e|ModelError::Invalid(e.to_string()))?;
+            workspace.validate(self)?;
+        }
+        if let Some(value) = self.extensions.get(crate::audio_production::KEY) {
+            let state: crate::audio_production::AudioProduction = serde_json::from_value(value.clone())
+                .map_err(|e| ModelError::Invalid(e.to_string()))?;
+            state.validate()?;
+        }
         if let Some(value) = self.extensions.get(crate::generative::KEY) {
             let state: crate::generative::GenerativeDocument =
                 serde_json::from_value(value.clone())

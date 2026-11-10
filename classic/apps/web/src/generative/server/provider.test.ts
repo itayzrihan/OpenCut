@@ -40,10 +40,23 @@ async function fixture() {
 	});
 	const calls: string[] = [];
 	// Fetch is a platform ABI with positional Request/init arguments.
+	// Fetch ABI receives positional URL/init arguments.
 	// eslint-disable-next-line opencut/prefer-object-params
 	const net: Fetcher = async (url, init) => {
 		const method = init?.method ?? "GET";
 		calls.push(method + " " + url);
+		if (String(url).endsWith("/api/v1/models"))
+			return Response.json({
+				data: [REPLACE_IMAGE_MODEL, "test/image"].map((id) => ({
+					id,
+					name: id,
+					architecture: {
+						input_modalities: ["image", "text"],
+						output_modalities: ["image", "text"],
+					},
+					endpoints: ["/api/v1/chat/completions"],
+				})),
+			});
 		if (String(url).endsWith("/models"))
 			return Response.json({
 				data: [
@@ -128,6 +141,8 @@ test("Wan Seamless Connect prepares exactly two ordered frame images and accepts
 		referenceIds: [first.id, last.id],
 		seamless: target,
 	};
+	// Fetch ABI receives positional URL/init arguments.
+	// eslint-disable-next-line opencut/prefer-object-params
 	const net: Fetcher = async (url, init) => {
 		expect(String(url)).toEndWith("/videos/models");
 		expect(init?.method).toBeUndefined();
@@ -186,54 +201,117 @@ test("Wan Seamless Connect prepares exactly two ordered frame images and accepts
 
 test("Replace prepares ten chronological image references or a full text-only shot", async () => {
 	const { root, input } = await fixture();
-	const frames = await Promise.all(Array.from({ length: 10 }, (_, i) => store.artifact({
-		root, projectId: input.projectId, name: `frame-${i}.jpg`,
-		mime: "image/jpeg", bytes: Buffer.from(`original frame ${i}`), storyboard: false,
-	})));
+	const frames = await Promise.all(
+		Array.from({ length: 10 }, (_, i) =>
+			store.artifact({
+				root,
+				projectId: input.projectId,
+				name: `frame-${i}.jpg`,
+				mime: "image/jpeg",
+				bytes: Buffer.from(`original frame ${i}`),
+				storyboard: false,
+			}),
+		),
+	);
+	// Fetch ABI receives positional URL/init arguments.
+	// eslint-disable-next-line opencut/prefer-object-params
 	const net: Fetcher = async (url, init) => {
+		if (String(url).endsWith("/api/v1/models"))
+			return Response.json({
+				data: [
+					{
+						id: REPLACE_IMAGE_MODEL,
+						architecture: {
+							input_modalities: ["image", "text"],
+							output_modalities: ["image", "text"],
+						},
+						endpoints: ["/api/v1/chat/completions"],
+					},
+				],
+			});
 		expect(String(url)).toEndWith("/videos/models");
 		expect(init?.method).toBeUndefined();
-		return Response.json({ data: [{
-			id: REPLACE_VIDEO_MODEL, supported_durations: [2, 4],
-			supported_resolutions: ["720p"], supported_aspect_ratios: ["9:16"],
-		}] });
+		return Response.json({
+			data: [
+				{
+					id: REPLACE_VIDEO_MODEL,
+					supported_durations: [2, 4],
+					supported_resolutions: ["720p"],
+					supported_aspect_ratios: ["9:16"],
+				},
+			],
+		});
 	};
 	const replacement = {
-		sceneId: "scene", trackId: "track", elementId: "selected",
-		anchor: "a".repeat(64), durationTicks: 458400, mode: "refine",
+		sceneId: "scene",
+		trackId: "track",
+		elementId: "selected",
+		anchor: "a".repeat(64),
+		durationTicks: 458400,
+		mode: "refine",
 	};
 	const raw = {
-		...input, replacement, model: REPLACE_VIDEO_MODEL, duration: 4, resolution: "720p",
+		...input,
+		replacement,
+		model: REPLACE_VIDEO_MODEL,
+		duration: 4,
+		resolution: "720p",
 		referenceIds: frames.map((f) => f.id),
 	};
-	const referenceUrl = async () => { throw new Error("Use inline reference images"); };
+	const referenceUrl = async () => {
+		throw new Error("Use inline reference images");
+	};
 	const refine = await prepare({ root, raw, net, referenceUrl });
 	expect(refine.replacement).toEqual(replacement);
 	expect(refine.status).toBe("review");
 	const payload = await store.json({
-		root: store.jobRoot({ root, jobId: refine.id }), name: "payload.json",
+		root: store.jobRoot({ root, jobId: refine.id }),
+		name: "payload.json",
 	});
 	expect(payload).toEqual({
-		model: REPLACE_VIDEO_MODEL, prompt: raw.prompt, duration: 4, resolution: "720p",
-		aspect_ratio: "9:16", generate_audio: false,
+		model: REPLACE_VIDEO_MODEL,
+		prompt: raw.prompt,
+		duration: 4,
+		resolution: "720p",
+		aspect_ratio: "9:16",
+		generate_audio: false,
 		input_references: frames.map((_, i) => ({
-			type: "image_url", image_url: {
+			type: "image_url",
+			image_url: {
 				url: `data:image/jpeg;base64,${Buffer.from(`original frame ${i}`).toString("base64")}`,
 			},
 		})),
 	});
 	const full = await prepare({
-		root, raw: { ...raw, replacement: { ...replacement, mode: "full" }, referenceIds: [] },
-		net, referenceUrl,
+		root,
+		raw: {
+			...raw,
+			replacement: { ...replacement, mode: "full" },
+			referenceIds: [],
+		},
+		net,
+		referenceUrl,
 	});
 	expect(full.references).toEqual([]);
-	await expect(prepare({
-		root, raw: { ...raw, referenceIds: [] }, net, referenceUrl,
-	})).rejects.toThrow("distinct image references");
+	await expect(
+		prepare({
+			root,
+			raw: { ...raw, referenceIds: [] },
+			net,
+			referenceUrl,
+		}),
+	).rejects.toThrow("distinct image references");
 	const image = await prepare({
-		root, referenceUrl, net, raw: {
-			projectId: input.projectId, kind: "storyboard", model: REPLACE_IMAGE_MODEL,
-			prompt: "A single still", referenceImage: true, referenceIds: [],
+		root,
+		referenceUrl,
+		net,
+		raw: {
+			projectId: input.projectId,
+			kind: "storyboard",
+			model: REPLACE_IMAGE_MODEL,
+			prompt: "A single still",
+			referenceImage: true,
+			referenceIds: [],
 		},
 	});
 	expect(image.referenceImage).toBe(true);
@@ -455,7 +533,8 @@ test("one approved video moves through queue, in_progress, download, and ready",
 	const queued = Promise.withResolvers<Response>();
 	const download = Promise.withResolvers<void>();
 	let statusPolls = 0;
-	// eslint-disable-next-line opencut/prefer-object-params -- platform Fetch ABI.
+	// Fetch ABI receives positional URL/init arguments.
+	// eslint-disable-next-line opencut/prefer-object-params
 	const net: Fetcher = async (url, init) => {
 		if (String(url).endsWith("/videos/job123") && statusPolls++ === 0)
 			return queued.promise;
@@ -558,7 +637,8 @@ test("terminal provider failure remains terminal after the PIN lease ends", asyn
 		referenceUrl: async () => "",
 		net: f.net,
 	});
-	// eslint-disable-next-line opencut/prefer-object-params -- platform Fetch ABI.
+	// Fetch ABI receives positional URL/init arguments.
+	// eslint-disable-next-line opencut/prefer-object-params
 	const net: Fetcher = (url, init) =>
 		String(url).endsWith("/videos/job123")
 			? Promise.resolve(Response.json({ status: "failed" }))
@@ -612,16 +692,16 @@ test("cross-project approval and changed reference blocked before network", asyn
 	).rejects.toThrow();
 	expect(f.calls.filter((x) => x.startsWith("POST"))).toHaveLength(0);
 });
-test("physical storyboard and supported live duration mandatory", async () => {
+test("storyboard optional while live duration remains mandatory", async () => {
 	const f = await fixture();
-	await expect(
-		prepare({
-			root: f.root,
-			raw: { ...f.input, referenceIds: [] },
-			referenceUrl: async () => "",
-			net: f.net,
-		}),
-	).rejects.toThrow("physical storyboard");
+	const textOnly = await prepare({
+		root: f.root,
+		raw: { ...f.input, referenceIds: [] },
+		referenceUrl: async () => "",
+		net: f.net,
+	});
+	expect(textOnly.videoMode).toBe("text");
+	expect(f.calls.some((c) => c.startsWith("POST"))).toBe(false);
 	await expect(
 		prepare({
 			root: f.root,
@@ -722,58 +802,63 @@ test("encrypted vault lease expires without activity extending it", async () => 
 	}
 });
 
-test.each([false, true])("a PIN-approved Director image is imported with the correct reference type (replacement=%s)", async (replacement) => {
-	const f = await fixture();
-	await vault.setup({ root: f.root, pin: "87654321", key: "fake-key" });
-	const j = await prepare({
-		root: f.root,
-		raw: {
-			projectId: "project-a",
-			kind: "storyboard",
-			model: replacement ? REPLACE_IMAGE_MODEL : "test/image",
-			...(replacement ? { referenceImage: true } : {}),
-			prompt:
-				"Draw a four-panel physical storyboard with our actual references",
-			referenceIds: [f.ref.id],
-		},
-		referenceUrl: async () => "",
-		net: f.net,
-	});
-	let paid = 0;
-	const net: Fetcher = async () => {
-		paid++;
-		return Response.json({
-			choices: [
-				{
-					message: {
-						images: [
-							{
-								image_url: {
-									url:
-										"data:image/png;base64," +
-										Buffer.from("fake-physical-board").toString("base64"),
-								},
-							},
-						],
-					},
-				},
-			],
-			usage: { cost: 0.1 },
+test.each([false, true])(
+	"a PIN-approved Director image is imported with the correct reference type (replacement=%s)",
+	async (replacement) => {
+		const f = await fixture();
+		await vault.setup({ root: f.root, pin: "87654321", key: "fake-key" });
+		const j = await prepare({
+			root: f.root,
+			raw: {
+				projectId: "project-a",
+				kind: "storyboard",
+				model: replacement ? REPLACE_IMAGE_MODEL : "test/image",
+				...(replacement ? { referenceImage: true } : {}),
+				prompt:
+					"Draw a four-panel physical storyboard with our actual references",
+				referenceIds: [f.ref.id],
+			},
+			referenceUrl: async () => "",
+			net: f.net,
 		});
-	};
-	expect(paid).toBe(0);
-	await approve({
-		root: f.root,
-		projectId: "project-a",
-		jobId: j.id,
-		pin: "87654321",
-		digest: j.digest,
-		net,
-	});
-	const done = await settled({ root: f.root, j });
-	expect(paid).toBe(1);
-	expect(done.output?.storyboard).toBe(!replacement);
-	expect(done.output?.name).toBe(replacement ? "Replace reference image.png" : "Director storyboard.png");
-	expect(done.output?.kind).toBe("image");
-	expect(done.status).toBe("ready");
-});
+		let paid = 0;
+		const net: Fetcher = async () => {
+			paid++;
+			return Response.json({
+				choices: [
+					{
+						message: {
+							images: [
+								{
+									image_url: {
+										url:
+											"data:image/png;base64," +
+											Buffer.from("fake-physical-board").toString("base64"),
+									},
+								},
+							],
+						},
+					},
+				],
+				usage: { cost: 0.1 },
+			});
+		};
+		expect(paid).toBe(0);
+		await approve({
+			root: f.root,
+			projectId: "project-a",
+			jobId: j.id,
+			pin: "87654321",
+			digest: j.digest,
+			net,
+		});
+		const done = await settled({ root: f.root, j });
+		expect(paid).toBe(1);
+		expect(done.output?.storyboard).toBe(!replacement);
+		expect(done.output?.name).toBe(
+			replacement ? "Replace reference image.png" : "Director storyboard.png",
+		);
+		expect(done.output?.kind).toBe("image");
+		expect(done.status).toBe("ready");
+	},
+);

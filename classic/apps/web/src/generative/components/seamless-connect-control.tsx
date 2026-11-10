@@ -13,10 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEditor } from "@/editor/use-editor";
 import { useInterfaceLanguage } from "@/i18n/provider";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
-import type { VideoElement } from "@/timeline/types";
-import { canonical, scope } from "../client";
+import type { DirectorBatch } from "../types";
+import { api, canonical, scope } from "../client";
 import { useDirectorReviewFocus } from "../review-focus";
-import { prepareSeamless, type SeamlessPair } from "../seamless-connect";
+import { prepareSeamless, type SeamlessSelection } from "../seamless-connect";
 import {
 	seamlessDurations,
 	seamlessModelIds,
@@ -24,7 +24,7 @@ import {
 	type VideoGenerationModel,
 } from "../seamless-models";
 
-export function SeamlessConnectControl(pair: SeamlessPair) {
+export function SeamlessConnectControl(pair: SeamlessSelection) {
 	const [open, setOpen] = useState(false);
 	return (
 		<SeamlessConnectDialog
@@ -41,13 +41,11 @@ export function SeamlessConnectControl(pair: SeamlessPair) {
 }
 
 export function SeamlessConnectDialog({
-	trackId,
-	left,
-	right,
+	pairs,
 	open,
 	onOpenChange,
 	trigger,
-}: SeamlessPair & {
+}: SeamlessSelection & {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	trigger?: ReactElement;
@@ -55,27 +53,16 @@ export function SeamlessConnectDialog({
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			{trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-			{open && (
-				<SeamlessForm
-					trackId={trackId}
-					left={left}
-					right={right}
-					close={() => onOpenChange(false)}
-				/>
-			)}
+			{open && <SeamlessForm pairs={pairs} close={() => onOpenChange(false)} />}
 		</Dialog>
 	);
 }
 
 function SeamlessForm({
-	trackId,
-	left,
-	right,
+	pairs,
 	close,
 }: {
-	trackId: string;
-	left: VideoElement;
-	right: VideoElement;
+	pairs: SeamlessSelection["pairs"];
 	close: () => void;
 }) {
 	const editor = useEditor();
@@ -85,6 +72,9 @@ function SeamlessForm({
 	const [seconds, setSeconds] = useState(0);
 	const [prompt, setPrompt] = useState("");
 	const [busy, setBusy] = useState(false);
+	const [selectedCuts, setSelectedCuts] = useState(() =>
+		pairs.map((_, index) => index).slice(0, 10),
+	);
 	const [error, setError] = useState("");
 	const abort = useRef<AbortController | null>(null);
 	const model = catalog.find((item) => item.id === modelId) ?? catalog[0];
@@ -131,32 +121,60 @@ function SeamlessForm({
 	}, [editor]);
 
 	async function prepare() {
-		if (!model || !duration || !resolution || abort.current) return;
+		if (
+			!model ||
+			!duration ||
+			!resolution ||
+			!selectedCuts.length ||
+			abort.current
+		)
+			return;
 		const controller = new AbortController();
 		abort.current = controller;
 		setBusy(true);
 		setError("");
 		try {
 			const original = scope(editor);
-			const job = await prepareSeamless({
-				editor,
-				trackId,
-				left,
-				right,
-				model,
-				duration,
-				resolution,
-				prompt,
-				signal: controller.signal,
-			});
-			canonical({
-				editor,
-				change: {
-					type: "job",
-					job: { id: job.id, digest: job.digest, status: "review" },
-				},
-			});
-			useDirectorReviewFocus.getState().reveal({ ...original, jobId: job.id });
+			const jobs = [];
+			// Prepare all frame pairs before any request can be approved or charged.
+			for (const pair of pairs.filter((_, index) =>
+				selectedCuts.includes(index),
+			)) {
+				const job = await prepareSeamless({
+					editor,
+					...pair,
+					model,
+					duration,
+					resolution,
+					prompt,
+					signal: controller.signal,
+				});
+				jobs.push(job);
+				canonical({
+					editor,
+					change: {
+						type: "job",
+						job: { id: job.id, digest: job.digest, status: "review" },
+					},
+				});
+			}
+			if (jobs.length > 1) {
+				await api<{ batch: DirectorBatch }>({
+					projectId: original.projectId,
+					action: "prepare-batch",
+					signal: controller.signal,
+					data: {
+						batch: {
+							id: crypto.randomUUID().replaceAll("-", ""),
+							kind: "seamless",
+							jobs: jobs.map((j) => ({ id: j.id, digest: j.digest })),
+						},
+					},
+				});
+			} else
+				useDirectorReviewFocus
+					.getState()
+					.reveal({ ...original, jobId: jobs[0].id });
 			useAssetsPanelStore.getState().setActiveTab("generative");
 			close();
 		} catch (failure) {
@@ -185,9 +203,34 @@ function SeamlessForm({
 					void prepare();
 				}}
 			>
-				<p className="rounded-lg border bg-background px-3 py-2 text-sm break-words">
-					{left.name} → {right.name}
-				</p>
+				<fieldset className="max-h-48 space-y-2 overflow-y-auto rounded-lg border p-3 text-sm">
+					<legend>{t("Choose up to ten cuts")}</legend>
+					{pairs.map((pair, index) => (
+						<label
+							key={`${pair.left.id}:${pair.right.id}`}
+							className="flex items-center gap-2"
+						>
+							<input
+								type="checkbox"
+								checked={selectedCuts.includes(index)}
+								disabled={
+									busy ||
+									(!selectedCuts.includes(index) && selectedCuts.length >= 10)
+								}
+								onChange={(event) =>
+									setSelectedCuts((old) =>
+										event.target.checked
+											? [...old, index].sort((a, b) => a - b)
+											: old.filter((value) => value !== index),
+									)
+								}
+							/>
+							<span>
+								{pair.left.name} → {pair.right.name}
+							</span>
+						</label>
+					))}
+				</fieldset>
 				<div className="grid gap-3 sm:grid-cols-2">
 					<label className="grid min-w-0 gap-1.5 text-sm">
 						{t("Video model")}

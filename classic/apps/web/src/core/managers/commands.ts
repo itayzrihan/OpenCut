@@ -1421,6 +1421,40 @@ export class CommandManager {
 		});
 	}
 
+	readProduction(identity: { projectId: string; accountId: string }): unknown {
+		return this.readProductionDocument({
+			...identity,
+			capabilityId: "project.production.read",
+		});
+	}
+	readAudioProduction(identity: {
+		projectId: string;
+		accountId: string;
+	}): unknown {
+		return this.readProductionDocument({
+			...identity,
+			capabilityId: "project.audio.read",
+		});
+	}
+	private readProductionDocument({
+		projectId,
+		accountId,
+		capabilityId,
+	}: {
+		projectId: string;
+		accountId: string;
+		capabilityId: "project.production.read" | "project.audio.read";
+	}): unknown {
+		if (
+			!this.canonical ||
+			this.canonical.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+			this.agentAccountId() !== accountId
+		)
+			throw new Error("The production account or project changed");
+		return this.canonical.invokeControl({ capabilityId, input: {} });
+	}
+
 	/** The UI uses the same typed track contract discovered by the agent/MCP. */
 	editClassicTrackLayout(
 		change: import("@/core/canonical-classic-session").ClassicTrackLayoutChange,
@@ -2588,7 +2622,8 @@ export class CommandManager {
 		retainForConversation?: boolean;
 	}): { id: string } {
 		if (
-			!this.canonical || this.canonical.projectId !== input.projectId ||
+			!this.canonical ||
+			this.canonical.projectId !== input.projectId ||
 			this.editor.project.getActiveOrNull()?.metadata.id !== input.projectId ||
 			this.agentAccountId() !== input.accountId
 		)
@@ -3467,6 +3502,11 @@ export class CommandManager {
 			for (const asset of this.editor.media.getAssets())
 				this.canonicalMediaHandles.set(asset.id, asset);
 			const handles = this.canonicalMediaHandles;
+			for (const asset of state.mediaAssets) {
+				if (handles.get(asset.id)?.file) continue;
+				const generated = this.canonical.hydrateGeneratedImage(asset);
+				if (generated) handles.set(asset.id, generated);
+			}
 			this.editor.media.setAssets({
 				assets: state.mediaAssets.map((asset) => ({
 					...asset,

@@ -5,8 +5,22 @@ import {
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
 import { useWorkspaceAccount } from "@/accounts/gate";
-import { HostedConnectionSettings } from "./hosted-connection-settings";
+import { AgentConnectionsSettings } from "./agent-connections-settings";
+import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
+import { ProductionStudioPanel } from "@/production-studio/panel";
+import { readProduction } from "@/production-studio/client";
+import { animateDirectorHandoff } from "./production-handoff";
+import { canonical as readDirector } from "@/generative/client";
+import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
+import { AgentDirectorReview } from "./director-review";
+import { useDirectorReviewFocus } from "@/generative/review-focus";
+import { ImageGenerationReviewHost } from "./image-generation-review";
 import { McpInstallationSettings } from "./mcp-installation-settings";
+import { AgentSettingsSection } from "./settings-section";
+import {
+	useAgentSettingsNavigation,
+	openAgentSettings,
+} from "./settings-navigation";
 import {
 	readAgentModelPreference,
 	saveAgentModelPreference,
@@ -37,7 +51,7 @@ import {
 	Square,
 	X,
 } from "lucide-react";
-import { useEditor } from "@/editor/use-editor";
+import { useEditor, useEditorProject } from "@/editor/use-editor";
 import { AgentMarkdown, messageDirection } from "./markdown";
 import { KnowledgePanel } from "./knowledge-panel";
 import { Button } from "@/components/ui/button";
@@ -104,6 +118,60 @@ function AgentPanel() {
 	const [open, setOpen] = useState(true);
 	const [mode, setMode] = useState<"floating" | "docked">("docked");
 	const editor = useEditor();
+	const productionSignature = useEditorProject((e) => {
+		try {
+			const w = readProduction(e).workspace;
+			if (
+				!w.scriptRows.length &&
+				!w.referenceSlots.length &&
+				!w.analyses.length
+			)
+				return "";
+			return JSON.stringify([
+				w.scriptRows.map((r) => [r.id, r.currentVersion]),
+				w.referenceSlots.map((r) => [r.id, r.slotVersion]),
+				w.analyses.map((a) => a.id),
+			]);
+		} catch {
+			return "";
+		}
+	});
+	const [productionView, setProductionView] = useState({
+		signature: "",
+		open: false,
+	});
+	const productionOpen =
+		productionView.signature === productionSignature
+			? productionView.open
+			: !!productionSignature;
+	const handoff = useEditorProject((e) => {
+		try {
+			const projectId = e.project.getActive().metadata.id;
+			return {
+				projectId,
+				value: readDirector({ editor: e }).document.productionHandoff,
+			};
+		} catch {
+			return undefined;
+		}
+	});
+	const lastHandoff = useRef(handoff);
+	useEffect(() => {
+		const previous = lastHandoff.current;
+		lastHandoff.current = handoff;
+		if (
+			!handoff?.value ||
+			previous?.projectId !== handoff.projectId ||
+			previous?.value?.id === handoff.value.id
+		)
+			return;
+		animateDirectorHandoff({
+			projectId: handoff.projectId,
+			referenceIds: handoff.value.referenceIds,
+			handoffId: handoff.value.id,
+		});
+		useAssetsPanelStore.getState().setActiveTab("generative");
+	}, [handoff]);
 	const client = useRef<EditorAgentClient | null>(null);
 	const mounted = useRef(true);
 	const [connection, setConnection] = useState<AgentConnection | null>(null);
@@ -230,8 +298,41 @@ function AgentPanel() {
 	};
 	const [busy, setBusy] = useState(false);
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const settingsProvider = useAgentSettingsNavigation(
+		(state) => state.provider,
+	);
+	const [connectionReveal, setConnectionReveal] = useState(0);
+	useEffect(
+		() =>
+			useDirectorReviewFocus.subscribe((state, previous) => {
+				if (
+					state.surface !== "agent" ||
+					!state.jobId ||
+					(state.jobId === previous.jobId && state.surface === previous.surface)
+				)
+					return;
+				if (
+					state.accountId !== window.__opencutAccountId ||
+					state.projectId !== editor.project.getActiveOrNull()?.metadata.id
+				)
+					return;
+				setOpen(true);
+				setSettingsOpen(false);
+			}),
+		[editor],
+	);
+	useEffect(
+		() =>
+			useAgentSettingsNavigation.subscribe((state, previous) => {
+				if (state.request === previous.request) return;
+				setOpen(true);
+				setMode("docked");
+				setSettingsOpen(true);
+				setConnectionReveal(state.request);
+			}),
+		[],
+	);
 	const [error, setError] = useState("");
-	const [connecting, setConnecting] = useState(false);
 	const [position, setPosition] = useState<{
 		left: number;
 		top: number;
@@ -329,8 +430,7 @@ function AgentPanel() {
 			setOpen(true);
 		};
 		const openConnections = () => {
-			setOpen(true);
-			setSettingsOpen(true);
+			openAgentSettings();
 		};
 		window.addEventListener("opencut-agent-connections", openConnections);
 		window.addEventListener(EDITING_AGENT_DRAFT_EVENT, receiveDraft);
@@ -456,60 +556,6 @@ function AgentPanel() {
 			window.removeEventListener("resize", clamp);
 		};
 	}, [mode, open]);
-	const signIn = async () => {
-		// Open during the user gesture so the authorization window is not blocked.
-		const desktop = window.opencutElectron;
-		const popup = desktop?.openChatGPTSignIn
-			? null
-			: window.open("about:blank", "_blank", "popup,width=620,height=760");
-		if (popup) popup.opener = null;
-		setConnecting(true);
-		setError("");
-		const controller = new AbortController();
-		statusAbort.current?.abort();
-		statusAbort.current = controller;
-		try {
-			if (!popup && !desktop?.openChatGPTSignIn)
-				throw new Error("Allow popups for POCUT, then reconnect with ChatGPT.");
-			const result = await connectionRequest({
-				operation: "signIn",
-				signal: controller.signal,
-				schema: connectionSchemas.signIn,
-			});
-			if (desktop?.openChatGPTSignIn)
-				await desktop.openChatGPTSignIn(result.authorizationUrl);
-			else if (popup) popup.location.href = result.authorizationUrl;
-			while (Date.now() < result.expiresAt && !controller.signal.aborted) {
-				await new Promise<void>((resolve) => {
-					const timer = setTimeout(done, 1800);
-					function done() {
-						clearTimeout(timer);
-						controller.signal.removeEventListener("abort", done);
-						resolve();
-					}
-					controller.signal.addEventListener("abort", done, { once: true });
-				});
-				controller.signal.throwIfAborted();
-				const status = await connectionRequest({
-					signal: controller.signal,
-					schema: connectionSchemas.status,
-				});
-				if (!status.connecting) {
-					await refresh(controller.signal);
-					if (status.error) setError(status.error);
-					break;
-				}
-			}
-		} catch (cause) {
-			popup?.close();
-			if (!controller.signal.aborted)
-				setError(
-					cause instanceof Error ? cause.message : "ChatGPT sign-in failed",
-				);
-		} finally {
-			if (mounted.current) setConnecting(false);
-		}
-	};
 	const send = async (resume = false) => {
 		const text = resume ? undefined : draft.trim();
 		if (
@@ -635,6 +681,14 @@ function AgentPanel() {
 	};
 	return (
 		<>
+			<ImageGenerationReviewHost
+				accountId={
+					typeof window !== "undefined"
+						? (window.__opencutAccountId ?? "local")
+						: "local"
+				}
+				projectId={editor.project.getActiveOrNull()?.metadata.id}
+			/>
 			{!open && (
 				<Button className={styles.launcher} onClick={() => setOpen(true)}>
 					<Bot />{" "}
@@ -684,10 +738,25 @@ function AgentPanel() {
 						size="sm"
 						aria-pressed={settingsOpen}
 						onClick={() => {
+							setConnectionReveal(0);
 							setSettingsOpen(!settingsOpen);
 						}}
 					>
 						<Settings size={14} /> <UiMessage text={"Settings"} />
+					</Button>
+					<Button
+						variant="ghost"
+						size="sm"
+						aria-pressed={productionOpen && !settingsOpen}
+						onClick={() => {
+							setSettingsOpen(false);
+							setProductionView({
+								signature: productionSignature,
+								open: !productionOpen,
+							});
+						}}
+					>
+						<UiMessage text="Production" />
 					</Button>
 					<span className={styles.badge}>
 						<UiMessage text={"Preview"} />
@@ -724,112 +793,31 @@ function AgentPanel() {
 						className={styles.settings}
 						aria-label="Agent settings"
 					>
-						{hosted ? (
-							<HostedConnectionSettings
-								connection={connection}
-								refresh={refresh}
-								stop={stop}
+						<AgentConnectionsSettings
+							connection={connection}
+							refresh={refresh}
+							stop={stop}
+							revealRequest={connectionReveal}
+							revealProvider={settingsProvider}
+						/>
+						<AgentSettingsSection title="ElevenLabs">
+							<ElevenLabsConnectionSettings
+								projectId={editor.project.getActive().metadata.id}
 							/>
-						) : (
-							<>
-								<div className={styles.connection}>
-									{connection?.sharing ? (
-										<>
-											<span title={connection.identity?.email}>
-												{connection.identity?.name ??
-													connection.identity?.email ?? (
-														<UiMessage text={"ChatGPT connected"} />
-													)}
-											</span>
-											<Button
-												variant="text"
-												size="sm"
-												onClick={() => {
-													stop();
-													void connectionRequest({
-														operation: "disconnect",
-														schema: connectionSchemas.disconnect,
-													})
-														.then(() => {
-															setEffortOverride("");
-															return refresh();
-														})
-														.catch((e) => setError(String(e)));
-												}}
-											>
-												<UiMessage text={"Disconnect"} />
-											</Button>
-										</>
-									) : (
-										<>
-											<span>
-												{connection?.connected ? (
-													<UiMessage text={"Enable ChatGPT plan usage"} />
-												) : (
-													<UiMessage text={"Connect your ChatGPT account"} />
-												)}
-											</span>
-											<Button
-												size="sm"
-												disabled={connecting}
-												onClick={() => void signIn()}
-											>
-												{connecting ? (
-													<UiMessage text={"Connecting…"} />
-												) : (
-													<UiMessage text={"Connect"} />
-												)}
-											</Button>
-										</>
-									)}
-								</div>
-								<div
-									className={`${styles.connection} ${styles.connectionNote}`}
-								>
-									<span>
-										<UiMessage
-											text={
-												"The ChatGPT connection also powers eligible features in the AI tab. Image generation is unavailable on this connection."
-											}
-										/>
-									</span>
-									{connection?.sharing && (
-										<a
-											href={connection.usageUrl}
-											target="_blank"
-											rel="noreferrer"
-										>
-											<UiMessage text={"ChatGPT usage"} />
-										</a>
-									)}
-								</div>
-								<div
-									className={`${styles.connection} ${styles.connectionNote}`}
-								>
-									<span>
-										<UiMessage
-											text={
-												"Claude Code runs locally and is unavailable on the public web app. Using a Claude subscription for POCUT features requires Anthropic authorization."
-											}
-										/>
-									</span>
-									<a
-										href="https://code.claude.com/docs/en/legal-and-compliance"
-										target="_blank"
-										rel="noreferrer"
-									>
-										<UiMessage text={"Claude Code terms"} />
-									</a>
-								</div>
+						</AgentSettingsSection>
+						{!hosted && (
+							<AgentSettingsSection title="Editor MCP connection">
 								<McpInstallationSettings
 									key={editor.project.getActive().metadata.id}
 									projectId={editor.project.getActive().metadata.id}
 								/>
-							</>
+							</AgentSettingsSection>
 						)}
-						<KnowledgePanel
-							projectId={editor.project.getActive().metadata.id}
-						/>
+						<AgentSettingsSection title="Skills & memory">
+							<KnowledgePanel
+								projectId={editor.project.getActive().metadata.id}
+							/>
+						</AgentSettingsSection>
 					</UiLocalized>
 				)}
 				<UiLocalized<"div">
@@ -838,6 +826,7 @@ function AgentPanel() {
 					ref={scroll}
 					hidden={settingsOpen}
 					className={styles.messages}
+					data-production-board="true"
 					role="log"
 					aria-label="Editing conversation"
 					aria-live="polite"
@@ -873,6 +862,10 @@ function AgentPanel() {
 					{entries.map((entry) => (
 						<EntryView key={entry.id} entry={entry} />
 					))}
+					{productionOpen && <ProductionStudioPanel className="mt-4" />}
+					<AgentDirectorReview
+						projectId={editor.project.getActive().metadata.id}
+					/>
 					{snapshot?.plan.length ? (
 						<details className={styles.plan} open>
 							<summary>

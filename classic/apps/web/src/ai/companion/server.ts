@@ -1,37 +1,46 @@
-/** Loopback-only client transport. No editor, filesystem, shell or MCP routes. */
+/** Loopback-only capability transport. No filesystem, shell or generic RPC routes. */
 import { createServer, type IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
+import { z } from "zod";
+import type { LocalProvider } from "./protocol";
 
-export interface Pairing {
-	version: 1;
-	origin: string;
-	accountId: string;
-	token: string;
-}
+const pairingSchema = z
+	.object({
+		version: z.literal(1),
+		origin: z.string().url(),
+		accountId: z.string().uuid(),
+		token: z.string().regex(/^[a-f0-9]{64}$/),
+	})
+	.strict();
+export type Pairing = z.infer<typeof pairingSchema>;
 export function validatePairing(value: unknown): Pairing {
-	const p = value as Pairing;
+	const pair = pairingSchema.parse(value);
+	const url = new URL(pair.origin);
 	if (
-		p?.version !== 1 ||
-		!/^[a-f0-9-]{36}$/.test(p.accountId) ||
-		!/^[a-f0-9]{64}$/.test(p.token)
-	)
-		throw Error("Invalid device pairing file");
-	const url = new URL(p.origin);
-	if (
-		url.origin !== p.origin ||
+		url.origin !== pair.origin ||
 		url.protocol !== "https:" ||
 		url.username ||
 		url.password
 	)
-		throw Error("Pairing requires an exact HTTPS app origin");
-	return p;
+		throw new Error("Pairing requires an exact HTTPS app origin");
+	return pair;
 }
-export type CompanionHandler = (
-	path: string,
-	method: string,
-	body: Uint8Array,
-	signal: AbortSignal,
-) => Promise<Response>;
+export type CompanionHandler = (args: {
+	path: string;
+	method: string;
+	body: Uint8Array;
+	signal: AbortSignal;
+	provider: LocalProvider;
+}) => Promise<Response>;
+const routes = new Map([
+	["GET /api/editor-agent/connection", true],
+	["POST /api/editor-agent/connection", true],
+	["POST /api/editor-agent/respond", true],
+	["GET /api/ai/oauth/status", true],
+	["GET /api/ai/models", true],
+	["POST /api/ai/chat", true],
+	["POST /api/ai/local-image", true],
+]);
 export function createCompanionServer({
 	pair,
 	handle,
@@ -42,7 +51,8 @@ export function createCompanionServer({
 	port?: number;
 }) {
 	validatePairing(pair);
-	return createServer(async (req, res) => {
+	let active = 0;
+	const server = createServer(async (req, res) => {
 		const fail = ({ status, error }: { status: number; error: string }) => {
 			res.writeHead(status, {
 				"Content-Type": "application/json",
@@ -50,68 +60,60 @@ export function createCompanionServer({
 			});
 			res.end(JSON.stringify({ error }));
 		};
-		if (req.headers.host !== `127.0.0.1:${port}`)
+		const address = server.address();
+		const bound = typeof address === "object" && address ? address.port : port;
+		if (req.headers.host !== `127.0.0.1:${bound}`)
 			return fail({ status: 403, error: "Unexpected local host" });
-		if (req.method === "GET" && req.url?.startsWith("/?ai_oauth=error")) {
-			res.writeHead(400, {
-				"Content-Type": "text/html; charset=utf-8",
-				"Content-Security-Policy": "default-src 'none'; frame-ancestors 'none'",
-				"Cache-Control": "no-store",
-			});
-			return res.end(
-				"<!doctype html><title>POCUT AI</title><h1>OpenAI sign-in did not complete</h1><p>Return to POCUT and select Connect this device to try again.</p>",
-			);
-		}
-		const callback =
-			req.method === "GET" &&
-			/^\/api\/ai\/oauth\/complete\?handoff=[a-f0-9-]{36}$/.test(req.url || "");
-		if (!callback) {
-			if (req.headers.origin !== pair.origin)
-				return fail({ status: 403, error: "This app origin is not paired" });
-			res.setHeader("Access-Control-Allow-Origin", pair.origin);
-			res.setHeader("Vary", "Origin");
-			res.setHeader("Access-Control-Allow-Private-Network", "true");
-			res.setHeader(
-				"Access-Control-Allow-Headers",
-				"Authorization, Content-Type, X-OpenCut-Account",
-			);
-			res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-			if (req.method === "OPTIONS") {
-				res.writeHead(204);
-				return res.end();
-			}
-			const token = req.headers.authorization?.slice(7) || "";
-			if (
-				!req.headers.authorization?.startsWith("Bearer ") ||
-				!/^[a-f0-9]{64}$/.test(token) ||
-				!timingSafeEqual(Buffer.from(token), Buffer.from(pair.token)) ||
-				req.headers["x-opencut-account"] !== pair.accountId
-			)
-				return fail({
-					status: 401,
-					error: "This POCUT account is not paired with this device",
-				});
-			const allowed =
-				req.method === "GET"
-					? ["/api/ai/oauth/status", "/api/ai/models"]
-					: req.method === "POST"
-						? ["/api/ai/oauth/start", "/api/ai/oauth/logout", "/api/ai/chat"]
-						: [];
-			if (!allowed.includes(req.url || ""))
+		if (req.headers.origin !== pair.origin)
+			return fail({ status: 403, error: "This app origin is not paired" });
+		res.setHeader("Access-Control-Allow-Origin", pair.origin);
+		res.setHeader("Vary", "Origin");
+		res.setHeader("Access-Control-Allow-Private-Network", "true");
+		res.setHeader(
+			"Access-Control-Allow-Headers",
+			"Authorization, Content-Type, X-OpenCut-Account, X-POCUT-Provider",
+		);
+		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		if (req.method === "OPTIONS") {
+			if (![...routes.keys()].some((key) => key.endsWith(" " + req.url)))
 				return fail({ status: 404, error: "Unsupported local AI operation" });
+			res.writeHead(204);
+			return res.end();
 		}
+		const token = req.headers.authorization?.slice(7) ?? "";
+		if (
+			!req.headers.authorization?.startsWith("Bearer ") ||
+			!/^[a-f0-9]{64}$/.test(token) ||
+			!timingSafeEqual(Buffer.from(token), Buffer.from(pair.token)) ||
+			req.headers["x-opencut-account"] !== pair.accountId
+		)
+			return fail({
+				status: 401,
+				error: "This POCUT account is not paired with this device",
+			});
+		if (!routes.has(`${req.method} ${req.url}`))
+			return fail({ status: 404, error: "Unsupported local AI operation" });
+		const provider = req.headers["x-pocut-provider"] ?? "codex";
+		if (provider !== "codex" && provider !== "claude")
+			return fail({ status: 400, error: "Unknown local provider" });
+		if (active >= 2)
+			return fail({ status: 429, error: "The local companion is busy" });
+		active++;
 		const controller = new AbortController();
+		const timeout = setTimeout(() => controller.abort(), 310_000);
+		timeout.unref();
 		res.on("close", () => {
 			if (!res.writableEnded) controller.abort();
 		});
 		try {
 			const body = await readBody(req);
-			const response = await handle(
-				req.url!,
-				req.method!,
+			const response = await handle({
+				path: req.url!,
+				method: req.method!,
 				body,
-				controller.signal,
-			);
+				signal: controller.signal,
+				provider,
+			});
 			res.statusCode = response.status;
 			for (const [name, value] of response.headers)
 				if (!["set-cookie", "access-control-allow-origin"].includes(name))
@@ -126,15 +128,19 @@ export function createCompanionServer({
 					error:
 						error instanceof Error ? error.message : "Local AI request failed",
 				});
+		} finally {
+			clearTimeout(timeout);
+			active--;
 		}
 	});
+	return server;
 }
 async function readBody(req: IncomingMessage) {
 	const chunks: Buffer[] = [];
 	let size = 0;
 	for await (const chunk of req) {
 		size += chunk.length;
-		if (size > 1_000_000) throw Error("AI request is too large");
+		if (size > 12_000_000) throw new Error("Local AI request is too large");
 		chunks.push(chunk);
 	}
 	return new Uint8Array(Buffer.concat(chunks));

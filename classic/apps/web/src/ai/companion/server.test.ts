@@ -13,7 +13,7 @@ test("local AI binds every request to the paired origin, account and capability"
 	const handled: string[] = [];
 	const server = createCompanionServer({
 		pair: pair,
-		handle: async (path) => {
+		handle: async ({ path }) => {
 			handled.push(path);
 			return Response.json({
 				authenticated: true,
@@ -45,7 +45,7 @@ test("local AI binds every request to the paired origin, account and capability"
 					path,
 					method,
 					headers: {
-						host: "127.0.0.1:0",
+						host: `127.0.0.1:${port}`,
 						origin: pair.origin,
 						authorization: `Bearer ${pair.token}`,
 						"X-OpenCut-Account": pair.accountId,

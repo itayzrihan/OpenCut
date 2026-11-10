@@ -3969,6 +3969,11 @@ test(
 			null,
 		).result.data.value;
 		expect(JSON.stringify(generated)).toContain("pinned-generated-image");
+		const handle = host
+			.media()
+			.find((asset) => asset.id === "pinned-generated-image");
+		expect(handle?.url?.startsWith("blob:")).toBe(true);
+		expect(new Uint8Array(await handle!.file!.arrayBuffer())).toEqual(png);
 		assertCoherent({ host, runtime });
 		await host.manager.persistEditingSession();
 		host.manager.detachCanonical();
@@ -3986,6 +3991,14 @@ test(
 				null,
 			).result.data.value,
 		).toEqual(generated);
+		const restoredImage = reopened
+			.media()
+			.find((asset) => asset.id === "pinned-generated-image");
+		expect(restoredImage?.url?.startsWith("blob:")).toBe(true);
+		expect(restoredImage?.url).not.toBe(handle?.url);
+		expect(new Uint8Array(await restoredImage!.file!.arrayBuffer())).toEqual(
+			png,
+		);
 		const imageRef = artifact as { id: string };
 		expect(
 			reopened.manager.readEditingConversationArtifact(imageRef.id).bytes,
@@ -4219,10 +4232,10 @@ test(
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
 			configurable: true,
-			value: {
+			value: Object.assign(new EventTarget(), {
 				__opencutAccountId: "local",
 				location: { origin: "http://127.0.0.1:3100" },
-			},
+			}),
 		});
 		const host = createHost();
 		const runtime = await createCanonicalTestRuntime();
@@ -4357,10 +4370,10 @@ test(
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
 			configurable: true,
-			value: {
+			value: Object.assign(new EventTarget(), {
 				__opencutAccountId: "local",
 				location: { origin: "http://127.0.0.1:3100" },
-			},
+			}),
 		});
 		const host = createHost(),
 			runtime = await createCanonicalTestRuntime();
@@ -4438,7 +4451,7 @@ test(
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
 			configurable: true,
-			value: { __opencutAccountId: "local" },
+			value: Object.assign(new EventTarget(), { __opencutAccountId: "local" }),
 		});
 		const host = createHost(),
 			runtime = await createCanonicalTestRuntime();
@@ -7175,10 +7188,10 @@ test(
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
 			configurable: true,
-			value: {
+			value: Object.assign(new EventTarget(), {
 				__opencutAccountId: "local",
 				location: { origin: "http://127.0.0.1:3100" },
-			},
+			}),
 		});
 		let calls = 0;
 		const fetchMock = spyOn(globalThis, "fetch").mockImplementation(
@@ -7383,10 +7396,10 @@ test(
 		const originalWindow = globalThis.window;
 		Object.defineProperty(globalThis, "window", {
 			configurable: true,
-			value: {
+			value: Object.assign(new EventTarget(), {
 				__opencutAccountId: "local",
 				location: { origin: "http://127.0.0.1:3100" },
-			},
+			}),
 		});
 		const host = createHost();
 		let writes = 0;
