@@ -1,6 +1,6 @@
 {
   "description": "Synthetic schema-v6 production workspace; no real accounts, images or provider calls.",
-  "wasmSha256": "2bad1bac5c50b31a7339aa637b069cf0a20ab2e4e89c0863be1c653cb1613264",
+  "wasmSha256": "60f4247f31e7447842ff638433e88742ca61448e20734f878596a45d7a9a7ab7",
   "projectId": "qa-release-policy-project",
   "expected": {
     "sourceText": "שלום לעולם",
@@ -217,11 +217,11 @@
           "projectExtensions": {
             "generative": {
               "chapterPlans": [],
-              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:58:45.588Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
               "jobs": [],
               "messages": [],
               "productionHandoff": {
-                "createdAt": "2026-11-10T12:16:31.818Z",
+                "createdAt": "2026-11-10T12:58:45.588Z",
                 "durationMs": 8000,
                 "id": "release-handoff",
                 "referenceIds": [
@@ -294,7 +294,7 @@
                   "versions": [
                     {
                       "caption": "",
-                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "createdAt": "2026-11-10T12:58:45.586Z",
                       "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                       "source": "uploaded",
                       "version": 1
@@ -309,7 +309,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 4000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -322,7 +322,7 @@
                     },
                     {
                       "changeNote": "",
-                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "createdAt": "2026-11-10T12:58:45.581Z",
                       "endMs": 4000,
                       "latinTransliteration": "Shalom la-olam",
                       "sourceLanguage": "he",
@@ -341,7 +341,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 8000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -567,11 +567,11 @@
               "projectExtensions": {
                 "generative": {
                   "chapterPlans": [],
-                  "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+                  "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:58:45.588Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
                   "jobs": [],
                   "messages": [],
                   "productionHandoff": {
-                    "createdAt": "2026-11-10T12:16:31.818Z",
+                    "createdAt": "2026-11-10T12:58:45.588Z",
                     "durationMs": 8000,
                     "id": "release-handoff",
                     "referenceIds": [
@@ -644,7 +644,7 @@
                       "versions": [
                         {
                           "caption": "",
-                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "createdAt": "2026-11-10T12:58:45.586Z",
                           "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                           "source": "uploaded",
                           "version": 1
@@ -668,7 +668,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -681,7 +681,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -700,7 +700,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1146,7 +1146,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1165,7 +1165,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1399,7 +1399,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1412,7 +1412,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -1431,7 +1431,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1682,7 +1682,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1695,7 +1695,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -1714,7 +1714,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1975,7 +1975,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -1988,7 +1988,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -2007,7 +2007,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -2261,7 +2261,7 @@
                       "versions": [
                         {
                           "caption": "",
-                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "createdAt": "2026-11-10T12:58:45.586Z",
                           "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                           "source": "uploaded",
                           "version": 1
@@ -2276,7 +2276,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -2289,7 +2289,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -2308,7 +2308,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -2562,7 +2562,7 @@
                       "versions": [
                         {
                           "caption": "",
-                          "createdAt": "2026-11-10T12:16:31.817Z",
+                          "createdAt": "2026-11-10T12:58:45.586Z",
                           "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                           "source": "uploaded",
                           "version": 1
@@ -2577,7 +2577,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 4000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -2590,7 +2590,7 @@
                         },
                         {
                           "changeNote": "",
-                          "createdAt": "2026-11-10T12:16:31.811Z",
+                          "createdAt": "2026-11-10T12:58:45.581Z",
                           "endMs": 4000,
                           "latinTransliteration": "Shalom la-olam",
                           "sourceLanguage": "he",
@@ -2609,7 +2609,7 @@
                       "versions": [
                         {
                           "changeNote": "Imported script",
-                          "createdAt": "2026-11-10T12:16:31.807Z",
+                          "createdAt": "2026-11-10T12:58:45.578Z",
                           "endMs": 8000,
                           "latinTransliteration": "",
                           "sourceLanguage": "he",
@@ -2840,11 +2840,11 @@
           "projectExtensions": {
             "generative": {
               "chapterPlans": [],
-              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:58:45.588Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
               "jobs": [],
               "messages": [],
               "productionHandoff": {
-                "createdAt": "2026-11-10T12:16:31.818Z",
+                "createdAt": "2026-11-10T12:58:45.588Z",
                 "durationMs": 8000,
                 "id": "release-handoff",
                 "referenceIds": [
@@ -2917,7 +2917,7 @@
                   "versions": [
                     {
                       "caption": "",
-                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "createdAt": "2026-11-10T12:58:45.586Z",
                       "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                       "source": "uploaded",
                       "version": 1
@@ -2932,7 +2932,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 4000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -2945,7 +2945,7 @@
                     },
                     {
                       "changeNote": "",
-                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "createdAt": "2026-11-10T12:58:45.581Z",
                       "endMs": 4000,
                       "latinTransliteration": "Shalom la-olam",
                       "sourceLanguage": "he",
@@ -2964,7 +2964,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 8000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -3395,11 +3395,11 @@
           "projectExtensions": {
             "generative": {
               "chapterPlans": [],
-              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:16:31.818Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
+              "direction": "{\n  \"creative_intent\": \"Preserve exact source and Latin pronunciation\",\n  \"instructions\": \"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation.\",\n  \"productionHandoff\": {\n    \"createdAt\": \"2026-11-10T12:58:45.588Z\",\n    \"durationMs\": 8000,\n    \"id\": \"release-handoff\",\n    \"referenceIds\": [\n      \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n    ],\n    \"referenceSlots\": [\n      {\n        \"referenceId\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n        \"slotId\": \"presenter\",\n        \"slotVersion\": 3,\n        \"version\": 1\n      }\n    ],\n    \"request\": \"Preserve exact source and Latin pronunciation\",\n    \"rows\": [\n      {\n        \"content\": {\n          \"endMs\": 4000,\n          \"latinTransliteration\": \"Shalom la-olam\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"שלום לעולם\",\n          \"speaker\": \"QA\",\n          \"startMs\": 0,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"The synthetic presenter opens a door\"\n        },\n        \"rowId\": \"release-1\",\n        \"version\": 2\n      },\n      {\n        \"content\": {\n          \"endMs\": 8000,\n          \"latinTransliteration\": \"\",\n          \"sourceLanguage\": \"he\",\n          \"sourceText\": \"مرحبا بالعالم\",\n          \"speaker\": \"\",\n          \"startMs\": 4000,\n          \"timingEstimated\": false,\n          \"visualDescription\": \"\"\n        },\n        \"rowId\": \"release-2\",\n        \"version\": 1\n      }\n    ],\n    \"sourceRevision\": 7,\n    \"storyboardRecommended\": false\n  },\n  \"shots\": [\n    {\n      \"description\": \"The synthetic presenter opens a door\",\n      \"end\": 4.0,\n      \"start\": 0.0\n    },\n    {\n      \"description\": \"مرحبا بالعالم\",\n      \"end\": 8.0,\n      \"start\": 4.0\n    }\n  ],\n  \"spoken_script\": \"שלום לעולם\\nمرحبا بالعالم\"\n}",
               "jobs": [],
               "messages": [],
               "productionHandoff": {
-                "createdAt": "2026-11-10T12:16:31.818Z",
+                "createdAt": "2026-11-10T12:58:45.588Z",
                 "durationMs": 8000,
                 "id": "release-handoff",
                 "referenceIds": [
@@ -3472,7 +3472,7 @@
                   "versions": [
                     {
                       "caption": "",
-                      "createdAt": "2026-11-10T12:16:31.817Z",
+                      "createdAt": "2026-11-10T12:58:45.586Z",
                       "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                       "source": "uploaded",
                       "version": 1
@@ -3487,7 +3487,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 4000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -3500,7 +3500,7 @@
                     },
                     {
                       "changeNote": "",
-                      "createdAt": "2026-11-10T12:16:31.811Z",
+                      "createdAt": "2026-11-10T12:58:45.581Z",
                       "endMs": 4000,
                       "latinTransliteration": "Shalom la-olam",
                       "sourceLanguage": "he",
@@ -3519,7 +3519,7 @@
                   "versions": [
                     {
                       "changeNote": "Imported script",
-                      "createdAt": "2026-11-10T12:16:31.807Z",
+                      "createdAt": "2026-11-10T12:58:45.578Z",
                       "endMs": 8000,
                       "latinTransliteration": "",
                       "sourceLanguage": "he",
@@ -3594,7 +3594,7 @@
                           "versions": [
                             {
                               "changeNote": "Imported script",
-                              "createdAt": "2026-11-10T12:16:31.807Z",
+                              "createdAt": "2026-11-10T12:58:45.578Z",
                               "endMs": 4000,
                               "latinTransliteration": "",
                               "sourceLanguage": "he",
@@ -3613,7 +3613,7 @@
                           "versions": [
                             {
                               "changeNote": "Imported script",
-                              "createdAt": "2026-11-10T12:16:31.807Z",
+                              "createdAt": "2026-11-10T12:58:45.578Z",
                               "endMs": 8000,
                               "latinTransliteration": "",
                               "sourceLanguage": "he",
@@ -3648,7 +3648,7 @@
                   "path": "/projectExtensions/productionStudio/scriptRows/0/versions/1",
                   "value": {
                     "changeNote": "",
-                    "createdAt": "2026-11-10T12:16:31.811Z",
+                    "createdAt": "2026-11-10T12:58:45.581Z",
                     "endMs": 4000,
                     "latinTransliteration": "Shalom la-olam",
                     "sourceLanguage": "he",
@@ -3733,7 +3733,7 @@
                   "path": "/projectExtensions/productionStudio/referenceSlots/0/versions/0",
                   "value": {
                     "caption": "",
-                    "createdAt": "2026-11-10T12:16:31.817Z",
+                    "createdAt": "2026-11-10T12:58:45.586Z",
                     "referenceId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
                     "source": "uploaded",
                     "version": 1

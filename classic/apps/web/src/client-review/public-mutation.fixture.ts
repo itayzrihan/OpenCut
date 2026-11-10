@@ -1,6 +1,7 @@
 // Separate process fixture: exercises the real filesystem lock, not a module mock.
+import { readFileSync } from "node:fs";
 import { POST } from "@/app/api/client-review/[token]/route";
-const input = JSON.parse(await new Response(Bun.stdin.stream()).text());
+const input = JSON.parse(readFileSync(0, "utf8"));
 const response = await POST(
 	new Request(`http://localhost:3100/api/client-review/${input.token}`, {
 		method: "POST",

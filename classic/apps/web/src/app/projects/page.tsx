@@ -91,7 +91,8 @@ import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
 import { cn } from "@/utils/ui";
 import { filterAndSortProjectMetadata } from "@/core/managers/project-manager";
-import { PROJECT_ARCHIVE_ACCEPT } from "@/project/archive/project-archive";
+import { EXCHANGE_ACCEPT } from "@/project/archive/exchange-format";
+import { ProjectImportDialog } from "@/project/archive/exchange-dialogs";
 import type { StorageMigrationFailure } from "@/services/storage/migrations";
 const formatProjectDuration = ({
 	duration,
@@ -681,53 +682,30 @@ function ImportProjectButton({ className }: { className?: string }) {
 	const editor = useEditor();
 	const router = useRouter();
 	const archiveInputRef = useRef<HTMLInputElement>(null);
-	const [isImporting, setIsImporting] = useState(false);
+	const [archiveFile, setArchiveFile] = useState<File | null>(null);
+	const isImporting = archiveFile !== null;
 
-	const handleImportProjectArchive = async (
-		event: ChangeEvent<HTMLInputElement>,
-	) => {
+	const handleImportProjectArchive = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.currentTarget.files?.[0];
 		event.currentTarget.value = "";
-		if (!file || isImporting) return;
-
-		setIsImporting(true);
-		try {
-			const result = await editor.project.importProjectArchive({ file });
-			const linkedSharedCount =
-				result.sharedAudioLinked + result.sharedStickersLinked;
-			const importedSharedCount =
-				result.sharedAudioImported + result.sharedStickersImported;
-			toast.success(
-				localizeClientMessage('Imported "{v0}"', {
-					v0: String(result.projectName),
-				}),
-				{
-					description: [
-						`${result.mediaImported} media`,
-						`${result.fontsImported} fonts`,
-						`${linkedSharedCount} shared linked`,
-						`${importedSharedCount} shared imported`,
-					].join(" | "),
-				},
-			);
-			router.push(`/editor/${result.projectId}`);
-		} catch (error) {
-			console.error("Failed to import project ZIP:", error);
-			toast.error("Failed to import project ZIP", {
-				description:
-					error instanceof Error ? error.message : "Please try again",
-			});
-		} finally {
-			setIsImporting(false);
-		}
+		if (file && !isImporting) setArchiveFile(file);
 	};
 
 	return (
 		<>
+			{archiveFile && (
+				<ProjectImportDialog
+					file={archiveFile}
+					onClose={() => setArchiveFile(null)}
+					onImported={({ projectId }) => {
+						router.push(`/editor/${projectId}`);
+					}}
+				/>
+			)}
 			<input
 				ref={archiveInputRef}
 				type="file"
-				accept={PROJECT_ARCHIVE_ACCEPT}
+				accept={EXCHANGE_ACCEPT}
 				className="hidden"
 				onChange={handleImportProjectArchive}
 			/>
@@ -743,7 +721,7 @@ function ImportProjectButton({ className }: { className?: string }) {
 					{isImporting ? (
 						<UiMessage text={"Importing..."} />
 					) : (
-						<UiMessage text={"Import ZIP"} />
+						<UiMessage text={"Import ZIP or XML"} />
 					)}
 				</span>
 				<span className="sm:hidden">

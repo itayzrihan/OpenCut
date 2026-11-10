@@ -69,10 +69,10 @@ import { getRaisedProjectFpsForImportedMedia } from "@/fps/utils";
 import type { MediaAsset } from "@/media/types";
 import type { ProjectFont, ProjectFontAsset } from "@/fonts/types";
 import {
-	createProjectArchive,
 	importProjectArchive as importProjectArchiveFile,
 	type ImportProjectArchiveResult,
 } from "@/project/archive/project-archive";
+import { createProjectExchange } from "@/project/archive/exchange";
 
 type RuntimeProjectFont = ProjectFont | ProjectFontAsset;
 
@@ -884,31 +884,64 @@ export class ProjectManager {
 		return result;
 	}
 
-	async exportProjectArchive(): Promise<Blob> {
+	async exportProjectArchive({
+		format = "zip",
+		signal,
+		onProgress,
+		onUnavailableArtifacts,
+	}: {
+		format?: "zip" | "xml";
+		signal?: AbortSignal;
+		onProgress?: (message: string) => void;
+		onUnavailableArtifacts?: (count: number) => void;
+	} = {}): Promise<Blob> {
 		if (!this.active) {
 			throw new Error("No active project");
 		}
 
+		const exportScope = {
+			projectId: this.active.metadata.id,
+			accountId:
+				typeof window === "undefined" ? null : window.__opencutAccountId,
+		};
 		await this.editor.save.flush();
 		await this.editor.command.flushHistory();
+		if (
+			this.getActive().metadata.id !== exportScope.projectId ||
+			(typeof window === "undefined" ? null : window.__opencutAccountId) !==
+				exportScope.accountId
+		)
+			throw new Error("The project or account changed during export");
 
 		const project = this.getActive();
 		const projectId = project.metadata.id;
-		const [projectFonts, sharedFonts, commandHistory] = await Promise.all([
+		const bundle = this.editor.command.captureEditingSession();
+		const mediaAssets = this.editor.media
+			.getAssets()
+			.map((asset) => ({ ...asset }));
+		onUnavailableArtifacts?.(bundle.artifacts?.unavailableIds?.length ?? 0);
+		const [projectFonts, sharedFonts] = await Promise.all([
 			storageService.loadAllProjectFonts({ projectId }),
 			storageService.loadAllSharedFonts(),
-			storageService.loadCommandHistory({ projectId }),
 		]);
 		const archiveFontsById = new Map(
 			sharedFonts.map((font) => [font.id, font] as const),
 		);
 		for (const font of projectFonts) archiveFontsById.set(font.id, font);
 
-		return createProjectArchive({
-			project,
-			mediaAssets: this.editor.media.getAssets(),
+		if (
+			this.getActive().metadata.id !== projectId ||
+			(typeof window === "undefined" ? null : window.__opencutAccountId) !==
+				exportScope.accountId
+		)
+			throw new Error("The project or account changed during export");
+		return createProjectExchange({
+			bundle,
+			mediaAssets,
 			projectFonts: [...archiveFontsById.values()],
-			commandHistory,
+			format,
+			signal,
+			onProgress,
 		});
 	}
 

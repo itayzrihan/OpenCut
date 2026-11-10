@@ -89,6 +89,8 @@ mod classic_remove;
 mod classic_ripple;
 mod classic_ripple_delete;
 mod classic_scenes;
+mod classic_selection;
+mod classic_exchange;
 mod classic_session;
 pub(crate) mod classic_settings;
 mod classic_source_audio;
@@ -201,6 +203,8 @@ pub(crate) fn register_all(
     classic_push_broll::register(registry, state.clone(), events.clone())?;
     classic_text_graphics::register(registry, state.clone(), events.clone())?;
     classic_scenes::register_classic_scene_operations(registry, state.clone(), events.clone())?;
+    classic_selection::register_classic_selection_operations(registry, state.clone(), events.clone())?;
+    classic_exchange::register_classic_exchange_operations(registry)?;
     classic_automation::register_classic_automation(registry, state.clone(), events.clone())?;
     classic_takes::register_classic_takes(registry, state.clone(), events.clone())?;
     classic_bookmarks::register_classic_bookmark_operations(
@@ -363,6 +367,7 @@ where
                 | "project.classic.session.restore"
                 | "project.classic.scene.open"
                 | "project.classic.viewport.set"
+                | "timeline.classic.selection.set"
         );
     descriptor.supports_dry_run = descriptor.transactional
         || matches!(
@@ -372,6 +377,7 @@ where
                 | "project.classic.session.restore"
                 | "project.classic.scene.open"
                 | "project.classic.viewport.set"
+                | "timeline.classic.selection.set"
         );
     descriptor.cancellable = id.starts_with("export.")
         || id.starts_with("preview.")
@@ -380,7 +386,7 @@ where
         || id.starts_with("media.waveform.")
         || id.starts_with("caption.transcribe");
     descriptor.cancellable |= id.starts_with("timeline.smart_layer.") && id.ends_with(".apply");
-    descriptor.cancellable |= id == "timeline.classic.audio.procedural.set";
+    descriptor.cancellable |= matches!(id, "timeline.classic.audio.procedural.set" | "timeline.classic.selection.set");
     descriptor.cancellable |= matches!(
         id,
         "hyperframes.project.inspect"
@@ -6793,6 +6799,15 @@ where
         {
             working.workspace.classic_scene = None;
         }
+    }
+    if working.selection == before.selection {
+        if working.project.as_ref().is_some_and(|p| p.classic.is_some()) && working.classic_view_scene_id() != before.classic_view_scene_id() {
+            working.selection = SelectionState::default();
+        }
+        working.reconcile_classic_selection();
+    }
+    if working.selection != before.selection {
+        working.workspace.classic_selection_revision = before.workspace.classic_selection_revision.saturating_add(1);
     }
     working
         .validate()

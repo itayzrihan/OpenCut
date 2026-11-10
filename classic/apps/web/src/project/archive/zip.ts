@@ -5,6 +5,9 @@ const LOCAL_FILE_HEADER_SIGNATURE = 0x04034b50;
 const CENTRAL_DIRECTORY_HEADER_SIGNATURE = 0x02014b50;
 const END_OF_CENTRAL_DIRECTORY_SIGNATURE = 0x06054b50;
 const MAX_UINT32 = 0xffffffff;
+const MAX_DIRECTORY_BYTES = 16 * 1024 * 1024;
+const MAX_INFLATED_BYTES = 256 * 1024 * 1024;
+const MAX_ENTRIES = 20_001;
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
@@ -38,10 +41,36 @@ const CRC_TABLE = (() => {
 	return table;
 })();
 
-function crc32(bytes: Uint8Array): number {
+function boundedBlobStream(blob: Blob): ReadableStream<Uint8Array<ArrayBuffer>> {
+	let offset = 0;
+	return new ReadableStream({
+		async pull(controller) {
+			if (offset >= blob.size) {
+				controller.close();
+				return;
+			}
+			const end = Math.min(blob.size, offset + 1024 * 1024);
+			controller.enqueue(
+				new Uint8Array(await blob.slice(offset, end).arrayBuffer()),
+			);
+			offset = end;
+		},
+	});
+}
+
+async function crc32(blob: Blob): Promise<number> {
 	let value = 0xffffffff;
-	for (const byte of bytes) {
-		value = CRC_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8);
+	const reader = boundedBlobStream(blob).getReader();
+	try {
+		for (;;) {
+			const { done, value: chunk } = await reader.read();
+			if (done) break;
+			for (const byte of chunk)
+				value = CRC_TABLE[(value ^ byte) & 0xff] ^ (value >>> 8);
+		}
+	} finally {
+		await reader.cancel().catch(() => {});
+		reader.releaseLock();
 	}
 	return (value ^ 0xffffffff) >>> 0;
 }
@@ -60,9 +89,17 @@ function normalizeZipPath({ path }: { path: string }): string {
 	return parts.join("/");
 }
 
-function ensureUint32Size({ size, label }: { size: number; label: string }): void {
+function ensureUint32Size({
+	size,
+	label,
+}: {
+	size: number;
+	label: string;
+}): void {
 	if (!Number.isInteger(size) || size < 0 || size > MAX_UINT32) {
-		throw new Error(`${label} is too large for ZIP32`);
+		throw new Error(
+			`${label} is too large for ZIP32; use metadata XML and relink the original files`,
+		);
 	}
 }
 
@@ -114,31 +151,19 @@ function getDosDateTime({ date }: { date: Date }): {
 	};
 }
 
-async function toBytes({
-	data,
-}: {
-	data: ZipEntryInput["data"];
-}): Promise<Uint8Array> {
-	if (typeof data === "string") {
-		return textEncoder.encode(data);
-	}
-	if (data instanceof Uint8Array) {
-		return data;
-	}
-	if (data instanceof ArrayBuffer) {
-		return new Uint8Array(data);
-	}
-	return new Uint8Array(await data.arrayBuffer());
+function toBlob(data: ZipEntryInput["data"]): Blob {
+	if (data instanceof Blob) return data;
+	return new Blob([data instanceof Uint8Array ? toBlobPart(data) : data]);
 }
 
 function buildLocalHeader({
 	nameBytes,
-	contentBytes,
+	contentSize,
 	entryCrc32,
 	date,
 }: {
 	nameBytes: Uint8Array;
-	contentBytes: Uint8Array;
+	contentSize: number;
 	entryCrc32: number;
 	date: Date;
 }): Uint8Array {
@@ -152,8 +177,8 @@ function buildLocalHeader({
 	writeUint16({ view, offset: 10, value: time });
 	writeUint16({ view, offset: 12, value: dosDate });
 	writeUint32({ view, offset: 14, value: entryCrc32 });
-	writeUint32({ view, offset: 18, value: contentBytes.byteLength });
-	writeUint32({ view, offset: 22, value: contentBytes.byteLength });
+	writeUint32({ view, offset: 18, value: contentSize });
+	writeUint32({ view, offset: 22, value: contentSize });
 	writeUint16({ view, offset: 26, value: nameBytes.byteLength });
 	writeUint16({ view, offset: 28, value: 0 });
 	return header;
@@ -161,13 +186,13 @@ function buildLocalHeader({
 
 function buildCentralDirectoryHeader({
 	nameBytes,
-	contentBytes,
+	contentSize,
 	entryCrc32,
 	date,
 	localHeaderOffset,
 }: {
 	nameBytes: Uint8Array;
-	contentBytes: Uint8Array;
+	contentSize: number;
 	entryCrc32: number;
 	date: Date;
 	localHeaderOffset: number;
@@ -183,8 +208,8 @@ function buildCentralDirectoryHeader({
 	writeUint16({ view, offset: 12, value: time });
 	writeUint16({ view, offset: 14, value: dosDate });
 	writeUint32({ view, offset: 16, value: entryCrc32 });
-	writeUint32({ view, offset: 20, value: contentBytes.byteLength });
-	writeUint32({ view, offset: 24, value: contentBytes.byteLength });
+	writeUint32({ view, offset: 20, value: contentSize });
+	writeUint32({ view, offset: 24, value: contentSize });
 	writeUint16({ view, offset: 28, value: nameBytes.byteLength });
 	writeUint16({ view, offset: 30, value: 0 });
 	writeUint16({ view, offset: 32, value: 0 });
@@ -230,40 +255,55 @@ export async function createZipBlob({
 	const centralDirectoryParts: BlobPart[] = [];
 	let offset = 0;
 	let centralDirectorySize = 0;
+	const paths = new Set<string>();
+	if (entries.length > MAX_ENTRIES)
+		throw new Error("Too many archive files; use metadata XML");
 
 	for (const entry of entries) {
 		const path = normalizeZipPath({ path: entry.path });
+		if (paths.has(path)) throw new Error("Duplicate ZIP path: " + path);
+		paths.add(path);
 		const nameBytes = textEncoder.encode(path);
-		const contentBytes = await toBytes({ data: entry.data });
-		const entryCrc32 = crc32(contentBytes);
+		if (nameBytes.length > 0xffff) throw new Error("ZIP path is too long");
+		const content = toBlob(entry.data);
+		const contentSize = content.size;
 		const localHeaderOffset = offset;
 		const modifiedAt = entry.lastModified ?? new Date();
 
 		ensureUint32Size({
-			size: contentBytes.byteLength,
+			size: contentSize,
 			label: `${path} size`,
 		});
 		ensureUint32Size({
 			size: localHeaderOffset,
 			label: `${path} local header offset`,
 		});
+		ensureUint32Size({
+			size:
+				offset +
+				contentSize +
+				30 +
+				nameBytes.length +
+				centralDirectorySize +
+				46 +
+				nameBytes.length +
+				22,
+			label: "Project archive",
+		});
+		const entryCrc32 = await crc32(content);
 
 		const localHeader = buildLocalHeader({
 			nameBytes,
-			contentBytes,
+			contentSize,
 			entryCrc32,
 			date: modifiedAt,
 		});
-		fileParts.push(
-			toBlobPart(localHeader),
-			toBlobPart(nameBytes),
-			toBlobPart(contentBytes),
-		);
-		offset += localHeader.byteLength + nameBytes.byteLength + contentBytes.byteLength;
+		fileParts.push(toBlobPart(localHeader), toBlobPart(nameBytes), content);
+		offset += localHeader.byteLength + nameBytes.byteLength + contentSize;
 
 		const centralDirectoryHeader = buildCentralDirectoryHeader({
 			nameBytes,
-			contentBytes,
+			contentSize,
 			entryCrc32,
 			date: modifiedAt,
 			localHeaderOffset,
@@ -285,6 +325,12 @@ export async function createZipBlob({
 		label: "Central directory size",
 	});
 
+	if (centralDirectorySize > MAX_DIRECTORY_BYTES)
+		throw new Error("ZIP directory exceeds its limit; use metadata XML");
+	ensureUint32Size({
+		size: offset + centralDirectorySize + 22,
+		label: "Project archive",
+	});
 	const endRecord = buildEndOfCentralDirectory({
 		entryCount: entries.length,
 		centralDirectorySize,
@@ -294,143 +340,207 @@ export async function createZipBlob({
 	return new Blob(
 		[...fileParts, ...centralDirectoryParts, toBlobPart(endRecord)],
 		{
-		type: "application/zip",
+			type: "application/zip",
 		},
 	);
 }
 
-function findEndOfCentralDirectory({ bytes }: { bytes: Uint8Array }): number {
-	const minOffset = Math.max(0, bytes.byteLength - 22 - 0xffff);
-	for (let offset = bytes.byteLength - 22; offset >= minOffset; offset--) {
+function findEndOfCentralDirectory(bytes: Uint8Array): number {
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+	for (let i = bytes.length - 22; i >= 0; i--) {
 		if (
-			bytes[offset] === 0x50 &&
-			bytes[offset + 1] === 0x4b &&
-			bytes[offset + 2] === 0x05 &&
-			bytes[offset + 3] === 0x06
-		) {
-			return offset;
-		}
+			view.getUint32(i, true) === END_OF_CENTRAL_DIRECTORY_SIGNATURE &&
+			i + 22 + view.getUint16(i + 20, true) === bytes.length
+		)
+			return i;
 	}
 	throw new Error("Invalid ZIP archive: missing central directory");
 }
-
-async function inflateRaw({ data }: { data: Uint8Array }): Promise<Uint8Array> {
-	const ctor = globalThis.DecompressionStream;
-	if (!ctor) {
-		throw new Error("Compressed ZIP entries are not supported in this browser");
-	}
-
-	const stream = new Blob([toBlobPart(data)]).stream().pipeThrough(
-		new ctor("deflate-raw" as CompressionFormat),
-	);
-	return new Uint8Array(await new Response(stream).arrayBuffer());
-}
-
-function readEntryName({
-	bytes,
-	offset,
-	length,
+async function inflateRaw({
+	data,
+	expected,
 }: {
-	bytes: Uint8Array;
-	offset: number;
-	length: number;
-}): string {
-	return normalizeZipPath({
-		path: textDecoder.decode(bytes.slice(offset, offset + length)),
-	});
+	data: Blob;
+	expected: number;
+}): Promise<Blob> {
+	if (!globalThis.DecompressionStream)
+		throw new Error("Compressed ZIP entries are not supported in this browser");
+	const reader = boundedBlobStream(data)
+		.pipeThrough(new DecompressionStream("deflate-raw" as CompressionFormat))
+		.getReader();
+	const chunks: BlobPart[] = [];
+	let size = 0;
+	try {
+		for (;;) {
+			const { done, value } = await reader.read();
+			if (done) break;
+			size += value.length;
+			if (size > expected || size > MAX_INFLATED_BYTES)
+				throw new Error("ZIP inflated data exceeds its declared limit");
+			chunks.push(toBlobPart(value));
+		}
+	} finally {
+		await reader.cancel().catch(() => {});
+		reader.releaseLock();
+	}
+	if (size !== expected)
+		throw new Error("Invalid ZIP archive: wrong inflated size");
+	return new Blob(chunks);
 }
 
+/** STORE entries remain Blob slices; only bounded headers and compressed data are materialized. */
 export async function readZipEntries({
 	blob,
 }: {
 	blob: Blob;
 }): Promise<Map<string, ZipEntry>> {
-	const bytes = new Uint8Array(await blob.arrayBuffer());
-	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-	const eocdOffset = findEndOfCentralDirectory({ bytes });
-
-	if (view.getUint32(eocdOffset, true) !== END_OF_CENTRAL_DIRECTORY_SIGNATURE) {
-		throw new Error("Invalid ZIP archive");
-	}
-
-	const diskNumber = view.getUint16(eocdOffset + 4, true);
-	const centralDirectoryDisk = view.getUint16(eocdOffset + 6, true);
-	if (diskNumber !== 0 || centralDirectoryDisk !== 0) {
+	if (blob.size < 22 || blob.size > MAX_UINT32)
+		throw new Error(
+			"Unsupported ZIP32 size; use metadata XML and relink the original files",
+		);
+	const tailStart = Math.max(0, blob.size - 22 - 0xffff);
+	const tail = new Uint8Array(await blob.slice(tailStart).arrayBuffer());
+	const end = findEndOfCentralDirectory(tail),
+		endView = new DataView(tail.buffer, tail.byteOffset + end, 22);
+	if (
+		endView.getUint16(4, true) ||
+		endView.getUint16(6, true) ||
+		endView.getUint16(8, true) !== endView.getUint16(10, true)
+	)
 		throw new Error("Multi-disk ZIP archives are not supported");
-	}
-
-	const entryCount = view.getUint16(eocdOffset + 10, true);
-	const centralDirectoryOffset = view.getUint32(eocdOffset + 16, true);
-	const result = new Map<string, ZipEntry>();
-	let offset = centralDirectoryOffset;
-
-	for (let i = 0; i < entryCount; i++) {
+	const count = endView.getUint16(10, true),
+		directorySize = endView.getUint32(12, true),
+		directoryOffset = endView.getUint32(16, true);
+	if (
+		count > MAX_ENTRIES ||
+		directorySize > MAX_DIRECTORY_BYTES ||
+		directoryOffset + directorySize !== tailStart + end
+	)
+		throw new Error("ZIP central directory exceeds its bounds");
+	const directory = new Uint8Array(
+		await blob
+			.slice(directoryOffset, directoryOffset + directorySize)
+			.arrayBuffer(),
+	);
+	const view = new DataView(
+		directory.buffer,
+		directory.byteOffset,
+		directory.byteLength,
+	);
+	const result = new Map<string, ZipEntry>(),
+		paths = new Set<string>();
+	const ranges: Array<{ start: number; end: number }> = [];
+	let offset = 0,
+		inflated = 0;
+	for (let i = 0; i < count; i++) {
 		if (
+			offset + 46 > directory.length ||
 			view.getUint32(offset, true) !== CENTRAL_DIRECTORY_HEADER_SIGNATURE
-		) {
-			throw new Error("Invalid ZIP archive: corrupt central directory");
-		}
-
-		const method = view.getUint16(offset + 10, true);
-		const entryCrc32 = view.getUint32(offset + 16, true);
-		const compressedSize = view.getUint32(offset + 20, true);
-		const uncompressedSize = view.getUint32(offset + 24, true);
-		const nameLength = view.getUint16(offset + 28, true);
-		const extraLength = view.getUint16(offset + 30, true);
-		const commentLength = view.getUint16(offset + 32, true);
-		const localHeaderOffset = view.getUint32(offset + 42, true);
-		const path = readEntryName({
-			bytes,
-			offset: offset + 46,
-			length: nameLength,
+		)
+			throw new Error("Invalid ZIP central directory");
+		const flags = view.getUint16(offset + 8, true),
+			method = view.getUint16(offset + 10, true),
+			checksum = view.getUint32(offset + 16, true),
+			compressedSize = view.getUint32(offset + 20, true),
+			size = view.getUint32(offset + 24, true),
+			nameLength = view.getUint16(offset + 28, true),
+			extra = view.getUint16(offset + 30, true),
+			comment = view.getUint16(offset + 32, true),
+			localOffset = view.getUint32(offset + 42, true);
+		if (
+			flags & ~(UTF8_FLAG | 8) ||
+			view.getUint16(offset + 34, true) ||
+			![STORE_METHOD, DEFLATE_METHOD].includes(method)
+		)
+			throw new Error("Unsupported ZIP encryption, disk or compression method");
+		if (
+			!nameLength ||
+			offset + 46 + nameLength + extra + comment > directory.length
+		)
+			throw new Error("Invalid ZIP directory entry bounds");
+		const rawName = textDecoder.decode(
+			directory.subarray(offset + 46, offset + 46 + nameLength),
+		);
+		const isDirectory = rawName.endsWith("/");
+		const path = normalizeZipPath({
+			path: isDirectory ? rawName.slice(0, -1) : rawName,
 		});
-		offset += 46 + nameLength + extraLength + commentLength;
-
-		if (path.endsWith("/")) {
+		if (paths.has(path)) throw new Error("Duplicate ZIP path: " + path);
+		paths.add(path);
+		offset += 46 + nameLength + extra + comment;
+		if (localOffset + 30 > directoryOffset)
+			throw new Error("ZIP local header is outside its bounds");
+		const local = new Uint8Array(
+				await blob.slice(localOffset, localOffset + 30).arrayBuffer(),
+			),
+			localView = new DataView(local.buffer);
+		if (
+			localView.getUint32(0, true) !== LOCAL_FILE_HEADER_SIGNATURE ||
+			localView.getUint16(6, true) !== flags ||
+			localView.getUint16(8, true) !== method
+		)
+			throw new Error("ZIP local and central headers differ");
+		const localName = localView.getUint16(26, true),
+			localExtra = localView.getUint16(28, true),
+			dataStart = localOffset + 30 + localName + localExtra;
+		if (
+			dataStart + compressedSize > directoryOffset ||
+			dataStart > directoryOffset
+		)
+			throw new Error("ZIP entry data is outside its bounds");
+		if (
+			textDecoder.decode(
+				await blob
+					.slice(localOffset + 30, localOffset + 30 + localName)
+					.arrayBuffer(),
+			) !== rawName
+		)
+			throw new Error("ZIP entry paths differ between headers");
+		if (
+			!(flags & 8) &&
+			(localView.getUint32(14, true) !== checksum ||
+				localView.getUint32(18, true) !== compressedSize ||
+				localView.getUint32(22, true) !== size)
+		)
+			throw new Error("ZIP entry sizes or checksums differ between headers");
+		ranges.push({ start: localOffset, end: dataStart + compressedSize });
+		if (isDirectory) {
+			if (size || compressedSize)
+				throw new Error("ZIP directory contains data");
 			continue;
 		}
-
-		if (
-			view.getUint32(localHeaderOffset, true) !== LOCAL_FILE_HEADER_SIGNATURE
-		) {
-			throw new Error(`Invalid ZIP archive: missing local header for ${path}`);
+		if (method === STORE_METHOD && size !== compressedSize)
+			throw new Error("Invalid stored ZIP entry size");
+		if (method === DEFLATE_METHOD) {
+			inflated += size;
+			if (inflated > MAX_INFLATED_BYTES)
+				throw new Error(
+					"Compressed ZIP expansion exceeds256MiB; use an uncompressed project ZIP or metadata XML",
+				);
 		}
-
-		const localNameLength = view.getUint16(localHeaderOffset + 26, true);
-		const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
-		const dataStart = localHeaderOffset + 30 + localNameLength + localExtraLength;
-		const compressedData = bytes.slice(dataStart, dataStart + compressedSize);
-		let data: Uint8Array;
-
-		if (method === STORE_METHOD) {
-			data = compressedData;
-		} else if (method === DEFLATE_METHOD) {
-			data = await inflateRaw({ data: compressedData });
-		} else {
-			throw new Error(`Unsupported ZIP compression method ${method} for ${path}`);
-		}
-
-		if (data.byteLength !== uncompressedSize) {
-			throw new Error(`Invalid ZIP archive: wrong size for ${path}`);
-		}
-
-		if (crc32(data) !== entryCrc32) {
-			throw new Error(`Invalid ZIP archive: checksum mismatch for ${path}`);
-		}
-
-		const entryBlob = new Blob([toBlobPart(data)]);
+		const raw = blob.slice(dataStart, dataStart + compressedSize);
+		const content =
+			method === STORE_METHOD
+				? raw
+				: await inflateRaw({ data: raw, expected: size });
+		if ((await crc32(content)) !== checksum)
+			throw new Error("Invalid ZIP archive: checksum mismatch for " + path);
 		result.set(path, {
 			path,
 			compressedSize,
-			uncompressedSize,
-			crc32: entryCrc32,
+			uncompressedSize: size,
+			crc32: checksum,
 			method,
-			blob: entryBlob,
-			text: () => entryBlob.text(),
-			json: async <T = unknown>() =>
-				JSON.parse(await entryBlob.text()) as T,
+			blob: content,
+			text: () => content.text(),
+			json: async <T = unknown>() => JSON.parse(await content.text()) as T,
 		});
 	}
-
+	if (offset !== directory.length)
+		throw new Error("Unexpected ZIP directory data");
+	ranges.sort((a, b) => a.start - b.start);
+	for (let i = 1; i < ranges.length; i++)
+		if (ranges[i]!.start < ranges[i - 1]!.end)
+			throw new Error("ZIP entries overlap");
 	return result;
 }

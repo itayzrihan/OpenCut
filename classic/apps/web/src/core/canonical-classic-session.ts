@@ -268,6 +268,43 @@ export class CanonicalClassicSession {
 		return state.project.classic;
 	}
 
+	readSelection(): {
+		projectId: string;
+		sceneId: string;
+		revision: number;
+		selectionRevision: number;
+		exactTrackId: string | null;
+		elements: import("@/timeline/types").ElementRef[];
+	} {
+		return this.call({
+			capability: "timeline.classic.selection.read",
+			input: { projectId: this.projectId },
+		});
+	}
+
+	setSelection(
+		change:
+			| {
+					type: "elements";
+					elements: import("@/timeline/types").ElementRef[];
+					reconcileMissing?: boolean;
+					preserveRowScope?: boolean;
+			  }
+			| { type: "track"; trackId: string; additive?: boolean },
+	): ReturnType<CanonicalClassicSession["readSelection"]> {
+		const before = this.readSelection();
+		return this.call({
+			capability: "timeline.classic.selection.set",
+			input: {
+				projectId: this.projectId,
+				sceneId: before.sceneId,
+				expectedRevision: before.revision,
+				expectedSelectionRevision: before.selectionRevision,
+				change,
+			},
+		});
+	}
+
 	updateUnifiedSyncTask(
 		input: import("@/media/unified-sync-task").UnifiedSyncTaskUpdate,
 	): {

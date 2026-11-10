@@ -29,6 +29,23 @@ export function validProject(value: string) {
 		throw new Error("Invalid project");
 	return value;
 }
+/** Portable copies keep their original reference IDs without changing source ownership. */
+export function archiveReferenceDirectory({
+	root,
+	projectId,
+	fileId,
+}: {
+	root: string;
+	projectId: string;
+	fileId: string;
+}) {
+	return join(
+		root,
+		"archive-files",
+		sha(validProject(projectId)),
+		validId(fileId),
+	);
+}
 export async function saveJson({
 	root,
 	name,
@@ -48,11 +65,16 @@ export async function saveJson({
 	try {
 		await write;
 	} finally {
-		if (pendingJsonWrites.get(target) === write) pendingJsonWrites.delete(target);
+		if (pendingJsonWrites.get(target) === write)
+			pendingJsonWrites.delete(target);
 	}
 }
 
-async function replaceJson({ root, target, value }: {
+async function replaceJson({
+	root,
+	target,
+	value,
+}: {
 	root: string;
 	target: string;
 	value: unknown;
@@ -68,7 +90,8 @@ async function replaceJson({ root, target, value }: {
 			} catch (error) {
 				const code = (error as NodeJS.ErrnoException).code;
 				if (
-					process.platform !== "win32" || attempt === 5 ||
+					process.platform !== "win32" ||
+					attempt === 5 ||
 					(code !== "EPERM" && code !== "EBUSY" && code !== "EACCES")
 				)
 					throw error;
@@ -181,19 +204,36 @@ export async function file({
 }) {
 	const directory = join(root, "files");
 	validId(fileId);
-	const info = await json<
-		DirectorReference & {
-			projectId: string;
-			sha256: string;
-			durationSeconds?: number;
-		}
-	>({ root: directory, name: fileId + ".json" });
+	type Info = DirectorReference & {
+		projectId: string;
+		sha256: string;
+		durationSeconds?: number;
+	};
+	let path = join(directory, fileId);
+	let info = await json<Info>({
+		root: directory,
+		name: fileId + ".json",
+	}).catch((error: unknown) => {
+		if (
+			error &&
+			typeof error === "object" &&
+			"code" in error &&
+			error.code === "ENOENT"
+		)
+			return null;
+		throw error;
+	});
+	if (!info || info.projectId !== projectId) {
+		const imported = archiveReferenceDirectory({ root, projectId, fileId });
+		info = await json<Info>({ root: imported, name: "content.json" });
+		path = join(imported, "content");
+	}
 	if (info.projectId !== projectId)
 		throw new Error("Artifact belongs to another project");
-	const meta = await stat(join(directory, fileId));
+	const meta = await stat(path);
 	if (meta.size !== info.bytes || meta.size > 512 * 1024 * 1024)
 		throw new Error("Artifact changed");
-	return { info, path: join(directory, fileId) };
+	return { info, path };
 }
 export async function fileBytes({
 	root,

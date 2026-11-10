@@ -51,6 +51,7 @@ export function useElementInteraction({
 				editor.project.getActiveForScene()?.settings.fps ?? null,
 		},
 		selection: {
+			getExactTrackId: () => editor.selection.getExactTrackSelectionId(),
 			getSelected: () => selection.selectedElements,
 			isSelected: selection.isElementSelected,
 			select: selection.selectElement,

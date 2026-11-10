@@ -270,10 +270,14 @@ export class TimelineManager {
 		pushHistory?: boolean;
 	}): void {
 		const tracks = this.editor.scenes.getActiveScene().tracks;
-		const refs = includeLinkedAudioVideo({
-			tracks,
-			elements: [{ trackId, elementId }],
-		});
+		const exactRow =
+			this.editor.selection.getExactTrackSelectionId?.() === trackId;
+		const refs = exactRow
+			? [{ trackId, elementId }]
+			: includeLinkedAudioVideo({
+					tracks,
+					elements: [{ trackId, elementId }],
+				});
 		const anchor =
 			refs.find((ref) => ref.trackId === tracks.main.id) ?? refs[0];
 		const entries = this.getElementsWithTracks({ elements: refs });
@@ -324,6 +328,7 @@ export class TimelineManager {
 			ticks: resized.patch.duration - original.duration,
 		});
 		if (
+			exactRow ||
 			insertedDuration === 0 ||
 			(anchor.trackId !== tracks.main.id &&
 				!useTimelineStore.getState().rippleEditingEnabled)

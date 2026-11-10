@@ -6,6 +6,7 @@ import {
 } from "@/i18n/message";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { TrackControlsResizer } from "./track-controls-resizer";
+import { TrackSelectButton } from "./track-select-button";
 import { CanonicalButton } from "@/components/editor/canonical-button";
 import {
 	HyperframesTimelineProvider,
@@ -1894,6 +1895,7 @@ const TrackLabelRow = memo(function TrackLabelRow({
 				className="flex shrink-0 items-center justify-start gap-2 px-3 [&>*]:shrink-0"
 				style={{ height: `${layout.baseHeight}px` }}
 			>
+				<TrackSelectButton track={track} />
 				{track.type === "parallax" && (
 					<ParallaxTrackControls track={track} timeline={timeline} />
 				)}

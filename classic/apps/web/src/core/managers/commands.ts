@@ -80,6 +80,7 @@ export class CommandManager {
 		promise: Promise<void>;
 	} | null = null;
 	private transactionDepth = 0;
+	private exactRowTransaction = false;
 	private stateRevision = 0;
 	private canonical: CanonicalClassicSession | null = null;
 	private viewportProjection: {
@@ -130,6 +131,9 @@ export class CommandManager {
 	}): Command {
 		assertBatchEditable(this.editor.project.getActiveOrNull()?.metadata.id);
 		const shouldRecordHistory = this.transactionDepth === 0;
+		const previousExactRow = this.exactRowTransaction;
+		if (shouldRecordHistory)
+			this.exactRowTransaction = !!this.canonical?.readSelection().exactTrackId;
 		const beforeSnapshot =
 			shouldRecordHistory && !this.canonical
 				? this.captureProjectSnapshot()
@@ -206,7 +210,9 @@ export class CommandManager {
 			if (canonicalOuter) {
 				this.transactionDepth -= 1;
 				this.canonicalFrameCommands = [];
+				this.editor.selection.flushCanonicalSelection?.();
 			}
+			this.exactRowTransaction = previousExactRow;
 		}
 	}
 
@@ -246,6 +252,8 @@ export class CommandManager {
 		if (this.transactionDepth > 0) {
 			return execute();
 		}
+		const previousExactRow = this.exactRowTransaction;
+		this.exactRowTransaction = !!this.canonical?.readSelection().exactTrackId;
 
 		const beforeSnapshot = this.canonical
 			? null
@@ -316,6 +324,8 @@ export class CommandManager {
 		} finally {
 			this.transactionDepth -= 1;
 			this.canonicalFrameCommands = [];
+			this.editor.selection.flushCanonicalSelection?.();
+			this.exactRowTransaction = previousExactRow;
 		}
 	}
 
@@ -1937,11 +1947,67 @@ export class CommandManager {
 				this.editor.save.markDirty();
 				this.persistHistory();
 			}
+			if (current()) this.editor.selection.refreshCanonicalSelection?.();
 		}
 	}
 
 	getCanonicalRevision(): number | undefined {
 		return this.canonical?.status().revision;
+	}
+
+	/** Selection is presentation state; it never creates a content transaction. */
+	readClassicSelection() {
+		if (
+			!this.canonical ||
+			this.transactionDepth > 0 ||
+			this.isProjectingCanonical
+		)
+			return undefined;
+		return {
+			...this.canonical.readSelection(),
+			accountId: this.agentAccountId(),
+		};
+	}
+
+	writeClassicSelection({
+		elements,
+		preserveRowScope = false,
+	}: {
+		elements: import("@/timeline/types").ElementRef[];
+		preserveRowScope?: boolean;
+	}) {
+		if (
+			!this.canonical ||
+			this.transactionDepth > 0 ||
+			this.isProjectingCanonical
+		)
+			return undefined;
+		return {
+			...this.canonical.setSelection({
+				type: "elements",
+				elements,
+				reconcileMissing: true,
+				preserveRowScope,
+			}),
+			accountId: this.agentAccountId(),
+		};
+	}
+
+	selectClassicTrack({
+		trackId,
+		additive = false,
+	}: {
+		trackId: string;
+		additive?: boolean;
+	}): void {
+		if (
+			!this.canonical ||
+			this.transactionDepth > 0 ||
+			this.isProjectingCanonical
+		)
+			throw new Error("Open the canonical timeline before selecting a track");
+		this.canonical.setSelection({ type: "track", trackId, additive });
+		this.editor.selection.refreshCanonicalSelection({ clearSpecific: true });
 	}
 	setClassicBackgroundRemoval(input: {
 		trackId: string;
@@ -2698,6 +2764,7 @@ export class CommandManager {
 				this.editor.save.markDirty();
 				this.persistHistory();
 			}
+			this.editor.selection.refreshCanonicalSelection?.();
 		}
 	}
 
@@ -3845,7 +3912,7 @@ export class CommandManager {
 	}: {
 		beforeTracks: SceneTracks | null;
 	}): void {
-		if (!this.isRippleEnabled || !beforeTracks) {
+		if (this.exactRowTransaction || !this.isRippleEnabled || !beforeTracks) {
 			return;
 		}
 

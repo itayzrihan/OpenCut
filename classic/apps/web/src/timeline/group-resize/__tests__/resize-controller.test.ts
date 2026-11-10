@@ -18,6 +18,89 @@ import { mediaTime } from "@/wasm";
 
 const t = (seconds: number) => mediaTime({ ticks: seconds * 120000 });
 
+test("whole-row resize keeps linked microphone and other tracks out of preview and commit", () => {
+	for (const exactRow of [false, true]) {
+		const listeners = new Map<string, (event: { clientX: number }) => void>();
+		const previousDocument = globalThis.document;
+		globalThis.document = {
+			// DOM EventTarget takes positional arguments.
+			// eslint-disable-next-line opencut/prefer-object-params
+			addEventListener: (
+				name: string,
+				listener: (event: { clientX: number }) => void,
+			) => listeners.set(name, listener),
+			removeEventListener: (name: string) => listeners.delete(name),
+		} as unknown as Document;
+		try {
+			const clip = {
+				id: "video",
+				type: "video",
+				startTime: t(0),
+				duration: t(5),
+				trimStart: t(0),
+				trimEnd: t(2),
+				sourceDuration: t(7),
+				linkedAudioVideoId: "mic",
+			};
+			const microphone = {
+				...clip,
+				id: "mic",
+				type: "audio",
+				linkedAudioVideoId: "video",
+			};
+			const tracks = {
+				main: { id: "main", type: "video", elements: [clip] },
+				overlay: [],
+				audio: [{ id: "microphone", type: "audio", elements: [microphone] }],
+			} as unknown as SceneTracks;
+			let preview: GroupResizeUpdate[] = [],
+				committed: GroupResizeUpdate[] = [];
+			let hasTimeEdit = false;
+			const config: ResizeConfig = {
+				zoomLevel: 1,
+				snappingEnabled: false,
+				rippleEditingEnabled: true,
+				isShiftHeld: () => false,
+				getSceneTracks: () => tracks,
+				getCurrentPlayheadTime: () => t(0),
+				getActiveProjectFps: () => ({ numerator: 30, denominator: 1 }),
+				selectedElements: [{ trackId: "main", elementId: "video" }],
+				getExactTrackId: () => (exactRow ? "main" : null),
+				discardPreview: () => {},
+				previewElements: (value) => {
+					preview = value;
+				},
+				commitElements: ({ updates, timeEdit }) => {
+					committed = updates;
+					hasTimeEdit = !!timeEdit;
+				},
+			};
+			const controller = new ResizeController({
+				configRef: { current: config },
+			});
+			controller.onResizeStart({
+				event: {
+					clientX: 100,
+					stopPropagation() {},
+					preventDefault() {},
+				} as never,
+				element: clip as never,
+				track: tracks.main,
+				side: "right",
+			});
+			listeners.get("mousemove")!({ clientX: 150 });
+			listeners.get("mouseup")!({ clientX: 150 });
+			const expected = exactRow ? ["video"] : ["video", "mic"];
+			expect(preview.map((item) => item.elementId)).toEqual(expected);
+			expect(committed.map((item) => item.elementId)).toEqual(expected);
+			expect(hasTimeEdit).toBe(!exactRow);
+			expect(microphone.duration).toBe(t(5));
+		} finally {
+			globalThis.document = previousDocument;
+		}
+	}
+});
+
 // The signed-time adapter is exercised in ripple-resize.test.ts; the Rust
 // timeline suite verifies the production mapping, including consumed spans.
 describe("main-track trim gesture", () => {

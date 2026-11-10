@@ -100,7 +100,7 @@ pub(super) fn register_classic_split(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.split",
         "Split Classic clips or retain one side",
-        "Split 1..1000 explicit trackId/elementId clips at an absolute safe integer splitTime in ticks (120000/second). retainSide is both (default), left or right. Out-of-range or exact-edge targets are returned in skipped; missing or duplicate targets reject the complete edit. Snap the retimed source boundary once and derive the right span so trim halves sum exactly to the original source span. Splits scalar/discrete/composite animations, preserving Bezier curves. Text with words on both sides partitions by word midpoint, rebases timing, row overrides and content; text fallback splits the whole visual layer. New right clip IDs come from the canonical allocator; a text right-only word split retains its original ID. Returns rightElements for selection/readback. Retains media, retime, effects, masks, transition fields and extension fields, synchronizes transcript/word ownership; reciprocal audio/video pairs split together and each result pair is relinked. No ripple. Generated caption visual reflow is excluded. Supports dry run, optimistic revision, idempotent registry retries, cancellation, transactions and Undo/Redo.",
+        "Split 1..1000 explicit trackId/elementId clips at an absolute safe integer splitTime in ticks (120000/second). retainSide is both (default), left or right. Out-of-range or exact-edge targets are returned in skipped; missing or duplicate targets reject the complete edit. Snap the retimed source boundary once and derive the right span so trim halves sum exactly to the original source span. Splits scalar/discrete/composite animations, preserving Bezier curves. Text with words on both sides partitions by word midpoint, rebases timing, row overrides and content; text fallback splits the whole visual layer. New right clip IDs come from the canonical allocator; a text right-only word split retains its original ID. Returns rightElements for selection/readback. Retains media, retime, effects, masks, transition fields and extension fields, synchronizes transcript/word ownership; reciprocal audio/video pairs split together and each result pair is relinked, except a verified canonical whole-row selection limits splitting to that row. No ripple. Generated caption visual reflow is excluded. Supports dry run, optimistic revision, idempotent registry retries, cancellation, transactions and Undo/Redo.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -148,6 +148,7 @@ pub(super) fn split_document(
     skipped: &mut Vec<Ref>,
     partition_timed_text: bool,
 ) -> Result<Vec<String>, CapabilityError> {
+    let exact_row = classic_selection::exact_row_scope(document, &input.scene_id, input.elements.iter().map(|item| (item.track_id.as_str(), item.element_id.as_str())));
     let project = project_mut(document)?;
     if project.id != input.project_id {
         return Err(CapabilityError::Conflict(
@@ -178,6 +179,7 @@ pub(super) fn split_document(
     }
     for target in &input.elements {
         let (_, clip) = classic_source_audio::find_clip(&before, &target.element_id).unwrap();
+        if exact_row { break; }
         if let Some((track, other)) = classic_source_audio::peer(&before, clip) {
             requested.insert((
                 track["id"].as_str().unwrap().to_owned(),

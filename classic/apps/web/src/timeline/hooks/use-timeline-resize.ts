@@ -42,6 +42,7 @@ export function useTimelineResize({
 		getActiveProjectFps: () =>
 			editor.project.getActiveForScene()?.settings.fps ?? null,
 		selectedElements,
+		getExactTrackId: () => editor.selection.getExactTrackSelectionId(),
 		discardPreview: () => editor.timeline.discardPreview(),
 		previewElements: (updates) =>
 			editor.timeline.previewElements({

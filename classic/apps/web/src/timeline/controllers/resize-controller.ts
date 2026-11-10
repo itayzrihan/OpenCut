@@ -63,6 +63,7 @@ export interface ResizeConfig {
 	getCurrentPlayheadTime: () => MediaTime;
 	getActiveProjectFps: () => FrameRate | null;
 	selectedElements: ElementRef[];
+	getExactTrackId?: () => string | null;
 	discardPreview: () => void;
 	previewElements: (updates: GroupResizeUpdate[]) => void;
 	commitElements: (args: {
@@ -235,14 +236,18 @@ export class ResizeController {
 			: [ref];
 
 		const tracks = this.config.getSceneTracks();
+		const exactRow = this.config.getExactTrackId?.() === track.id;
 		const rippleInsertion =
-			track.id === tracks.main.id || this.config.rippleEditingEnabled;
+			!exactRow &&
+			(track.id === tracks.main.id || this.config.rippleEditingEnabled);
 		const members = buildResizeMembers({
 			tracks,
-			selectedElements: includeLinkedAudioVideo({
-				tracks,
-				elements: activeSelection,
-			}),
+			selectedElements: exactRow
+				? activeSelection
+				: includeLinkedAudioVideo({
+						tracks,
+						elements: activeSelection,
+					}),
 			allowRightNeighborOverlap: rippleInsertion,
 		});
 		if (members.length === 0) return;

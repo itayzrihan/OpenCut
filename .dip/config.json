@@ -565,7 +565,15 @@
       "timeoutMs": 600000
     },
     "web-build-types": {
-      "command": ["node", "classic/apps/web/node_modules/typescript/bin/tsc", "--noEmit", "--project", "classic/apps/web/tsconfig.build.json", "--incremental", "false"],
+      "command": [
+        "node",
+        "classic/apps/web/node_modules/typescript/bin/tsc",
+        "--noEmit",
+        "--project",
+        "classic/apps/web/tsconfig.build.json",
+        "--incremental",
+        "false"
+      ],
       "timeoutMs": 120000
     },
     "agent-production-studio": {
@@ -594,6 +602,26 @@
         "--timeout=120000",
         "--test-timeout=120000",
         "--report=.local/agent-production-studio/configured"
+      ],
+      "timeoutMs": 300000
+    },
+    "project-exchange-track-selection": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/project/archive/exchange-format.test.ts",
+        "src/project/archive/__tests__/exchange-wasm.test.ts",
+        "src/project/archive/__tests__/zip.test.ts",
+        "src/project/archive/shared-assets.test.ts",
+        "src/generative/server/archive-reference.test.ts",
+        "src/core/__tests__/canonical-selection.test.ts",
+        "src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "src/timeline/group-resize/__tests__/resize-controller.test.ts",
+        "src/client-review/server.test.ts",
+        "--jobs=2",
+        "--timeout=120000",
+        "--test-timeout=120000",
+        "--report=.local/project-xml-track-selection/configured"
       ],
       "timeoutMs": 300000
     }

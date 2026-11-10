@@ -56,6 +56,7 @@ export interface SceneReader {
 
 export interface ElementSelectionApi {
 	getSelected: () => readonly ElementRef[];
+	getExactTrackId?: () => string | null;
 	isSelected: (ref: ElementRef) => boolean;
 	select: (ref: ElementRef) => void;
 	handleClick: (args: ElementRef & { isMultiKey: boolean }) => void;
@@ -605,10 +606,13 @@ export class ElementInteractionController {
 				trackId: mousedown.trackId,
 				elementId: mousedown.elementId,
 			},
-			selectedElements: includeLinkedAudioVideo({
-				tracks,
-				elements: mousedown.selectedElements,
-			}),
+			selectedElements:
+				this.deps.selection.getExactTrackId?.() === mousedown.trackId
+					? [...mousedown.selectedElements]
+					: includeLinkedAudioVideo({
+							tracks,
+							elements: mousedown.selectedElements,
+						}),
 			tracks,
 		});
 		if (!moveGroup) return;

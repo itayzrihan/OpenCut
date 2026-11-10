@@ -57,7 +57,7 @@ pub(super) fn register_classic_move(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.elements.move",
         "Move Classic clips in exact ticks",
-        "Atomically move explicit sourceTrackId/elementId clips to compatible targetTrackId tracks at newStartTime (nonnegative safe integer ticks, 120000/second). Optional createTracks supplies fresh globally unique id, type and display index; creations run in ascending index order. Every target is validated before publishing; duplicate clip moves are rejected. Retains IDs, source media, trim, retime, word runs, animation, linked audio and extension fields. Reciprocal audio/video partners receive the same movement delta even when omitted from the input. Allows overlaps; does not ripple other clips. Updates generated caption transcript timing and reconciles manual text ownership. Does not regenerate caption visual layout; use caption layout workflow when reflow is required. Returns target references for selection/readback. Revision checks, dry run, idempotent retries, cancellation, atomic transactions and undo/redo are supported; no filesystem or network effects.",
+        "Atomically move explicit sourceTrackId/elementId clips to compatible targetTrackId tracks at newStartTime (nonnegative safe integer ticks, 120000/second). Optional createTracks supplies fresh globally unique id, type and display index; creations run in ascending index order. Every target is validated before publishing; duplicate clip moves are rejected. Retains IDs, source media, trim, retime, word runs, animation, linked audio and extension fields. Reciprocal audio/video partners receive the same movement delta even when omitted from the input, except a verified canonical whole-row selection keeps edits inside that row. Allows overlaps; does not ripple other clips. Updates generated caption transcript timing and reconciles manual text ownership. Does not regenerate caption visual layout; use caption layout workflow when reflow is required. Returns target references for selection/readback. Revision checks, dry run, idempotent retries, cancellation, atomic transactions and undo/redo are supported; no filesystem or network effects.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -109,6 +109,7 @@ fn apply(
     input: &Input,
     context: &InvocationContext,
 ) -> Result<Vec<ElementRef>, CapabilityError> {
+    let exact_row = classic_selection::exact_row_scope(document, &input.scene_id, input.moves.iter().map(|item| (item.source_track_id.as_str(), item.element_id.as_str())));
     let mut occupied = HashSet::new();
     collect_ids(
         &serde_json::to_value(&document.project).map_err(|e| invalid(&e.to_string()))?,
@@ -150,6 +151,7 @@ fn apply(
     let mut refs = Vec::new();
     let mut moves = input.moves.clone();
     for requested in &input.moves {
+        if exact_row { break; }
         let Some((_, source)) = classic_source_audio::find_clip(&before, &requested.element_id)
         else {
             continue;

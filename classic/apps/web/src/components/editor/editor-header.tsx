@@ -47,10 +47,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ShortcutsDialog } from "@/actions/components/shortcuts-dialog";
 import Image from "next/image";
 import { cn } from "@/utils/ui";
+import { EXCHANGE_ACCEPT } from "@/project/archive/exchange-format";
 import {
-	downloadProjectArchive,
-	PROJECT_ARCHIVE_ACCEPT,
-} from "@/project/archive/project-archive";
+	ProjectExportDialog,
+	ProjectImportDialog,
+} from "@/project/archive/exchange-dialogs";
 
 import { useAssetsPanelStore } from "./panels/assets/assets-panel-store";
 
@@ -117,13 +118,13 @@ function ProjectDropdown() {
 		"delete" | "rename" | "shortcuts" | null
 	>(null);
 	const [isExiting, setIsExiting] = useState(false);
-	const [isArchiveExporting, setIsArchiveExporting] = useState(false);
-	const [isArchiveImporting, setIsArchiveImporting] = useState(false);
+	const [archiveExportOpen, setArchiveExportOpen] = useState(false);
+	const [archiveFile, setArchiveFile] = useState<File | null>(null);
 	const archiveInputRef = useRef<HTMLInputElement>(null);
 	const router = useRouter();
 	const editor = useEditor();
 	const activeProject = useEditorProject((e) => e.project.getActive());
-	const isArchiveBusy = isArchiveExporting || isArchiveImporting;
+	const isArchiveBusy = archiveExportOpen || archiveFile !== null;
 
 	const handleExit = async () => {
 		if (isExiting) return;
@@ -186,67 +187,12 @@ function ProjectDropdown() {
 		}
 	};
 
-	const handleExportProjectArchive = async () => {
-		if (isArchiveBusy || !activeProject) return;
-		setIsArchiveExporting(true);
-		try {
-			const archive = await editor.project.exportProjectArchive();
-			downloadProjectArchive({
-				blob: archive,
-				projectName: activeProject.metadata.name,
-			});
-			toast.success("Project ZIP exported");
-		} catch (error) {
-			console.error("Failed to export project ZIP:", error);
-			toast.error("Failed to export project ZIP", {
-				description:
-					error instanceof Error ? error.message : "Please try again",
-			});
-		} finally {
-			setIsArchiveExporting(false);
-		}
-	};
-
-	const handleImportProjectArchive = async (
+	const handleImportProjectArchive = (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
 		const file = event.currentTarget.files?.[0];
 		event.currentTarget.value = "";
-		if (!file || isArchiveBusy) return;
-
-		setIsArchiveImporting(true);
-		try {
-			editor.playback.pause();
-			const result = await editor.project.importProjectArchive({ file });
-			await editor.project.prepareExit();
-			editor.project.closeProject();
-			const linkedSharedCount =
-				result.sharedAudioLinked + result.sharedStickersLinked;
-			const importedSharedCount =
-				result.sharedAudioImported + result.sharedStickersImported;
-			toast.success(
-				localizeClientMessage('Imported "{v0}"', {
-					v0: String(result.projectName),
-				}),
-				{
-					description: [
-						`${result.mediaImported} media`,
-						`${result.fontsImported} fonts`,
-						`${linkedSharedCount} shared linked`,
-						`${importedSharedCount} shared imported`,
-					].join(" | "),
-				},
-			);
-			router.push(`/editor/${result.projectId}`);
-		} catch (error) {
-			console.error("Failed to import project ZIP:", error);
-			toast.error("Failed to import project ZIP", {
-				description:
-					error instanceof Error ? error.message : "Please try again",
-			});
-		} finally {
-			setIsArchiveImporting(false);
-		}
+		if (file && !isArchiveBusy) setArchiveFile(file);
 	};
 
 	return (
@@ -254,7 +200,7 @@ function ProjectDropdown() {
 			<input
 				ref={archiveInputRef}
 				type="file"
-				accept={PROJECT_ARCHIVE_ACCEPT}
+				accept={EXCHANGE_ACCEPT}
 				className="hidden"
 				onChange={handleImportProjectArchive}
 			/>
@@ -296,26 +242,18 @@ function ProjectDropdown() {
 					<DropdownMenuSeparator />
 
 					<DropdownMenuItem
-						onClick={handleExportProjectArchive}
+						onClick={() => setArchiveExportOpen(true)}
 						disabled={isArchiveBusy}
 						icon={<HugeiconsIcon icon={FileZipIcon} />}
 					>
-						{isArchiveExporting ? (
-							<UiMessage text={"Exporting project ZIP..."} />
-						) : (
-							<UiMessage text={"Export project ZIP"} />
-						)}
+						<UiMessage text={"Export project"} />
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onClick={() => archiveInputRef.current?.click()}
 						disabled={isArchiveBusy}
 						icon={<HugeiconsIcon icon={FileImportIcon} />}
 					>
-						{isArchiveImporting ? (
-							<UiMessage text={"Importing project ZIP..."} />
-						) : (
-							<UiMessage text={"Import project ZIP"} />
-						)}
+						<UiMessage text={"Import project ZIP or XML"} />
 					</DropdownMenuItem>
 
 					<DropdownMenuSeparator />
@@ -331,6 +269,22 @@ function ProjectDropdown() {
 					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
+			<ProjectExportDialog
+				open={archiveExportOpen}
+				onOpenChange={setArchiveExportOpen}
+			/>
+			{archiveFile && (
+				<ProjectImportDialog
+					file={archiveFile}
+					onClose={() => setArchiveFile(null)}
+					onImported={async ({ projectId }) => {
+						editor.playback.pause();
+						await editor.project.prepareExit();
+						editor.project.closeProject();
+						router.push(`/editor/${projectId}`);
+					}}
+				/>
+			)}
 			<RenameProjectDialog
 				isOpen={openDialog === "rename"}
 				onOpenChange={(isOpen) => setOpenDialog(isOpen ? "rename" : null)}

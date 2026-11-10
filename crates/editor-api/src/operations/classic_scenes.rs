@@ -264,6 +264,8 @@ fn register_navigation(registry: &CapabilityRegistry, state: Arc<RwLock<EditorSt
                     if !context.dry_run {
                         store.document.workspace.classic_scene = Some(crate::ClassicSceneNavigation { project_id: input.project_id, scene_id: input.scene_id });
                         store.document.workspace.classic_scene_revision = output.navigation_revision;
+                        store.document.selection = SelectionState::default();
+                        store.document.workspace.classic_selection_revision = store.document.workspace.classic_selection_revision.saturating_add(1);
                     }
                 }
                 drop(store);

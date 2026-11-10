@@ -476,6 +476,7 @@ fn apply_updates(
         Some(input.expected_revision),
         input.history_group.as_deref(),
         |document| {
+            let exact_row = classic_selection::exact_row_scope(document, &input.scene_id, input.updates.iter().map(|item| (item.track_id.as_str(), item.element_id.as_str())));
             let project = project_mut(document)?;
             if project.id != input.project_id {
                 return Err(CapabilityError::Conflict(
@@ -529,7 +530,7 @@ fn apply_updates(
                     ))
                 );
                 let next = apply(&original, &update.patch, main, earliest, &prefix)?;
-                if ["startTime", "duration", "trimStart", "trimEnd", "retime"]
+                if !exact_row && ["startTime", "duration", "trimStart", "trimEnd", "retime"]
                     .iter()
                     .any(|key| update.patch.contains_key(*key))
                     && let Some((other_track, other)) =
@@ -608,6 +609,7 @@ fn apply_updates(
                     .push(json!({"trackId": track_id, "elementId": element_id, "patch": patch}));
             }
             for update in &input.updates {
+                if exact_row { break; }
                 let (_, original) =
                     classic_source_audio::find_clip(&before, &update.element_id).unwrap();
                 if let Some((_, partner)) = classic_source_audio::peer(&before, original)

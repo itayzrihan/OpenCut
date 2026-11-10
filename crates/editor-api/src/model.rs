@@ -135,6 +135,48 @@ impl Default for EditorDocument {
 }
 
 impl EditorDocument {
+    /// Classic IDs are globally unique, but live in its retained document rather
+    /// than the rewrite timeline. Selection remains the shared canonical model.
+    pub(crate) fn classic_selection_ids(&self) -> Option<(BTreeSet<String>, BTreeSet<String>, BTreeSet<String>)> {
+        let classic = self.project.as_ref()?.classic.as_ref()?;
+        let mut tracks = BTreeSet::new();
+        let mut items = BTreeSet::new();
+        for scene in classic.document["scenes"].as_array().into_iter().flatten() {
+            let t = &scene["tracks"];
+            for track in std::iter::once(&t["main"]).chain(t["overlay"].as_array().into_iter().flatten()).chain(t["audio"].as_array().into_iter().flatten()) {
+                if let Some(id) = track["id"].as_str() { tracks.insert(id.to_owned()); }
+                for item in track["elements"].as_array().into_iter().flatten() {
+                    if let Some(id) = item["id"].as_str() { items.insert(id.to_owned()); }
+                }
+            }
+        }
+        let assets = classic.media_assets.iter().filter_map(|a| a["id"].as_str().map(str::to_owned)).collect();
+        Some((assets, tracks, items))
+    }
+
+    pub(crate) fn reconcile_classic_selection(&mut self) {
+        if let Some((assets, tracks, items)) = self.classic_selection_ids() {
+            self.selection.asset_ids.retain(|id| assets.contains(id));
+            self.selection.track_ids.retain(|id| tracks.contains(id));
+            self.selection.item_ids.retain(|id| items.contains(id));
+            self.selection.effect_ids.clear();
+            // A deliberate row selection follows its surviving/new split clips.
+            // Never absorb clips from another row when a move changes tracks.
+            if self.selection.track_ids.len() == 1 {
+                let id = self.selection.track_ids.first().unwrap();
+                if let Some(track) = self.project.as_ref().and_then(|p| p.classic.as_ref()).and_then(|c| c.document["scenes"].as_array()).into_iter().flatten().flat_map(|scene| {
+                    let t = &scene["tracks"];
+                    std::iter::once(&t["main"]).chain(t["overlay"].as_array().into_iter().flatten()).chain(t["audio"].as_array().into_iter().flatten())
+                }).find(|track| track["id"] == *id) {
+                    let row: BTreeSet<String> = track["elements"].as_array().into_iter().flatten().filter_map(|e| e["id"].as_str().map(str::to_owned)).collect();
+                    if self.selection.item_ids.is_subset(&row) { self.selection.item_ids = row; }
+                    else { self.selection.track_ids.clear(); }
+                }
+                if self.selection.item_ids.is_empty() { self.selection.track_ids.clear(); }
+            }
+        }
+    }
+
     pub fn allocate_id(&mut self, prefix: &str) -> String {
         let id = format!("{prefix}-{}", self.next_id);
         self.next_id += 1;
@@ -200,6 +242,13 @@ impl EditorDocument {
                 classic.document["scenes"].as_array().is_some_and(|scenes| scenes.iter().any(|scene| scene["id"] == navigation.scene_id))) {
                 return Err(ModelError::Invalid("Classic viewer scene does not exist in the active project".into()));
             }
+        }
+        if let Some((assets, tracks, items)) = self.classic_selection_ids() {
+            if !self.selection.asset_ids.is_subset(&assets) || !self.selection.track_ids.is_subset(&tracks)
+                || !self.selection.item_ids.is_subset(&items) || !self.selection.effect_ids.is_empty() {
+                return Err(ModelError::Invalid("Classic selection references unknown content".into()));
+            }
+            return Ok(());
         }
         let asset_ids: HashSet<_> = project
             .assets
@@ -2187,6 +2236,8 @@ pub struct WorkspaceState {
     pub classic_scene: Option<ClassicSceneNavigation>,
     #[serde(default)]
     pub classic_scene_revision: u64,
+    #[serde(default)]
+    pub classic_selection_revision: u64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub classic_viewport: Option<ClassicViewport>,
 }
@@ -2217,6 +2268,7 @@ impl Default for WorkspaceState {
             panel_state: Map::new(),
             classic_scene: None,
             classic_scene_revision: 0,
+            classic_selection_revision: 0,
             classic_viewport: None,
         }
     }
@@ -2224,6 +2276,9 @@ impl Default for WorkspaceState {
 
 impl WorkspaceState {
     fn validate(&self) -> Result<(), ModelError> {
+        if self.classic_selection_revision >= 9_007_199_254_740_991 {
+            return Err(ModelError::Invalid("Classic selection revision exceeds its bound".into()));
+        }
         if self.active_panel.trim().is_empty() || self.preview_quality.trim().is_empty() {
             return Err(ModelError::Invalid(
                 "workspace activePanel and previewQuality must not be empty".into(),

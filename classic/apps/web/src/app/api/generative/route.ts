@@ -11,6 +11,7 @@ import * as vault from "@/generative/server/vault";
 import * as store from "@/generative/server/store";
 import * as provider from "@/generative/server/provider";
 import * as batches from "@/generative/server/batch";
+import { importArchiveReference } from "@/generative/server/archive-reference";
 import { publicOrigin, share } from "@/generative/server/shares";
 import { CHATGPT_STORYBOARD_MODEL } from "@/generative/storyboard-model";
 export const runtime = "nodejs";
@@ -78,6 +79,21 @@ export const POST = withAccount(async (request: NextRequest) => {
 				file = form.get("file");
 			if (!(file instanceof File) || file.size > 100 * 1024 * 1024)
 				throw new Error("Invalid reference file");
+			if (form.get("archiveReference") === "1") {
+				const reference = await importArchiveReference({
+					root,
+					projectId,
+					reference: {
+						id: form.get("id"),
+						sha256: form.get("sha256"),
+						name: form.get("name"),
+						mime: file.type,
+						storyboard: form.get("storyboard") === "true",
+					},
+					bytes: Buffer.from(await file.arrayBuffer()),
+				});
+				return Response.json({ reference });
+			}
 			const reference = await store.artifact({
 				root: root,
 				projectId: projectId,
