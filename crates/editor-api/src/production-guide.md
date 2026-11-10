@@ -10,9 +10,13 @@ the version matching `currentVersion`: startMs/endMs, sourceLanguage, sourceText
 latinTransliteration, speaker and visualDescription. Milliseconds here are not
 timeline ticks (the Classic timeline uses 120000 ticks per second). Preserve exact
 source dialogue, spelling, language, speaker and sequence unless the user requests
-an edit. Latin transliteration is a parallel pronunciation aid, never a translation
-or replacement for the source. Leave it empty until supplied or deliberately
-prepared and reviewed. Pasted plain lines receive estimated timing; label and
+an edit. For non-English spoken rows, prepare a careful parallel Latin
+transliteration before handing the script to Director, unless the user explicitly
+opts out. Preserve supplied pronunciation; otherwise transliterate the original
+words without translating, paraphrasing or replacing sourceText. Mark uncertain
+names/pronunciation for human review rather than claiming verified phonetic accuracy.
+Latin transliteration is a pronunciation aid, never a replacement for the source.
+Pasted plain lines receive estimated timing; label and
 refine it against audio. SRT timing is explicit. Edit one row with its expected
 version; restoring an earlier revision appends a new revision and keeps history.
 
@@ -25,6 +29,23 @@ approvedVersion. Approval means the user's creative choice, not payment approval
 provider authorization, age/identity proof, or permission to generate more media.
 Never present your own draft as a human-approved reference. Native image generation
 requires the dedicated human review/Generate UI and its actual connected capability.
+
+For the complete internal-agent image workflow: create/read the intended stable
+reference slot, invoke `imagegen.generate` with the exact reviewed prompt, and wait
+for the user's native generation confirmation. Inspect its actual returned image.
+Then call `project.generative.request` with operation
+`{type:"importArtifactReference",artifactId:<returned artifact.id>,name:<display filename>,storyboard:false}`
+and a fresh operationId/current expectedRevision. The runtime verifies the image's
+current-project media binding, MIME, size and original SHA256, then transfers the
+bytes internally. Never read base64 into model context, re-encode pixels, use an
+arbitrary path, or treat an unrelated artifact as a reference. Use the returned
+`reference.id` in `project.production.edit` change `addReferenceVersion` with that
+slot's current expectedSlotVersion, source `generated` and a suitable caption.
+Update only the intended slot. Show the new version for the user's separate creative
+approval; generation confirmation does not approve the resulting image. A recovered
+generation uses its original operation identity, never a new paid generation merely
+to attach an already completed image. Images over 12 MiB are rejected explicitly;
+do not silently resize or alter their bytes.
 
 ## Hand the production plan to Director
 

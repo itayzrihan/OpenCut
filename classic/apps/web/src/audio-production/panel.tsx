@@ -1,6 +1,17 @@
 "use client";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { useEditor, useEditorProject } from "@/editor/use-editor";
+import {
+	useCallback,
+	useEffect,
+	useId,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
+import {
+	useEditor,
+	useEditorHistory,
+	useEditorProject,
+} from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,6 +32,7 @@ import {
 } from "./types";
 import { AgentSettingsSection } from "@/editor-agent/settings-section";
 import type { EditorCore } from "@/core";
+import { audioDraftsSnapshot } from "./panel-snapshot";
 
 export function ElevenLabsConnectionSettings({
 	projectId,
@@ -183,13 +195,17 @@ function AudioProjectPanel({
 			editor.project.getActiveOrNull()?.metadata.id === projectId,
 		[editor, projectId],
 	);
-	const drafts = useEditorProject(() => {
+	const draftsJson = useEditorHistory((currentEditor) => {
 		try {
-			return readAudioDrafts(editor).drafts;
+			return audioDraftsSnapshot(readAudioDrafts(currentEditor).drafts);
 		} catch {
-			return [];
+			return audioDraftsSnapshot([]);
 		}
 	});
+	const drafts = useMemo(
+		() => audioDraftSchema.array().parse(JSON.parse(draftsJson)),
+		[draftsJson],
+	);
 	const [draft, setDraft] = useState<AudioDraft>(() => emptyDraft()),
 		[baseVersion, setBaseVersion] = useState<number | null>(null);
 	const [jobs, setJobs] = useState<AudioJob[]>([]),

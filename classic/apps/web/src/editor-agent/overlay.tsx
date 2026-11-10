@@ -10,6 +10,7 @@ import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
 import { ProductionStudioPanel } from "@/production-studio/panel";
 import { readProduction } from "@/production-studio/client";
 import { animateDirectorHandoff } from "./production-handoff";
+import { productionHandoffSnapshot } from "./production-handoff-snapshot";
 import { canonical as readDirector } from "@/generative/client";
 import { useAssetsPanelStore } from "@/components/editor/panels/assets/assets-panel-store";
 import { AgentDirectorReview } from "./director-review";
@@ -51,7 +52,11 @@ import {
 	Square,
 	X,
 } from "lucide-react";
-import { useEditor, useEditorProject } from "@/editor/use-editor";
+import {
+	useEditor,
+	useEditorHistory,
+	useEditorProject,
+} from "@/editor/use-editor";
 import { AgentMarkdown, messageDirection } from "./markdown";
 import { KnowledgePanel } from "./knowledge-panel";
 import { Button } from "@/components/ui/button";
@@ -144,13 +149,13 @@ function AgentPanel() {
 		productionView.signature === productionSignature
 			? productionView.open
 			: !!productionSignature;
-	const handoff = useEditorProject((e) => {
+	const handoff = useEditorHistory((e) => {
 		try {
 			const projectId = e.project.getActive().metadata.id;
-			return {
+			return productionHandoffSnapshot({
 				projectId,
-				value: readDirector({ editor: e }).document.productionHandoff,
-			};
+				handoff: readDirector({ editor: e }).document.productionHandoff,
+			});
 		} catch {
 			return undefined;
 		}
@@ -160,15 +165,17 @@ function AgentPanel() {
 		const previous = lastHandoff.current;
 		lastHandoff.current = handoff;
 		if (
-			!handoff?.value ||
+			!handoff?.handoffId ||
 			previous?.projectId !== handoff.projectId ||
-			previous?.value?.id === handoff.value.id
+			previous?.handoffId === handoff.handoffId
 		)
 			return;
 		animateDirectorHandoff({
 			projectId: handoff.projectId,
-			referenceIds: handoff.value.referenceIds,
-			handoffId: handoff.value.id,
+			referenceIds: z
+				.array(z.string())
+				.parse(JSON.parse(handoff.referenceIdsJson)),
+			handoffId: handoff.handoffId,
 		});
 		useAssetsPanelStore.getState().setActiveTab("generative");
 	}, [handoff]);

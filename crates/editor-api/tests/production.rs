@@ -428,6 +428,27 @@ async fn director_handoff_copies_full_source_latin_and_approved_versions_atomica
         direction["productionHandoff"],
         director["productionHandoff"]
     );
+    assert_eq!(
+        direction["creative_intent"],
+        "A warm introduction, exact source dialogue"
+    );
+    assert_eq!(direction["spoken_script"], director["transcript"]);
+    assert_eq!(
+        direction["shots"],
+        json!([
+            {"start":0.5,"end":4.0,"description":"A door opens"},
+            {"start":4.0,"end":6.25,"description":"مرحبا"}
+        ])
+    );
+    let proposal = call(
+        &rt,
+        "project.generative.storyboard.plan",
+        json!({"projectId":PID}),
+    )
+    .await;
+    assert_eq!(proposal["scenes"][0]["description"], "A door opens");
+    assert_eq!(proposal["scenes"][1]["endSeconds"], 6.25);
+    assert!(proposal["scenes"][0]["imageReferenceId"].is_null());
     assert!(
         rt.registry()
             .invoke(

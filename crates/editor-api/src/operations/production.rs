@@ -680,7 +680,15 @@ fn register_handoff(
                             .map(|row| row.content.source_text.as_str())
                             .collect::<Vec<_>>()
                             .join("\n");
-                        director.direction=serde_json::to_string_pretty(&json!({"productionHandoff":handoff,"instructions":"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation."})).map_err(invalid)?;
+                        // Preserve the established Director/PDF projection as well
+                        // as the complete versioned handoff. Do not invent imagery
+                        // or assign a reference image to a row without a binding.
+                        let shots: Vec<Value> = handoff.rows.iter().map(|row| json!({
+                            "start": f64::from(row.content.start_ms) / 1000.0,
+                            "end": f64::from(row.content.end_ms) / 1000.0,
+                            "description": if row.content.visual_description.trim().is_empty() { &row.content.source_text } else { &row.content.visual_description },
+                        })).collect();
+                        director.direction=serde_json::to_string_pretty(&json!({"creative_intent":handoff.request,"spoken_script":director.transcript,"shots":shots,"productionHandoff":handoff,"instructions":"Preserve exact sourceText and supplied latinTransliteration. Follow timing and visualDescription; use only captured approved referenceIds. Storyboard is optional. Discover live model durations and build canonical chapters; human review is mandatory before generation."})).map_err(invalid)?;
                         director.production_handoff = Some(handoff);
                         director.validate().map_err(invalid)?;
                         project.extensions.insert(

@@ -23,6 +23,18 @@ not infer entitlement, share provider secrets or automatically grant creative ap
 Cancelling stops local waits and requests cancellation of queued OpenRouter work;
 provider-accepted generations may still complete and incur charges.
 
+The internal agent can attach native generated images without transferring binary
+through model context: `imagegen.generate` returns the owned artifact ID, then
+`project.generative.request` operation `importArtifactReference` resolves that ID
+against an active project image's verified artifact/SHA binding. It transfers the
+original bounded PNG/JPEG (up to 12 MiB) through the existing authenticated import
+host and returns reference metadata. The agent adds `reference.id` to the intended
+slot using `addReferenceVersion`; creative approval remains separate. Same-content
+artifact IDs returned during generation recovery are accepted only when their
+bytes match the existing verified project binding. Unbound/foreign artifacts,
+stale scope, mismatched receipts, oversized bytes and filename paths reject before
+canonical attachment. Re-encoding and arbitrary filesystem reads are not supported.
+
 `project.production.handoff` atomically snapshots every current script row and chosen
 approved reference version into `generative.productionHandoff`. It writes exact source
 lines to Director transcript and the complete source/Latin/visual/timing/request snapshot
@@ -31,6 +43,12 @@ Duration is the last script end; storyboard recommendation is optional. This tra
 does not generate or approve payment. Chapter plans capture source versions and direction
 identity; changed material requires renewed review. The handoff animation is decorative
 and deduplicated by handoff ID.
+The direction also includes the established `creative_intent`, `spoken_script` and
+timed `shots` projection, so existing Director/PDF tools can reuse exact planned
+descriptions or source dialogue without inventing scene images. Explicit storyboard
+copy remains untouched. Agent instructions require parallel Latin transliteration
+for non-English dialogue before handoff unless the user opts out; source text is
+never replaced or translated by that step, and uncertain pronunciation needs review.
 
 ## Source video analysis
 
@@ -76,3 +94,10 @@ collection recognizes analysis evidence by canonical ID/URI/SHA across document 
 - Agent runtime, attachments and knowledge suites passed 19 tests. The new evidence
   regression verifies eight frames without user attachments, seven frames plus a
   600 KB attachment under the same two-megabyte budget, and no checkpoint image bloat.
+- Artifact-reference follow-up: three Rust tests cover the complete generated-image
+  import/slot workflow, exact bytes/SHA, recovery aliases, retry identity, preflight
+  ownership/size/filename rejection, and stale/cancelled/incorrect receipt isolation.
+  The combined artifact/host/production/storyboard regression run passed 17 tests.
+  Against the rebuilt browser WASM, both persistence and native-image-to-slot tests
+  passed (16 assertions, 1.2 seconds). The import test checks the exact binary/SHA
+  inside the trusted host boundary, one generation call and metadata-only public output.
