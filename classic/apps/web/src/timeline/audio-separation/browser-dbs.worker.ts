@@ -1,5 +1,3 @@
-import { DbsSpectrum } from "opencut-wasm";
-
 const bins = 1025;
 const hop = 512;
 const chunk = 6 * 44_100;
@@ -41,6 +39,9 @@ async function separate(channels: [Float32Array, Float32Array]) {
 	const session = await ort.InferenceSession.create(`${root}dbs-tiger.onnx`, {
 		executionProviders: ["wasm"],
 	});
+	const { DbsSpectrum } = await import(
+		/* webpackMode: "eager" */ "opencut-wasm"
+	);
 	const fft = new DbsSpectrum();
 	try {
 		const same = channels[0].every((sample, i) => sample === channels[1][i]);
@@ -111,3 +112,6 @@ self.onmessage = async ({
 		});
 	}
 };
+
+// Webpack can start this worker while asynchronously loading WASM chunks.
+self.postMessage({ ready: true });

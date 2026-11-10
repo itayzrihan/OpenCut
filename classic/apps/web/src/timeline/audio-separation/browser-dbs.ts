@@ -100,10 +100,9 @@ function infer({
 			reject(error);
 		};
 		const abort = () => fail(signal.reason);
-		const timeout = setTimeout(
-			() =>
-				fail(new Error("DBS-TIGER exceeded the browser processing time limit")),
-			15 * 60_000,
+		let timeout = setTimeout(
+			() => fail(new Error("DBS-TIGER worker did not start")),
+			20_000,
 		);
 		signal.addEventListener("abort", abort, { once: true });
 		worker.onerror = ({ message }) =>
@@ -111,9 +110,29 @@ function infer({
 		worker.onmessage = ({
 			data,
 		}: MessageEvent<
-			{ error: string } | { stems: ChannelPair[] } | { progress: number }
+			| { ready: true }
+			| { error: string }
+			| { stems: ChannelPair[] }
+			| { progress: number }
 		>) => {
-			if ("error" in data) {
+			if ("ready" in data) {
+				clearTimeout(timeout);
+				timeout = setTimeout(
+					() =>
+						fail(
+							new Error("DBS-TIGER exceeded the browser processing time limit"),
+						),
+					15 * 60_000,
+				);
+				try {
+					worker.postMessage(
+						channels,
+						channels.map((channel) => channel.buffer),
+					);
+				} catch (error) {
+					fail(error);
+				}
+			} else if ("error" in data) {
 				fail(new Error(data.error));
 			} else if ("progress" in data) {
 				onProgress(data.progress);
@@ -122,14 +141,6 @@ function infer({
 				resolve(data.stems);
 			}
 		};
-		try {
-			worker.postMessage(
-				channels,
-				channels.map((channel) => channel.buffer),
-			);
-		} catch (error) {
-			fail(error);
-		}
 	});
 }
 
