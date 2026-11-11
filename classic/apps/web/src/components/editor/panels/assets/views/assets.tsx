@@ -794,9 +794,11 @@ function MediaAssetDraggable({
 	isRounded?: boolean;
 }) {
 	const editor = useEditor();
+	const preparing = useEditorMedia((e) =>
+		e.media.isPreparingBrowserMedia(item.id),
+	);
 	if (item.type === "file") return null;
 
-	const preparing = editor.media.isPreparingBrowserMedia(item.id);
 	const canInsert = !item.missing && !preparing;
 	const addElementAtTime = ({
 		asset,
@@ -908,6 +910,9 @@ function MediaItemWithContextMenu({
 }) {
 	const editor = useEditor();
 	const { isSelected, selectedIds } = useSelection();
+	const preparing = useEditorMedia((e) =>
+		e.media.isPreparingBrowserMedia(item.id),
+	);
 	const idsToDelete = isSelected(item.id) ? selectedIds : [item.id];
 	const deleteLabel =
 		idsToDelete.length > 1 ? `Delete ${idsToDelete.length} items` : "Delete";
@@ -934,11 +939,7 @@ function MediaItemWithContextMenu({
 					</ContextMenuItem>
 				)}
 				<ContextMenuItem
-					disabled={
-						item.type === "file" ||
-						item.missing ||
-						editor.media.isPreparingBrowserMedia(item.id)
-					}
+					disabled={item.type === "file" || item.missing || preparing}
 					onClick={() => {
 						if (item.type === "file") return;
 						editor.timeline.insertElement({
