@@ -90,7 +90,11 @@ test("native Codex uses isolated official protocol, structured proposals and nat
 		const imageThread = calls.filter((c) => c.method === "thread/start")[1].params;
 		expect(imageThread.baseInstructions).toContain("image_gen.imagegen");
 		expect(imageThread.baseInstructions).toContain("The exec tool is unavailable");
+		expect(imageThread.config.code_mode).toEqual({
+			direct_only_tool_namespaces: ["image_gen"],
+		});
 		const thread = calls.find((c) => c.method === "thread/start").params;
+		expect(thread.config.code_mode).toBeUndefined();
 		expect(thread.permissions).toBe("pocut");
 		expect(thread.config.permissions.pocut).toEqual({
 			filesystem: { ":minimal": "read", [thread.cwd]: "read" },
