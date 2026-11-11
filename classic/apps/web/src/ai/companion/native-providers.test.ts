@@ -87,6 +87,9 @@ test("native Codex uses isolated official protocol, structured proposals and nat
 		const turns = calls.filter((c) => c.method === "turn/start");
 		expect(turns).toHaveLength(2);
 		expect(turns[0].params.sandboxPolicy).toBeUndefined();
+		const imageThread = calls.filter((c) => c.method === "thread/start")[1].params;
+		expect(imageThread.baseInstructions).toContain("image_gen.imagegen");
+		expect(imageThread.baseInstructions).toContain("The exec tool is unavailable");
 		const thread = calls.find((c) => c.method === "thread/start").params;
 		expect(thread.permissions).toBe("pocut");
 		expect(thread.config.permissions.pocut).toEqual({

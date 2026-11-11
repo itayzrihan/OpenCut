@@ -256,7 +256,7 @@ export class CodexProvider implements NativeProvider {
 						},
 					},
 					baseInstructions: image
-						? "Use the built-in image generation tool to generate the requested image. Return its native image result. Never run commands, open local files, install software, call MCP tools, or use a browser."
+						? "Call the built-in image_gen.imagegen tool directly once to generate the requested image. Return its native image result. The exec tool is unavailable. Never run commands, open local files, install software, call MCP tools, or use a browser."
 						: "You only produce structured POCUT editing proposals. Never execute tools or access the local filesystem or network. The browser validates and executes proposed actions.",
 				},
 			});
@@ -370,7 +370,7 @@ export class CodexProvider implements NativeProvider {
 				}
 				if (!generated)
 					throw new Error(
-						"Codex completed without a generated image. No image was imported.",
+						"Codex returned no image from its built-in image tool. No image was imported.",
 					);
 				if (typeof generated.result === "string" && generated.result)
 					return decodeGeneratedImage(generated.result);
