@@ -23,7 +23,8 @@ test("macOS Desktop shortcut and sign-in LaunchAgent are independent", async () 
 		if (!integration) throw new Error("No desktop integration");
 		await integration.createShortcut();
 		const launcher = join(integration.shortcut, "Contents", "MacOS", "manage");
-		expect((await stat(launcher)).mode & 0o100).toBe(0o100);
+		if (process.platform !== "win32")
+			expect((await stat(launcher)).mode & 0o100).toBe(0o100);
 		expect(await readFile(launcher, "utf8")).toContain("' --manage");
 		expect(await integration.startupEnabled()).toBe(false);
 		await integration.setStartup(true);

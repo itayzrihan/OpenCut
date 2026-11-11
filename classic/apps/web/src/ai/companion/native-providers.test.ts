@@ -321,6 +321,6 @@ test("cancelling a native turn terminates it without a second provider request",
 		expect((await provider.status()).installed).toBe(true);
 	} finally {
 		provider.close();
-		await rm(f.root, { recursive: true, force: true });
+		await rm(f.root, { recursive: true, force: true, maxRetries: 5 });
 	}
 });
