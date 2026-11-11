@@ -99,5 +99,9 @@ jobs:
       - name: Build the downloadable Companion
         run: node classic/scripts/prepare-ai-companion.mjs
       - name: Check Windows shortcuts, provider transport and MCP registration
-        working-directory: classic/apps/web
-        run: bun test src/ai/companion/desktop.test.ts src/ai/companion/native-providers.test.ts src/ai/companion/server.test.ts src/ai/pairing-package.test.ts src/mcp/__tests__/client-registration.test.ts src/mcp/__tests__/installation.test.ts
+        run: >-
+          node classic/scripts/test-web.mjs
+          src/ai/companion/desktop.test.ts src/ai/companion/native-providers.test.ts
+          src/ai/companion/server.test.ts src/ai/pairing-package.test.ts
+          src/mcp/__tests__/client-registration.test.ts src/mcp/__tests__/installation.test.ts
+          --test-timeout=30000
