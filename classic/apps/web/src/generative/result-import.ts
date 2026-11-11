@@ -104,9 +104,9 @@ export async function importDirectorResult({
 				await editor.media.addGeneratedMediaAsset({
 					projectId,
 					asset: {
+						...assets[0],
 						type: output.kind,
 						name: output.name,
-						...assets[0],
 						file,
 						id: mediaId,
 					},
