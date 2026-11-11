@@ -71,6 +71,8 @@ jobs:
         run: npm ci --prefix classic/scripts/editor-architecture --ignore-scripts --no-audit --no-fund --workspaces=false
       - name: Validate UI contracts against the compiled registry
         run: node classic/scripts/editor-architecture/check.mjs --with-runtime
+      - name: Restore pinned HyperFrames test assets
+        run: node classic/scripts/restore-hyperframes-runtime.mjs
       - name: Exercise canonical registry and agent contracts
         run: cargo test --locked -j 2 -p opencut-editor-api -p opencut-editor-agent -p opencut-mcp --tests
       - name: Upload compiled registry evidence
