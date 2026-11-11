@@ -1,29 +1,18 @@
 /** Loopback-only capability transport. No filesystem, shell or generic RPC routes. */
 import { createServer, type IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import { z } from "zod";
+import {
+	SETUP_HEADER,
+	SETUP_PATH,
+	companionSetupSchema,
+	pairingSchema,
+	type CompanionSetup,
+} from "./setup";
 import type { LocalProvider } from "./protocol";
 
-const pairingSchema = z
-	.object({
-		version: z.literal(1),
-		origin: z.string().url(),
-		accountId: z.string().uuid(),
-		token: z.string().regex(/^[a-f0-9]{64}$/),
-	})
-	.strict();
-export type Pairing = z.infer<typeof pairingSchema>;
-export function validatePairing(value: unknown): Pairing {
-	const pair = pairingSchema.parse(value);
-	const url = new URL(pair.origin);
-	if (
-		url.origin !== pair.origin ||
-		url.protocol !== "https:" ||
-		url.username ||
-		url.password
-	)
-		throw new Error("Pairing requires an exact HTTPS app origin");
-	return pair;
+export type Pairing = ReturnType<typeof validatePairing>;
+export function validatePairing(value: unknown) {
+	return pairingSchema.parse(value);
 }
 export type CompanionHandler = (args: {
 	path: string;
@@ -41,16 +30,25 @@ const routes = new Map([
 	["POST /api/ai/chat", true],
 	["POST /api/ai/local-image", true],
 ]);
-export function createCompanionServer({
-	pair,
-	handle,
-	port = 43127,
-}: {
-	pair: Pairing;
-	handle: CompanionHandler;
-	port?: number;
-}) {
-	validatePairing(pair);
+type PairedConnection = { pair: Pairing; handle: CompanionHandler };
+type SetupConnection = {
+	request: CompanionSetup;
+	activate: (pair: Pairing) => Promise<CompanionHandler>;
+	restored?: PairedConnection;
+};
+
+export function createCompanionServer(
+	options: ({ setup: SetupConnection } | PairedConnection) & { port?: number },
+) {
+	const setup = "setup" in options ? options.setup : undefined;
+	let connection = "pair" in options ? options : setup?.restored;
+	const origin = setup
+		? companionSetupSchema.parse(setup.request).origin
+		: validatePairing(connection?.pair).origin;
+	if (connection && validatePairing(connection.pair).origin !== origin)
+		throw new Error("The saved pairing belongs to a different workspace");
+	const port = options.port ?? 43127;
+	let activating = false;
 	let active = 0;
 	const server = createServer(async (req, res) => {
 		const fail = ({ status, error }: { status: number; error: string }) => {
@@ -64,28 +62,97 @@ export function createCompanionServer({
 		const bound = typeof address === "object" && address ? address.port : port;
 		if (req.headers.host !== `127.0.0.1:${bound}`)
 			return fail({ status: 403, error: "Unexpected local host" });
-		if (req.headers.origin !== pair.origin)
+		if (req.headers.origin !== origin)
 			return fail({ status: 403, error: "This app origin is not paired" });
-		res.setHeader("Access-Control-Allow-Origin", pair.origin);
+		res.setHeader("Access-Control-Allow-Origin", origin);
 		res.setHeader("Vary", "Origin");
 		res.setHeader("Access-Control-Allow-Private-Network", "true");
 		res.setHeader(
 			"Access-Control-Allow-Headers",
-			"Authorization, Content-Type, X-OpenCut-Account, X-POCUT-Provider",
+			`Authorization, Content-Type, X-OpenCut-Account, X-POCUT-Provider, ${SETUP_HEADER}`,
 		);
 		res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+		const isSetup = setup && req.url === SETUP_PATH;
 		if (req.method === "OPTIONS") {
-			if (![...routes.keys()].some((key) => key.endsWith(" " + req.url)))
+			if (
+				!isSetup &&
+				![...routes.keys()].some((key) => key.endsWith(" " + req.url))
+			)
 				return fail({ status: 404, error: "Unsupported local AI operation" });
 			res.writeHead(204);
 			return res.end();
 		}
+		if (isSetup) {
+			if (req.headers[SETUP_HEADER.toLowerCase()] !== setup.request.setupId)
+				return fail({
+					status: 403,
+					error: "This pairing package does not match",
+				});
+			if (req.method === "GET") {
+				if (!connection && Date.now() >= setup.request.expiresAt)
+					return fail({
+						status: 410,
+						error: "Download fresh pairing instructions",
+					});
+				res.writeHead(200, {
+					"Content-Type": "application/json",
+					"Cache-Control": "no-store",
+				});
+				return res.end(JSON.stringify({ setupId: setup.request.setupId }));
+			}
+			if (req.method !== "POST")
+				return fail({ status: 405, error: "Unsupported setup method" });
+			try {
+				const body = await readBody({ req, maxBytes: 4096 });
+				const pair = validatePairing(
+					JSON.parse(Buffer.from(body).toString("utf8")),
+				);
+				if (pair.origin !== origin)
+					return fail({ status: 403, error: "This app origin is not paired" });
+				if (connection) {
+					if (
+						connection.pair.accountId !== pair.accountId ||
+						!timingSafeEqual(
+							Buffer.from(connection.pair.token),
+							Buffer.from(pair.token),
+						)
+					)
+						return fail({
+							status: 409,
+							error: "This installation is already paired",
+						});
+				} else {
+					if (Date.now() >= setup.request.expiresAt)
+						return fail({
+							status: 410,
+							error: "Download fresh pairing instructions",
+						});
+					if (activating)
+						return fail({
+							status: 409,
+							error: "Pairing is in progress. Try again.",
+						});
+					activating = true;
+					try {
+						connection = { pair, handle: await setup.activate(pair) };
+					} finally {
+						activating = false;
+					}
+				}
+				res.writeHead(204, { "Cache-Control": "no-store" });
+				return res.end();
+			} catch {
+				return fail({ status: 400, error: "Could not complete local pairing" });
+			}
+		}
+		const paired = connection;
 		const token = req.headers.authorization?.slice(7) ?? "";
 		if (
+			!paired ||
 			!req.headers.authorization?.startsWith("Bearer ") ||
 			!/^[a-f0-9]{64}$/.test(token) ||
-			!timingSafeEqual(Buffer.from(token), Buffer.from(pair.token)) ||
-			req.headers["x-opencut-account"] !== pair.accountId
+			!timingSafeEqual(Buffer.from(token), Buffer.from(paired.pair.token)) ||
+			req.headers["x-opencut-account"] !== paired.pair.accountId
 		)
 			return fail({
 				status: 401,
@@ -106,8 +173,8 @@ export function createCompanionServer({
 			if (!res.writableEnded) controller.abort();
 		});
 		try {
-			const body = await readBody(req);
-			const response = await handle({
+			const body = await readBody({ req });
+			const response = await paired.handle({
 				path: req.url!,
 				method: req.method!,
 				body,
@@ -135,12 +202,18 @@ export function createCompanionServer({
 	});
 	return server;
 }
-async function readBody(req: IncomingMessage) {
+async function readBody({
+	req,
+	maxBytes = 12_000_000,
+}: {
+	req: IncomingMessage;
+	maxBytes?: number;
+}) {
 	const chunks: Buffer[] = [];
 	let size = 0;
 	for await (const chunk of req) {
 		size += chunk.length;
-		if (size > 12_000_000) throw new Error("Local AI request is too large");
+		if (size > maxBytes) throw new Error("Local AI request is too large");
 		chunks.push(chunk);
 	}
 	return new Uint8Array(Buffer.concat(chunks));

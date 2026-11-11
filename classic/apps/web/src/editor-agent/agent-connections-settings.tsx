@@ -4,10 +4,16 @@ import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { Button } from "@/components/ui/button";
 import { Message } from "@/i18n/message";
 import {
-	prepareClientAiPairing,
+	completeClientAiSetup,
+	prepareClientAiSetup,
 	selectLocalProvider,
 	readLocalProvider,
 } from "@/ai/local-connection";
+import {
+	createPairingPackage,
+	PAIRING_PACKAGE_NAME,
+} from "@/ai/pairing-package";
+import { downloadBlob } from "@/utils/browser";
 import { SettingsInfo } from "./settings-info";
 import { AgentSettingsSection } from "./settings-section";
 import { HostedConnectionSettings } from "./hosted-connection-settings";
@@ -34,7 +40,7 @@ export function AgentConnectionsSettings({
 	const hosted = isHostedBrowserWorkspace();
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
-	const [waiting, setWaiting] = useState(false);
+	const [waiting, setWaiting] = useState<"codex" | "claude" | null>(null);
 	const operation = useRef<AbortController | null>(null);
 	useEffect(() => () => operation.current?.abort(), []);
 	useEffect(() => {
@@ -42,7 +48,7 @@ export function AgentConnectionsSettings({
 		const started = Date.now();
 		const timer = setInterval(() => {
 			if (Date.now() - started > 180_000) {
-				setWaiting(false);
+				setWaiting(null);
 				return;
 			}
 			void refresh().catch(() => {});
@@ -50,17 +56,35 @@ export function AgentConnectionsSettings({
 		return () => clearInterval(timer);
 	}, [waiting, refresh, connection?.sharing]);
 
-	const downloadPairing = () => {
-		const pair = prepareClientAiPairing();
-		const url = URL.createObjectURL(
-			new Blob([JSON.stringify(pair, null, 2)], { type: "application/json" }),
-		);
-		const link = document.createElement("a");
-		link.href = url;
-		link.download = "POCUT-AI-Pairing.json";
-		link.click();
-		setTimeout(() => URL.revokeObjectURL(url), 1000);
-	};
+	async function downloadPairing() {
+		if (operation.current) return;
+		const controller = new AbortController();
+		operation.current = controller;
+		setBusy(true);
+		setError("");
+		try {
+			const account = window.__opencutAccountId;
+			const setup = prepareClientAiSetup();
+			const blob = await createPairingPackage({
+				setup,
+				signal: controller.signal,
+			});
+			controller.signal.throwIfAborted();
+			if (window.__opencutAccountId !== account)
+				throw new Error("Account changed. Download fresh instructions.");
+			downloadBlob({ blob, filename: PAIRING_PACKAGE_NAME });
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				setError(
+					cause instanceof Error
+						? cause.message
+						: "Could not download pairing instructions",
+				);
+		} finally {
+			operation.current = null;
+			if (!controller.signal.aborted) setBusy(false);
+		}
+	}
 	async function connect({
 		provider,
 		legacySignIn = false,
@@ -85,10 +109,20 @@ export function AgentConnectionsSettings({
 		try {
 			if (!provider) selectLocalProvider(null);
 			if (provider || legacySignIn) {
-				const state = await connectionRequest({
-					schema: connectionSchemas.status,
-					signal: controller.signal,
-					providerOverride: provider,
+				const check = () =>
+					connectionRequest({
+						schema: connectionSchemas.status,
+						signal: controller.signal,
+						providerOverride: provider,
+					});
+				const state = await check().catch(async (cause) => {
+					controller.signal.throwIfAborted();
+					if (
+						!provider ||
+						!(await completeClientAiSetup({ signal: controller.signal }))
+					)
+						throw cause;
+					return check();
 				});
 				if (provider && !state.installed)
 					throw new Error(
@@ -113,8 +147,10 @@ export function AgentConnectionsSettings({
 						await desktop.openChatGPTSignIn(login.authorizationUrl);
 					else if (popup) popup.location.href = login.authorizationUrl;
 					navigating = true;
-					setWaiting(true);
-				} else if (!state.sharing)
+					setWaiting("codex");
+				} else if (provider === "claude" && !state.sharing)
+					setWaiting("claude");
+				else if (!state.sharing)
 					setError(
 						state.error ??
 							"Complete the local provider sign-in, then check the connection again.",
@@ -142,7 +178,7 @@ export function AgentConnectionsSettings({
 				signal: controller.signal,
 				schema: connectionSchemas.disconnect,
 			});
-			setWaiting(false);
+			setWaiting(null);
 			await refresh();
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not disconnect");
@@ -153,43 +189,20 @@ export function AgentConnectionsSettings({
 	}
 	const local = readLocalProvider();
 	const setup = (
-		<div className="space-y-2 text-xs text-muted-foreground">
-			<p>
-				<Message text="The local companion keeps provider sign-in on your computer. One connection serves the Agent, AI tools and Director in this POCUT account." />
+		<SettingsInfo label="Setup instructions">
+			<p className="text-xs text-muted-foreground">
+				<Message text="Download the pairing instructions and bring it to your AI assistant." />
 			</p>
-			<ol className="list-decimal space-y-2 pl-5">
-				<li>
-					<a
-						className="underline"
-						href="/downloads/pocut-companion-v1.mjs"
-						download="pocut-companion.mjs"
-					>
-						<Message text="Download the local companion" />
-					</a>
-					<span> · </span>
-					<Button
-						type="button"
-						size="sm"
-						variant="outline"
-						onClick={downloadPairing}
-					>
-						<Message text="Download pairing file" />
-					</Button>
-				</li>
-				<li>
-					<Message text="Install Node.js 22 or later and the provider's official CLI, then run the companion with your pairing file." />
-					<pre className="overflow-x-auto whitespace-pre-wrap rounded border p-2">
-						node pocut-companion.mjs POCUT-AI-Pairing.json
-					</pre>
-				</li>
-				<li>
-					<Message text="Return here, select the provider and complete its official sign-in. Use the same workspace tab that created the pairing file." />
-				</li>
-			</ol>
-			<p>
-				<Message text="Keep the companion running and allow local-network access if your browser asks. Credentials are never sent to the POCUT server." />
-			</p>
-		</div>
+			<Button
+				type="button"
+				size="sm"
+				variant="outline"
+				disabled={busy}
+				onClick={() => void downloadPairing()}
+			>
+				<Message text="Download the pairing instructions" />
+			</Button>
+		</SettingsInfo>
 	);
 	return (
 		<>
@@ -212,20 +225,7 @@ export function AgentConnectionsSettings({
 						</p>
 					</div>
 				)}
-				<SettingsInfo label="Setup instructions">
-					{setup}
-					<p className="text-xs text-muted-foreground">
-						<Message text="Continue with ChatGPT in the local Codex profile. Available models and image support depend on your account, CLI version and usage limits." />
-					</p>
-					<a
-						className="text-xs underline"
-						href="https://learn.chatgpt.com/docs/quickstart"
-						target="_blank"
-						rel="noreferrer"
-					>
-						<Message text="Install Codex CLI" />
-					</a>
-				</SettingsInfo>
+				{setup}
 				<Button
 					disabled={busy}
 					onClick={() => void connect({ provider: "codex" })}
@@ -277,23 +277,7 @@ export function AgentConnectionsSettings({
 				title="Claude"
 				revealRequest={revealProvider === "claude" ? revealRequest : 0}
 			>
-				<SettingsInfo label="Setup instructions">
-					{setup}
-					<p className="text-xs text-muted-foreground">
-						<Message text="Sign in directly with the unmodified Claude CLI in this companion profile. POCUT does not collect Claude credentials. Your provider's billing and usage limits apply." />
-					</p>
-					<a
-						className="text-xs underline"
-						href="https://code.claude.com/docs/en/quickstart"
-						target="_blank"
-						rel="noreferrer"
-					>
-						<Message text="Install Claude Code CLI" />
-					</a>
-					<pre className="overflow-x-auto whitespace-pre-wrap rounded border p-2">
-						node pocut-companion.mjs POCUT-AI-Pairing.json --login-claude
-					</pre>
-				</SettingsInfo>
+				{setup}
 				<Button
 					disabled={busy}
 					onClick={() => void connect({ provider: "claude" })}
@@ -324,7 +308,13 @@ export function AgentConnectionsSettings({
 			)}
 			{waiting && !connection?.sharing && (
 				<p role="status" className="text-xs">
-					<Message text="Complete the provider sign-in in the opened tab. This workspace will update automatically." />
+					<Message
+						text={
+							waiting === "claude"
+								? "Complete Claude sign-in with your AI assistant. This workspace will update automatically."
+								: "Complete the provider sign-in in the opened tab. This workspace will update automatically."
+						}
+					/>
 				</p>
 			)}
 			{error && (

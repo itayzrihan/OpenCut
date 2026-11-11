@@ -1,4 +1,12 @@
 import type { LocalProvider } from "./companion/protocol";
+import {
+	COMPANION_URL,
+	SETUP_HEADER,
+	SETUP_LIFETIME_MS,
+	SETUP_PATH,
+	companionSetupSchema,
+	type CompanionSetup,
+} from "./companion/setup";
 
 export interface ClientAiPairing {
 	version: 1;
@@ -7,6 +15,7 @@ export interface ClientAiPairing {
 	token: string;
 }
 const key = (id: string) => `opencut-client-ai:${id}`;
+const setupKey = (id: string) => `pocut-client-ai-setup:${id}`;
 const providerKey = (id: string) => `pocut-local-provider:${id}`;
 export function readClientAiPairing(): ClientAiPairing | null {
 	const id = window.__opencutAccountId;
@@ -37,10 +46,98 @@ export function prepareClientAiPairing(): ClientAiPairing {
 	sessionStorage.setItem(key(id), JSON.stringify(pair));
 	return pair;
 }
+function readClientAiSetup(account: string) {
+	try {
+		const saved = JSON.parse(
+			sessionStorage.getItem(setupKey(account)) ?? "null",
+		);
+		const config = companionSetupSchema.parse(saved?.config);
+		if (config.origin !== window.location.origin) return null;
+		const paired = saved.paired === true && readClientAiPairing() !== null;
+		return paired || config.expiresAt > Date.now() ? { config, paired } : null;
+	} catch {
+		return null;
+	}
+}
+
+export function prepareClientAiSetup(): CompanionSetup {
+	const account = window.__opencutAccountId;
+	if (!account) throw new Error("Sign in to POCUT first");
+	const saved = readClientAiSetup(account);
+	if (saved) return saved.config;
+	const setup = companionSetupSchema.parse({
+		version: 1,
+		origin: window.location.origin,
+		setupId: crypto.randomUUID(),
+		expiresAt: Date.now() + SETUP_LIFETIME_MS,
+	});
+	sessionStorage.setItem(
+		setupKey(account),
+		JSON.stringify({ config: setup, paired: false }),
+	);
+	return setup;
+}
+
+export async function completeClientAiSetup({
+	signal,
+}: {
+	signal: AbortSignal;
+}) {
+	const account = window.__opencutAccountId;
+	if (!account) return false;
+	const saved = readClientAiSetup(account);
+	if (!saved || saved.paired) return false;
+	const setup = saved.config;
+	const url = COMPANION_URL + SETUP_PATH;
+	const init: RequestInit = {
+		credentials: "omit",
+		cache: "no-store",
+		redirect: "error",
+		signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]),
+		headers: { [SETUP_HEADER]: setup.setupId },
+	};
+	const ready = await fetch(url, init).catch(() => null);
+	signal.throwIfAborted();
+	if (
+		!ready?.ok ||
+		(await ready.json().catch(() => null))?.setupId !== setup.setupId
+	)
+		throw new Error(
+			"Give the pairing ZIP to your AI assistant and allow local-network access before connecting.",
+		);
+	if (
+		window.__opencutAccountId !== account ||
+		readClientAiSetup(account)?.config.setupId !== setup.setupId
+	)
+		throw new Error("Account or pairing instructions changed. Connect again.");
+	init.signal?.throwIfAborted();
+	const response = await fetch(url, {
+		...init,
+		method: "POST",
+		headers: {
+			[SETUP_HEADER]: setup.setupId,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(prepareClientAiPairing()),
+	});
+	if (!response.ok)
+		throw new Error(
+			"Could not pair this tab with the local companion. Download fresh instructions and try again.",
+		);
+	if (window.__opencutAccountId !== account)
+		throw new Error("Account changed. Connect again.");
+	sessionStorage.setItem(
+		setupKey(account),
+		JSON.stringify({ config: setup, paired: true }),
+	);
+	return true;
+}
+
 export function forgetClientAiPairing() {
 	const id = window.__opencutAccountId;
 	if (id) {
 		sessionStorage.removeItem(key(id));
+		sessionStorage.removeItem(setupKey(id));
 		sessionStorage.removeItem(providerKey(id));
 	}
 }
@@ -114,18 +211,15 @@ export async function connectedProviderFetch({
 	}
 	let streaming = false;
 	try {
-		const response = await fetch(
-			(provider ? "http://127.0.0.1:43127" : "") + path,
-			{
-				...init,
-				credentials: provider ? "omit" : "same-origin",
-				cache: "no-store",
-				signal: init.signal
-					? AbortSignal.any([init.signal, controller.signal])
-					: controller.signal,
-				headers,
-			},
-		);
+		const response = await fetch((provider ? COMPANION_URL : "") + path, {
+			...init,
+			credentials: provider ? "omit" : "same-origin",
+			cache: "no-store",
+			signal: init.signal
+				? AbortSignal.any([init.signal, controller.signal])
+				: controller.signal,
+			headers,
+		});
 		changed();
 		if (controller.signal.aborted)
 			throw new Error("Account changed or the provider changed");
