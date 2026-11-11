@@ -2,6 +2,7 @@
 import { createServer, type IncomingMessage } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import {
+	CONTROL_PATH,
 	SETUP_HEADER,
 	SETUP_PATH,
 	companionSetupSchema,
@@ -38,7 +39,10 @@ type SetupConnection = {
 };
 
 export function createCompanionServer(
-	options: ({ setup: SetupConnection } | PairedConnection) & { port?: number },
+	options: ({ setup: SetupConnection } | PairedConnection) & {
+		port?: number;
+		control?: { token: string; stop: () => void };
+	},
 ) {
 	const setup = "setup" in options ? options.setup : undefined;
 	let connection = "pair" in options ? options : setup?.restored;
@@ -47,6 +51,8 @@ export function createCompanionServer(
 		: validatePairing(connection?.pair).origin;
 	if (connection && validatePairing(connection.pair).origin !== origin)
 		throw new Error("The saved pairing belongs to a different workspace");
+	if (options.control && !/^[a-f0-9]{64}$/.test(options.control.token))
+		throw new Error("Invalid desktop control key.");
 	const port = options.port ?? 43127;
 	let activating = false;
 	let active = 0;
@@ -62,6 +68,26 @@ export function createCompanionServer(
 		const bound = typeof address === "object" && address ? address.port : port;
 		if (req.headers.host !== `127.0.0.1:${bound}`)
 			return fail({ status: 403, error: "Unexpected local host" });
+		if (req.url === CONTROL_PATH && options.control) {
+			const token = req.headers.authorization?.match(
+				/^Bearer ([a-f0-9]{64})$/,
+			)?.[1];
+			if (
+				req.headers.origin !== undefined ||
+				!token ||
+				!timingSafeEqual(Buffer.from(token), Buffer.from(options.control.token))
+			)
+				return fail({
+					status: 403,
+					error: "Local desktop authorization required",
+				});
+			if (req.method !== "GET" && req.method !== "POST")
+				return fail({ status: 405, error: "Unsupported control method" });
+			const { stop } = options.control;
+			if (req.method === "POST") res.once("finish", stop);
+			res.writeHead(204, { "Cache-Control": "no-store" }).end();
+			return;
+		}
 		if (req.headers.origin !== origin)
 			return fail({ status: 403, error: "This app origin is not paired" });
 		res.setHeader("Access-Control-Allow-Origin", origin);

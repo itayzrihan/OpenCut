@@ -8,13 +8,14 @@ import {
 } from "node:fs/promises";
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { createCompanionServer, validatePairing, type Pairing } from "./server";
 import {
 	COMPANION_URL,
+	CONTROL_PATH,
 	SETUP_HEADER,
 	SETUP_LIFETIME_MS,
 	SETUP_PATH,
@@ -23,6 +24,8 @@ import {
 } from "./setup";
 import { CodexProvider, ClaudeProvider } from "./native-providers";
 import { companionHandler } from "./handler";
+import { desktopIntegration, exists, openLocalManager } from "./desktop";
+import { serveManager } from "./management";
 
 const dataRoot =
 	process.env.OPENCUT_COMPANION_DATA_DIR ??
@@ -48,65 +51,160 @@ async function readInstalledPair(path: string) {
 	}
 }
 
-async function isReady(setup: CompanionSetup) {
+async function controlToken(directory: string) {
+	const file = join(directory, "control.key");
 	try {
-		const response = await fetch(COMPANION_URL + SETUP_PATH, {
-			headers: { Origin: setup.origin, [SETUP_HEADER]: setup.setupId },
-			signal: AbortSignal.timeout(500),
-			redirect: "error",
+		await writeFile(file, randomBytes(32).toString("hex"), {
+			mode: 0o600,
+			flag: "wx",
 		});
-		return response.ok && (await response.json()).setupId === setup.setupId;
-	} catch {
-		return false;
+	} catch (error) {
+		if (!(error instanceof Error && "code" in error && error.code === "EEXIST"))
+			throw error;
 	}
+	const token = await readFile(file, "utf8");
+	if (!/^[a-f0-9]{64}$/.test(token))
+		throw new Error("Invalid desktop control key.");
+	return token;
 }
 
-async function install({
+function localControl({
+	directory,
+	setup,
+	token,
+}: {
+	directory: string;
+	setup: CompanionSetup;
+	token: string;
+}) {
+	const executable = join(directory, "pocut-companion.mjs");
+	const config = join(directory, "POCUT-Setup.json");
+	const url = COMPANION_URL + CONTROL_PATH;
+	const request = (method: "GET" | "POST") =>
+		fetch(url, {
+			method,
+			headers: { Authorization: `Bearer ${token}` },
+			signal: AbortSignal.timeout(800),
+			redirect: "error",
+		}).catch(() => null);
+	const isRunning = async () => (await request("GET"))?.status === 204;
+	return {
+		executable,
+		config,
+		isRunning,
+		async start() {
+			if (await isRunning()) return;
+			if (
+				Date.now() >= setup.expiresAt &&
+				!(await readInstalledPair(join(directory, "paired.json")))
+			)
+				throw new Error(
+					"This package expired. Download fresh pairing instructions from POCUT.",
+				);
+			const occupied = await fetch(COMPANION_URL + SETUP_PATH, {
+				headers: { Origin: setup.origin, [SETUP_HEADER]: setup.setupId },
+				signal: AbortSignal.timeout(800),
+				redirect: "error",
+			}).catch(() => null);
+			if (occupied)
+				throw new Error(
+					"Port 43127 is already in use. Close the previous POCUT companion if it is running, then retry.",
+				);
+			const log = await open(join(directory, "companion.log"), "a", 0o600);
+			try {
+				const child = spawn(process.execPath, [executable, config], {
+					detached: true,
+					windowsHide: true,
+					stdio: ["ignore", log.fd, log.fd],
+				});
+				let exited = false;
+				child.once("error", () => {
+					exited = true;
+				});
+				child.once("exit", () => {
+					exited = true;
+				});
+				child.unref();
+				for (let attempt = 0; attempt < 35 && !exited; attempt++) {
+					if (await isRunning()) return;
+					await delay(150);
+				}
+				if (await isRunning()) return;
+				throw new Error(
+					"Could not start the local companion. Check companion.log in the local installation directory.",
+				);
+			} finally {
+				await log.close();
+			}
+		},
+		async stop() {
+			if (!(await isRunning())) return;
+			if ((await request("POST"))?.status !== 204)
+				throw new Error("Could not stop the local companion.");
+			for (let attempt = 0; attempt < 20; attempt++) {
+				if (!(await isRunning())) return;
+				await delay(100);
+			}
+			throw new Error("The local companion is still running.");
+		},
+	};
+}
+
+async function manageInstallation({
 	setup,
 	directory,
+	install,
 }: {
 	setup: CompanionSetup;
 	directory: string;
+	install: boolean;
 }) {
-	if (await isReady(setup)) return;
-	if (
-		Date.now() >= setup.expiresAt &&
-		!(await readInstalledPair(join(directory, "paired.json")))
-	)
-		throw new Error(
-			"This package expired. Download fresh pairing instructions from POCUT.",
-		);
-
 	await mkdir(directory, { recursive: true, mode: 0o700 });
-	const executable = join(directory, "pocut-companion.mjs");
-	const source = fileURLToPath(import.meta.url);
-	if (source !== executable) await copyFile(source, executable);
-	const config = join(directory, "POCUT-Setup.json");
-	await writeFile(config, JSON.stringify(setup), { mode: 0o600 });
-	const log = await open(join(directory, "companion.log"), "a", 0o600);
-	try {
-		const child = spawn(process.execPath, [executable, config], {
-			detached: true,
-			stdio: ["ignore", log.fd, log.fd],
-		});
-		let exited = false;
-		child.once("error", () => {
-			exited = true;
-		});
-		child.once("exit", () => {
-			exited = true;
-		});
-		child.unref();
-		for (let attempt = 0; attempt < 30 && !exited; attempt++) {
-			if (await isReady(setup)) return;
-			await delay(150);
+	const control = localControl({
+		directory,
+		setup,
+		token: await controlToken(directory),
+	});
+	const desktop = await desktopIntegration({
+		node: process.execPath,
+		executable: control.executable,
+		config: control.config,
+		dataRoot,
+	});
+	if (install) {
+		const source = fileURLToPath(import.meta.url);
+		if (source !== control.executable) {
+			const pending = `${control.executable}.${process.pid}.tmp`;
+			await copyFile(source, pending);
+			await rename(pending, control.executable);
 		}
-		if (await isReady(setup)) return;
-		throw new Error(
-			"Could not start the local companion. Check companion.log in the local installation directory and whether an existing companion is using port 43127.",
+		await writeFile(control.config, JSON.stringify(setup), { mode: 0o600 });
+		await control.start();
+		if (!desktop) {
+			console.log(
+				"POCUT Companion is running. Desktop integration is available on macOS and Windows.",
+			);
+			return;
+		}
+		const marker = join(directory, "desktop-installed");
+		const enabled = !(await exists(marker)) || (await desktop.startupEnabled());
+		await desktop.createShortcut();
+		await desktop.setStartup(enabled);
+		await writeFile(marker, "", { mode: 0o600 });
+		console.log(
+			`POCUT Companion is running. Automatic startup at sign-in is ${enabled ? "on" : "off"}.`,
 		);
-	} finally {
-		await log.close();
+		console.log(`Desktop shortcut: ${desktop.shortcut}`);
+		return;
+	}
+	if (!desktop)
+		throw new Error("Desktop controls are available on macOS and Windows.");
+	const manager = await serveManager({ ...control, ...desktop });
+	try {
+		await openLocalManager(manager.url);
+	} catch (error) {
+		manager.server.close();
+		throw error;
 	}
 }
 
@@ -126,11 +224,9 @@ async function run() {
 	const directory = setup
 		? join(dataRoot, "installations", setup.setupId)
 		: null;
-	if (setup && directory && process.argv.includes("--install")) {
-		await install({ setup, directory });
-		console.log(
-			"POCUT companion is ready. Return to the original POCUT tab to connect.",
-		);
+	const install = process.argv.includes("--install");
+	if (setup && directory && (install || process.argv.includes("--manage"))) {
+		await manageInstallation({ setup, directory, install });
 		return;
 	}
 	if (directory) await mkdir(directory, { recursive: true, mode: 0o700 });
@@ -139,7 +235,7 @@ async function run() {
 	if (process.argv.includes("--login-claude")) {
 		if (!pair || (setup && setup.origin !== pair.origin))
 			throw new Error(
-				"Click Check Claude connection in the original POCUT tab first.",
+				"Click Connect under Claude in the original POCUT tab first.",
 			);
 		const profile = providerProfile(pair);
 		await mkdir(profile, { recursive: true, mode: 0o700 });
@@ -195,9 +291,11 @@ async function run() {
 	let providers = pair ? createProviders(pair) : undefined;
 	const restored =
 		pair && providers ? { pair, handle: providers.handle } : undefined;
+	const token = directory ? await controlToken(directory) : null;
 	const server = createCompanionServer(
-		setup && saved
+		setup && saved && token
 			? {
+					control: { token, stop },
 					setup: {
 						request: setup,
 						restored,
@@ -218,13 +316,13 @@ async function run() {
 				}
 			: restored!,
 	).listen(Number(localAddress.port), localAddress.hostname, () => {
-		console.log("POCUT companion is listening on this device.");
+		console.log("POCUT Companion is listening on this device.");
 	});
-	const stop = () => {
+	function stop() {
 		providers?.close();
 		server.closeAllConnections();
 		server.close();
-	};
+	}
 	if (setup && !pair) {
 		const expire = setTimeout(
 			() => {

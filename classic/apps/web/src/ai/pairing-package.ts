@@ -1,7 +1,7 @@
 import { createZipBlob } from "@/project/archive/zip";
 import { companionSetupSchema, type CompanionSetup } from "./companion/setup";
 
-const companion = "pocut-companion-v2";
+const companion = "pocut-companion-v3";
 export const PAIRING_PACKAGE_NAME = "POCUT-Pairing-Instructions.zip";
 
 const instructions = `# Set up the POCUT AI companion
@@ -19,28 +19,33 @@ where the user has POCUT open. A remote terminal cannot install a local companio
 
        node pocut-companion.mjs POCUT-Setup.json --install
 
-   Wait for the companion to report that it is ready. If the package expired
-   before pairing, ask the user to download a fresh ZIP. If another companion
-   is already running, check the existing connection in POCUT. For a confirmed
-   older POCUT companion, stop it using its original terminal or service and
-   retry the install. Leave unrelated processes alone.
-3. Ask the user to return to the POCUT tab that downloaded the ZIP and allow
-   local-network access if the browser prompts.
-   - **Codex:** Have the user click **Continue with ChatGPT** and complete the
-     official sign-in. Use **Check Codex connection** if it is already signed in.
-   - **Claude:** Have the user click **Check Claude connection**. Then run this
-     command in a local terminal the user can interact with:
+   On macOS and Windows this starts the Companion, registers it to start at
+   sign-in, and creates the **POCUT Companion** desktop shortcut. Reinstalling
+   preserves the user's startup preference. Verify the install output before
+   reporting it. If the package expired before pairing, ask for a fresh ZIP.
+   If the installer detects an earlier Companion on port 43127, confirm the
+   listening process is POCUT's installed companion before stopping it. Close
+   only that Companion, then rerun the command. Leave unrelated processes alone.
+3. After installation, give the user all of these next steps in their language:
+   - “I installed POCUT Companion. It will start automatically when you sign in
+     to your computer.” If automatic startup is off, report that instead.
+   - “I added a POCUT Companion shortcut to your desktop. Open it to turn the
+     Companion on or off or change whether it starts at sign-in.”
+   - “Return to the POCUT tab where you downloaded the ZIP and click **Connect**
+     under OpenAI / Codex or Claude. (Chrome or your browser may ask next to
+     the address bar to allow access to your local network or computer. Click
+     **Allow** to continue.)”
+   - For Codex, tell the user to click **Continue with ChatGPT** in the POCUT
+     dialog that opens, then complete the official OpenAI sign-in.
+   - For Claude, after the user clicks **Connect** and allows local access,
+     run the following in a local terminal where they can complete sign-in:
 
          node pocut-companion.mjs POCUT-Setup.json --login-claude
 
-     The user completes Claude's official sign-in. Check the connection again
-     in POCUT if it has not updated automatically.
-
-The companion stays running in the background. The same setup supports both
-providers on this device. Confirm the connection in POCUT before reporting
-completion. Let the user enter credentials and approve requests directly in
-their provider's sign-in interface. Keep credentials and local pairing data out
-of the conversation.
+4. Confirm POCUT shows the green connected status. **Check Connection** can
+   verify an existing connection. Ask the user to enter credentials directly
+   with their provider. Report any remaining steps accurately. Keep credentials
+   and local pairing data out of the conversation.
 `;
 
 export async function createPairingPackage({
@@ -64,7 +69,7 @@ export async function createPairingPackage({
 		byte.toString(16).padStart(2, "0"),
 	).join("");
 	if (
-		manifest?.version !== 2 ||
+		manifest?.version !== 3 ||
 		manifest.filename !== `${companion}.mjs` ||
 		manifest.bytes !== binary.byteLength ||
 		manifest.sha256 !== sha256

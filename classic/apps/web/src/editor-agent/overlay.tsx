@@ -5,6 +5,7 @@ import {
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
 import { useWorkspaceAccount } from "@/accounts/gate";
+import { readLocalProvider } from "@/ai/local-connection";
 import { AgentConnectionsSettings } from "./agent-connections-settings";
 import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
 import { ProductionStudioPanel } from "@/production-studio/panel";
@@ -477,9 +478,23 @@ function AgentPanel() {
 	);
 
 	const refresh = useCallback(async (signal?: AbortSignal) => {
+		const account = window.__opencutAccountId;
+		const provider = readLocalProvider();
 		const status = await connectionRequest({
 			signal,
 			schema: connectionSchemas.status,
+		}).catch((cause) => {
+			if (
+				provider &&
+				mounted.current &&
+				!signal?.aborted &&
+				window.__opencutAccountId === account &&
+				readLocalProvider() === provider
+			) {
+				setConnection(null);
+				setModels([]);
+			}
+			throw cause;
 		});
 		if (!mounted.current || signal?.aborted) return;
 		setConnection(status);

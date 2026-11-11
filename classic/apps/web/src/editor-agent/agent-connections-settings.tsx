@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Message } from "@/i18n/message";
 import {
@@ -14,7 +15,14 @@ import {
 	PAIRING_PACKAGE_NAME,
 } from "@/ai/pairing-package";
 import { downloadBlob } from "@/utils/browser";
-import { SettingsInfo } from "./settings-info";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { AgentSettingsSection } from "./settings-section";
 import { HostedConnectionSettings } from "./hosted-connection-settings";
 import {
@@ -32,7 +40,7 @@ export function AgentConnectionsSettings({
 	revealProvider = "openai",
 }: {
 	connection: AgentConnection | null;
-	refresh: () => Promise<void>;
+	refresh: (signal?: AbortSignal) => Promise<void>;
 	stop: () => void;
 	revealRequest?: number;
 	revealProvider?: RevealProvider;
@@ -41,6 +49,11 @@ export function AgentConnectionsSettings({
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
 	const [waiting, setWaiting] = useState<"codex" | "claude" | null>(null);
+	const [login, setLogin] = useState<{
+		url: string;
+		expiresAt: number;
+		account: string | null | undefined;
+	} | null>(null);
 	const operation = useRef<AbortController | null>(null);
 	useEffect(() => () => operation.current?.abort(), []);
 	useEffect(() => {
@@ -93,14 +106,9 @@ export function AgentConnectionsSettings({
 		legacySignIn?: boolean;
 	}) {
 		if (operation.current) return;
-		const loginMayOpen = provider === "codex" || legacySignIn;
 		const desktop = window.opencutElectron;
-		const popup =
-			loginMayOpen && !desktop?.openChatGPTSignIn
-				? window.open("about:blank", "_blank", "popup,width=620,height=760")
-				: null;
-		if (popup) popup.opener = null;
-		let navigating = false;
+		const account = window.__opencutAccountId;
+		setLogin(null);
 		const controller = new AbortController();
 		operation.current = controller;
 		setBusy(true);
@@ -134,20 +142,21 @@ export function AgentConnectionsSettings({
 					(legacySignIn || (provider === "codex" && state.installed)) &&
 					!state.sharing
 				) {
-					if (!popup && !desktop?.openChatGPTSignIn)
-						throw new Error(
-							"Allow popups for POCUT, then reconnect with ChatGPT.",
-						);
 					const login = await connectionRequest({
 						operation: "signIn",
 						schema: connectionSchemas.signIn,
 						signal: controller.signal,
 					});
-					if (desktop?.openChatGPTSignIn)
+					if (desktop?.openChatGPTSignIn) {
 						await desktop.openChatGPTSignIn(login.authorizationUrl);
-					else if (popup) popup.location.href = login.authorizationUrl;
-					navigating = true;
-					setWaiting("codex");
+						setWaiting("codex");
+					} else {
+						setLogin({
+							url: login.authorizationUrl,
+							expiresAt: login.expiresAt,
+							account,
+						});
+					}
 				} else if (provider === "claude" && !state.sharing)
 					setWaiting("claude");
 				else if (!state.sharing)
@@ -156,12 +165,11 @@ export function AgentConnectionsSettings({
 							"Complete the local provider sign-in, then check the connection again.",
 					);
 			}
-			await refresh();
+			await refresh(controller.signal);
 		} catch (cause) {
 			if (!controller.signal.aborted)
 				setError(cause instanceof Error ? cause.message : "Connection failed");
 		} finally {
-			if (!navigating) popup?.close();
 			operation.current = null;
 			if (!controller.signal.aborted) setBusy(false);
 		}
@@ -179,7 +187,7 @@ export function AgentConnectionsSettings({
 				schema: connectionSchemas.disconnect,
 			});
 			setWaiting(null);
-			await refresh();
+			await refresh(controller.signal);
 		} catch (cause) {
 			setError(cause instanceof Error ? cause.message : "Could not disconnect");
 		} finally {
@@ -187,9 +195,64 @@ export function AgentConnectionsSettings({
 			if (!controller.signal.aborted) setBusy(false);
 		}
 	}
+	async function checkConnection() {
+		if (operation.current) return;
+		const controller = new AbortController();
+		operation.current = controller;
+		setBusy(true);
+		setError("");
+		try {
+			await refresh(controller.signal);
+		} catch (cause) {
+			if (!controller.signal.aborted)
+				setError(cause instanceof Error ? cause.message : "Connection failed");
+		} finally {
+			operation.current = null;
+			if (!controller.signal.aborted) setBusy(false);
+		}
+	}
+
+	function providerAction(provider: "codex" | "claude") {
+		const connected =
+			connection?.provider === `local-${provider}` && connection.sharing;
+		return (
+			<div className="flex flex-col items-center gap-1 text-center">
+				{connected ? (
+					<>
+						<span
+							role="status"
+							className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/15 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-300"
+						>
+							<Check size={15} aria-hidden="true" />
+							<Message
+								text={
+									provider === "codex"
+										? "Codex is connected"
+										: "Claude is connected"
+								}
+							/>
+						</span>
+						<Button
+							size="sm"
+							variant="ghost"
+							disabled={busy}
+							onClick={() => void checkConnection()}
+						>
+							<Message text="Check Connection" />
+						</Button>
+					</>
+				) : (
+					<Button disabled={busy} onClick={() => void connect({ provider })}>
+						<Message text="Connect" />
+					</Button>
+				)}
+			</div>
+		);
+	}
+
 	const local = readLocalProvider();
 	const setup = (
-		<SettingsInfo label="Setup instructions">
+		<div className="flex flex-col items-center gap-2 text-center">
 			<p className="text-xs text-muted-foreground">
 				<Message text="Download the pairing instructions and bring it to your AI assistant." />
 			</p>
@@ -202,7 +265,7 @@ export function AgentConnectionsSettings({
 			>
 				<Message text="Download the pairing instructions" />
 			</Button>
-		</SettingsInfo>
+		</div>
 	);
 	return (
 		<>
@@ -226,29 +289,7 @@ export function AgentConnectionsSettings({
 					</div>
 				)}
 				{setup}
-				<Button
-					disabled={busy}
-					onClick={() => void connect({ provider: "codex" })}
-				>
-					<Message
-						text={
-							connection?.provider === "local-codex" && connection.sharing
-								? "Check Codex connection"
-								: "Continue with ChatGPT"
-						}
-					/>
-				</Button>
-				{connection?.provider === "local-codex" && connection.sharing && (
-					<p role="status" className="text-xs">
-						<Message
-							text={
-								connection.imageGenerationSupported
-									? "Codex connected · image generation supported; each image requires confirmation"
-									: "Codex connected · image generation is unavailable in this connection"
-							}
-						/>
-					</p>
-				)}
+				{providerAction("codex")}
 			</AgentSettingsSection>
 			<AgentSettingsSection
 				title="OpenRouter"
@@ -278,15 +319,7 @@ export function AgentConnectionsSettings({
 				revealRequest={revealProvider === "claude" ? revealRequest : 0}
 			>
 				{setup}
-				<Button
-					disabled={busy}
-					onClick={() => void connect({ provider: "claude" })}
-				>
-					<Message text="Check Claude connection" />
-				</Button>
-				<p className="text-xs text-muted-foreground">
-					<Message text="Claude can propose editor actions and scene plans. Image generation is not supported by this connection." />
-				</p>
+				{providerAction("claude")}
 			</AgentSettingsSection>
 			{local && (
 				<Button
@@ -306,6 +339,46 @@ export function AgentConnectionsSettings({
 					<Message text="Disconnect local provider" />
 				</Button>
 			)}
+			<Dialog
+				open={login !== null}
+				onOpenChange={(open) => {
+					if (!open) setLogin(null);
+				}}
+			>
+				{login && (
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>
+								<Message text="Connect Codex" />
+							</DialogTitle>
+							<DialogDescription>
+								<Message text="Sign in to ChatGPT to finish connecting Codex." />
+							</DialogDescription>
+						</DialogHeader>
+						<DialogBody className="items-center">
+							<Button asChild>
+								<a
+									href={login.url}
+									target="_blank"
+									rel="noreferrer"
+									onClick={(event) => {
+										if (
+											Date.now() >= login.expiresAt ||
+											window.__opencutAccountId !== login.account
+										) {
+											event.preventDefault();
+											setError("Click Connect to start a new sign-in.");
+										} else setWaiting("codex");
+										setLogin(null);
+									}}
+								>
+									<Message text="Continue with ChatGPT" />
+								</a>
+							</Button>
+						</DialogBody>
+					</DialogContent>
+				)}
+			</Dialog>
 			{waiting && !connection?.sharing && (
 				<p role="status" className="text-xs">
 					<Message

@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const COMPANION_URL = "http://127.0.0.1:43127";
+export const CONTROL_PATH = "/internal/companion/control";
 export const SETUP_PATH = "/api/companion/setup";
 export const SETUP_HEADER = "X-POCUT-Setup";
 export const SETUP_LIFETIME_MS = 30 * 60_000;

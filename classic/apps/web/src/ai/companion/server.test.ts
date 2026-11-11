@@ -212,3 +212,62 @@ test("setup authorizes one matching tab, with safe replay and expiry", async () 
 		}
 	}
 });
+
+test("desktop lifecycle uses a private local key outside the app's browser API", async () => {
+	const origin = "https://editor.example.com";
+	const pair = {
+		version: 1 as const,
+		origin,
+		accountId: crypto.randomUUID(),
+		token: "a".repeat(64),
+	};
+	const control = "b".repeat(64);
+	let stopped = 0;
+	const server = createCompanionServer({
+		pair,
+		handle: async () => Response.json({ sharing: true }),
+		control: {
+			token: control,
+			stop: () => {
+				stopped++;
+			},
+		},
+	}).listen(0, "127.0.0.1");
+	await once(server, "listening");
+	const address = server.address();
+	if (!address || typeof address === "string")
+		throw new Error("No TCP listener");
+	const { CONTROL_PATH } = await import("./setup");
+	const url = `http://127.0.0.1:${address.port}${CONTROL_PATH}`;
+	const auth = { Authorization: `Bearer ${control}` };
+	try {
+		expect(
+			(
+				await fetch(url, {
+					method: "POST",
+					headers: { ...auth, Origin: origin },
+				})
+			).status,
+		).toBe(403);
+		expect(
+			(
+				await fetch(url, {
+					method: "POST",
+					headers: { Authorization: `Bearer ${pair.token}` },
+				})
+			).status,
+		).toBe(403);
+		expect(
+			(await fetch(url, { method: "OPTIONS", headers: auth })).status,
+		).toBe(405);
+		expect((await fetch(url, { headers: auth })).status).toBe(204);
+		expect(stopped).toBe(0);
+		expect((await fetch(url, { method: "POST", headers: auth })).status).toBe(
+			204,
+		);
+		expect(stopped).toBe(1);
+	} finally {
+		server.closeAllConnections();
+		server.close();
+	}
+});

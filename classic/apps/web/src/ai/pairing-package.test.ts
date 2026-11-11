@@ -16,12 +16,12 @@ test("the assistant ZIP contains verified setup files and no account credentials
 	};
 	let expectedDigest = sha256;
 	globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
-		if (input === "/downloads/pocut-companion-v2.mjs")
+		if (input === "/downloads/pocut-companion-v3.mjs")
 			return new Response(script);
-		expect(input).toBe("/downloads/pocut-companion-v2.json");
+		expect(input).toBe("/downloads/pocut-companion-v3.json");
 		return Response.json({
-			version: 2,
-			filename: "pocut-companion-v2.mjs",
+			version: 3,
+			filename: "pocut-companion-v3.mjs",
 			sha256: expectedDigest,
 			bytes: bytes.length,
 		});
@@ -39,7 +39,10 @@ test("the assistant ZIP contains verified setup files and no account credentials
 		expect(await entries.get("pocut-companion.mjs")?.text()).toBe(script);
 		const instructions = await entries.get("README.md")?.text();
 		expect(instructions).toContain("Continue with ChatGPT");
-		expect(instructions).toContain("Check Claude connection");
+		expect(instructions).toContain("**POCUT Companion** desktop shortcut");
+		expect(instructions).toContain("start automatically when you sign in");
+		expect(instructions).toContain("**Connect**");
+		expect(instructions).toContain("**Allow**");
 		expect(instructions).toContain("POCUT-Setup.json --install");
 		expect(instructions).toContain("POCUT-Setup.json --login-claude");
 		const withToken = { ...setup, token: "a".repeat(64) };
