@@ -10,6 +10,7 @@ import {
 import {
 	useEditor,
 	useEditorHistory,
+	useEditorMedia,
 	useEditorProject,
 } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,10 @@ import { SettingsInfo } from "@/editor-agent/settings-info";
 import { AgentSettingsSection } from "@/editor-agent/settings-section";
 import type { EditorCore } from "@/core";
 import { audioDraftsSnapshot } from "./panel-snapshot";
+import { saveAudioResult } from "./result-media";
+import { captureLocalDriveWriteScope } from "@/services/local-drive/client";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { storageService } from "@/services/storage/service";
 
 export function ElevenLabsConnectionSettings({
 	projectId,
@@ -215,6 +220,7 @@ function AudioProjectPanel({
 		[error, setError] = useState(""),
 		[busy, setBusy] = useState(false),
 		[pin, setPin] = useState("");
+	const projectMedia = useEditorMedia((e) => e.media.getAssets());
 	const [catalog, setCatalog] = useState<{
 		voices: { voice_id: string; name: string }[];
 		models: {
@@ -313,23 +319,33 @@ function AudioProjectPanel({
 		job: AudioJob;
 		signal: AbortSignal;
 	}) {
-		if (!job.output) return;
-		const id = "elevenlabs-" + job.id;
-		if (editor.media.getAssets().some((a) => a.id === id)) return;
-		const r = await fetch(audioFileUrl({ projectId, id: job.output.id }), {
-			signal,
-			credentials: "same-origin",
-		});
-		if (!r.ok) throw new Error("Audio download failed");
-		const file = new File([await r.blob()], job.output.name, {
-			type: job.output.mime,
-		});
-		const assets = await processMediaAssets({ files: [file] });
+		const scope = { ...captureLocalDriveWriteScope({ projectId }), signal };
+		const asset = await saveAudioResult({ projectId, job, scope, signal });
 		if (!current() || signal.aborted) return;
-		if (!assets[0]) throw new Error("Could not decode generated audio");
-		await editor.media.addMediaAsset({
+		const existing = editor.media
+			.getAssets()
+			.find((item) => item.id === asset.id);
+		if (
+			existing &&
+			!existing.missing &&
+			(isHostedBrowserWorkspace() ? existing.file : existing.url)
+		)
+			return;
+		if (!asset.file) throw new Error("Audio download failed");
+		if (existing) {
+			await editor.media.reopenBrowserSource({
+				projectId,
+				id: asset.id,
+				file: asset.file,
+			});
+			return;
+		}
+		const [metadata] = await processMediaAssets({ files: [asset.file] });
+		if (!current() || signal.aborted) return;
+		await editor.media.addGeneratedMediaAsset({
 			projectId,
-			asset: { ...assets[0], id },
+			asset: { ...asset, ...metadata, id: asset.id, file: asset.file },
+			scope,
 		});
 	}
 	const stale =
@@ -673,13 +689,18 @@ function AudioProjectPanel({
 						)}
 						{job.output && (
 							<>
-								<audio
-									controls
-									src={audioFileUrl({ projectId, id: job.output.id })}
-									aria-label={job.draft.title}
-								>
-									<track kind="captions" />
-								</audio>
+								<AudioResultPlayer
+									job={job}
+									projectId={projectId}
+									assetUrl={
+										projectMedia.find(
+											(asset) =>
+												asset.id === `elevenlabs-${job.id}` &&
+												asset.file &&
+												!asset.missing,
+										)?.url
+									}
+								/>
 								<Button
 									disabled={busy}
 									onClick={() =>
@@ -694,5 +715,57 @@ function AudioProjectPanel({
 				))}
 			</div>
 		</section>
+	);
+}
+
+function AudioResultPlayer({
+	job,
+	projectId,
+	assetUrl,
+}: {
+	job: AudioJob;
+	projectId: string;
+	assetUrl?: string;
+}) {
+	const [localUrl, setLocalUrl] = useState<string>();
+	useEffect(() => {
+		if (
+			assetUrl ||
+			localUrl ||
+			!isHostedBrowserWorkspace() ||
+			job.status !== "ready"
+		)
+			return;
+		const controller = new AbortController();
+		const scope = {
+			...captureLocalDriveWriteScope({ projectId }),
+			signal: controller.signal,
+		};
+		void storageService
+			.loadBrowserMediaAsset({ projectId, id: `elevenlabs-${job.id}`, scope })
+			.then(
+				(asset) => {
+					if (
+						!controller.signal.aborted &&
+						scope.accountId === window.__opencutAccountId
+					)
+						setLocalUrl(asset?.url);
+				},
+				() => undefined,
+			);
+		return () => controller.abort();
+	}, [assetUrl, job, localUrl, projectId]);
+	if (!job.output) return null;
+	return (
+		<audio
+			controls
+			preload="none"
+			src={
+				assetUrl ?? localUrl ?? audioFileUrl({ projectId, id: job.output.id })
+			}
+			aria-label={job.draft.title}
+		>
+			<track kind="captions" />
+		</audio>
 	);
 }

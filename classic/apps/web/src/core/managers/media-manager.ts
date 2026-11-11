@@ -10,6 +10,7 @@ import {
 	assertLocalDriveWriteScope,
 	captureLocalDriveWriteScope,
 	localDriveRequest,
+	type LocalDriveRequestScope,
 } from "@/services/local-drive/client";
 import { getMediaTypeFromFile } from "@/media/media-utils";
 import { isHostedBrowserWorkspace } from "@/accounts/browser";
@@ -411,6 +412,37 @@ export class MediaManager {
 
 			return null;
 		}
+	}
+
+	/** Generated outputs have a stable identity and can join the latest project revision once durable. */
+	async addGeneratedMediaAsset({
+		projectId,
+		asset,
+		scope,
+	}: {
+		projectId: string;
+		asset: MediaAsset;
+		scope: LocalDriveRequestScope;
+	}): Promise<MediaAsset> {
+		await storageService.saveMediaAsset({
+			projectId,
+			mediaAsset: asset,
+			scope,
+		});
+		scope.signal?.throwIfAborted();
+		assertLocalDriveWriteScope({ projectId, scope });
+		const existing = this.assets.find((item) => item.id === asset.id);
+		if (
+			existing &&
+			this.editor.project.getActiveOrNull()?.metadata.id === projectId
+		)
+			return existing;
+		this.editor.command.prepareClassicMediaImport({
+			projectId,
+			assets: [asset],
+		})();
+		await this.editor.command.flushHistory();
+		return asset;
 	}
 
 	removeMediaAsset({ projectId, id }: { projectId: string; id: string }): void {

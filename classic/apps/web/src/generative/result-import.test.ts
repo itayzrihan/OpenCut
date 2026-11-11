@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Minimal host doubles isolate the real import adapter; canonical registry is exercised separately against real WASM. */
-import { test, expect, afterEach } from "bun:test";
+import { test, expect, afterEach, mock } from "bun:test";
 import type { EditorCore } from "@/core";
 import type { MediaAsset } from "@/media/types";
 import type { DirectorDocument, DirectorJob } from "./types";
-import { importDirectorResult } from "./result-import";
+mock.module("@/services/storage/service", () => ({
+	storageService: { loadBrowserMediaAsset: async () => null },
+}));
+const { importDirectorResult } = await import("./result-import");
 const savedFetch = globalThis.fetch,
 	savedWindow = globalThis.window;
 afterEach(() => {
@@ -51,9 +54,14 @@ test("ready result becomes a normal asset once, preserves source bytes and never
 		project: { getActiveOrNull: () => ({ metadata: { id: "project-a" } }) },
 		media: {
 			getAssets: () => media,
-			addMediaAsset: async ({ asset }: { asset: MediaAsset }) => {
+			addGeneratedMediaAsset: async ({ asset }: { asset: MediaAsset }) => {
 				media.push(asset);
 				return asset;
+			},
+			reopenBrowserSource: async ({ id, file }: { id: string; file: File }) => {
+				const asset = media.find((item) => item.id === id);
+				if (!asset) throw new Error("Missing canonical asset");
+				Object.assign(asset, { file, missing: false });
 			},
 		},
 		timeline: {
@@ -63,7 +71,11 @@ test("ready result becomes a normal asset once, preserves source bytes and never
 		},
 	} as unknown as EditorCore;
 	const bytes = "original-generated-video";
-	globalThis.fetch = (async () => new Response(bytes)) as typeof fetch;
+	let downloads = 0;
+	globalThis.fetch = (async () => {
+		downloads++;
+		return new Response(bytes);
+	}) as typeof fetch;
 	const job: DirectorJob = {
 		id: "a".repeat(32),
 		projectId: "project-a",
@@ -110,9 +122,20 @@ test("ready result becomes a normal asset once, preserves source bytes and never
 	expect(processed).toBe(bytes);
 	expect(timelineCalls).toBe(0);
 	expect(document.jobs[0].mediaId).toBe("generative-" + job.id);
+	expect(downloads).toBe(1);
+	window.__opencutHostedLegitate = true;
+	media[0].file = undefined;
+	media[0].missing = true;
+	media[0].name = "Edited name";
+	await importDirectorResult(input);
+	expect(media).toHaveLength(1);
+	expect(await media[0].file?.text()).toBe(bytes);
+	expect(media[0].name).toBe("Edited name");
+	expect(downloads).toBe(2);
 	media.splice(0);
 	await importDirectorResult(input);
 	expect(media).toHaveLength(0);
+	expect(downloads).toBe(2);
 });
 test("stale project cannot import a ready result", async () => {
 	let touched = false;

@@ -636,13 +636,11 @@ export class StorageService {
 				mediaAsset.sourcePath ||
 				(await browser.records.get(mediaAsset.id))
 			) {
-				Object.assign(
-					mediaAsset,
-					await browser.save({
-						asset: mediaAsset,
-						uploadToken: scope.uploadToken,
-					}),
-				);
+				const { hasLocalCopy: _copy, ...binding } = await browser.save({
+					asset: mediaAsset,
+					uploadToken: scope.uploadToken,
+				});
+				Object.assign(mediaAsset, binding);
 				return;
 			}
 		}
@@ -728,6 +726,22 @@ export class StorageService {
 		scope.signal?.throwIfAborted();
 		const browser = hostedMedia(projectId, scope.accountId);
 		return browser.save({ asset: mediaAsset, fileHandle });
+	}
+
+	async loadBrowserMediaAsset({
+		projectId,
+		id,
+		scope,
+	}: {
+		projectId: string;
+		id: string;
+		scope: LocalDriveRequestScope;
+	}): Promise<MediaAsset | null> {
+		assertLocalDriveWriteScope({ projectId, scope });
+		scope.signal?.throwIfAborted();
+		const browser = hostedMedia(projectId, scope.accountId);
+		const record = await browser.records.get(id);
+		return record && !record.deleted ? browser.hydrate({ record }) : null;
 	}
 
 	async updateBrowserMediaMetadata({

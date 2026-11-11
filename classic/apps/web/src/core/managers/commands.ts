@@ -34,7 +34,10 @@ import type {
 	EditingAgentReviewRequest,
 	EditingAgentSnapshot,
 } from "@/core/agent-protocol";
-import { localMediaUrl } from "@/services/local-drive/client";
+import {
+	captureLocalDriveWriteScope,
+	localMediaUrl,
+} from "@/services/local-drive/client";
 import { mediaTime } from "@/wasm";
 import type { EditorSessionBundle } from "@/editor-agent/session-client";
 import {
@@ -3627,10 +3630,28 @@ export class CommandManager {
 			for (const asset of this.editor.media.getAssets())
 				this.canonicalMediaHandles.set(asset.id, asset);
 			const handles = this.canonicalMediaHandles;
+			const browserScope = isHostedBrowserWorkspace()
+				? captureLocalDriveWriteScope({ projectId })
+				: null;
 			for (const asset of state.mediaAssets) {
 				if (handles.get(asset.id)?.file) continue;
 				const generated = this.canonical.hydrateGeneratedImage(asset);
-				if (generated) handles.set(asset.id, generated);
+				if (generated) {
+					handles.set(asset.id, generated);
+					if (browserScope)
+						void storageService
+							.saveBrowserMediaAsset({
+								projectId,
+								mediaAsset: generated,
+								scope: browserScope,
+							})
+							.catch((error: unknown) => {
+								console.warn(
+									"Could not save a local copy of the generated image:",
+									error,
+								);
+							});
+				}
 			}
 			this.editor.media.setAssets({
 				assets: state.mediaAssets.map((asset) => ({

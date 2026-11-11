@@ -620,6 +620,22 @@
       ],
       "timeoutMs": 120000
     },
+    "generated-media-persistence": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/generative/result-import.test.ts",
+        "src/audio-production/result-media.test.ts",
+        "src/audio-production/server.test.ts",
+        "src/services/storage/hosted-media.test.ts",
+        "src/ai/__tests__/native-image-effect.test.ts",
+        "--jobs=2",
+        "--timeout=100000",
+        "--test-timeout=90000",
+        "--report=.local/generated-media-persistence/configured"
+      ],
+      "timeoutMs": 180000
+    },
     "agent-production-studio": {
       "command": [
         "node",

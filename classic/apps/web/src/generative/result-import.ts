@@ -1,6 +1,13 @@
 import type { EditorCore } from "@/core";
 import type { MediaAsset } from "@/media/types";
 import type { DirectorJob } from "./types";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { downloadProjectOutput } from "@/media/project-output";
+import { storageService } from "@/services/storage/service";
+import {
+	assertLocalDriveWriteScope,
+	captureLocalDriveWriteScope,
+} from "@/services/local-drive/client";
 import { fileUrl, canonical } from "./client";
 import { insertSeamless } from "./seamless-connect";
 import { applyReplacement } from "./replace-clip";
@@ -27,7 +34,7 @@ export async function importDirectorResult({
 	notify?: (message: string) => void;
 	notifyWarning?: (message: string) => void;
 }) {
-	if (!current()) return;
+	if (!current() || job.projectId !== projectId) return;
 	const document = canonical({ editor }).document,
 		link = document.jobs.find((j) => j.id === job.id);
 	if (!link || link.status !== job.status)
@@ -43,32 +50,70 @@ export async function importDirectorResult({
 				},
 			},
 		});
-	if (job.status !== "ready" || !job.output || link?.mediaId) return;
-	const mediaId = "generative-" + job.id,
+	if (job.status !== "ready" || !job.output) return;
+	const mediaId = link?.mediaId ?? "generative-" + job.id,
 		key = accountId + ":" + projectId + ":" + job.id;
+	const hosted = isHostedBrowserWorkspace();
+	const existing = editor.media
+		.getAssets()
+		.find((asset) => asset.id === mediaId);
+	// A retained link also records an explicit removal. Only repair an asset
+	// that is still part of the current canonical project.
+	if (
+		link?.mediaId &&
+		(!existing || !hosted || (existing.file && !existing.missing))
+	)
+		return;
 	if (imports.has(key)) return;
 	imports.add(key);
 	try {
 		const output = job.output;
-		if (!editor.media.getAssets().some((a) => a.id === mediaId)) {
-			const response = await fetch(fileUrl({ projectId, id: output.id }), {
-				credentials: "same-origin",
-				signal,
-			});
-			if (!response.ok) throw new Error("Generated media download failed");
-			const file = new File([await response.blob()], output.name, {
-				type: output.mime,
-			});
-			const assets = await process({ files: [file] });
+		const scope = {
+			...captureLocalDriveWriteScope({ projectId, accountId }),
+			signal,
+		};
+		if (!existing || (hosted && (!existing.file || existing.missing))) {
+			const local = hosted
+				? await storageService.loadBrowserMediaAsset({
+						projectId,
+						id: mediaId,
+						scope,
+					})
+				: null;
+			const file =
+				local?.file?.size === output.bytes
+					? local.file
+					: await downloadProjectOutput({
+							output,
+							url: fileUrl({ projectId, id: output.id }),
+							signal,
+							lastModified: job.createdAt,
+						});
 			if (!current()) return;
-			const asset = assets[0];
-			if (!asset) throw new Error("Could not decode generated media");
-			const imported = await editor.media.addMediaAsset({
-				projectId,
-				asset: { ...asset, id: mediaId },
-			});
-			if (!current()) return;
-			if (!imported) throw new Error("Generated media import did not complete");
+			assertLocalDriveWriteScope({ projectId, scope });
+			if (existing) {
+				await editor.media.reopenBrowserSource({
+					projectId,
+					id: mediaId,
+					file,
+				});
+				if (!current() || link?.mediaId) return;
+			} else {
+				const assets = await process({ files: [file] });
+				if (!current()) return;
+				await editor.media.addGeneratedMediaAsset({
+					projectId,
+					asset: {
+						type: output.kind,
+						name: output.name,
+						...assets[0],
+						file,
+						id: mediaId,
+					},
+					scope,
+				});
+				if (!current()) return;
+			}
 		}
 		if (
 			job.kind === "storyboard" &&
