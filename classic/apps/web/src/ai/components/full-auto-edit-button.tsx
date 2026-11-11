@@ -103,7 +103,7 @@ export function FullAutoEditButton({
 		>
 			{!hideTrigger && (
 				<Button
-					className="w-full"
+					className="h-auto min-h-9 w-full whitespace-normal break-words"
 					disabled={disabled || running}
 					onClick={() => (resumable ? void run(true) : setOpen(true))}
 				>
