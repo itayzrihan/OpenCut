@@ -1,4 +1,5 @@
 import { test, expect } from "bun:test";
+import { spawn } from "node:child_process";
 import { mkdtemp, writeFile, rm, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -300,9 +301,15 @@ test("unavailable or unconfirmed images never reach the native provider; model c
 
 test("cancelling a native turn terminates it without a second provider request", async () => {
 	const f = await fixture({ hold: true });
+	const closedChildren: Promise<void>[] = [];
 	const provider = new CodexProvider({
 		root: f.root,
 		executable: f.executable,
+		spawnChild(file, args, options) {
+			const child = spawn(file, args, options);
+			closedChildren.push(new Promise((resolve) => child.once("close", () => resolve())));
+			return child;
+		},
 	});
 	const controller = new AbortController();
 	try {
@@ -328,6 +335,7 @@ test("cancelling a native turn terminates it without a second provider request",
 		expect((await provider.status()).installed).toBe(true);
 	} finally {
 		provider.close();
-		await rm(f.root, { recursive: true, force: true, maxRetries: 5 });
+		await Promise.all(closedChildren);
+		await rm(f.root, { recursive: true, force: true });
 	}
 });
