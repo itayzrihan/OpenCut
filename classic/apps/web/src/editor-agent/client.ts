@@ -659,7 +659,9 @@ export class EditorAgentClient {
 		this.emit({ type: "round", review: true });
 		this.emit({
 			type: "summary",
-			text: `Rendering ${plan.times.length} sample frames for visual review…`,
+			text: plan.times.length
+				? `Rendering ${plan.times.length} sample frames for visual review…`
+				: "Checking the generated image in project media…",
 		});
 		for (const ticks of plan.times) {
 			signal.throwIfAborted();
