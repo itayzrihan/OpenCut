@@ -16,12 +16,12 @@ test("the assistant ZIP contains verified setup files and no account credentials
 	};
 	let expectedDigest = sha256;
 	globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
-		if (input === "/downloads/pocut-companion-v3.mjs")
+		if (input === "/downloads/pocut-companion-v4.mjs")
 			return new Response(script);
-		expect(input).toBe("/downloads/pocut-companion-v3.json");
+		expect(input).toBe("/downloads/pocut-companion-v4.json");
 		return Response.json({
-			version: 3,
-			filename: "pocut-companion-v3.mjs",
+			version: 4,
+			filename: "pocut-companion-v4.mjs",
 			sha256: expectedDigest,
 			bytes: bytes.length,
 		});

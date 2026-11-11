@@ -59,6 +59,11 @@ import {
 	useEditorProject,
 } from "@/editor/use-editor";
 import { AgentMarkdown, messageDirection } from "./markdown";
+import {
+	DictationControls,
+	appendDictation,
+	useBrowserDictation,
+} from "./dictation";
 import { KnowledgePanel } from "./knowledge-panel";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -306,6 +311,12 @@ function AgentPanel() {
 	};
 	const [busy, setBusy] = useState(false);
 	const [settingsOpen, setSettingsOpen] = useState(false);
+	const dictation = useBrowserDictation({
+		enabled: open && !settingsOpen,
+		scope: JSON.stringify(policyScope),
+		onTranscript: (transcript) =>
+			setDraft((draft) => appendDictation({ draft, transcript })),
+	});
 	const settingsProvider = useAgentSettingsNavigation(
 		(state) => state.provider,
 	);
@@ -590,6 +601,7 @@ function AgentPanel() {
 		)
 			return;
 		const attempt = ++generation.current;
+		dictation.cancel();
 		setDraft("");
 		setError("");
 		setBusy(true);
@@ -1106,6 +1118,11 @@ function AgentPanel() {
 							))}
 						</UiLocalized>
 					)}
+					{dictation.error && (
+						<p role="status" className="text-xs text-muted-foreground">
+							<UiMessage text={dictation.error} />
+						</p>
+					)}
 					<div className={styles.controls}>
 						<input
 							ref={attachmentInput}
@@ -1129,6 +1146,7 @@ function AgentPanel() {
 						>
 							<Paperclip size={14} />
 						</UiLocalized>
+						<DictationControls draft={draft} dictation={dictation} />
 						<div className={styles.providerControls}>
 							<UiLocalized<"select">
 								element={"select"}

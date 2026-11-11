@@ -1,7 +1,7 @@
 import { createZipBlob } from "@/project/archive/zip";
 import { companionSetupSchema, type CompanionSetup } from "./companion/setup";
 
-const companion = "pocut-companion-v3";
+const companion = "pocut-companion-v4";
 export const PAIRING_PACKAGE_NAME = "POCUT-Pairing-Instructions.zip";
 
 const instructions = `# Set up the POCUT AI companion
@@ -69,7 +69,7 @@ export async function createPairingPackage({
 		byte.toString(16).padStart(2, "0"),
 	).join("");
 	if (
-		manifest?.version !== 3 ||
+		manifest?.version !== 4 ||
 		manifest.filename !== `${companion}.mjs` ||
 		manifest.bytes !== binary.byteLength ||
 		manifest.sha256 !== sha256

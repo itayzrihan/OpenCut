@@ -173,12 +173,18 @@ async function manageInstallation({
 	});
 	if (install) {
 		const source = fileURLToPath(import.meta.url);
-		if (source !== control.executable) {
+		const updating =
+			source !== control.executable && (await exists(control.executable));
+		const changed =
+			updating &&
+			!(await readFile(source)).equals(await readFile(control.executable));
+		if (source !== control.executable && (!updating || changed)) {
 			const pending = `${control.executable}.${process.pid}.tmp`;
 			await copyFile(source, pending);
 			await rename(pending, control.executable);
 		}
 		await writeFile(control.config, JSON.stringify(setup), { mode: 0o600 });
+		if (changed) await control.stop();
 		await control.start();
 		if (!desktop) {
 			console.log(

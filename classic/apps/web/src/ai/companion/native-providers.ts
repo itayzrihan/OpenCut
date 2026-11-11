@@ -240,7 +240,7 @@ export class CodexProvider implements NativeProvider {
 					model: request.model,
 					cwd: workspace,
 					ephemeral: true,
-					sandbox: "read-only",
+					permissions: "pocut",
 					approvalPolicy: "never",
 					allowProviderModelFallback: false,
 					selectedCapabilityRoots: [],
@@ -248,15 +248,27 @@ export class CodexProvider implements NativeProvider {
 						features: { image_generation: image },
 						web_search: "disabled",
 						mcp_servers: {},
+						permissions: {
+							pocut: {
+								filesystem: { ":minimal": "read", [workspace]: "read" },
+								network: { enabled: false },
+							},
+						},
 					},
 					baseInstructions: image
 						? "Generate only the requested image using the built-in image generation tool. Save generated output inside the current working directory. Never run commands, open local files, install software, call MCP tools, or use a browser."
 						: "You only produce structured POCUT editing proposals. Never execute tools or access the local filesystem or network. The browser validates and executes proposed actions.",
 				},
 			});
-			const id = z
-				.object({ thread: z.object({ id: z.string() }) })
-				.parse(thread).thread.id;
+			const startedThread = z
+				.object({
+					thread: z.object({ id: z.string() }),
+					activePermissionProfile: z.object({ id: z.string() }).nullish(),
+				})
+				.parse(thread);
+			const id = startedThread.thread.id;
+			const usesNamedPermissions =
+				startedThread.activePermissionProfile?.id === "pocut";
 			const items: unknown[] = [];
 
 			await new Promise<void>((resolve, reject) => {
@@ -310,20 +322,31 @@ export class CodexProvider implements NativeProvider {
 							input,
 							model: request.model,
 							approvalPolicy: "never",
-							sandboxPolicy: {
-								type: "readOnly",
-								access: {
-									type: "restricted",
-									includePlatformDefaults: true,
-									readableRoots: [workspace],
-								},
-							},
+							// New CLI versions inherit the restricted thread profile. Older
+							// versions omit activePermissionProfile and use legacy access.
+							...(!usesNamedPermissions
+								? {
+										sandboxPolicy: {
+											type: "readOnly",
+											access: {
+												type: "restricted",
+												includePlatformDefaults: true,
+												readableRoots: [workspace],
+											},
+										},
+									}
+								: {}),
 							...(image ? {} : { outputSchema: proposalSchema(request) }),
 						},
 					})
 					.then(
 						() => {},
-						() => done(new Error("Codex could not start this request")),
+						(cause: unknown) =>
+							done(
+								cause instanceof Error
+									? cause
+									: new Error("Codex could not start this request"),
+							),
 					);
 			});
 			if (image) {

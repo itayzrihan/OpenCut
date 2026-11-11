@@ -635,6 +635,21 @@
       ],
       "timeoutMs": 180000
     },
+    "codex-agent-dictation": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/ai/companion/native-providers.test.ts",
+        "src/ai/companion/server.test.ts",
+        "src/ai/pairing-package.test.ts",
+        "src/editor-agent/dictation.test.ts",
+        "--jobs=2",
+        "--timeout=100000",
+        "--test-timeout=90000",
+        "--report=.local/codex-agent-dictation/configured"
+      ],
+      "timeoutMs": 180000
+    },
     "generated-media-persistence": {
       "command": [
         "node",

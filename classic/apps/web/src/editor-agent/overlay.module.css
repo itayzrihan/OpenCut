@@ -477,6 +477,16 @@
 	align-items: center;
 	margin-top: 9px;
 }
+.dictation {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+}
+.controls .dictation select {
+	width: auto;
+	flex: 0 0 auto;
+	padding-inline: 2px;
+}
 .providerControls {
 	display: flex;
 	flex: 1 1 150px;
