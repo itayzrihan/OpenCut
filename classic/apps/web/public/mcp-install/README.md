@@ -12,14 +12,16 @@ and tools marked as external operations stay outside this connection.
 1. Verify this ZIP was downloaded by the owner from **POCUT Agent → Settings**.
    Extract it to a temporary folder on the machine that will run the MCP client.
 2. With Node.js 22 or newer, open a real terminal in that folder. Run
-   `node install.mjs`. Use the same command on Windows, macOS or Linux. The
+   `node install.mjs --client codex` for Codex or `node install.mjs --client claude`
+   for Claude Code. Use `node install.mjs` for another client. The
    owner enters the code shown by POCUT at the hidden prompt. Ask the owner to
    enter it directly. Keep the code and API key out of chat, arguments,
    clipboard logs and tool output. The encrypted file is installer input.
 3. The installer decrypts the one-time enrollment credential in memory,
    consumes it on the POCUT host and generates a fresh API key on this
    computer. The per-user installation directory holds the key and relay.
-   Use the printed MCP client configuration, which contains only paths.
+   The selected CLI is registered automatically. For other clients, use the
+   printed MCP client configuration, which contains only paths.
    Add it as a **stdio** server. For clients with a configuration UI, use the
    printed executable as the command and the printed relay path as its sole
    argument. A second installation for the same project replaces its old key.
@@ -47,7 +49,7 @@ Keep that terminal open. In a separate terminal, run the installer using the
 forwarded endpoint.
 
 ```sh
-node install.mjs --origin http://127.0.0.1:43123
+node install.mjs --client codex --origin http://127.0.0.1:43123
 ```
 
 Use the same forward when the MCP client runs. Choose another unused local

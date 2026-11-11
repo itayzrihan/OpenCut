@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { mkdir, mkdtemp, readFile, realpath, rm, stat } from "node:fs/promises";
-import { join, sep } from "node:path";
+import { isAbsolute, join, relative, sep } from "node:path";
 import { CodexRpc, runChild, type SpawnChild } from "./child";
 import {
 	planningPrompt,
@@ -256,7 +256,7 @@ export class CodexProvider implements NativeProvider {
 						},
 					},
 					baseInstructions: image
-						? "Generate only the requested image using the built-in image generation tool. Save generated output inside the current working directory. Never run commands, open local files, install software, call MCP tools, or use a browser."
+						? "Use the built-in image generation tool to generate the requested image. Return its native image result. Never run commands, open local files, install software, call MCP tools, or use a browser."
 						: "You only produce structured POCUT editing proposals. Never execute tools or access the local filesystem or network. The browser validates and executes proposed actions.",
 				},
 			});
@@ -363,6 +363,11 @@ export class CodexProvider implements NativeProvider {
 							.safeParse(item),
 					)
 					.find((item) => item.success && !item.data.failure)?.data;
+				if (!generated && items.some((item) => z.object({
+					type: z.literal("imageGeneration"), failure: z.object({ type: z.literal("usageLimitExceeded") }),
+				}).safeParse(item).success)) {
+					throw new Error("Your Codex image generation limit was reached. Check ChatGPT usage before trying again.");
+				}
 				if (!generated)
 					throw new Error(
 						"Codex completed without a generated image. No image was imported.",
@@ -375,7 +380,8 @@ export class CodexProvider implements NativeProvider {
 					);
 				const path = await realpath(generated.savedPath),
 					home = await realpath(this.options.root);
-				if (!path.startsWith(home + sep))
+				const insideProfile = relative(home, path);
+				if (!insideProfile || isAbsolute(insideProfile) || insideProfile === ".." || insideProfile.startsWith(`..${sep}`))
 					throw new Error(
 						"Generated output was outside the private POCUT profile",
 					);
@@ -422,7 +428,9 @@ export class CodexProvider implements NativeProvider {
 		request: ImageRequest;
 		signal: AbortSignal;
 	}) {
-		if (!(await this.status()).imageGenerationSupported) return denied();
+		const status = await this.status();
+		if (!status.connected) throw new Error(status.error ?? "Connect Codex with your ChatGPT subscription first.");
+		if (!status.imageGenerationSupported) throw new Error("This Codex connection does not advertise native image generation. Update the official Codex CLI, restart the Companion, and use Check Connection.");
 		const models = await this.models(signal);
 		const model = request.model ?? models[0]?.id;
 		if (!model) throw new Error("No Codex model is available");

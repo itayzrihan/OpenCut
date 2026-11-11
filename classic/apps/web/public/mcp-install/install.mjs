@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { Writable } from "node:stream";
 import { fileURLToPath } from "node:url";
+import { registerMcpClient } from "./client-cli.mjs";
 
 const bundleDirectory = dirname(fileURLToPath(import.meta.url));
 const encryptedPath = join(bundleDirectory, "POCUT-MCP-ENCRYPTED-DO-NOT-READ.json");
@@ -60,12 +61,17 @@ async function verify(url, key) {
 
 async function install() {
 	const args = process.argv.slice(2);
-	if (args.length && (args.length !== 2 || args[0] !== "--origin"))
-		throw new Error("Usage: node install.mjs [--origin http://127.0.0.1:43123]");
+	let client, originOverride;
+	for (let i = 0; i < args.length; i += 2) {
+		const [option, value] = args.slice(i, i + 2);
+		if (option === "--client" && !client && ["codex", "claude"].includes(value)) client = value;
+		else if (option === "--origin" && !originOverride && value && !value.startsWith("--")) originOverride = value;
+		else throw new Error("Usage: node install.mjs [--client codex|claude] [--origin http://127.0.0.1:43123]");
+	}
 	const { activation, origin } = await unseal(await readCode());
 	const match = /^pocut-setup\.([a-f0-9-]{36})\.([a-f0-9]{64})\.[\w-]{43}$/.exec(activation);
 	if (!match) throw new Error("Invalid encrypted POCUT bundle.");
-	const url = endpoint(args[1] ?? origin);
+	const url = endpoint(originOverride ?? origin);
 	const account = match[1];
 	const project = match[2];
 	const configRoot = process.platform === "win32"
@@ -117,9 +123,16 @@ async function install() {
 	if (!status.ok) throw new Error("Keep the linked project open in POCUT and rerun this installer to verify the connection.");
 	await writeFile(pendingFile, JSON.stringify(config), { mode: 0o600, flag: "w" });
 	await rename(pendingFile, configFile);
+	const name = `pocut-${project.slice(0, 8)}`;
+	if (client) await registerMcpClient({ client, name, command: process.execPath, relay });
 	await rm(encryptedPath, { force: true });
-	console.log(JSON.stringify({ mcpServers: { [`pocut-${project.slice(0, 8)}`]: { command: process.execPath, args: [relay] } } }, null, 2));
-	console.error("Connection verified. Add the printed configuration to the MCP client, restart it and verify tools/list. Then delete the original ZIP and the extracted setup folder.");
+	if (client) {
+		console.log(`Connection verified and ${name} registered in ${client}. Restart or reload the client, then check tools/list for the linked project.`);
+	} else {
+		console.log(JSON.stringify({ mcpServers: { [name]: { command: process.execPath, args: [relay] } } }, null, 2));
+		console.error("Connection verified. Add the printed configuration to the MCP client, restart it and verify tools/list.");
+	}
+	console.error("Delete the original ZIP and the extracted setup folder after the client connects.");
 }
 
 install().catch((error) => {

@@ -1,7 +1,7 @@
 import { createZipBlob } from "@/project/archive/zip";
 import { companionSetupSchema, type CompanionSetup } from "./companion/setup";
 
-const companion = "pocut-companion-v4";
+const companion = "pocut-companion-v5";
 export const PAIRING_PACKAGE_NAME = "POCUT-Pairing-Instructions.zip";
 
 const instructions = `# Set up the POCUT AI companion
@@ -42,7 +42,21 @@ where the user has POCUT open. A remote terminal cannot install a local companio
 
          node pocut-companion.mjs POCUT-Setup.json --login-claude
 
-4. Confirm POCUT shows the green connected status. **Check Connection** can
+4. Set up the project MCP in the same local Codex or Claude Code client.
+   In the local POCUT editor, keep the saved project open and ask the owner to
+   download **Agent → Settings → Install editor MCP → Download MCP ZIP**.
+   Extract that separate ZIP and run the command for the chosen client:
+
+       node install.mjs --client codex
+       node install.mjs --client claude
+
+   Run only the selected command in a real terminal. The owner enters the
+   project's one-time code at the hidden prompt. The installer verifies the
+   relay and registers it in the selected client's local profile automatically.
+   Restart or reload that client, check tools/list and read the linked project.
+   A hosted browser workspace can pair the subscription here. Project MCP
+   enrollment needs a saved project open in a local POCUT editor.
+5. Confirm POCUT shows the green connected status. **Check Connection** can
    verify an existing connection. Ask the user to enter credentials directly
    with their provider. Report any remaining steps accurately. Keep credentials
    and local pairing data out of the conversation.
@@ -69,7 +83,7 @@ export async function createPairingPackage({
 		byte.toString(16).padStart(2, "0"),
 	).join("");
 	if (
-		manifest?.version !== 4 ||
+		manifest?.version !== 5 ||
 		manifest.filename !== `${companion}.mjs` ||
 		manifest.bytes !== binary.byteLength ||
 		manifest.sha256 !== sha256

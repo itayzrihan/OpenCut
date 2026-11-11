@@ -19,7 +19,7 @@ const png = Buffer.concat([
 	Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
 	Buffer.alloc(32),
 ]).toString("base64");
-async function fixture({ hold = false, legacy = false } = {}) {
+async function fixture({ hold = false, legacy = false, imageFile = false } = {}) {
 	const root = await mkdtemp(join(tmpdir(), "pocut-native-test-"));
 	const executable = join(root, "mock-provider.cjs");
 	await writeFile(
@@ -30,7 +30,7 @@ fs.appendFileSync(log,JSON.stringify({args:process.argv.slice(2),codexHome:proce
 if(process.argv.includes('--version')){console.log('Claude Code 2.1.248');process.exit();}
 if(process.argv[2]==='auth'){console.log(JSON.stringify({loggedIn:true,authMethod:'claude.ai',email:'fixture@example.test'}));process.exit();}
 if(process.argv.includes('-p')){let input='';process.stdin.on('data',d=>input+=d);process.stdin.on('end',()=>{fs.appendFileSync(log,JSON.stringify({input:JSON.parse(input)})+'\\n');console.log(JSON.stringify({type:'result',subtype:'success',structured_output:{text:'Claude plan',calls:[]}}));});}
-else readline.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line);fs.appendFileSync(log,JSON.stringify(m)+'\\n');if(!m.method)return;let result={};switch(m.method){case'account/read':result={account:{type:'chatgpt',email:'fixture@example.test'}};break;case'modelProvider/capabilities/read':result={imageGeneration:true};break;case'model/list':result={data:[{id:'fixture',model:'fixture-model',displayName:'Fixture',supportedReasoningEfforts:[]}]};break;case'account/login/start':result={authUrl:'https://auth.openai.com/authorize?fixture=1'};break;case'thread/start':result={thread:{id:'thread-fixture'},...(!${JSON.stringify(legacy)}&&{activePermissionProfile:{id:m.params.permissions}})};break;case'turn/start':if(!${JSON.stringify(legacy)}&&m.params.sandboxPolicy?.access){say({id:m.id,error:{code:-32600,message:'readOnly.access is no longer supported'}});return;}result={turn:{id:'turn-fixture'}};break;}if(m.id!==undefined)say({id:m.id,result});if(m.method==='turn/start'&&!${JSON.stringify(hold)}){say({id:900,method:'item/commandExecution/requestApproval',params:{}});say({method:'item/completed',params:{threadId:'thread-fixture',item:m.params.outputSchema?{type:'agentMessage',text:JSON.stringify({text:'Proposed edit',calls:[]})}:{type:'imageGeneration',status:'completed',result:${JSON.stringify(png)}}}});say({method:'turn/completed',params:{threadId:'thread-fixture',turn:{status:'completed'}}});}});
+else readline.createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line);fs.appendFileSync(log,JSON.stringify(m)+'\\n');if(!m.method)return;let result={};switch(m.method){case'account/read':result={account:{type:'chatgpt',email:'fixture@example.test'}};break;case'modelProvider/capabilities/read':result={imageGeneration:true};break;case'model/list':result={data:[{id:'fixture',model:'fixture-model',displayName:'Fixture',supportedReasoningEfforts:[]}]};break;case'account/login/start':result={authUrl:'https://auth.openai.com/authorize?fixture=1'};break;case'thread/start':result={thread:{id:'thread-fixture'},...(!${JSON.stringify(legacy)}&&{activePermissionProfile:{id:m.params.permissions}})};break;case'turn/start':if(!${JSON.stringify(legacy)}&&m.params.sandboxPolicy?.access){say({id:m.id,error:{code:-32600,message:'readOnly.access is no longer supported'}});return;}result={turn:{id:'turn-fixture'}};break;}if(m.id!==undefined)say({id:m.id,result});if(m.method==='turn/start'&&!${JSON.stringify(hold)}){say({id:900,method:'item/commandExecution/requestApproval',params:{}});say({method:'item/completed',params:{threadId:'thread-fixture',item:m.params.outputSchema?{type:'agentMessage',text:JSON.stringify({text:'Proposed edit',calls:[]})}:{type:'imageGeneration',status:'completed',...(${JSON.stringify(imageFile)}?{savedPath:(()=>{const file=path.join(process.env.CODEX_HOME,'generated.png');fs.writeFileSync(file,Buffer.from(${JSON.stringify(png)},'base64'));return file})()}:{result:${JSON.stringify(png)}})}}});say({method:'turn/completed',params:{threadId:'thread-fixture',turn:{status:'completed'}}});}});
 `,
 		{ mode: 0o700 },
 	);
@@ -94,6 +94,18 @@ test("native Codex uses isolated official protocol, structured proposals and nat
 			network: { enabled: false },
 		});
 		expect(turns[0].params.outputSchema.properties.calls.maxItems).toBe(0);
+	} finally {
+		provider.close();
+		await rm(f.root, { recursive: true, force: true });
+	}
+});
+
+test("Codex imports the savedPath image result from its private profile", async () => {
+	const f = await fixture({ imageFile: true });
+	const provider = new CodexProvider({ root: f.root, executable: f.executable });
+	try {
+		const image = await provider.image({ request: { projectId: "p", operationId: "file", prompt: "A lighthouse", references: [], confirmed: true }, signal: new AbortController().signal });
+		expect(image).toEqual({ base64: png, mimeType: "image/png" });
 	} finally {
 		provider.close();
 		await rm(f.root, { recursive: true, force: true });

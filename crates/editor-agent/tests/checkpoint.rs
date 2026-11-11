@@ -352,3 +352,63 @@ async fn recovery_retains_only_identical_live_descriptions_without_authority_or_
     .unwrap();
     assert!(legacy.run().contracts().descriptors().is_empty());
 }
+
+#[tokio::test]
+async fn missing_image_reference_on_reopen_keeps_project_and_records_interrupted_action() {
+    let (runtime, agent) = setup().await;
+    let bridge = HostBridge::default();
+    opencut_editor_api::register_editor_image_generation(&runtime, &bridge).unwrap();
+    let mut agent = agent.with_host_bridge(bridge);
+    agent
+        .describe(agent.run().epoch(), "imagegen.generate")
+        .unwrap();
+    plan(&mut agent, PlanStatus::InProgress);
+    let reference = runtime
+        .artifacts()
+        .put(
+            b"synthetic image reference".to_vec(),
+            "image/png",
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+    let round = agent.provider_response(agent.run().epoch(), json!({
+        "id":"image-response", "status":"completed", "output":[{
+            "type":"function_call","call_id":"image-call","name":"opencut_editor",
+            "arguments":json!({"action":"invoke","id":"imagegen.generate","input":{
+                "operationId":"same-image-operation","title":"Hero","prompt":"A blue square",
+                "referenceArtifactIds":[reference.uri]
+            }}).to_string()
+        }]
+    })).unwrap();
+    assert_eq!(round.pending_host.unwrap().adapter, "subscriptionImage");
+    let checkpoint = agent.checkpoint().unwrap();
+    let reopened = reopen(archive(&runtime).await).await;
+    let bridge = HostBridge::default();
+    opencut_editor_api::register_editor_image_generation(&reopened, &bridge).unwrap();
+    let revision = reopened.snapshot().unwrap().revision;
+    let mut recovered = RuntimeAgent::restore_checkpoint(
+        reopened.clone(),
+        "alice",
+        "classic-project",
+        AccessLevel::Write,
+        Some(bridge),
+        &checkpoint,
+    )
+    .unwrap();
+    assert_eq!(recovered.run().phase(), RunPhase::Paused);
+    assert!(recovered.pending_host_effect().unwrap().is_none());
+    assert_eq!(reopened.snapshot().unwrap().revision, revision);
+    let receipt = recovered.run().receipts().last().unwrap();
+    assert_eq!(receipt.call_id, "image-call");
+    assert!(!receipt.committed);
+    recovered.resume(&recovered.run().scope().clone()).unwrap();
+    let context = recovered
+        .provider_request("fixture-model")
+        .unwrap()
+        .body
+        .to_string();
+    assert!(context.contains("function_call_output"));
+    assert!(context.contains("artifact"));
+}

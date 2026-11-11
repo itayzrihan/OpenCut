@@ -1,6 +1,6 @@
 import { createZipBlob } from "@/project/archive/zip";
 
-const assets = ["README.md", "install.mjs", "pocut-mcp.mjs"];
+const assets = ["README.md", "install.mjs", "pocut-mcp.mjs", "client-cli.mjs"];
 
 function base64url(bytes: Uint8Array) {
 	return btoa(String.fromCharCode(...bytes))
