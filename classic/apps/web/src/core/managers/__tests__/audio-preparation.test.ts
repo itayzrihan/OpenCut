@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 /* eslint-disable opencut/prefer-object-params -- Test doubles implement positional Web Audio and Mediabunny APIs. */
 /* eslint-disable @typescript-eslint/no-unsafe-type-assertion -- Browser audio nodes are deterministic test doubles; exercise the real manager and retiming code. */
 import { expect, mock, test } from "bun:test";
@@ -7,6 +8,8 @@ import { TICKS_PER_SECOND } from "@/wasm";
 
 const ranges: number[][] = [];
 const starts: number[][] = [];
+const scheduledRates: number[] = [];
+let previewRate = 1;
 const buffer = (channels: number, length: number, sampleRate: number) => {
 	const data = Array.from({ length: channels }, () =>
 		new Float32Array(length).fill(0.25),
@@ -38,13 +41,20 @@ const context = {
 	destination: {},
 	createBuffer: buffer,
 	createGain: gain,
-	createBufferSource: () => ({
-		buffer: null,
-		connect() {},
-		disconnect() {},
-		addEventListener() {},
-		start: (...args: number[]) => starts.push(args),
-	}),
+	createBufferSource: () => {
+		const playbackRate = { value: 1 };
+		return {
+			buffer: null,
+			playbackRate,
+			connect() {},
+			disconnect() {},
+			addEventListener() {},
+			start: (...args: number[]) => {
+				starts.push(args);
+				scheduledRates.push(playbackRate.value);
+			},
+		};
+	},
 };
 mock.module("@/media/audio", () => ({
 	createAudioContext: () => context,
@@ -78,6 +88,7 @@ const noopSubscribe = () => () => {};
 const editor = {
 	playback: {
 		getVolume: () => 1,
+		getRate: () => previewRate,
 		registerPlaybackPreparer: noopSubscribe,
 		subscribe: noopSubscribe,
 		onSeek: noopSubscribe,
@@ -170,6 +181,30 @@ test("adjacent prepared windows schedule without overlap and stop at the cut", a
 	for (let i = 0; i < 2; i++)
 		expect(starts[i][0] + starts[i][2]).toBeCloseTo(starts[i + 1][0], 7);
 	expect(starts[2][2]).toBeCloseTo(0.5, 7);
+});
+
+test("2× preview audio windows advance twice as fast without gaps or overlaps", async () => {
+	starts.length = 0;
+	scheduledRates.length = 0;
+	previewRate = 2;
+	const m = manager();
+	m.audioContext = context;
+	try {
+		for (const time of [54.2, 56, 58]) {
+			await m.schedulePreparedWindow({
+				clip: m.getPreparedWindow({ clip, time }),
+				automationClip: clip,
+				startTime: time,
+				sessionId: 0,
+			});
+		}
+		expect(scheduledRates).toEqual([2, 2, 2]);
+		for (let i = 0; i < 2; i++)
+			expect(starts[i][0] + starts[i][2] / 2).toBeCloseTo(starts[i + 1][0], 7);
+		expect(starts[2][0] + starts[2][2] / 2).toBeCloseTo(12.15, 7);
+	} finally {
+		previewRate = 1;
+	}
 });
 test("retiming, pitch and audio sync retain the existing complete-buffer path", () => {
 	const m = manager();

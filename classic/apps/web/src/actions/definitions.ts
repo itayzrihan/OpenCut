@@ -30,6 +30,18 @@ export const ACTIONS = {
 		description: "Stop playback",
 		category: "playback",
 	},
+	"playback-faster": {
+		description: "Increase preview speed",
+		category: "playback",
+	},
+	"playback-slower": {
+		description: "Decrease preview speed",
+		category: "playback",
+	},
+	"playback-normal-speed": {
+		description: "Reset preview speed to 1×",
+		category: "playback",
+	},
 	"seek-forward": {
 		description: "Seek forward 1 second",
 		category: "playback",
@@ -181,9 +193,10 @@ export const ACTIONS = {
 export type TAction = keyof typeof ACTIONS;
 
 const ACTION_DEFAULT_SHORTCUTS = [
-	["toggle-play", ["space", "k"]],
-	["seek-forward", ["l"]],
-	["seek-backward", ["j"]],
+	["toggle-play", ["space"]],
+	["playback-faster", ["l"]],
+	["playback-slower", ["j"]],
+	["playback-normal-speed", ["k"]],
 	["frame-step-forward", ["right"]],
 	["frame-step-backward", ["left"]],
 	["jump-forward", ["shift+right"]],

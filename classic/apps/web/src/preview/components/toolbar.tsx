@@ -59,7 +59,10 @@ export function PreviewToolbar({
 		<div className="grid grid-cols-[1fr_auto_1fr] items-center pb-3 pt-5 px-5">
 			<PerformancePanel />
 			<TimecodeDisplay />
-			<PlayPauseButton />
+			<div className="flex items-center gap-1">
+				<PlayPauseButton />
+				<PlaybackSpeedButton />
+			</div>
 			<div className="justify-self-end flex items-center gap-2.5">
 				<ZoomSelect />
 				<Separator orientation="vertical" className="h-4" />
@@ -201,6 +204,25 @@ function ZoomSelect() {
 				))}
 			</SelectContent>
 		</Select>
+	);
+}
+
+function PlaybackSpeedButton() {
+	const rate = useEditorPlayback((e) => e.playback.getRate());
+	const { t } = useInterfaceLanguage();
+	const label = `${rate}×`;
+	return (
+		<Button
+			variant="text"
+			size="sm"
+			className="min-w-10 px-1 tabular-nums"
+			dir="ltr"
+			aria-label={t("Preview speed {v0}", { v0: label })}
+			title={t("Increase preview speed")}
+			onClick={() => invokeAction("playback-faster")}
+		>
+			{label}
+		</Button>
 	);
 }
 

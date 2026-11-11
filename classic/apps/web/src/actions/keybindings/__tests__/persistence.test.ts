@@ -139,6 +139,28 @@ describe("keybinding persistence", () => {
 		expect(decoded.keybindings.get("a+t")).toBe("toggle-bookmark");
 		expect(warnSpy).not.toHaveBeenCalled();
 	});
+
+	test("upgrades legacy JKL defaults while retaining customized bindings", () => {
+		const migrated = migratePersistedKeybindingsState({
+			fromVersion: 9,
+			state: {
+				isCustomized: true,
+				keybindings: {
+					j: "seek-backward",
+					k: "toggle-bookmark",
+					l: "seek-forward",
+					space: "toggle-play",
+				},
+			},
+		});
+		const decoded = decodePersistedKeybindingsState({ state: migrated });
+		expect(Object.fromEntries(decoded?.keybindings ?? [])).toEqual({
+			j: "playback-slower",
+			k: "toggle-bookmark",
+			l: "playback-faster",
+			space: "toggle-play",
+		});
+	});
 });
 
 describe("parseImportedKeybindings", () => {

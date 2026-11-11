@@ -105,6 +105,38 @@ describe("audio sync", () => {
 		).toBe(0);
 	});
 
+	test("4× preview translates context lateness before trimming retimed streaming audio", () => {
+		expect(
+			getAudioContextStartTime({
+				audibleContextTime: 10,
+				playbackTime: 4,
+				timelineTime: 6,
+				previewRate: 4,
+			}),
+		).toBe(10.5);
+		expect(
+			getStreamingSourceDuration({
+				bufferDuration: 10,
+				sourceOffset: 2,
+				playbackRate: 2,
+				bufferTimelineTime: 4,
+				clipEndTime: 6,
+				contextLateness: 0.25,
+				previewRate: 4,
+			}),
+		).toBe(2);
+		expect(
+			getAudioRecoveryTimelineTime({
+				bufferTimelineTime: 4,
+				contextStartTime: 10,
+				currentContextTime: 10.25,
+				playbackTime: 4.5,
+				safetyMargin: 0,
+				previewRate: 4,
+			}),
+		).toBe(5);
+	});
+
 	test("retimes parent audio when a parallax scene uses a different duration", () => {
 		expect(
 			mapRetimeToTimelineScale({

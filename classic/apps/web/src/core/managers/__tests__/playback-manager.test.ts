@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import { afterEach, describe, expect, test } from "bun:test";
 import {
 	PlaybackManager,
@@ -126,6 +127,38 @@ describe("playback manager", () => {
 		expect(playback.getCurrentTime()).toBe(mediaTime({ ticks: 0 }));
 		expect(playback.getClockTime()).toBe(
 			mediaTimeFromSeconds({ seconds: 0.75 }),
+		);
+	});
+
+	test("a speed change keeps the playhead continuous and scales elapsed time", () => {
+		installMockClock();
+		const playback = createPlaybackManager();
+		playback.play();
+		now = 500;
+		playback.applyRate({ rate: 1.5 });
+		expect(playback.getClockTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 0.5 }),
+		);
+		runPendingFrame({ atMs: 1500 });
+		expect(playback.getCurrentTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 2 }),
+		);
+		playback.applyRate({ rate: 4 });
+		playback.seek({ time: mediaTimeFromSeconds({ seconds: 3 }) });
+		runPendingFrame({ atMs: 2000 });
+		expect(playback.getCurrentTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 5 }),
+		);
+		playback.applyRate({ rate: 1 });
+		runPendingFrame({ atMs: 2500 });
+		expect(playback.getCurrentTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 5.5 }),
+		);
+		playback.pause();
+		playback.applyRate({ rate: 2 });
+		expect(playback.getIsPlaying()).toBe(false);
+		expect(playback.getClockTime()).toBe(
+			mediaTimeFromSeconds({ seconds: 5.5 }),
 		);
 	});
 

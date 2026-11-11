@@ -87,6 +87,22 @@ export function useEditorActions() {
 	);
 
 	useActionHandler(
+		"playback-faster",
+		() => editor.command.changeClassicPreviewSpeed({ change: "faster" }),
+		undefined,
+	);
+	useActionHandler(
+		"playback-slower",
+		() => editor.command.changeClassicPreviewSpeed({ change: "slower" }),
+		undefined,
+	);
+	useActionHandler(
+		"playback-normal-speed",
+		() => editor.command.changeClassicPreviewSpeed({ change: "normal" }),
+		undefined,
+	);
+
+	useActionHandler(
 		"seek-forward",
 		(args) => {
 			const seconds = args?.seconds ?? 1;

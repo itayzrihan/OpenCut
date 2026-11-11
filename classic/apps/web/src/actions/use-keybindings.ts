@@ -72,7 +72,11 @@ export function useKeybindingsListener() {
 			if (isTextInput) return;
 			if (
 				ev.repeat &&
-				(boundAction === "trim-start" || boundAction === "trim-end")
+				(boundAction === "trim-start" ||
+					boundAction === "trim-end" ||
+					boundAction === "playback-faster" ||
+					boundAction === "playback-slower" ||
+					boundAction === "playback-normal-speed")
 			)
 				return;
 			if (boundAction === "paste-copied") {

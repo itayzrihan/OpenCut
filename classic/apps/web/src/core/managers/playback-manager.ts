@@ -49,6 +49,7 @@ export class PlaybackManager {
 	private isPlaying = false;
 	private isBuffering = false;
 	private currentTime: MediaTime = ZERO_MEDIA_TIME;
+	private rate = 1;
 	private volume = 1;
 	private muted = false;
 	private previousVolume = 1;
@@ -285,13 +286,31 @@ export class PlaybackManager {
 		return this.currentTime;
 	}
 
-	getClockTime(): MediaTime {
-		if (!this.isPlaying) {
-			return this.currentTime;
-		}
+	getRate(): number {
+		return this.rate;
+	}
 
+	/** Project the canonical viewer rate onto the continuous browser clock. */
+	applyRate({ rate }: { rate: number }): void {
+		if (this.rate === rate) return;
+		if (this.isPlaying) {
+			const now = performance.now();
+			this.playbackStartTime = this.getClockTimeAt(now);
+			this.playbackStartWallTime = now;
+		}
+		this.rate = rate;
+		this.notify();
+	}
+
+	getClockTime(): MediaTime {
+		return this.isPlaying
+			? this.getClockTimeAt(performance.now())
+			: this.currentTime;
+	}
+
+	private getClockTimeAt(now: number): MediaTime {
 		const elapsedSeconds =
-			(performance.now() - this.playbackStartWallTime) / 1000;
+			((now - this.playbackStartWallTime) / 1000) * this.rate;
 		const rawTime = addMediaTime({
 			a: this.playbackStartTime,
 			b: mediaTimeFromSeconds({ seconds: elapsedSeconds }),

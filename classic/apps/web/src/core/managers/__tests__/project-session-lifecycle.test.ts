@@ -209,6 +209,7 @@ function host() {
 			},
 		},
 		selection: { getSnapshot: () => selection, restoreSnapshot: () => {} },
+		playback: { applyRate: () => {} },
 	} as unknown as EditorCore;
 	const project = new ProjectManager(editor);
 	const command = new CommandManager(editor);

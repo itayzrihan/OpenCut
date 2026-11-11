@@ -882,6 +882,28 @@ export class CanonicalClassicSession {
 		});
 	}
 
+	changePreviewSpeed({
+		change,
+	}: {
+		change: "faster" | "slower" | "normal";
+	}): number {
+		return this.call<{ rate: number }>({
+			capability: "playback.classic.speed.change",
+			input: {
+				projectId: this.projectId,
+				expectedRevision: this.status().revision,
+				change,
+			},
+		}).rate;
+	}
+
+	readPreviewSpeed(): number {
+		return this.call<{ value: number }>({
+			capability: "app.state.read",
+			input: { projectId: this.projectId, pointer: "/playback/rate" },
+		}).value;
+	}
+
 	editScene(change: ClassicSceneChange): void {
 		const target = {
 			projectId: this.projectId,

@@ -274,7 +274,7 @@ function createHost(initial?: { project: TProject; media: MediaAsset[] }) {
 			resume: () => undefined,
 			markDirty: () => undefined,
 		},
-		playback: { pause: () => {}, seek: () => {} },
+		playback: { pause: () => {}, seek: () => {}, applyRate: () => {} },
 	} as unknown as EditorCore;
 	const manager = new CommandManager(editor);
 	const scenes = new ScenesManager(editor);

@@ -564,6 +564,23 @@
       ],
       "timeoutMs": 600000
     },
+    "classic-preview-speed": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/actions/keybindings/__tests__/persistence.test.ts",
+        "src/core/managers/__tests__/playback-manager.test.ts",
+        "src/core/managers/__tests__/audio-sync.test.ts",
+        "src/core/managers/__tests__/audio-preparation.test.ts",
+        "src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "src/core/managers/__tests__/project-session-lifecycle.test.ts",
+        "--jobs=3",
+        "--timeout=210000",
+        "--test-timeout=120000",
+        "--report=.local/preview-shuttle/configured"
+      ],
+      "timeoutMs": 260000
+    },
     "classic-asset-rename": {
       "command": [
         "cargo",

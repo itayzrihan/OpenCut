@@ -999,6 +999,19 @@ export class CommandManager {
 			});
 	}
 
+	changeClassicPreviewSpeed(
+		input: Parameters<CanonicalClassicSession["changePreviewSpeed"]>[0],
+	): void {
+		const session = this.canonical;
+		if (
+			!session ||
+			session.projectId !== this.editor.project.getActiveOrNull()?.metadata.id
+		)
+			return;
+		this.editor.playback.applyRate({ rate: session.changePreviewSpeed(input) });
+		if (input.change === "faster") this.editor.playback.play();
+	}
+
 	getClassicViewport(): import("@/project/types").TTimelineViewState | null {
 		const view = this.canonical?.currentSceneView().viewport;
 		if (!view) {
@@ -1947,6 +1960,10 @@ export class CommandManager {
 				}),
 			);
 			if (!current()) throw new Error("The canonical MCP scope changed");
+			const previewSpeedChanged =
+				capabilityId === "playback.classic.speed.change" &&
+				!context.dryRun &&
+				this.applyClassicPreviewSpeed({ session });
 			let bytes = 0;
 			const artifacts = receipt.result.artifacts.map((metadata) => {
 				const artifact = session.readConversationArtifact(metadata.id);
@@ -1964,7 +1981,7 @@ export class CommandManager {
 			return {
 				output: receipt.result.data,
 				artifacts,
-				applied: session.status().revision !== revision,
+				applied: previewSpeedChanged || session.status().revision !== revision,
 				revision: session.status().revision,
 			};
 		} finally {
@@ -1980,6 +1997,17 @@ export class CommandManager {
 
 	getCanonicalRevision(): number | undefined {
 		return this.canonical?.status().revision;
+	}
+
+	private applyClassicPreviewSpeed({
+		session,
+	}: {
+		session: CanonicalClassicSession;
+	}): boolean {
+		const rate = session.readPreviewSpeed();
+		if (rate === this.editor.playback.getRate()) return false;
+		this.editor.playback.applyRate({ rate });
+		return true;
 	}
 
 	/** Selection is presentation state; it never creates a content transaction. */
@@ -3532,7 +3560,10 @@ export class CommandManager {
 		this.unsubscribeAnimationCatalog?.();
 		this.unsubscribeAnimationCatalog = null;
 		this.maskPreview = null;
-		this.canonical?.dispose();
+		if (this.canonical) {
+			this.canonical.dispose();
+			this.editor.playback.applyRate({ rate: 1 });
+		}
 		this.canonical = null;
 		this.canonicalArchive = null;
 		this.sessionPersistence = null;

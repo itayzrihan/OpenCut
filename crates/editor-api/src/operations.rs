@@ -80,6 +80,7 @@ mod classic_keyframes;
 mod classic_masks;
 mod classic_media;
 mod classic_media_register;
+mod classic_playback;
 mod classic_move;
 pub(crate) mod classic_multicam;
 mod classic_multicam_sources;
@@ -262,6 +263,7 @@ pub(crate) fn register_all(
     register_marker_operations(registry, state.clone(), events.clone())?;
     register_caption_operations(registry, state.clone(), events.clone(), artifacts.clone())?;
     register_playback_operations(registry, state.clone(), events.clone())?;
+    classic_playback::register_shuttle(registry, state.clone(), events.clone())?;
     register_selection_operations(registry, state.clone(), events.clone())?;
     register_workspace_operations(registry, state.clone(), events.clone())?;
     register_render_operations(registry, state.clone(), artifacts)?;
@@ -367,6 +369,7 @@ where
                 | "project.classic.session.restore"
                 | "project.classic.scene.open"
                 | "project.classic.viewport.set"
+                | "playback.classic.speed.change"
                 | "timeline.classic.selection.set"
         );
     descriptor.supports_dry_run = descriptor.transactional
@@ -377,6 +380,7 @@ where
                 | "project.classic.session.restore"
                 | "project.classic.scene.open"
                 | "project.classic.viewport.set"
+                | "playback.classic.speed.change"
                 | "timeline.classic.selection.set"
         );
     descriptor.cancellable = id.starts_with("export.")
@@ -6265,8 +6269,14 @@ fn register_history_operations(
                 };
                 store.redo.push(current);
                 let policy = store.document.agent_policy.clone();
+                let classic_rate = store.document.project.as_ref()
+                    .and_then(|project| project.classic.as_ref())
+                    .map(|_| store.document.playback.rate);
                 store.document = entry.document.materialize();
                 store.document.agent_policy = policy;
+                if let Some(rate) = classic_rate {
+                    store.document.playback.rate = rate;
+                }
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,
@@ -6328,8 +6338,14 @@ fn register_history_operations(
                 };
                 store.undo.push(current);
                 let policy = store.document.agent_policy.clone();
+                let classic_rate = store.document.project.as_ref()
+                    .and_then(|project| project.classic.as_ref())
+                    .map(|_| store.document.playback.rate);
                 store.document = entry.document.materialize();
                 store.document.agent_policy = policy;
+                if let Some(rate) = classic_rate {
+                    store.document.playback.rate = rate;
+                }
                 store.document.revision = current_revision + 1;
                 let output = HistoryOutput {
                     revision: store.document.revision,

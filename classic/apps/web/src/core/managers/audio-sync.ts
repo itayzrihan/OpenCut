@@ -40,12 +40,14 @@ export function getAudioContextStartTime({
 	audibleContextTime,
 	playbackTime,
 	timelineTime,
+	previewRate = 1,
 }: {
 	audibleContextTime: number;
 	playbackTime: number;
 	timelineTime: number;
+	previewRate?: number;
 }): number {
-	return audibleContextTime + (timelineTime - playbackTime);
+	return audibleContextTime + (timelineTime - playbackTime) / previewRate;
 }
 
 export function getAudioRecoveryTimelineTime({
@@ -54,23 +56,22 @@ export function getAudioRecoveryTimelineTime({
 	currentContextTime,
 	playbackTime,
 	safetyMargin = 0.02,
+	previewRate = 1,
 }: {
 	bufferTimelineTime: number;
 	contextStartTime: number;
 	currentContextTime: number;
 	playbackTime: number;
 	safetyMargin?: number;
+	previewRate?: number;
 }): number {
-	const missedContextTime = Math.max(
-		0,
-		currentContextTime - contextStartTime,
-	);
+	const missedContextTime = Math.max(0, currentContextTime - contextStartTime);
 	const safeMargin =
 		Number.isFinite(safetyMargin) && safetyMargin > 0 ? safetyMargin : 0;
 
 	return Math.max(
 		playbackTime,
-		bufferTimelineTime + missedContextTime + safeMargin,
+		bufferTimelineTime + (missedContextTime + safeMargin) * previewRate,
 	);
 }
 
@@ -81,6 +82,7 @@ export function getStreamingSourceDuration({
 	bufferTimelineTime,
 	clipEndTime,
 	contextLateness,
+	previewRate = 1,
 }: {
 	bufferDuration: number;
 	sourceOffset: number;
@@ -88,11 +90,12 @@ export function getStreamingSourceDuration({
 	bufferTimelineTime: number;
 	clipEndTime: number;
 	contextLateness: number;
+	previewRate?: number;
 }): number {
 	const remainingBufferDuration = Math.max(0, bufferDuration - sourceOffset);
 	const remainingTimelineDuration = Math.max(
 		0,
-		clipEndTime - (bufferTimelineTime + contextLateness),
+		clipEndTime - (bufferTimelineTime + contextLateness * previewRate),
 	);
 	const remainingSourceDuration = remainingTimelineDuration * playbackRate;
 
