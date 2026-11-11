@@ -15,6 +15,7 @@ import {
 	memo,
 	useCallback,
 	useEffect,
+	useId,
 	useMemo,
 	useRef,
 	useState,
@@ -30,6 +31,16 @@ import { MediaDragOverlay } from "@/components/editor/panels/assets/drag-overlay
 import { DraggableItem } from "@/components/editor/panels/assets/draggable-item";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/i18n/toast";
+import {
+	Dialog,
+	DialogBody,
+	DialogContent,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -909,6 +920,10 @@ function MediaItemWithContextMenu({
 	onUnify: ({ ids }: { ids: string[] }) => void;
 }) {
 	const editor = useEditor();
+	const [renameTarget, setRenameTarget] = useState<{
+		projectId: string;
+		name: string;
+	} | null>(null);
 	const { isSelected, selectedIds } = useSelection();
 	const preparing = useEditorMedia((e) =>
 		e.media.isPreparingBrowserMedia(item.id),
@@ -918,82 +933,176 @@ function MediaItemWithContextMenu({
 		idsToDelete.length > 1 ? `Delete ${idsToDelete.length} items` : "Delete";
 
 	return (
-		<ContextMenu>
-			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
-			<ContextMenuContent>
-				{item.missing && item.storageKind === "linked" && !item.sourcePath && (
+		<>
+			<ContextMenu>
+				<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
+				<ContextMenuContent>
 					<ContextMenuItem
 						onSelect={() => {
 							const projectId = editor.project.getActiveOrNull()?.metadata.id;
-							if (projectId)
-								void editor.media
-									.reopenBrowserSource({ projectId, id: item.id })
-									.catch((error: unknown) =>
-										toast.error(
-											error instanceof Error ? error.message : String(error),
-										),
-									);
+							if (projectId) setRenameTarget({ projectId, name: item.name });
 						}}
 					>
-						<UiMessage text="Reconnect original file" />
+						<UiMessage text="Rename" />
 					</ContextMenuItem>
-				)}
-				<ContextMenuItem
-					disabled={item.type === "file" || item.missing || preparing}
-					onClick={() => {
-						if (item.type === "file") return;
-						editor.timeline.insertElement({
-							element: buildElementFromMedia({
-								mediaId: item.id,
-								mediaType: item.type,
-								name: item.name,
-								duration:
-									item.duration != null
-										? mediaTimeFromSeconds({ seconds: item.duration })
-										: DEFAULT_NEW_ELEMENT_DURATION,
-								startTime: editor.playback.getCurrentTime(),
-							}),
-							placement: { mode: "auto" },
+					{item.type !== "file" && (
+						<>
+							{item.missing &&
+								item.storageKind === "linked" &&
+								!item.sourcePath && (
+									<ContextMenuItem
+										onSelect={() => {
+											const projectId =
+												editor.project.getActiveOrNull()?.metadata.id;
+											if (projectId)
+												void editor.media
+													.reopenBrowserSource({ projectId, id: item.id })
+													.catch((error: unknown) =>
+														toast.error(
+															error instanceof Error
+																? error.message
+																: String(error),
+														),
+													);
+										}}
+									>
+										<UiMessage text="Reconnect original file" />
+									</ContextMenuItem>
+								)}
+							<ContextMenuItem
+								disabled={item.missing || preparing}
+								onClick={() => {
+									if (item.type === "file") return;
+									editor.timeline.insertElement({
+										element: buildElementFromMedia({
+											mediaId: item.id,
+											mediaType: item.type,
+											name: item.name,
+											duration:
+												item.duration != null
+													? mediaTimeFromSeconds({ seconds: item.duration })
+													: DEFAULT_NEW_ELEMENT_DURATION,
+											startTime: editor.playback.getCurrentTime(),
+										}),
+										placement: { mode: "auto" },
+									});
+								}}
+							>
+								<UiMessage text={"Add to timeline"} />
+							</ContextMenuItem>
+							<ContextMenuItem
+								disabled={!item.file && !item.url}
+								onClick={() => {
+									const url = item.file
+										? URL.createObjectURL(item.file)
+										: item.url;
+									if (!url) return;
+									const a = document.createElement("a");
+									a.href = url;
+									a.download = item.fileName ?? item.file?.name ?? item.name;
+									document.body.append(a);
+									a.click();
+									a.remove();
+									if (item.file)
+										setTimeout(() => URL.revokeObjectURL(url), 60_000);
+								}}
+							>
+								<UiMessage text={"Download original"} />
+							</ContextMenuItem>
+							<UnifiedWithAudioAction ids={idsToDelete} />
+							<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
+								<UiMessage text={"Unify as Unified Angles"} />
+							</ContextMenuItem>
+							<ContextMenuItem
+								onClick={() => onCreatePodcastSync({ ids: idsToDelete })}
+							>
+								<UiMessage text={"Create podcast sync sequence"} />
+							</ContextMenuItem>
+							<ContextMenuItem
+								variant="destructive"
+								onClick={(event: React.MouseEvent<HTMLDivElement>) =>
+									onRemove({ event, ids: idsToDelete })
+								}
+							>
+								{deleteLabel}
+							</ContextMenuItem>
+						</>
+					)}
+				</ContextMenuContent>
+			</ContextMenu>
+			{renameTarget && (
+				<RenameAssetDialog
+					initialName={renameTarget.name}
+					onClose={() => setRenameTarget(null)}
+					onRename={(name) => {
+						editor.command.renameClassicMedia({
+							projectId: renameTarget.projectId,
+							mediaId: item.id,
+							name,
 						});
 					}}
-				>
-					<UiMessage text={"Add to timeline"} />
-				</ContextMenuItem>
-				<ContextMenuItem
-					disabled={!item.file && !item.url}
-					onClick={() => {
-						const url = item.file ? URL.createObjectURL(item.file) : item.url;
-						if (!url) return;
-						const a = document.createElement("a");
-						a.href = url;
-						a.download = item.name;
-						document.body.append(a);
-						a.click();
-						a.remove();
-						if (item.file) setTimeout(() => URL.revokeObjectURL(url), 60_000);
+				/>
+			)}
+		</>
+	);
+}
+
+function RenameAssetDialog({
+	initialName,
+	onClose,
+	onRename,
+}: {
+	initialName: string;
+	onClose: () => void;
+	onRename: (name: string) => void;
+}) {
+	const inputId = useId();
+	const [name, setName] = useState(initialName);
+	const trimmed = name.trim();
+	return (
+		<Dialog open onOpenChange={(open) => !open && onClose()}>
+			<DialogContent aria-describedby={undefined}>
+				<form
+					onSubmit={(event) => {
+						event.preventDefault();
+						if (!trimmed) return;
+						try {
+							if (trimmed !== initialName) onRename(trimmed);
+							onClose();
+						} catch (error) {
+							toast.error(localizeClientMessage("Could not rename asset"), {
+								description: error instanceof Error ? error.message : undefined,
+							});
+						}
 					}}
 				>
-					<UiMessage text={"Download original"} />
-				</ContextMenuItem>
-				<UnifiedWithAudioAction ids={idsToDelete} />
-				<ContextMenuItem onClick={() => onUnify({ ids: idsToDelete })}>
-					<UiMessage text={"Unify as Unified Angles"} />
-				</ContextMenuItem>
-				<ContextMenuItem
-					onClick={() => onCreatePodcastSync({ ids: idsToDelete })}
-				>
-					<UiMessage text={"Create podcast sync sequence"} />
-				</ContextMenuItem>
-				<ContextMenuItem
-					variant="destructive"
-					onClick={(event: React.MouseEvent<HTMLDivElement>) =>
-						onRemove({ event, ids: idsToDelete })
-					}
-				>
-					{deleteLabel}
-				</ContextMenuItem>
-			</ContextMenuContent>
-		</ContextMenu>
+					<DialogHeader>
+						<DialogTitle>
+							<UiMessage text="Rename asset" />
+						</DialogTitle>
+					</DialogHeader>
+					<DialogBody className="gap-2">
+						<Label htmlFor={inputId}>
+							<UiMessage text="New name" />
+						</Label>
+						<Input
+							id={inputId}
+							value={name}
+							maxLength={1024}
+							onChange={(event) => setName(event.target.value)}
+						/>
+					</DialogBody>
+					<DialogFooter>
+						<Button type="button" variant="outline" onClick={onClose}>
+							<UiMessage text="Cancel" />
+						</Button>
+						<Button type="submit" disabled={!trimmed}>
+							<UiMessage text="Rename" />
+						</Button>
+					</DialogFooter>
+				</form>
+			</DialogContent>
+		</Dialog>
 	);
 }
 
@@ -1235,9 +1344,10 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 		);
 	}
 
-	if (entry.item.type === "file")
-		return (
+	const assetContent =
+		entry.item.type === "file" ? (
 			<div
+				tabIndex={0}
 				className={cn(
 					"text-muted-foreground",
 					isGrid ? "w-28" : "flex h-8 items-center gap-3 px-1",
@@ -1259,15 +1369,7 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 					</div>
 				)}
 			</div>
-		);
-
-	return (
-		<MediaItemWithContextMenu
-			item={entry.item}
-			onRemove={onRemove}
-			onCreatePodcastSync={onCreatePodcastSync}
-			onUnify={onUnify}
-		>
+		) : (
 			<SelectableItem className={cn(!isGrid && "w-full")} id={entry.item.id}>
 				<MediaAssetDraggable
 					item={entry.item}
@@ -1281,6 +1383,16 @@ const MediaListEntryItem = memo(function MediaListEntryItem({
 					isRounded={isGrid ? false : undefined}
 				/>
 			</SelectableItem>
+		);
+
+	return (
+		<MediaItemWithContextMenu
+			item={entry.item}
+			onRemove={onRemove}
+			onCreatePodcastSync={onCreatePodcastSync}
+			onUnify={onUnify}
+		>
+			{assetContent}
 		</MediaItemWithContextMenu>
 	);
 });

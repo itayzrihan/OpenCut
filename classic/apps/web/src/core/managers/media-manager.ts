@@ -91,7 +91,7 @@ export class MediaManager {
 			this.editor.project.getActive()?.metadata.id === projectId
 		) {
 			this.assets = this.assets.map((item) =>
-				item.id === id ? refreshed : item,
+				item.id === id ? { ...refreshed, name: item.name } : item,
 			);
 			this.notify();
 		}
@@ -299,7 +299,9 @@ export class MediaManager {
 		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
 			return;
 		this.setAssets({
-			assets: this.assets.map((item) => (item.id === id ? asset : item)),
+			assets: this.assets.map((item) =>
+				item.id === id ? { ...asset, name: item.name } : item,
+			),
 		});
 		if (this.editor.command.hasAtomicSessionStorage())
 			await this.editor.command.persistEditingSession();

@@ -1665,6 +1665,32 @@ export class CommandManager {
 		});
 	}
 
+	renameClassicMedia({
+		projectId,
+		mediaId,
+		name,
+	}: {
+		projectId: string;
+		mediaId: string;
+		name: string;
+	}): void {
+		const session = this.canonical;
+		if (
+			session?.projectId !== projectId ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId
+		)
+			throw new Error("Open the target project before renaming an asset");
+		this.executeTransaction({
+			execute: () => {
+				session.invokeControl({
+					capabilityId: "media.classic.rename",
+					input: { mediaId, name },
+				});
+				this.publishCanonical();
+			},
+		});
+	}
+
 	removeClassicMedia({
 		projectId,
 		mediaIds,

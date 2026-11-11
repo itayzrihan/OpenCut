@@ -1,5 +1,4 @@
-//! Canonical project-media removal. Durable bytes belong to host storage and
-//! are retained for undo/reopening; this operation never deletes a file.
+//! Canonical project-media edits. Durable bytes belong to host storage.
 use super::classic_remove::ElementRef;
 use super::*;
 
@@ -12,6 +11,16 @@ struct RemoveInput {
     media_ids: Vec<String>,
     #[serde(default)]
     cascade: bool,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RenameInput {
+    project_id: String,
+    expected_revision: u64,
+    #[schemars(length(min = 1, max = 160))]
+    media_id: String,
+    #[schemars(length(min = 1, max = 1024))]
+    name: String,
 }
 fn invalid(message: &str) -> CapabilityError {
     CapabilityError::InvalidInput(message.into())
@@ -48,6 +57,63 @@ pub(super) fn register_classic_media(
     state: Arc<RwLock<EditorStore>>,
     events: broadcast::Sender<u64>,
 ) -> Result<(), RegistryError> {
+    register::<RenameInput, MutationOutput, _, _>(
+        registry,
+        DocumentSupport::Classic,
+        crate::CapabilityExecution::Immediate,
+        "media.classic.rename",
+        "Rename an asset in the Classic project",
+        "Change the asset's display name in the explicit active project. Trims surrounding whitespace; accepts 1..1024 UTF-8 bytes without control characters. Source names, bindings, bytes and timeline clip names are preserved. Supports optimistic revision, dry run, idempotency and Undo/Redo.",
+        "media",
+        AccessLevel::Write,
+        false,
+        false,
+        &["classic", "media", "rename", "asset", "מדיה"],
+        {
+            let state = state.clone();
+            let events = events.clone();
+            move |context, input| {
+                let state = state.clone();
+                let events = events.clone();
+                async move {
+                    let name = input.name.trim();
+                    if name.is_empty() || name.len() > 1024 || name.chars().any(char::is_control) {
+                        return Err(invalid("Enter a valid asset name of at most 1024 bytes"));
+                    }
+                    let output = mutate(
+                        &state,
+                        &events,
+                        &context,
+                        "Rename asset",
+                        Some(input.expected_revision),
+                        |document| {
+                            let project = project_mut(document)?;
+                            if project.id != input.project_id {
+                                return Err(invalid("Target project is not active"));
+                            }
+                            let classic = project
+                                .classic
+                                .as_mut()
+                                .ok_or_else(|| invalid("Requires Classic media"))?;
+                            let asset = classic
+                                .media_assets
+                                .iter_mut()
+                                .find(|asset| {
+                                    asset.get("id").and_then(Value::as_str)
+                                        == Some(input.media_id.as_str())
+                                })
+                                .ok_or_else(|| unknown("media asset", &input.media_id))?;
+                            asset.insert("name".into(), Value::String(name.to_owned()));
+                            Ok(vec![input.media_id.clone()])
+                        },
+                    )?;
+                    Ok(OperationSuccess::new(output)
+                        .summary("Renamed asset")
+                        .changed([STATE_RESOURCE, PROJECT_RESOURCE]))
+                }
+            }
+        },
+    )?;
     register::<RemoveInput, MutationOutput, _, _>(
         registry,
         DocumentSupport::Classic,

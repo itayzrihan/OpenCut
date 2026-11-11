@@ -30,6 +30,90 @@ fn asset() -> Value {
 fn input(state: &Value, assets: Value) -> Value {
     json!({"projectId":"classic-project","expectedRevision":state["revision"],"assets":assets})
 }
+
+#[tokio::test]
+async fn rename_is_project_scoped_undoable_and_preserves_source_metadata_and_clips() {
+    let runtime = attached().await;
+    let before = read(&runtime).await;
+    let request = json!({
+        "projectId":"classic-project", "expectedRevision":before["revision"],
+        "mediaId":"video-asset", "name":"  מצלמה ראשית  "
+    });
+    let descriptor = runtime
+        .registry()
+        .descriptor("media.classic.rename")
+        .unwrap()
+        .unwrap();
+    assert_eq!(descriptor.access, AccessLevel::Write);
+    assert_eq!(descriptor.document_support, DocumentSupport::Classic);
+    assert!(descriptor.transactional && descriptor.supports_dry_run && !descriptor.open_world);
+
+    let mut context = InvocationContext {
+        dry_run: true,
+        ..Default::default()
+    };
+    context
+        .metadata
+        .insert("opencut/idempotencyKey".into(), json!("rename-once"));
+    runtime
+        .registry()
+        .invoke("media.classic.rename", context.clone(), request.clone())
+        .await
+        .unwrap();
+    assert_eq!(read(&runtime).await, before);
+    for (field, value) in [
+        ("name", json!("   ")),
+        ("name", json!("a\nb")),
+        ("name", json!("א".repeat(513))),
+        ("projectId", json!("another-project")),
+        ("mediaId", json!("missing-asset")),
+        ("expectedRevision", json!(0)),
+    ] {
+        let mut invalid = request.clone();
+        invalid[field] = value;
+        assert!(
+            runtime
+                .registry()
+                .invoke(
+                    "media.classic.rename",
+                    InvocationContext::default(),
+                    invalid
+                )
+                .await
+                .is_err()
+        );
+    }
+    assert_eq!(read(&runtime).await, before);
+
+    context.dry_run = false;
+    let receipt = runtime
+        .registry()
+        .invoke("media.classic.rename", context.clone(), request.clone())
+        .await
+        .unwrap();
+    assert_eq!(
+        runtime
+            .registry()
+            .invoke("media.classic.rename", context, request)
+            .await
+            .unwrap(),
+        receipt
+    );
+    let after = read(&runtime).await;
+    let mut expected = before["project"].clone();
+    expected["classic"]["mediaAssets"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|asset| asset["id"] == "video-asset")
+        .unwrap()["name"] = json!("מצלמה ראשית");
+    assert_eq!(after["project"], expected);
+    call(&runtime, "history.undo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], before["project"]);
+    call(&runtime, "history.redo", json!({})).await;
+    assert_eq!(read(&runtime).await["project"], expected);
+}
+
 #[tokio::test]
 async fn registration_preserves_extensions_raises_rational_fps_and_has_one_undoable_dry_run_retry()
 {

@@ -564,6 +564,18 @@
       ],
       "timeoutMs": 600000
     },
+    "classic-asset-rename": {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "opencut-editor-api",
+        "--test",
+        "classic_media_register"
+      ],
+      "timeoutMs": 420000
+    },
     "browser-media-import": {
       "command": [
         "node",
