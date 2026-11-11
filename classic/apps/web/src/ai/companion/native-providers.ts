@@ -245,10 +245,16 @@ export class CodexProvider implements NativeProvider {
 					allowProviderModelFallback: false,
 					selectedCapabilityRoots: [],
 					config: {
-						features: { image_generation: image },
-						// Some Codex models hide direct tools behind the disabled code-mode host.
-						// Expose only the native image namespace in image turns.
-						...(image && { code_mode: { direct_only_tool_namespaces: ["image_gen"] } }),
+						features: {
+							image_generation: image,
+							// Keep the Code Mode host disabled and expose the image tool directly.
+							...(image && {
+								code_mode: {
+									enabled: false,
+									direct_only_tool_namespaces: ["image_gen"],
+								},
+							}),
+						},
 						web_search: "disabled",
 						mcp_servers: {},
 						permissions: {

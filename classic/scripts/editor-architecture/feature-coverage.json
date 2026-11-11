@@ -55,7 +55,8 @@
 			],
 			"gap": "Legacy deletion remains in compound text/SFX operations.",
 			"actions": [
-				"delete-selected"
+				"delete-selected",
+				"delete-to-same-point"
 			],
 			"sources": [
 				"classic/apps/web/src/core/managers/timeline-manager.ts",
@@ -113,17 +114,22 @@
 			"managers": [
 				"TimelineManager.updateElements",
 				"TimelineManager.updateElementTrim",
-				"TimelineManager.updateElementRetime"
+				"TimelineManager.updateElementRetime",
+				"CommandManager.trimStartEnd"
 			],
 			"contracts": [
-				"timeline.classic.elements.update"
+				"timeline.classic.elements.update",
+				"timeline.classic.crop"
 			],
 			"tests": [
 				"crates/editor-api/tests/classic_update.rs",
 				"classic/apps/web/src/core/managers/__tests__/canonical-command-manager.test.ts"
 			],
 			"gap": "Ordinary UI trim/retime/parameter updates share the Write contract with gesture history. Generated caption reflow and dedicated identity/media/HyperFrames fields retain reviewed existing paths; live acceptance remains.",
-			"actions": [],
+			"actions": [
+				"trim-start",
+				"trim-end"
+			],
 			"sources": [
 				"classic/apps/web/src/core/managers/timeline-manager.ts",
 				"classic/apps/web/src/commands/timeline/element/update-elements.ts"
@@ -283,7 +289,8 @@
 			],
 			"gap": "Ordinary UI reactor uses native exact-tick union/subtraction/shift policy and one canonical transaction. Registry plan/apply is available to agents without UI ripple mode. Legacy host-effect preflight retains its reviewed TS bridge; persistent ripple mode, linked-audio grouping and broad live acceptance remain.",
 			"actions": [
-				"toggle-ripple-editing"
+				"toggle-ripple-editing",
+				"ripple-delete-selected"
 			],
 			"sources": [
 				"classic/apps/web/src/core/managers/commands.ts"
@@ -599,6 +606,9 @@
 			"actions": [
 				"toggle-play",
 				"stop-playback",
+				"playback-faster",
+				"playback-slower",
+				"playback-normal-speed",
 				"seek-forward",
 				"seek-backward",
 				"frame-step-forward",
