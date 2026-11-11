@@ -83,13 +83,65 @@ async function generateImageThumbnail({
 	});
 }
 
+function readBrowserVideoFrame({
+	file,
+	signal,
+}: {
+	file: File;
+	signal: AbortSignal;
+}): Promise<Partial<MediaAsset> | null> {
+	if (signal.aborted) return Promise.resolve(null);
+	return new Promise((resolve) => {
+		const video = document.createElement("video");
+		const url = URL.createObjectURL(file);
+		const finish = (result: Partial<MediaAsset> | null) => {
+			signal.removeEventListener("abort", stop);
+			video.onloadeddata = null;
+			video.onerror = null;
+			video.removeAttribute("src");
+			video.load();
+			URL.revokeObjectURL(url);
+			resolve(result);
+		};
+		const stop = () => finish(null);
+		video.onloadeddata = () => {
+			try {
+				const width = video.videoWidth;
+				const height = video.videoHeight;
+				finish({
+					width,
+					height,
+					duration: Number.isFinite(video.duration)
+						? video.duration
+						: undefined,
+					thumbnailUrl: renderThumbnailDataUrl({
+						width,
+						height,
+						draw: ({ context, width, height }) =>
+							context.drawImage(video, 0, 0, width, height),
+					}),
+				});
+			} catch {
+				stop();
+			}
+		};
+		video.onerror = stop;
+		signal.addEventListener("abort", stop, { once: true });
+		video.preload = "auto";
+		video.muted = true;
+		video.src = url;
+	});
+}
+
 /** Probe a visible browser asset independently of registration or storage. */
 export async function probeBrowserMedia({
 	asset,
 	signal,
+	reportUnsupported = true,
 }: {
 	asset: MediaAsset & { file: File };
 	signal: AbortSignal;
+	reportUnsupported?: boolean;
 }): Promise<Partial<MediaAsset>> {
 	signal.throwIfAborted();
 	if (asset.type === "image") {
@@ -101,12 +153,22 @@ export async function probeBrowserMedia({
 	}
 	if (asset.type === "audio")
 		return { duration: await getMediaDuration({ file: asset.file, signal }) };
-	const video = await readVideoFile({
-		file: asset.file,
-		signal,
-		fastMetadata: true,
-	});
-	if (!video.canDecode) {
+	let video: VideoFileData;
+	try {
+		video = await readVideoFile({
+			file: asset.file,
+			signal: AbortSignal.any([signal, AbortSignal.timeout(8_000)]),
+			fastMetadata: true,
+		});
+	} catch (error) {
+		const fallback = await readBrowserVideoFrame({ file: asset.file, signal });
+		if (fallback) return fallback;
+		throw error;
+	}
+	const fallback = video.thumbnailUrl
+		? null
+		: await readBrowserVideoFrame({ file: asset.file, signal });
+	if (reportUnsupported && !video.canDecode && !fallback) {
 		toast.error(
 			localizeClientMessage("Can't preview {v0}", { v0: asset.name }),
 			{
@@ -120,7 +182,7 @@ export async function probeBrowserMedia({
 		height: video.height,
 		fps: Number.isFinite(video.fps) ? Math.round(video.fps) : undefined,
 		hasAudio: video.hasAudio,
-		thumbnailUrl: video.thumbnailUrl ?? undefined,
+		thumbnailUrl: video.thumbnailUrl ?? fallback?.thumbnailUrl,
 	};
 }
 

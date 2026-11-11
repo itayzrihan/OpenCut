@@ -1,3 +1,4 @@
+// @opencut-test-wasm: real
 import {
 	setBatchReadOnlyProjects,
 	acknowledgeAutomationReload,
@@ -195,6 +196,7 @@ function host() {
 			loadProjectMedia: async () => {
 				assets = fixture.mediaAssets;
 			},
+			restoreBrowserThumbnails: async () => {},
 		},
 		save: {
 			pause: () => {},

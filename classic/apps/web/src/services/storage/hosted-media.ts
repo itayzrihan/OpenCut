@@ -86,27 +86,23 @@ export function hostedMedia(
 			} = record;
 			if (fileHandle) {
 				try {
-					if (
-						requestAccess &&
-						fileHandle.requestPermission &&
-						(await fileHandle.requestPermission({ mode: "read" })) !== "granted"
-					)
-						return { ...asset, missing: true };
+					if (requestAccess && fileHandle.requestPermission && !record.file)
+						await fileHandle.requestPermission({ mode: "read" });
 					const file = await fileHandle.getFile();
 					if (
-						file.size !== record.size ||
-						file.lastModified !== record.lastModified
+						file.size === record.size &&
+						file.lastModified === record.lastModified
 					)
-						return { ...asset, missing: true };
-					return {
-						...asset,
-						file,
-						missing: false,
-						url: urlFor({ ...record, file }),
-					};
+						return {
+							...asset,
+							file,
+							missing: false,
+							url: urlFor({ ...record, file }),
+						};
 				} catch {
-					return { ...asset, missing: true };
+					// Access to a drag-and-drop handle can expire when the tab reloads.
 				}
+				return { ...asset, missing: !record.file, url: urlFor(record) };
 			}
 			return { ...asset, url: urlFor(record) };
 		},
@@ -146,7 +142,7 @@ export function hostedMedia(
 				ephemeral: asset.ephemeral,
 				unifiedAngles: asset.unifiedAngles,
 				missing: !fileHandle && !file && !asset.unifiedAngles,
-				file: fileHandle ? undefined : file,
+				file,
 				fileHandle,
 				revision:
 					asset.file && asset.file !== previous?.file
@@ -154,13 +150,27 @@ export function hostedMedia(
 						: (previous?.revision ?? crypto.randomUUID()),
 				uploadToken,
 			};
-			await records.set({ key: asset.id, value: record });
+			try {
+				await records.set({ key: asset.id, value: record });
+			} catch (error) {
+				if (!fileHandle || !(error instanceof DOMException)) throw error;
+				if (error.name === "DataCloneError") {
+					record.fileHandle = undefined;
+					record.storageKind = "copied";
+				} else if (error.name === "QuotaExceededError" && record.file) {
+					record.file = undefined;
+				} else {
+					throw error;
+				}
+				await records.set({ key: asset.id, value: record });
+			}
 			return {
 				size: record.size,
 				lastModified: record.lastModified,
 				missing: record.missing,
 				sourcePath: undefined,
 				storageKind: record.storageKind,
+				hasLocalCopy: !!record.file,
 				url: asset.url?.startsWith("blob:")
 					? asset.url
 					: urlFor({ ...record, file }),

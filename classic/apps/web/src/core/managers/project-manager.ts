@@ -734,6 +734,7 @@ export class ProjectManager {
 			if (canAcquire) {
 				await this.editor.command.flushHistory();
 			}
+			void this.editor.media.restoreBrowserThumbnails({ projectId: id });
 			this.editor.save.discardPending();
 			try {
 				const preferences = await localDriveRequest<Record<string, string>>({

@@ -133,7 +133,7 @@ mock.module("@/services/storage/service", () => ({
 		saveBrowserMediaAsset: (input: {
 			projectId: string;
 			mediaAsset: MediaAsset;
-		}) => saveImportedMedia(input),
+		}) => saveImportedMedia(input).then(() => ({ storageKind: "copied", hasLocalCopy: true })),
 		saveCommandHistory: async ({
 			history,
 		}: {

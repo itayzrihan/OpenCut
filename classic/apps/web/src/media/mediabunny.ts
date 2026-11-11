@@ -58,7 +58,10 @@ export async function readVideoFile({
 		let thumbnailUrl: string | null = null;
 		if (canDecode) {
 			const sink = new VideoSampleSink(videoTrack);
-			const frame = await sink.getSample(fastMetadata ? 0 : 1);
+			const firstTimestamp = await videoTrack.getFirstTimestamp();
+			const frame = await sink.getSample(
+				fastMetadata ? firstTimestamp : Math.max(firstTimestamp, 1),
+			);
 			if (frame) {
 				try {
 					thumbnailUrl = renderThumbnailDataUrl({

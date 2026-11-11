@@ -1557,7 +1557,7 @@ function MediaPreview({
 }) {
 	const shouldShowDurationBadge = variant === "grid";
 
-	if (item.missing)
+	if (item.missing && !item.thumbnailUrl)
 		return (
 			<div className="grid size-full place-items-center bg-muted p-1 text-center text-xs text-muted-foreground">
 				<UiMessage text="Original file unavailable" />
@@ -1568,7 +1568,7 @@ function MediaPreview({
 		return (
 			<div className="relative flex size-full items-center justify-center bg-muted">
 				<Image
-					src={item.url ?? ""}
+					src={item.thumbnailUrl ?? item.url ?? ""}
 					alt={item.name}
 					fill
 					sizes="100vw"

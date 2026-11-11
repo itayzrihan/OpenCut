@@ -5,6 +5,7 @@ import {
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
 import { useState } from "react";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { ProjectMediaPullPanel } from "@/peer-sync/project-panel";
 import {
 	useEditor,
@@ -22,6 +23,7 @@ export function OfflineMediaPanel() {
 	const [paths, setPaths] = useState<Record<string, string>>({});
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState("");
+	const hosted = isHostedBrowserWorkspace();
 	const missing = assets.filter((asset) => asset.missing);
 	const relevant = assets.filter(
 		(asset) => asset.missing || asset.canUndoRelink,
@@ -29,17 +31,26 @@ export function OfflineMediaPanel() {
 	if (!relevant.length || !projectId) return null;
 	async function link({
 		id,
-		source,
+		source = "",
+		file,
 		undo = false,
 	}: {
 		id: string;
-		source: string;
+		source?: string;
+		file?: File;
 		undo?: boolean;
 	}) {
 		setBusy(true);
 		setError("");
 		try {
-			await editor.media.relink({ projectId: projectId!, id, source, undo });
+			if (hosted && !undo)
+				await editor.media.reopenBrowserSource({
+					projectId: projectId!,
+					id,
+					file,
+				});
+			else
+				await editor.media.relink({ projectId: projectId!, id, source, undo });
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
 		} finally {
@@ -71,13 +82,15 @@ export function OfflineMediaPanel() {
 							projectId={projectId}
 						/>
 					)}
-					<p>
-						<UiMessage
-							text={
-								"All cuts, effects and timing are retained. You can keep editing. Paste the full path to the original file on this computer to restore playback and export."
-							}
-						/>
-					</p>
+					{!hosted && (
+						<p>
+							<UiMessage
+								text={
+									"All cuts, effects and timing are retained. You can keep editing. Paste the full path to the original file on this computer to restore playback and export."
+								}
+							/>
+						</p>
+					)}
 					{relevant.map((asset) => (
 						<div key={asset.id} className="space-y-1">
 							<div className="font-medium">
@@ -91,7 +104,33 @@ export function OfflineMediaPanel() {
 							<div className="break-all text-muted-foreground">
 								{asset.sourcePath || asset.fileName}
 							</div>
-							{asset.missing && (
+							{asset.missing && hosted && (
+								<div className="flex flex-wrap gap-3">
+									{asset.storageKind === "linked" && !asset.sourcePath && (
+										<button
+											className="underline"
+											disabled={busy}
+											onClick={() => void link({ id: asset.id })}
+										>
+											<UiMessage text="Reconnect original file" />
+										</button>
+									)}
+									<label className="cursor-pointer underline focus-within:outline">
+										<UiMessage text="Choose file" />
+										<input
+											type="file"
+											className="sr-only"
+											disabled={busy}
+											onChange={(event) => {
+												const file = event.currentTarget.files?.[0];
+												event.currentTarget.value = "";
+												if (file) void link({ id: asset.id, file });
+											}}
+										/>
+									</label>
+								</div>
+							)}
+							{asset.missing && !hosted && (
 								<div className="flex gap-2">
 									<UiLocalized<"input">
 										element={"input"}

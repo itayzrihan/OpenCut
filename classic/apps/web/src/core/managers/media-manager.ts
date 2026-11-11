@@ -155,54 +155,35 @@ export class MediaManager {
 		// A single probe at a time avoids starting a decoder for every dropped file.
 		let probing: Promise<unknown> = Promise.resolve();
 		return assets.map((asset) => {
-			const stored: MediaAsset = { ...asset };
 			const saving = (async () => {
-				const handle = await handles?.get(asset.file);
-				try {
-					Object.assign(
-						stored,
-						await storageService.saveBrowserMediaAsset({
-							projectId,
-							mediaAsset: stored,
-							scope,
-							fileHandle: handle,
-						}),
+				const result = await storageService.saveBrowserMediaAsset({
+					projectId,
+					mediaAsset: asset,
+					scope,
+					fileHandle: await handles?.get(asset.file),
+				});
+				if (!result.hasLocalCopy && sameProject())
+					toast.warning(
+						localizeClientMessage(
+							"Browser storage is full. You may need to reconnect {v0} after reopening.",
+							{ v0: asset.name },
+						),
 					);
-				} catch (error) {
-					if (
-						!(
-							handle &&
-							error instanceof DOMException &&
-							error.name === "DataCloneError"
-						)
-					)
-						throw error;
-					Object.assign(
-						stored,
-						await storageService.saveBrowserMediaAsset({
-							projectId,
-							mediaAsset: stored,
-							scope,
-						}),
+				return result.storageKind;
+			})().catch((error: unknown) => {
+				console.error("Browser media could not be saved:", error);
+				if (window.__opencutAccountId === scope.accountId)
+					toast.error(
+						localizeClientMessage(
+							"Could not keep {v0} after closing this tab",
+							{ v0: asset.name },
+						),
+						{
+							description: error instanceof Error ? error.message : undefined,
+						},
 					);
-				}
-			})().then(
-				() => true,
-				(error: unknown) => {
-					console.error("Browser media could not be saved:", error);
-					if (window.__opencutAccountId === scope.accountId)
-						toast.error(
-							localizeClientMessage(
-								"Could not keep {v0} after closing this tab",
-								{ v0: asset.name },
-							),
-							{
-								description: error instanceof Error ? error.message : undefined,
-							},
-						);
-					return false;
-				},
-			);
+				return null;
+			});
 			const ready = probing
 				.then(async () => {
 					if (
@@ -229,8 +210,8 @@ export class MediaManager {
 							importedAssets: [updated],
 						});
 					void saving
-						.then(async (saved) => {
-							if (!saved) return;
+						.then(async (storageKind) => {
+							if (!storageKind) return;
 							await storageService.updateBrowserMediaMetadata({
 								projectId,
 								id: asset.id,
@@ -238,7 +219,7 @@ export class MediaManager {
 								scope,
 							});
 							if (!sameProject()) return;
-							if (stored.storageKind === "linked") {
+							if (storageKind === "linked") {
 								this.setAssets({
 									assets: this.assets.map((item) =>
 										item.id === asset.id
@@ -281,30 +262,113 @@ export class MediaManager {
 	async reopenBrowserSource({
 		projectId,
 		id,
+		file,
 	}: {
 		projectId: string;
 		id: string;
+		file?: File;
 	}) {
 		const scope = captureLocalDriveWriteScope({ projectId });
-		const asset = await storageService.loadMediaAsset({
-			projectId,
-			id,
-			requestBrowserAccess: true,
-		});
+		const current = this.assets.find((item) => item.id === id);
+		if (
+			!current ||
+			this.editor.project.getActiveOrNull()?.metadata.id !== projectId
+		)
+			return;
+		let asset: MediaAsset;
+		if (file) {
+			if (
+				(current.fileName && file.name !== current.fileName) ||
+				(current.size && file.size !== current.size)
+			)
+				throw new Error(
+					localizeClientMessage("Select the original file: {v0}", {
+						v0: current.fileName ?? current.name,
+					}),
+				);
+			const { hasLocalCopy: _copy, ...binding } =
+				await storageService.saveBrowserMediaAsset({
+					projectId,
+					mediaAsset: { ...current, file, url: undefined },
+					scope,
+				});
+			asset = { ...current, ...binding, file, missing: false };
+		} else {
+			const restored = await storageService.loadMediaAsset({
+				projectId,
+				id,
+				requestBrowserAccess: true,
+			});
+			if (!restored || restored.missing)
+				throw new Error(
+					localizeClientMessage("Select the original file: {v0}", {
+						v0: current.fileName ?? current.name,
+					}),
+				);
+			asset = restored;
+		}
 		assertLocalDriveWriteScope({ projectId, scope });
-		if (!asset || asset.missing)
-			throw new Error(
-				"The original file is unavailable. Import it again if it was moved or changed.",
-			);
 		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
 			return;
 		this.setAssets({
 			assets: this.assets.map((item) =>
-				item.id === id ? { ...asset, name: item.name } : item,
+				item.id === id ? { ...item, ...asset, name: item.name } : item,
 			),
 		});
+		void this.restoreBrowserThumbnails({ projectId, id });
 		if (this.editor.command.hasAtomicSessionStorage())
 			await this.editor.command.persistEditingSession();
+	}
+
+	async restoreBrowserThumbnails({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id?: string;
+	}) {
+		if (!isHostedBrowserWorkspace()) return;
+		const scope = captureLocalDriveWriteScope({ projectId });
+		for (const asset of this.assets) {
+			if (
+				(id && asset.id !== id) ||
+				!asset.file ||
+				asset.missing ||
+				asset.thumbnailUrl ||
+				(asset.type !== "video" && asset.type !== "image") ||
+				this.browserImports.has(asset.id)
+			)
+				continue;
+			try {
+				if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+					return;
+				assertLocalDriveWriteScope({ projectId, scope });
+				const { probeBrowserMedia } = await import("@/media/processing");
+				const { thumbnailUrl } = await probeBrowserMedia({
+					asset: { ...asset, file: asset.file },
+					signal: AbortSignal.timeout(15_000),
+					reportUnsupported: false,
+				});
+				if (!thumbnailUrl) continue;
+				assertLocalDriveWriteScope({ projectId, scope });
+				if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+					return;
+				this.assetViews = this.assets.map((item) =>
+					item.id === asset.id && item.file === asset.file
+						? { ...item, thumbnailUrl }
+						: item,
+				);
+				this.notify();
+				await storageService.updateBrowserMediaMetadata({
+					projectId,
+					id: asset.id,
+					metadata: { thumbnailUrl },
+					scope,
+				});
+			} catch (error) {
+				console.warn("Could not restore a browser thumbnail:", error);
+			}
+		}
 	}
 
 	async addMediaAsset({

@@ -779,10 +779,16 @@ export class StorageService {
 		if (isHostedBrowserWorkspace()) {
 			const browser = hostedMedia(projectId);
 			const record = await browser.records.get(id);
-			if (record)
-				return record.deleted
-					? null
-					: browser.hydrate({ record, requestAccess: requestBrowserAccess });
+			if (record) {
+				if (record.deleted) return null;
+				const asset = await browser.hydrate({ record, requestAccess: requestBrowserAccess });
+				if (requestBrowserAccess && record.fileHandle && !record.file && asset.file) {
+					await browser.save({ asset, fileHandle: record.fileHandle }).catch((error: unknown) => {
+						console.warn("Could not back up the reconnected browser file:", error);
+					});
+				}
+				return asset;
+			}
 		}
 		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
@@ -800,11 +806,17 @@ export class StorageService {
 		const browser = isHostedBrowserWorkspace()
 			? hostedMedia(projectId)
 			: undefined;
-		const stored = (await browser?.records.getAll()) ?? [];
-		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
+		const remote = localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
 			payload: { projectId },
 		});
+		const [stored, records] = await Promise.all([
+			browser?.records.getAll() ?? [],
+			browser ? remote.catch((error: unknown) => {
+				console.warn("Could not load the remote media index:", error);
+				return [];
+			}) : remote,
+		]);
 		const browserIds = new Set(stored.map(({ id }) => id));
 		return [
 			...records
