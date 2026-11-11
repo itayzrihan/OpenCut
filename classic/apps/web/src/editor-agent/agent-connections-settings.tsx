@@ -290,6 +290,11 @@ export function AgentConnectionsSettings({
 				)}
 				{setup}
 				{providerAction("codex")}
+				{local === "codex" && connection?.sharing && connection.imageGenerationSupported === false && (
+					<p role="status" className="text-xs text-muted-foreground">
+						<Message text="This Codex connection does not report native image generation. Update Codex CLI, restart POCUT Companion, then choose Check Connection." />
+					</p>
+				)}
 			</AgentSettingsSection>
 			<AgentSettingsSection
 				title="OpenRouter"
