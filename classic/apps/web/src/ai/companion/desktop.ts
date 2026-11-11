@@ -28,8 +28,8 @@ function xml(value: string) {
 function sh(value: string) {
 	return "'" + value.replaceAll("'", "'\"'\"'") + "'";
 }
-function psString(value: string) {
-	return "'" + value.replaceAll("'", "''") + "'";
+function windowsArgument(value: string) {
+	return '"' + value.replace(/(\\*)"/g, '$1$1\\"').replace(/\\+$/, '$&$&') + '"';
 }
 
 function windowsPowerShell() {
@@ -169,24 +169,28 @@ export async function desktopIntegration({
 			path: string;
 			mode: "manage" | "start";
 		}) {
-			const env = Object.entries(environment)
+			const launcher = join(dirname(executable), `companion-${mode}.js`);
+			const variables = Object.entries(environment)
 				.filter(([key]) => key !== "PATH")
-				.map(([key, value]) => `$env:${key} = ${psString(value)}; `)
-				.join("");
-			const command =
-				env +
-				"& " +
-				args.map(psString).join(" ") +
-				(mode === "manage" ? " --manage" : "");
+				.map(([key, value]) => `env.Item(${JSON.stringify(key)}) = ${JSON.stringify(value)};`);
+			const command = [...args, mode === "manage" ? "--manage" : "--start"]
+				.map(windowsArgument).join(" ");
+			const source = [
+				'var shell = new ActiveXObject("WScript.Shell");',
+				'var env = shell.Environment("Process");',
+				...variables,
+				`shell.Run(${JSON.stringify(command)}, 0, false);`,
+			].join("\r\n");
+			await writeFile(launcher, Buffer.from("\ufeff" + source, "utf16le"));
 			await ps({
 				command:
 					"$ErrorActionPreference = 'Stop'; " +
 					"$link = (New-Object -ComObject WScript.Shell).CreateShortcut($env:POCUT_LINK); " +
-					"$link.TargetPath = $env:POCUT_POWERSHELL; $link.Arguments = $env:POCUT_LINK_ARGS; $link.Save()",
+					"$link.TargetPath = $env:POCUT_WSCRIPT; $link.Arguments = $env:POCUT_LINK_ARGS; $link.Save()",
 				env: {
 					POCUT_LINK: path,
-					POCUT_POWERSHELL: powershell,
-					POCUT_LINK_ARGS: `-NoProfile -NonInteractive -WindowStyle Hidden -Command "${command}"`,
+					POCUT_WSCRIPT: win32.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "wscript.exe"),
+					POCUT_LINK_ARGS: `//B //NoLogo ${windowsArgument(launcher)}`,
 				},
 			});
 		}

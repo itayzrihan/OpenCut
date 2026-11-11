@@ -256,13 +256,24 @@ impl RuntimeAgent {
                     Box::pin(
                         async move { registry.invoke(&id, rebound.context, rebound.input).await },
                     );
-                if let Poll::Ready(_) = future
+                match future
                     .as_mut()
                     .poll(&mut Context::from_waker(Waker::noop()))
                 {
-                    return Err(error(
-                        "pending recovery must use a fresh canonical runtime and installed host adapter",
-                    ));
+                    Poll::Ready(Ok(_)) => {
+                        return Err(error(
+                            "pending recovery must use a fresh canonical runtime and installed host adapter",
+                        ));
+                    }
+                    Poll::Ready(Err(reason)) => {
+                        // A fresh runtime can reject preflight (for example when a reference
+                        // artifact is no longer available). No host IO was started by recovery.
+                        // Keep the project and record the real failure for the paused run.
+                        let result = agent.finish_host_invocation(Err(reason))?;
+                        agent.record_host_result(result);
+                        return Ok(agent);
+                    }
+                    Poll::Pending => {}
                 }
                 let effect = agent
                     .pending_host_effect()?

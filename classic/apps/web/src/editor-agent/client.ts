@@ -342,7 +342,7 @@ export class EditorAgentClient {
 				model,
 				signal: controller.signal,
 				assertScope: () => this.assertScope(),
-				call: async (operation, roundNumber) => {
+				call: async (operation, roundNumber, signal) => {
 					if (operation === "provider") {
 						if (pending)
 							throw new Error(
@@ -352,7 +352,7 @@ export class EditorAgentClient {
 							this.editor.command.setEditingInputAttachments(attachments);
 							attachments = undefined;
 						}
-						controller.signal.throwIfAborted();
+						signal.throwIfAborted();
 						this.assertScope();
 						const knowledgeSnapshot =
 							this.editor.command.getEditingAgentSnapshot();
@@ -368,9 +368,9 @@ export class EditorAgentClient {
 									.slice(-4000),
 								maxBytes: 24_000,
 							},
-							signal: controller.signal,
+							signal,
 						});
-						controller.signal.throwIfAborted();
+						signal.throwIfAborted();
 						this.assertScope();
 						this.editor.command.loadEditingAgentKnowledge(knowledge.data);
 						const request =
@@ -379,14 +379,14 @@ export class EditorAgentClient {
 						const response = await this.respond({
 							body: request.body,
 							reasoningEffort,
-							signal: controller.signal,
+							signal,
 						});
-						controller.signal.throwIfAborted();
+						signal.throwIfAborted();
 						this.assertScope();
 						pending = { round: roundNumber, epoch: request.epoch, response };
 						return { epoch: request.epoch, response };
 					}
-					controller.signal.throwIfAborted();
+					signal.throwIfAborted();
 					this.assertScope();
 					if (!pending || pending.round !== roundNumber)
 						throw new Error(
@@ -401,7 +401,7 @@ export class EditorAgentClient {
 					this.emit({ type: "activities", activities: round.activities });
 					await this.persist();
 					if (round.pendingHost && round.phase !== "paused") {
-						const settled = await this.reconcileHost(controller.signal);
+						const settled = await this.reconcileHost(signal);
 						if (settled) round = settled;
 					}
 					this.snapshot();
@@ -418,7 +418,7 @@ export class EditorAgentClient {
 						await this.review({
 							model,
 							reasoningEffort,
-							signal: controller.signal,
+							signal,
 						});
 					return {
 						phase: this.editor.command.getEditingAgentSnapshot()?.phase,
@@ -659,7 +659,9 @@ export class EditorAgentClient {
 		this.emit({ type: "round", review: true });
 		this.emit({
 			type: "summary",
-			text: `Rendering ${plan.times.length} sample frames for visual review…`,
+			text: plan.times.length
+				? `Rendering ${plan.times.length} sample frames for visual review…`
+				: "Checking the generated image in project media…",
 		});
 		for (const ticks of plan.times) {
 			signal.throwIfAborted();

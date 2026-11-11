@@ -140,6 +140,56 @@ const eventStream = (events: HarnessEvent[]) =>
 		headers: { "Content-Type": "application/x-ndjson" },
 	});
 const ready = { type: "ready" as const, runId: "run", token: "a".repeat(64) };
+test("an expired callback closes a pending review without acknowledging or dispatching it", async () => {
+	const encoder = new TextEncoder();
+	let server!: ReadableStreamDefaultController<Uint8Array>;
+	let replies = 0;
+	let cancelled = false;
+	const publish = (event: HarnessEvent) =>
+		server.enqueue(encoder.encode(JSON.stringify(event) + "\n"));
+	const response = new Response(
+		new ReadableStream<Uint8Array>({
+			start(stream) {
+				server = stream;
+			},
+		}),
+		{ headers: { "Content-Type": "application/x-ndjson" } },
+	);
+	publish(ready);
+	publish({ type: "call", callId: "review", operation: "provider", round: 1 });
+	await expect(
+		driveEditorHarness({
+			accountId: "alice",
+			projectId: "film",
+			model: "codex",
+			signal: new AbortController().signal,
+			assertScope() {},
+			async call(_operation, _round, signal) {
+				const review = new Promise<void>((resolve) => {
+					signal.addEventListener(
+						"abort",
+						() => {
+							cancelled = true;
+							resolve();
+						},
+						{ once: true },
+					);
+				});
+				publish({ type: "error", message: "This editing action timed out" });
+				server.close();
+				await review;
+			},
+			send: (async (_url, options) => {
+				if (JSON.parse(String(options?.body)).type === "start") return response;
+				replies++;
+				return new Response("{}");
+			}) as typeof fetch,
+		}),
+	).rejects.toThrow("This editing action timed out");
+	expect(cancelled).toBe(true);
+	expect(replies).toBe(0);
+});
+
 test("client rejects reordered/repeated dispatch and never replays a write after a lost acknowledgement", async () => {
 	for (const wrongOrder of [true, false]) {
 		let applies = 0,

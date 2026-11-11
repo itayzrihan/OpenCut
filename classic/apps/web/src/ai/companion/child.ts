@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
+import { resolveClientCli } from "../../../public/mcp-install/client-cli.mjs";
 
 export interface RpcMessage {
 	method?: string;
@@ -17,7 +18,7 @@ const rpcSchema = z
 	.passthrough();
 export type SpawnChild = typeof spawn;
 /** Fixed executable/arguments chosen by the local companion, never by an HTTP caller. */
-export function runChild({
+export async function runChild({
 	executable,
 	args,
 	cwd,
@@ -39,12 +40,15 @@ export function runChild({
 	timeoutMs?: number;
 }): Promise<string> {
 	signal.throwIfAborted();
+	const { file, prefix } = await resolveClientCli("claude", executable);
+	signal.throwIfAborted();
 	return new Promise((resolve, reject) => {
-		const child = spawnChild(executable, args, {
+		const child = spawnChild(file, [...prefix, ...args], {
 			cwd,
 			env,
 			stdio: ["pipe", "pipe", "pipe"],
 			shell: false,
+			windowsHide: true,
 		});
 		let stdout = "",
 			settled = false;
@@ -122,6 +126,9 @@ export class CodexRpc {
 		this.starting = this.initialize();
 		try {
 			await this.starting;
+		} catch (cause) {
+			this.close();
+			throw cause;
 		} finally {
 			this.starting = null;
 		}
@@ -169,14 +176,16 @@ export class CodexRpc {
 		delete env.OPENAI_API_KEY;
 		delete env.OPENAI_BASE_URL;
 		delete env.OPENAI_ACCESS_TOKEN;
+		const { file, prefix } = await resolveClientCli("codex", this.options.executable);
 		this.child = (this.options.spawnChild ?? spawn)(
-			this.options.executable,
-			args,
+			file,
+			[...prefix, ...args],
 			{
 				cwd: this.options.cwd,
 				env,
 				stdio: ["pipe", "pipe", "pipe"],
 				shell: false,
+				windowsHide: true,
 			},
 		);
 		const activeChild = this.child;

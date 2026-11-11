@@ -448,6 +448,13 @@ impl RuntimeAgent {
             return Ok(None);
         };
         self.suspended = None;
+        self.finish_host_invocation(result).map(Some)
+    }
+
+    pub(crate) fn finish_host_invocation(
+        &mut self,
+        result: Result<InvocationReceipt, opencut_editor_api::RegistryError>,
+    ) -> Result<Result<Value, AgentError>, AgentError> {
         let pending = self
             .run
             .pending()
@@ -493,9 +500,9 @@ impl RuntimeAgent {
         if self.run.phase() != RunPhase::Paused {
             self.observe()?;
         }
-        Ok(Some(result.map_err(runtime_error).and_then(|receipt| {
-            serde_json::to_value(receipt).map_err(runtime_error)
-        })))
+        Ok(result
+            .map_err(runtime_error)
+            .and_then(|receipt| serde_json::to_value(receipt).map_err(runtime_error)))
     }
 
     pub fn observe(&mut self) -> Result<Value, AgentError> {

@@ -16,12 +16,12 @@ test("the assistant ZIP contains verified setup files and no account credentials
 	};
 	let expectedDigest = sha256;
 	globalThis.fetch = Object.assign(async (input: RequestInfo | URL) => {
-		if (input === "/downloads/pocut-companion-v4.mjs")
+		if (input === "/downloads/pocut-companion-v5.mjs")
 			return new Response(script);
-		expect(input).toBe("/downloads/pocut-companion-v4.json");
+		expect(input).toBe("/downloads/pocut-companion-v5.json");
 		return Response.json({
-			version: 4,
-			filename: "pocut-companion-v4.mjs",
+			version: 5,
+			filename: "pocut-companion-v5.mjs",
 			sha256: expectedDigest,
 			bytes: bytes.length,
 		});
@@ -45,6 +45,8 @@ test("the assistant ZIP contains verified setup files and no account credentials
 		expect(instructions).toContain("**Allow**");
 		expect(instructions).toContain("POCUT-Setup.json --install");
 		expect(instructions).toContain("POCUT-Setup.json --login-claude");
+		expect(instructions).toContain("node install.mjs --client codex");
+		expect(instructions).toContain("node install.mjs --client claude");
 		const withToken = { ...setup, token: "a".repeat(64) };
 		await expect(
 			createPairingPackage({ setup: withToken, signal }),

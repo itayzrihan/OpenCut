@@ -145,7 +145,7 @@ export function proposalResponse({
 }
 export function planningPrompt(request: LocalRequest) {
 	return (
-		"You are the POCUT editing assistant. Return the required JSON proposal. You cannot execute editor tools here; the active browser validates and executes the returned calls. Do not run shell commands, read local files, use the network, or invent results. Available function definitions and conversation follow.\n" +
+		"You are the POCUT editing assistant. Return the required JSON proposal. You cannot execute editor tools here; the active browser validates and executes the returned calls. For image requests, propose discovery and use of imagegen.generate through the editor function when offered. The browser runs the image workflow and shows its review. Do not run shell commands, read local files, use the network, or invent results. Available function definitions and conversation follow.\n" +
 		JSON.stringify(request, (_key, value) =>
 			typeof value === "string" && /^data:image\//.test(value)
 				? "[image provided as a native image attachment]"

@@ -1,6 +1,9 @@
 import { test, expect } from "bun:test";
 import { mkdtemp, readFile, rm, stat, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { join, win32 } from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { setTimeout as delay } from "node:timers/promises";
 import { tmpdir } from "node:os";
 import { desktopIntegration } from "./desktop";
 import { serveManager } from "./management";
@@ -20,7 +23,8 @@ test("macOS Desktop shortcut and sign-in LaunchAgent are independent", async () 
 		if (!integration) throw new Error("No desktop integration");
 		await integration.createShortcut();
 		const launcher = join(integration.shortcut, "Contents", "MacOS", "manage");
-		expect((await stat(launcher)).mode & 0o100).toBe(0o100);
+		if (process.platform !== "win32")
+			expect((await stat(launcher)).mode & 0o100).toBe(0o100);
 		expect(await readFile(launcher, "utf8")).toContain("' --manage");
 		expect(await integration.startupEnabled()).toBe(false);
 		await integration.setStartup(true);
@@ -44,20 +48,21 @@ test("macOS Desktop shortcut and sign-in LaunchAgent are independent", async () 
 });
 
 test("Windows uses the current user's Desktop and Startup folders for separate shortcuts", async () => {
-	const root = await mkdtemp(join(tmpdir(), "pocut-win-test-"));
+	const root = await mkdtemp(join(tmpdir(), "pocut-O'Neil-win-"));
 	const desktop = join(root, "OneDrive Desktop");
 	const startup = join(root, "Startup");
 	try {
 		const integration = await desktopIntegration({
 			platform: "win32",
 			node: "C:\\Program Files\\nodejs\\node.exe",
-			executable: "C:\\Users\\O'Neil\\POCUT\\companion.mjs",
+			executable: join(root, "companion.mjs"),
 			config: "C:\\Users\\O'Neil\\POCUT\\POCUT-Setup.json",
 			dataRoot: "C:\\Users\\O'Neil\\POCUT",
 			run: async ({ file, args, env }) => {
 				expect(file.endsWith("powershell.exe")).toBe(true);
 				if (args.at(-1)?.includes("GetFolderPath"))
 					return { stdout: `${desktop}\r\n${startup}\r\n` };
+				expect(env.POCUT_WSCRIPT).toEndWith("wscript.exe");
 				if (!env.POCUT_LINK || !env.POCUT_LINK_ARGS)
 					throw new Error("Missing shortcut settings");
 				await writeFile(env.POCUT_LINK, env.POCUT_LINK_ARGS);
@@ -68,9 +73,13 @@ test("Windows uses the current user's Desktop and Startup folders for separate s
 		await integration.createShortcut();
 		await integration.setStartup(true);
 		const settings = await readFile(integration.shortcut, "utf8");
-		expect(settings).toContain("-WindowStyle Hidden");
-		expect(settings).toContain("O''Neil");
-		expect(settings).toContain("--manage");
+		expect(settings).toContain("//B //NoLogo");
+		expect(settings).toContain("companion-manage.js");
+		const manager = await readFile(join(root, "companion-manage.js"), "utf16le");
+		expect(manager).toContain("O'Neil");
+		expect(manager).toContain("--manage");
+		expect(manager).toContain(", 0, false);");
+		expect(await readFile(join(root, "companion-start.js"), "utf16le")).toContain("--start");
 		expect(
 			await readFile(join(startup, "POCUT Companion.lnk"), "utf8"),
 		).not.toContain("--manage");
@@ -147,3 +156,39 @@ test("the private browser manager separates running state from startup and rejec
 		server.close();
 	}
 });
+
+
+test.skipIf(process.platform !== "win32")("Windows runs the actual Desktop and Startup shortcuts through the GUI launcher", async () => {
+	const root = await mkdtemp(join(tmpdir(), "pocut-shortcut-O'Neil-"));
+	const desktop = join(root, "Desktop");
+	const startup = join(root, "Startup");
+	const fixture = join(root, "fixture.cjs");
+	const output = join(root, "launch.log");
+	const exec = promisify(execFile);
+	try {
+		await writeFile(fixture, `require('node:fs').appendFileSync(${JSON.stringify(output)}, process.argv.at(-1) + '\\n')`);
+		const integration = await desktopIntegration({
+			node: process.execPath, executable: fixture, config: join(root, "setup.json"), dataRoot: root,
+			run: ({ file, args, env }) => args.at(-1)?.includes("GetFolderPath")
+				? Promise.resolve({ stdout: `${desktop}\r\n${startup}\r\n` })
+				: exec(file, args, { env, windowsHide: true }),
+		});
+		if (!integration) throw new Error("No Windows integration");
+		await integration.createShortcut();
+		await integration.setStartup(true);
+		const ps = win32.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
+		for (const [link, mode] of [[integration.shortcut, "--manage"], [join(startup, "POCUT Companion.lnk"), "--start"]] as const) {
+			await exec(ps, ["-NoProfile", "-NonInteractive", "-Command", "Start-Process -FilePath $env:POCUT_TEST_LINK"], {
+				windowsHide: true, env: { ...process.env, POCUT_TEST_LINK: link },
+			});
+			let received = "";
+			for (let attempt = 0; attempt < 40 && !received.includes(mode); attempt++) {
+				await delay(100);
+				received = await readFile(output, "utf8").catch(() => "");
+			}
+			expect(received.split(/\r?\n/)).toContain(mode);
+		}
+	} finally {
+		await rm(root, { recursive: true, force: true });
+	}
+}, 15000);

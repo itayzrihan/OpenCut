@@ -352,3 +352,111 @@ async fn recovery_retains_only_identical_live_descriptions_without_authority_or_
     .unwrap();
     assert!(legacy.run().contracts().descriptors().is_empty());
 }
+
+#[tokio::test]
+async fn missing_image_reference_on_reopen_keeps_project_and_records_interrupted_action() {
+    let (runtime, agent) = setup().await;
+    let bridge = HostBridge::default();
+    opencut_editor_api::register_editor_image_generation(&runtime, &bridge).unwrap();
+    let mut agent = agent.with_host_bridge(bridge);
+    agent
+        .describe(agent.run().epoch(), "imagegen.generate")
+        .unwrap();
+    plan(&mut agent, PlanStatus::InProgress);
+    let reference = runtime
+        .artifacts()
+        .put(
+            b"synthetic image reference".to_vec(),
+            "image/png",
+            None,
+            None,
+            None,
+        )
+        .unwrap();
+    let round = agent.provider_response(agent.run().epoch(), json!({
+        "id":"image-response", "status":"completed", "output":[{
+            "type":"function_call","call_id":"image-call","name":"opencut_editor",
+            "arguments":json!({"action":"invoke","id":"imagegen.generate","input":{
+                "operationId":"same-image-operation","title":"Hero","prompt":"A blue square",
+                "referenceArtifactIds":[reference.uri]
+            }}).to_string()
+        }]
+    })).unwrap();
+    assert_eq!(round.pending_host.unwrap().adapter, "subscriptionImage");
+    let checkpoint = agent.checkpoint().unwrap();
+    let reopened = reopen(archive(&runtime).await).await;
+    let bridge = HostBridge::default();
+    opencut_editor_api::register_editor_image_generation(&reopened, &bridge).unwrap();
+    let revision = reopened.snapshot().unwrap().revision;
+    let mut recovered = RuntimeAgent::restore_checkpoint(
+        reopened.clone(),
+        "alice",
+        "classic-project",
+        AccessLevel::Write,
+        Some(bridge),
+        &checkpoint,
+    )
+    .unwrap();
+    assert_eq!(recovered.run().phase(), RunPhase::Paused);
+    assert!(recovered.pending_host_effect().unwrap().is_none());
+    assert_eq!(reopened.snapshot().unwrap().revision, revision);
+    let receipt = recovered.run().receipts().last().unwrap();
+    assert_eq!(receipt.call_id, "image-call");
+    assert!(!receipt.committed);
+    recovered.resume(&recovered.run().scope().clone()).unwrap();
+    let context = recovered
+        .provider_request("fixture-model")
+        .unwrap()
+        .body
+        .to_string();
+    assert!(context.contains("function_call_output"));
+    assert!(context.contains("artifact"));
+}
+
+#[tokio::test]
+async fn generated_project_media_is_verified_without_rendering_the_timeline() {
+    let (runtime, agent) = setup().await;
+    let bridge = HostBridge::default();
+    opencut_editor_api::register_editor_image_generation(&runtime, &bridge).unwrap();
+    let mut agent = agent.with_host_bridge(bridge);
+    agent.describe(agent.run().epoch(), "imagegen.generate").unwrap();
+    plan(&mut agent, PlanStatus::InProgress);
+    let round = agent.provider_response(agent.run().epoch(), json!({
+        "id":"generated-media-response", "status":"completed", "output":[{
+            "type":"function_call","call_id":"generate-media","name":"opencut_editor",
+            "arguments":json!({"action":"invoke","id":"imagegen.generate","input":{
+                "operationId":"one-image","title":"Lighthouse","prompt":"A lighthouse"
+            }}).to_string()
+        }]
+    })).unwrap();
+    let mut png = b"\x89PNG\r\n\x1a\n\x00\x00\x00\x0dIHDR".to_vec();
+    png.extend(1u32.to_be_bytes());
+    png.extend(1u32.to_be_bytes());
+    let artifact = runtime.artifacts().put(png, "image/png", Some(1), Some(1), None).unwrap();
+    let round = agent.settle_host_effect(
+        "alice",
+        "classic-project",
+        round.pending_host.unwrap().id,
+        HostEffectResult::Success { data: json!({
+            "projectId":"classic-project","operationId":"one-image",
+            "mediaId":"lighthouse","fileName":"lighthouse.png","lastModified":123,"artifact":artifact
+        }) },
+    ).unwrap();
+    assert!(round.needs_verification);
+    let review_plan = agent.review_plan().unwrap();
+    assert!(review_plan.times.is_empty());
+    assert!(agent.finish(review_plan.epoch, "Done".into()).is_err());
+    let review = agent.review_request("fixture-model", review_plan.epoch, review_plan.revision, vec![]).unwrap();
+    assert!(review.body["instructions"].as_str().unwrap().contains("project media only"));
+    let content = &review.body["input"][0]["content"];
+    let facts: Value = serde_json::from_str(content[0]["text"].as_str().unwrap()).unwrap();
+    assert_eq!(facts["generatedMedia"][0]["id"], "lighthouse");
+    assert_eq!(content[2]["type"], "input_image");
+    assert!(content[2]["image_url"].as_str().unwrap().starts_with("data:image/png;base64,"));
+    agent.review_response(review_plan.epoch, json!({"status":"completed","output":[{
+        "type":"message","content":[{"type":"output_text","text":"{\"issues\":[],\"summary\":\"Image is present in project media.\"}"}]
+    }]})).unwrap();
+    plan(&mut agent, PlanStatus::Complete);
+    agent.finish(agent.run().epoch(), "Image saved to project media.".into()).unwrap();
+    assert_eq!(agent.run().phase(), RunPhase::Completed);
+}

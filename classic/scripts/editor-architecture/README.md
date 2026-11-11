@@ -48,6 +48,28 @@ Do not automatically regenerate this baseline in CI or update hashes just to
 silence a failure. Removing a command should also remove its baseline entry so
 that its later reintroduction fails.
 
+### Reviewed legacy exceptions for the production source at `f1d31bf57`
+
+The baseline records these specific changes already present on main:
+
+- Media import switched to localized error notifications. The media mutation and
+  rollback remain the existing command.
+- Caption clip movement uses the active scene's canvas. Retimed splitting uses
+  the clip's source trim and tick units. These keep the legacy caption bridge and
+  source timing behavior until their full migration.
+- Group resize passes the owning editor to the existing update command and
+  commits its filtered updates, removals and ripple timing as a single edit.
+- Brand Kit preparation attaches metadata for fonts already copied into the
+  current project. Rust still owns the actual Brand Kit timeline edit.
+- Transcript correction and Auto Texts share the existing caption snapshot
+  transaction through `runCaptionRecipe`. The two former `runAutoTexts` entries
+  are removed.
+
+The scanner still rejects subsequent changes to these exact commands and call
+sites. Relevant regression suites cover timeline preview and group resize,
+retimed splits, caption source synchronization and Auto Texts, project session
+font metadata, and canonical Brand Kits.
+
 ## Not enforced or proven yet
 
 This is a bounded migration ratchet, not complete future-feature enforcement.

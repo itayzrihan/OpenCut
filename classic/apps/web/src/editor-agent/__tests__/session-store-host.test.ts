@@ -36,6 +36,7 @@ mock.module("@/accounts/server", () => ({
 	accountDataRoot: () => join(root, account.getStore()!),
 	accountsRoot: () => root,
 	canImportLegacy: () => false,
+	localRequestOrigin: (request: Request) => new URL(request.url).origin,
 }));
 const { operateEditorSession } = await import("../server/session-store");
 const { getProject, putProject, getHistory, putHistory } =

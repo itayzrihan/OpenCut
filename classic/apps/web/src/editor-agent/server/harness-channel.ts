@@ -54,7 +54,11 @@ export class HarnessChannel {
 			const timer = setTimeout(() => {
 				this.pending = undefined;
 				this.closed = true;
-				reject(new Error("Editor did not acknowledge the harness callback"));
+				reject(
+					new Error(
+						"This editing action timed out. Resume from the saved project.",
+					),
+				);
 			}, this.timeoutMs);
 			timer.unref?.();
 			this.pending = { id, resolve, reject, timer };

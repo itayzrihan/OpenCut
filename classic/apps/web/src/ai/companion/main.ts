@@ -26,6 +26,7 @@ import { CodexProvider, ClaudeProvider } from "./native-providers";
 import { companionHandler } from "./handler";
 import { desktopIntegration, exists, openLocalManager } from "./desktop";
 import { serveManager } from "./management";
+import { resolveClientCli } from "../../../public/mcp-install/client-cli.mjs";
 
 const dataRoot =
 	process.env.OPENCUT_COMPANION_DATA_DIR ??
@@ -113,7 +114,7 @@ function localControl({
 			const log = await open(join(directory, "companion.log"), "a", 0o600);
 			try {
 				const child = spawn(process.execPath, [executable, config], {
-					detached: true,
+					detached: process.platform !== "win32",
 					windowsHide: true,
 					stdio: ["ignore", log.fd, log.fd],
 				});
@@ -154,10 +155,12 @@ async function manageInstallation({
 	setup,
 	directory,
 	install,
+	start,
 }: {
 	setup: CompanionSetup;
 	directory: string;
 	install: boolean;
+	start: boolean;
 }) {
 	await mkdir(directory, { recursive: true, mode: 0o700 });
 	const control = localControl({
@@ -165,6 +168,10 @@ async function manageInstallation({
 		setup,
 		token: await controlToken(directory),
 	});
+	if (start) {
+		await control.start();
+		return;
+	}
 	const desktop = await desktopIntegration({
 		node: process.execPath,
 		executable: control.executable,
@@ -231,8 +238,9 @@ async function run() {
 		? join(dataRoot, "installations", setup.setupId)
 		: null;
 	const install = process.argv.includes("--install");
-	if (setup && directory && (install || process.argv.includes("--manage"))) {
-		await manageInstallation({ setup, directory, install });
+	const start = process.argv.includes("--start");
+	if (setup && directory && (install || start || process.argv.includes("--manage"))) {
+		await manageInstallation({ setup, directory, install, start });
 		return;
 	}
 	if (directory) await mkdir(directory, { recursive: true, mode: 0o700 });
@@ -245,9 +253,10 @@ async function run() {
 			);
 		const profile = providerProfile(pair);
 		await mkdir(profile, { recursive: true, mode: 0o700 });
+		const { file, prefix } = await resolveClientCli("claude", process.env.OPENCUT_CLAUDE_PATH);
 		const child = spawn(
-			process.env.OPENCUT_CLAUDE_PATH ?? "claude",
-			["auth", "login"],
+			file,
+			[...prefix, "auth", "login"],
 			{
 				stdio: "inherit",
 				shell: false,
