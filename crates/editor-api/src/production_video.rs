@@ -61,7 +61,6 @@ pub fn register_production_video(
         serde_json::to_value(schema_for!(Input)).unwrap(),
         serde_json::to_value(schema_for!(Output)).unwrap(),
     );
-    descriptor.access = AccessLevel::Write;
     descriptor.open_world = true;
     descriptor.cancellable = true;
     descriptor.document_support = DocumentSupport::Classic;
@@ -84,7 +83,8 @@ pub fn register_production_video(
             let media=document.project.as_ref().filter(|p|p.id==args.project_id).and_then(|p|p.classic.as_ref()).and_then(|c|c.media_assets.iter().find(|m|m.get("id").and_then(|v|v.as_str())==Some(&args.media_id)&&m.get("type").and_then(|v|v.as_str())==Some("video")));
             if document.revision!=args.expected_revision||media.is_none()||context.metadata.get("opencut/projectId").is_some_and(|p|p.as_str()!=Some(&args.project_id)){return Err(CapabilityError::Conflict("Video inspection source, project or revision changed".into()));}Ok(())
         };check()?;
-        let reply=bridge.execute(id,"productionVideoFrames",&args.project_id,value).await?;check()?;
+        let reply=bridge.execute_cancellable_preflight(id,"productionVideoFrames",&args.project_id,value,
+            Some(serde_json::to_value(schema_for!(HostOutput)).unwrap()),context.cancellation.clone()).await?;check()?;
         let output:HostOutput=serde_json::from_value(reply.data).map_err(|e|CapabilityError::InvalidInput(e.to_string()))?;
         if output.project_id!=args.project_id||output.revision!=args.expected_revision||output.media_id!=args.media_id||output.duration_ms==0||output.duration_ms>86_400_000||output.width==0||output.height==0||output.width>32768||output.height>32768||output.frames.len()!=args.times_ms.len(){return Err(CapabilityError::Conflict("Video observation scope differs from request".into()));}
         let mut frames=Vec::new();let mut evidence=Vec::new();
@@ -96,8 +96,5 @@ pub fn register_production_video(
         let out=Output{project_id:output.project_id,revision:output.revision,media_id:output.media_id,duration_ms:output.duration_ms,width:output.width,height:output.height,frames,scope:"Sampled decoded source frames only. No audio, motion or unsampled interval verification.".into()};
         let mut result=CapabilityResult::data(serde_json::to_value(out).unwrap());result.artifacts=evidence;Ok(result)
     })})))?;
-    // The browser returns artifact IDs; only the runtime can resolve verified
-    // metadata and publish the public capability output.
-    descriptor.output_schema = serde_json::to_value(schema_for!(HostOutput)).unwrap();
     host.install(&descriptor).map_err(RegistryError::Capability)
 }
