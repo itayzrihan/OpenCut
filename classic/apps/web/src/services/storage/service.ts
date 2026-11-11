@@ -27,7 +27,11 @@ import { IndexedDBAdapter } from "./indexeddb-adapter";
 import { OPFSAdapter } from "./opfs-adapter";
 import { hostedMedia } from "./hosted-media";
 import type { StorageCapacityCheckResult } from "./quota";
-import { evaluateStorageCapacity, isStorageQuotaExceededError, readStorageQuotaStatus } from "./quota";
+import {
+	evaluateStorageCapacity,
+	isStorageQuotaExceededError,
+	readStorageQuotaStatus,
+} from "./quota";
 import type {
 	MediaAssetData,
 	ProjectFontData,
@@ -231,7 +235,9 @@ export class StorageService {
 		const accountId = window.__opencutAccountId;
 		if (!accountId) throw new Error("Sign in before opening account storage");
 		return new IndexedDBAdapter<Omit<ProjectFontAsset, "url">>({
-			dbName: `hosted-fonts-${projectId}`, storeName: "fonts", accountId,
+			dbName: `hosted-fonts-${projectId}`,
+			storeName: "fonts",
+			accountId,
 		});
 	}
 
@@ -455,7 +461,10 @@ export class StorageService {
 		size: number;
 	}): Promise<StorageCapacityCheckResult> {
 		if (isHostedBrowserWorkspace())
-			return evaluateStorageCapacity({ requiredBytes: size, quotaStatus: await readStorageQuotaStatus() });
+			return evaluateStorageCapacity({
+				requiredBytes: size,
+				quotaStatus: await readStorageQuotaStatus(),
+			});
 		await localDriveRequest({ operation: "status" });
 		return {
 			canStore: true,
@@ -621,9 +630,19 @@ export class StorageService {
 			assertLocalDriveWriteScope({ projectId, scope });
 			scope.signal?.throwIfAborted();
 			const browser = hostedMedia(projectId, scope.accountId);
-			if (mediaAsset.file || mediaAsset.unifiedAngles || mediaAsset.sourcePath ||
-				(await browser.records.get(mediaAsset.id))) {
-				Object.assign(mediaAsset, await browser.save(mediaAsset, scope.uploadToken));
+			if (
+				mediaAsset.file ||
+				mediaAsset.unifiedAngles ||
+				mediaAsset.sourcePath ||
+				(await browser.records.get(mediaAsset.id))
+			) {
+				Object.assign(
+					mediaAsset,
+					await browser.save({
+						asset: mediaAsset,
+						uploadToken: scope.uploadToken,
+					}),
+				);
 				return;
 			}
 		}
@@ -694,6 +713,45 @@ export class StorageService {
 		mediaAsset.lastModified = lastModified;
 	}
 
+	async saveBrowserMediaAsset({
+		projectId,
+		mediaAsset,
+		scope,
+		fileHandle,
+	}: {
+		projectId: string;
+		mediaAsset: MediaAsset;
+		scope: LocalDriveRequestScope;
+		fileHandle?: FileSystemFileHandle;
+	}) {
+		assertLocalDriveWriteScope({ projectId, scope });
+		scope.signal?.throwIfAborted();
+		const browser = hostedMedia(projectId, scope.accountId);
+		return browser.save({ asset: mediaAsset, fileHandle });
+	}
+
+	async updateBrowserMediaMetadata({
+		projectId,
+		id,
+		metadata,
+		scope,
+	}: {
+		projectId: string;
+		id: string;
+		metadata: Pick<
+			MediaAsset,
+			"duration" | "width" | "height" | "fps" | "hasAudio" | "thumbnailUrl"
+		>;
+		scope: LocalDriveRequestScope;
+	}) {
+		assertLocalDriveWriteScope({ projectId, scope });
+		const { records } = hostedMedia(projectId, scope.accountId);
+		const record = await records.get(id);
+		assertLocalDriveWriteScope({ projectId, scope });
+		if (record && !record.deleted)
+			await records.set({ key: id, value: { ...record, ...metadata } });
+	}
+
 	private hydrateMedia({
 		projectId,
 		record,
@@ -709,11 +767,22 @@ export class StorageService {
 		};
 	}
 
-	async loadMediaAsset({ projectId, id }: { projectId: string; id: string }) {
+	async loadMediaAsset({
+		projectId,
+		id,
+		requestBrowserAccess = false,
+	}: {
+		projectId: string;
+		id: string;
+		requestBrowserAccess?: boolean;
+	}) {
 		if (isHostedBrowserWorkspace()) {
 			const browser = hostedMedia(projectId);
 			const record = await browser.records.get(id);
-			if (record) return record.deleted ? null : browser.hydrate(record);
+			if (record)
+				return record.deleted
+					? null
+					: browser.hydrate({ record, requestAccess: requestBrowserAccess });
 		}
 		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
@@ -728,17 +797,24 @@ export class StorageService {
 	}: {
 		projectId: string;
 	}): Promise<MediaAsset[]> {
-		const browser = isHostedBrowserWorkspace() ? hostedMedia(projectId) : undefined;
-		const stored = await browser?.records.getAll() ?? [];
+		const browser = isHostedBrowserWorkspace()
+			? hostedMedia(projectId)
+			: undefined;
+		const stored = (await browser?.records.getAll()) ?? [];
 		const records = await localDriveRequest<LocalDriveMediaRecord[]>({
 			operation: "media.list",
 			payload: { projectId },
 		});
 		const browserIds = new Set(stored.map(({ id }) => id));
 		return [
-			...records.filter(({ id }) => !browserIds.has(id))
+			...records
+				.filter(({ id }) => !browserIds.has(id))
 				.map((record) => this.hydrateMedia({ projectId, record })),
-			...stored.filter(({ deleted }) => !deleted).map((record) => browser!.hydrate(record)),
+			...(await Promise.all(
+				stored
+					.filter(({ deleted }) => !deleted)
+					.map((record) => browser!.hydrate({ record })),
+			)),
 		];
 	}
 
@@ -756,7 +832,10 @@ export class StorageService {
 			const record = await browser.records.get(id);
 			if (record) {
 				if (scope) assertLocalDriveWriteScope({ projectId, scope });
-				await browser.records.set({ key: id, value: { ...record, deleted: true } });
+				await browser.records.set({
+					key: id,
+					value: { ...record, deleted: true },
+				});
 				return;
 			}
 		}
@@ -780,7 +859,10 @@ export class StorageService {
 	}) {
 		if (isHostedBrowserWorkspace()) {
 			assertLocalDriveWriteScope({ projectId, scope });
-			return hostedMedia(projectId, scope.accountId).finishImport(uploadToken, discard);
+			return hostedMedia(projectId, scope.accountId).finishImport(
+				uploadToken,
+				discard,
+			);
 		}
 		await localDriveRequest({
 			operation: "media.finishUpload",
@@ -802,7 +884,10 @@ export class StorageService {
 	}) {
 		if (isHostedBrowserWorkspace()) {
 			assertLocalDriveWriteScope({ projectId, scope });
-			return hostedMedia(projectId, scope.accountId).beginImport(uploadToken, draft);
+			return hostedMedia(projectId, scope.accountId).beginImport(
+				uploadToken,
+				draft,
+			);
 		}
 		await localDriveRequest({
 			operation: "media.beginUpload",
@@ -846,7 +931,9 @@ export class StorageService {
 	}
 
 	async deleteProjectMedia({ projectId }: { projectId: string }) {
-		const browser = isHostedBrowserWorkspace() ? hostedMedia(projectId) : undefined;
+		const browser = isHostedBrowserWorkspace()
+			? hostedMedia(projectId)
+			: undefined;
 		await localDriveRequest({
 			operation: "media.clear",
 			payload: { projectId },
@@ -946,21 +1033,28 @@ export class StorageService {
 	}
 
 	async loadAllProjectFonts({ projectId }: { projectId: string }) {
-		const local = isHostedBrowserWorkspace() ? await this.hostedFonts(projectId).getAll() : [];
+		const local = isHostedBrowserWorkspace()
+			? await this.hostedFonts(projectId).getAll()
+			: [];
 		const ids = new Set(local.map(({ id }) => id));
 		const fonts = await localDriveRequest<ProjectFontData[]>({
 			operation: "font.list",
 			payload: { projectId },
 		});
 		return Promise.all([
-			...fonts.filter(({ id }) => !ids.has(id)).map(
-				async (font): Promise<ProjectFontAsset> => ({
-					...font,
-					file: await loadLocalFontFile({ projectId, font }),
-					url: localFontUrl({ projectId, id: font.id }),
-				}),
-			),
-			...local.map((font) => ({ ...font, url: URL.createObjectURL(font.file) })),
+			...fonts
+				.filter(({ id }) => !ids.has(id))
+				.map(
+					async (font): Promise<ProjectFontAsset> => ({
+						...font,
+						file: await loadLocalFontFile({ projectId, font }),
+						url: localFontUrl({ projectId, id: font.id }),
+					}),
+				),
+			...local.map((font) => ({
+				...font,
+				url: URL.createObjectURL(font.file),
+			})),
 		]);
 	}
 
@@ -985,7 +1079,9 @@ export class StorageService {
 	}
 
 	async deleteProjectFonts({ projectId }: { projectId: string }) {
-		const local = isHostedBrowserWorkspace() ? this.hostedFonts(projectId) : undefined;
+		const local = isHostedBrowserWorkspace()
+			? this.hostedFonts(projectId)
+			: undefined;
 		await localDriveRequest({
 			operation: "font.clear",
 			payload: { projectId },

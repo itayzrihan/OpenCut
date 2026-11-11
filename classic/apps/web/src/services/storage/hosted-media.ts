@@ -1,3 +1,4 @@
+import type { BrowserFileHandle } from "@/media/browser-file-handle";
 import type { HyperframesImportDraft } from "@/hyperframes/import-recovery-types";
 import type { MediaAsset } from "@/media/types";
 import { IndexedDBAdapter } from "./indexeddb-adapter";
@@ -5,6 +6,7 @@ import type { MediaAssetData } from "./types";
 
 type BrowserMedia = MediaAssetData & {
 	file?: File;
+	fileHandle?: BrowserFileHandle;
 	revision: string;
 	uploadToken?: string;
 	deleted?: boolean;
@@ -18,10 +20,17 @@ type BrowserImport = {
 
 const objectUrls = new Map<string, { revision: string; url: string }>();
 
-export function hostedMedia(projectId: string, accountId = window.__opencutAccountId) {
+export function hostedMedia(
+	projectId: string,
+	accountId = window.__opencutAccountId,
+) {
 	if (!accountId) throw new Error("Sign in before opening account storage");
 	const dbName = `hosted-media-${projectId}`;
-	const records = new IndexedDBAdapter<BrowserMedia>({ dbName, storeName: "media", accountId });
+	const records = new IndexedDBAdapter<BrowserMedia>({
+		dbName,
+		storeName: "media",
+		accountId,
+	});
 	const imports = new IndexedDBAdapter<BrowserImport>({
 		dbName: `${dbName}-imports`,
 		storeName: "imports",
@@ -34,10 +43,19 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 		const readyAssetIds: string[] = [];
 		for (const { id, size } of job.draft.resources) {
 			const record = await records.get(id);
-			if (!record?.deleted && record?.uploadToken === uploadToken && record.file?.size === size)
+			if (
+				!record?.deleted &&
+				record?.uploadToken === uploadToken &&
+				record.file?.size === size
+			)
 				readyAssetIds.push(id);
 		}
-		return { uploadToken, createdAt: job.createdAt, draft: job.draft, readyAssetIds };
+		return {
+			uploadToken,
+			createdAt: job.createdAt,
+			draft: job.draft,
+			readyAssetIds,
+		};
 	};
 	const urlFor = (record: BrowserMedia) => {
 		if (!record.file) return undefined;
@@ -52,14 +70,61 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 	return {
 		records,
 		imports,
-		hydrate(record: BrowserMedia): MediaAsset {
-			const { revision: _revision, uploadToken: _uploadToken, deleted: _deleted, ...asset } = record;
+		async hydrate({
+			record,
+			requestAccess = false,
+		}: {
+			record: BrowserMedia;
+			requestAccess?: boolean;
+		}): Promise<MediaAsset> {
+			const {
+				revision: _revision,
+				uploadToken: _uploadToken,
+				deleted: _deleted,
+				fileHandle,
+				...asset
+			} = record;
+			if (fileHandle) {
+				try {
+					if (
+						requestAccess &&
+						fileHandle.requestPermission &&
+						(await fileHandle.requestPermission({ mode: "read" })) !== "granted"
+					)
+						return { ...asset, missing: true };
+					const file = await fileHandle.getFile();
+					if (
+						file.size !== record.size ||
+						file.lastModified !== record.lastModified
+					)
+						return { ...asset, missing: true };
+					return {
+						...asset,
+						file,
+						missing: false,
+						url: urlFor({ ...record, file }),
+					};
+				} catch {
+					return { ...asset, missing: true };
+				}
+			}
 			return { ...asset, url: urlFor(record) };
 		},
-		async save(asset: MediaAsset, uploadToken?: string) {
+		async save({
+			asset,
+			uploadToken,
+			fileHandle,
+		}: {
+			asset: MediaAsset;
+			uploadToken?: string;
+			fileHandle?: BrowserFileHandle;
+		}) {
 			const previous = await records.get(asset.id);
-			if (uploadToken && (!(await imports.get(uploadToken)) ||
-				(previous && previous.uploadToken !== uploadToken))) {
+			if (
+				uploadToken &&
+				(!(await imports.get(uploadToken)) ||
+					(previous && previous.uploadToken !== uploadToken))
+			) {
 				throw new Error("This media import is no longer pending");
 			}
 			const file = asset.file ?? previous?.file;
@@ -71,7 +136,7 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 				lastModified: file?.lastModified ?? asset.lastModified ?? Date.now(),
 				fileName: file?.name ?? asset.fileName ?? asset.name,
 				mimeType: file?.type || asset.mimeType || "application/octet-stream",
-				storageKind: "copied",
+				storageKind: fileHandle ? "linked" : "copied",
 				width: asset.width,
 				height: asset.height,
 				duration: asset.duration,
@@ -80,11 +145,13 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 				thumbnailUrl: asset.thumbnailUrl,
 				ephemeral: asset.ephemeral,
 				unifiedAngles: asset.unifiedAngles,
-				missing: !file && !asset.unifiedAngles,
-				file,
-				revision: asset.file && asset.file !== previous?.file
-					? crypto.randomUUID()
-					: previous?.revision ?? crypto.randomUUID(),
+				missing: !fileHandle && !file && !asset.unifiedAngles,
+				file: fileHandle ? undefined : file,
+				fileHandle,
+				revision:
+					asset.file && asset.file !== previous?.file
+						? crypto.randomUUID()
+						: (previous?.revision ?? crypto.randomUUID()),
 				uploadToken,
 			};
 			await records.set({ key: asset.id, value: record });
@@ -94,7 +161,9 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 				missing: record.missing,
 				sourcePath: undefined,
 				storageKind: record.storageKind,
-				url: urlFor(record),
+				url: asset.url?.startsWith("blob:")
+					? asset.url
+					: urlFor({ ...record, file }),
 			};
 		},
 		async beginImport(uploadToken: string, draft: HyperframesImportDraft) {
@@ -112,14 +181,21 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 		readImport,
 		async listImports() {
 			const jobs = await imports.getAll();
-			return Promise.all(jobs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-				.map(async (job) => {
-					const { readyAssetIds, draft } = await readImport(job.id);
-					return {
-						uploadToken: job.id, createdAt: job.createdAt, name: draft.name,
-						sceneId: draft.sceneId, completed: readyAssetIds.length, total: draft.resources.length,
-					};
-				}));
+			return Promise.all(
+				jobs
+					.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+					.map(async (job) => {
+						const { readyAssetIds, draft } = await readImport(job.id);
+						return {
+							uploadToken: job.id,
+							createdAt: job.createdAt,
+							name: draft.name,
+							sceneId: draft.sceneId,
+							completed: readyAssetIds.length,
+							total: draft.resources.length,
+						};
+					}),
+			);
 		},
 		async finishImport(uploadToken: string, discard: boolean) {
 			const job = await imports.get(uploadToken);
@@ -128,7 +204,11 @@ export function hostedMedia(projectId: string, accountId = window.__opencutAccou
 				const record = await records.get(id);
 				if (record?.uploadToken !== uploadToken) continue;
 				if (discard) await records.remove(id);
-				else await records.set({ key: id, value: { ...record, uploadToken: undefined } });
+				else
+					await records.set({
+						key: id,
+						value: { ...record, uploadToken: undefined },
+					});
 			}
 			await imports.remove(uploadToken);
 		},

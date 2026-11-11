@@ -6,7 +6,15 @@ import { generateUUID } from "@/utils/id";
 import { videoCache } from "@/services/video-cache/service";
 import { waveformCache } from "@/services/waveform-cache/service";
 import { buildWaveformSourceKey } from "@/media/waveform-summary";
-import { localDriveRequest } from "@/services/local-drive/client";
+import {
+	assertLocalDriveWriteScope,
+	captureLocalDriveWriteScope,
+	localDriveRequest,
+} from "@/services/local-drive/client";
+import { getMediaTypeFromFile } from "@/media/media-utils";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import type { DroppedFileHandles } from "@/media/browser-file-drop";
+import { localizeClientMessage } from "@/i18n/client-messages";
 import { UnifiedAnglesSyncTasks } from "@/media/unified-sync-task";
 import { isUnifiedAnglesAsset } from "@/media/unified-angles";
 
@@ -87,6 +95,214 @@ export class MediaManager {
 			);
 			this.notify();
 		}
+	}
+
+	private browserImports = new Map<string, Promise<MediaAsset | null>>();
+
+	isPreparingBrowserMedia(id: string) {
+		return this.browserImports.has(id);
+	}
+
+	/** Publish the file references in one canonical Undo entry before reading bytes. */
+	importBrowserFiles({
+		projectId,
+		files,
+		handles,
+	}: {
+		projectId: string;
+		files: File[];
+		handles?: DroppedFileHandles;
+	}): Promise<MediaAsset | null>[] {
+		if (!isHostedBrowserWorkspace())
+			throw new Error("Browser media import requires a hosted workspace");
+		const scope = captureLocalDriveWriteScope({ projectId });
+		const assets = files.flatMap((file) => {
+			const type = getMediaTypeFromFile({ file });
+			if (!type) {
+				toast.error(
+					localizeClientMessage("Unsupported file type: {v0}", {
+						v0: file.name,
+					}),
+				);
+				return [];
+			}
+			return [
+				{
+					id: generateUUID(),
+					type,
+					file,
+					name: file.name,
+					fileName: file.name,
+					mimeType: file.type,
+					size: file.size,
+					lastModified: file.lastModified,
+					url: URL.createObjectURL(file),
+					storageKind: "copied" as const,
+				},
+			];
+		});
+		if (!assets.length) return [];
+		try {
+			this.editor.command.prepareClassicMediaImport({ projectId, assets })();
+		} catch (error) {
+			for (const asset of assets) URL.revokeObjectURL(asset.url);
+			throw error;
+		}
+		const sameProject = () => {
+			assertLocalDriveWriteScope({ projectId, scope });
+			return this.editor.project.getActiveOrNull()?.metadata.id === projectId;
+		};
+		// A single probe at a time avoids starting a decoder for every dropped file.
+		let probing: Promise<unknown> = Promise.resolve();
+		return assets.map((asset) => {
+			const stored: MediaAsset = { ...asset };
+			const saving = (async () => {
+				const handle = await handles?.get(asset.file);
+				try {
+					Object.assign(
+						stored,
+						await storageService.saveBrowserMediaAsset({
+							projectId,
+							mediaAsset: stored,
+							scope,
+							fileHandle: handle,
+						}),
+					);
+				} catch (error) {
+					if (
+						!(
+							handle &&
+							error instanceof DOMException &&
+							error.name === "DataCloneError"
+						)
+					)
+						throw error;
+					Object.assign(
+						stored,
+						await storageService.saveBrowserMediaAsset({
+							projectId,
+							mediaAsset: stored,
+							scope,
+						}),
+					);
+				}
+			})().then(
+				() => true,
+				(error: unknown) => {
+					console.error("Browser media could not be saved:", error);
+					if (window.__opencutAccountId === scope.accountId)
+						toast.error(
+							localizeClientMessage(
+								"Could not keep {v0} after closing this tab",
+								{ v0: asset.name },
+							),
+							{
+								description: error instanceof Error ? error.message : undefined,
+							},
+						);
+					return false;
+				},
+			);
+			const ready = probing
+				.then(async () => {
+					if (
+						!sameProject() ||
+						!this.assets.some((item) => item.id === asset.id)
+					)
+						return null;
+					const { probeBrowserMedia } = await import("@/media/processing");
+					const metadata = await probeBrowserMedia({
+						asset,
+						signal: AbortSignal.timeout(15_000),
+					});
+					if (!sameProject()) return null;
+					const current = this.assets.find((item) => item.id === asset.id);
+					if (!current) return null;
+					const updated = { ...current, ...metadata };
+					this.setAssets({
+						assets: this.assets.map((item) =>
+							item.id === asset.id ? updated : item,
+						),
+					});
+					if (updated.type === "video" && updated.fps)
+						this.editor.project.ratchetFpsForImportedMedia({
+							importedAssets: [updated],
+						});
+					void saving
+						.then(async (saved) => {
+							if (!saved) return;
+							await storageService.updateBrowserMediaMetadata({
+								projectId,
+								id: asset.id,
+								metadata,
+								scope,
+							});
+							if (!sameProject()) return;
+							if (stored.storageKind === "linked") {
+								this.setAssets({
+									assets: this.assets.map((item) =>
+										item.id === asset.id
+											? { ...item, storageKind: "linked" }
+											: item,
+									),
+								});
+							}
+							if (this.editor.command.hasAtomicSessionStorage())
+								await this.editor.command.persistEditingSession();
+						})
+						.catch((error: unknown) =>
+							console.error("Could not save browser media metadata:", error),
+						);
+					return updated;
+				})
+				.catch((error: unknown) => {
+					console.error("Could not read browser media:", error);
+					if (window.__opencutAccountId === scope.accountId)
+						toast.error(
+							localizeClientMessage("Couldn't process {v0}", {
+								v0: asset.name,
+							}),
+							{
+								description: error instanceof Error ? error.message : undefined,
+							},
+						);
+					return null;
+				})
+				.finally(() => {
+					this.browserImports.delete(asset.id);
+					this.notify();
+				});
+			probing = ready;
+			this.browserImports.set(asset.id, ready);
+			return ready;
+		});
+	}
+
+	async reopenBrowserSource({
+		projectId,
+		id,
+	}: {
+		projectId: string;
+		id: string;
+	}) {
+		const scope = captureLocalDriveWriteScope({ projectId });
+		const asset = await storageService.loadMediaAsset({
+			projectId,
+			id,
+			requestBrowserAccess: true,
+		});
+		assertLocalDriveWriteScope({ projectId, scope });
+		if (!asset || asset.missing)
+			throw new Error(
+				"The original file is unavailable. Import it again if it was moved or changed.",
+			);
+		if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+			return;
+		this.setAssets({
+			assets: this.assets.map((item) => (item.id === id ? asset : item)),
+		});
+		if (this.editor.command.hasAtomicSessionStorage())
+			await this.editor.command.persistEditingSession();
 	}
 
 	async addMediaAsset({

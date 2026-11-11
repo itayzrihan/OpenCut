@@ -111,6 +111,12 @@ function knowledgeFixtureResponse() {
 		},
 	});
 }
+let probeImportedMedia = async (): Promise<Partial<MediaAsset>> => ({
+	duration: 2,
+});
+mock.module("@/media/processing", () => ({
+	probeBrowserMedia: () => probeImportedMedia(),
+}));
 let saveImportedMedia = async (_input: {
 	projectId: string;
 	mediaAsset: MediaAsset;
@@ -123,6 +129,11 @@ mock.module("@/services/storage/service", () => ({
 		saveMediaAsset: (input: { projectId: string; mediaAsset: MediaAsset }) =>
 			saveImportedMedia(input),
 		isQuotaExceededError: () => false,
+		updateBrowserMediaMetadata: async () => {},
+		saveBrowserMediaAsset: (input: {
+			projectId: string;
+			mediaAsset: MediaAsset;
+		}) => saveImportedMedia(input),
 		saveCommandHistory: async ({
 			history,
 		}: {
@@ -401,6 +412,82 @@ test(
 			expect(host.manager.captureProjectSnapshot()).toEqual(before);
 		} finally {
 			host.manager.detachCanonical();
+		}
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
+	"browser drop publishes canonical media before local persistence or probing",
+	async () => {
+		const { MediaManager } = await import("@/core/managers/media-manager");
+		const host = createHost();
+		const windowBefore = globalThis.window;
+		globalThis.window = {
+			...windowBefore,
+			location: new URL("https://pocut.example"),
+			__opencutAccountId: "browser-drop-qa",
+			__opencutHostedLegitate: true,
+		} as Window & typeof globalThis;
+		const importer = new MediaManager(host.editor);
+		importer.setAssets({ assets: host.media() });
+		Object.defineProperty(host.editor, "media", { value: importer });
+		const runtime = await createCanonicalTestRuntime();
+		let finishSave!: () => void;
+		let finishProbe!: (metadata: Partial<MediaAsset>) => void;
+		const savedFile = new Promise<void>((resolve) => {
+			finishSave = resolve;
+		});
+		const probe = new Promise<Partial<MediaAsset>>((resolve) => {
+			finishProbe = resolve;
+		});
+		saveImportedMedia = () => savedFile;
+		probeImportedMedia = () => probe;
+		try {
+			await host.manager.enableCanonical({
+				runtime,
+				persistSession: async () => {},
+			});
+			const file = new File(["clip"], "local-camera.mp4", {
+				type: "video/mp4",
+			});
+			const [ready] = importer.importBrowserFiles({
+				projectId: "classic-project",
+				files: [file],
+			});
+			const asset = importer.getAssets().find((media) => media.file === file)!;
+			expect(asset.url).toStartWith("blob:");
+			expect(importer.isPreparingBrowserMedia(asset.id)).toBe(true);
+			const read = () =>
+				runtime.invokeSync(
+					"app.state.read",
+					{ pointer: "/project/classic/mediaAssets" },
+					{},
+				).result.data;
+			expect(JSON.stringify(read())).toContain(asset.id);
+			// A canonical edit between the drop and the storage receipt must not
+			// invalidate the import or publish it again.
+			host.manager.undo();
+			expect(importer.getAssets().some((media) => media.id === asset.id)).toBe(
+				false,
+			);
+			host.manager.redo();
+			expect(importer.getAssets().some((media) => media.id === asset.id)).toBe(
+				true,
+			);
+			finishProbe({ duration: 2, width: 320, height: 180 });
+			expect((await ready)?.duration).toBe(2);
+			expect(
+				importer.getAssets().filter((media) => media.id === asset.id),
+			).toHaveLength(1);
+			expect(importer.isPreparingBrowserMedia(asset.id)).toBe(false);
+			finishSave();
+			await new Promise((resolve) => setTimeout(resolve, 0));
+		} finally {
+			finishSave();
+			host.manager.detachCanonical();
+			globalThis.window = windowBefore;
+			probeImportedMedia = async () => ({ duration: 2 });
 		}
 	},
 	INTEGRATION_TIMEOUT,

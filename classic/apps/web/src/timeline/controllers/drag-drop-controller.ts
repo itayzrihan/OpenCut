@@ -1,4 +1,8 @@
 import type { DragEvent } from "react";
+import {
+	captureFileDrop,
+	type DroppedFileHandles,
+} from "@/media/browser-file-drop";
 import { processMediaAssets } from "@/media/processing";
 import { showMediaUploadToast } from "@/media/upload-toast";
 import {
@@ -49,6 +53,12 @@ export interface DragDropConfig {
 	getActiveProjectFps: () => FrameRate | null;
 	getActiveProjectId: () => string | null;
 	getSceneTracks: () => SceneTracks;
+	getActiveSceneId?: () => string | null;
+	importBrowserFiles?: (args: {
+		projectId: string;
+		files: File[];
+		handles?: DroppedFileHandles;
+	}) => Promise<MediaAsset | null>[];
 	getCurrentPlayheadTime: () => MediaTime;
 	getMediaAssets: () => MediaAsset[];
 	dragSource: TimelineDragSource;
@@ -382,7 +392,7 @@ export class DragDropController {
 			const coords = this.getMouseTimelineCoords({ event });
 			if (!coords) return;
 			this.executeFileDrop({
-				files: Array.from(event.dataTransfer.files),
+				...captureFileDrop(event.dataTransfer),
 				mouseX: coords.mouseX,
 				mouseY: coords.mouseY,
 			}).catch((error) => {
@@ -753,91 +763,107 @@ export class DragDropController {
 
 	private async executeFileDrop({
 		files,
+		handles,
 		mouseX,
 		mouseY,
 	}: {
 		files: File[];
+		handles?: DroppedFileHandles;
 		mouseX: number;
 		mouseY: number;
 	}): Promise<void> {
 		const projectId = this.config.getActiveProjectId();
 		if (!projectId) return;
 
+		const sceneId = this.config.getActiveSceneId?.();
+		const place = (createdAsset: MediaAsset | null) => {
+			if (
+				!createdAsset ||
+				createdAsset.type === "file" ||
+				this.config.getActiveProjectId() !== projectId ||
+				this.config.getActiveSceneId?.() !== sceneId
+			)
+				return;
+			const duration = toElementDurationTicks({
+				seconds: createdAsset.duration,
+			});
+
+			const sceneTracks = this.config.getSceneTracks();
+			const currentTime = this.config.getCurrentPlayheadTime();
+
+			const reuseMainTrackId =
+				createdAsset.type !== "audio" &&
+				sceneTracks.overlay.length === 0 &&
+				sceneTracks.audio.length === 0 &&
+				sceneTracks.main.elements.length === 0
+					? sceneTracks.main.id
+					: null;
+
+			if (reuseMainTrackId) {
+				this.config.insertElement({
+					placement: { mode: "explicit", trackId: reuseMainTrackId },
+					element: buildElementFromMedia({
+						mediaId: createdAsset.id,
+						mediaType: createdAsset.type,
+						name: createdAsset.name,
+						duration,
+						startTime: currentTime,
+					}),
+				});
+				return;
+			}
+
+			const dropTarget = computeDropTarget({
+				elementType: createdAsset.type,
+				mouseX,
+				mouseY,
+				tracks: sceneTracks,
+				playheadTime: currentTime,
+				isExternalDrop: true,
+				elementDuration: duration,
+				pixelsPerSecond: BASE_TIMELINE_PIXELS_PER_SECOND,
+				zoomLevel: this.config.zoomLevel,
+			});
+
+			const trackType: TrackType =
+				createdAsset.type === "audio" ? "audio" : "video";
+			this.insertAtTarget({
+				element: buildElementFromMedia({
+					mediaId: createdAsset.id,
+					mediaType: createdAsset.type,
+					name: createdAsset.name,
+					duration,
+					startTime: dropTarget.xPosition,
+				}),
+				target: dropTarget,
+				trackType,
+			});
+		};
+		if (this.config.importBrowserFiles) {
+			for (const ready of this.config.importBrowserFiles({
+				projectId,
+				files,
+				handles,
+			}))
+				place(await ready);
+			return;
+		}
 		await showMediaUploadToast({
 			filesCount: files.length,
 			promise: async () => {
 				const processedAssets = await processMediaAssets({ files });
-
-				// Sequential on purpose: each iteration reads getSceneTracks()
-				// to decide placement (reuse empty main vs new track) and that
-				// decision depends on the effects of prior inserts.
+				const assetNames: string[] = [];
 				for (const asset of processedAssets) {
-					const createdAsset = await this.config.addMediaAsset({
-						projectId,
-						asset,
-					});
-					if (!createdAsset || createdAsset.type === "file") continue;
-
-					const duration = toElementDurationTicks({
-						seconds: createdAsset.duration,
-					});
-
-					const sceneTracks = this.config.getSceneTracks();
-					const currentTime = this.config.getCurrentPlayheadTime();
-
-					const reuseMainTrackId =
-						createdAsset.type !== "audio" &&
-						sceneTracks.overlay.length === 0 &&
-						sceneTracks.audio.length === 0 &&
-						sceneTracks.main.elements.length === 0
-							? sceneTracks.main.id
-							: null;
-
-					if (reuseMainTrackId) {
-						this.config.insertElement({
-							placement: { mode: "explicit", trackId: reuseMainTrackId },
-							element: buildElementFromMedia({
-								mediaId: createdAsset.id,
-								mediaType: createdAsset.type,
-								name: createdAsset.name,
-								duration,
-								startTime: currentTime,
-							}),
-						});
-						continue;
-					}
-
-					const dropTarget = computeDropTarget({
-						elementType: createdAsset.type,
-						mouseX,
-						mouseY,
-						tracks: sceneTracks,
-						playheadTime: currentTime,
-						isExternalDrop: true,
-						elementDuration: duration,
-						pixelsPerSecond: BASE_TIMELINE_PIXELS_PER_SECOND,
-						zoomLevel: this.config.zoomLevel,
-					});
-
-					const trackType: TrackType =
-						createdAsset.type === "audio" ? "audio" : "video";
-					this.insertAtTarget({
-						element: buildElementFromMedia({
-							mediaId: createdAsset.id,
-							mediaType: createdAsset.type,
-							name: createdAsset.name,
-							duration,
-							startTime: dropTarget.xPosition,
-						}),
-						target: dropTarget,
-						trackType,
-					});
+					if (
+						this.config.getActiveProjectId() !== projectId ||
+						this.config.getActiveSceneId?.() !== sceneId
+					)
+						break;
+					const created = await this.config.addMediaAsset({ projectId, asset });
+					if (created) assetNames.push(created.name);
+					place(created);
 				}
-
-				return {
-					uploadedCount: processedAssets.length,
-					assetNames: processedAssets.map((asset) => asset.name),
-				};
+				return { uploadedCount: assetNames.length, assetNames };
 			},
 		});
 	}

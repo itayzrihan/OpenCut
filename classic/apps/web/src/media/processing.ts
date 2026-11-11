@@ -27,12 +27,29 @@ const getUnsupportedVideoDescription = ({
 async function generateImageThumbnail({
 	url,
 	revokeUrl,
+	signal,
 }: {
 	url: string;
 	revokeUrl: boolean;
+	signal?: AbortSignal;
 }): Promise<{ thumbnailUrl: string; width: number; height: number }> {
 	return new Promise((resolve, reject) => {
 		const image = new window.Image();
+		const cleanup = () => {
+			signal?.removeEventListener("abort", abort);
+			if (revokeUrl) URL.revokeObjectURL(url);
+			image.removeAttribute("src");
+			image.remove();
+		};
+		const abort = () => {
+			cleanup();
+			reject(signal?.reason);
+		};
+		if (signal?.aborted) {
+			abort();
+			return;
+		}
+		signal?.addEventListener("abort", abort, { once: true });
 
 		image.addEventListener("load", () => {
 			try {
@@ -53,19 +70,58 @@ async function generateImageThumbnail({
 					error instanceof Error ? error : new Error("Could not render image"),
 				);
 			} finally {
-				if (revokeUrl) URL.revokeObjectURL(url);
-				image.remove();
+				cleanup();
 			}
 		});
 
 		image.addEventListener("error", () => {
-			if (revokeUrl) URL.revokeObjectURL(url);
-			image.remove();
+			cleanup();
 			reject(new Error("Could not load image"));
 		});
 
 		image.src = url;
 	});
+}
+
+/** Probe a visible browser asset independently of registration or storage. */
+export async function probeBrowserMedia({
+	asset,
+	signal,
+}: {
+	asset: MediaAsset & { file: File };
+	signal: AbortSignal;
+}): Promise<Partial<MediaAsset>> {
+	signal.throwIfAborted();
+	if (asset.type === "image") {
+		return generateImageThumbnail({
+			url: URL.createObjectURL(asset.file),
+			revokeUrl: true,
+			signal,
+		});
+	}
+	if (asset.type === "audio")
+		return { duration: await getMediaDuration({ file: asset.file, signal }) };
+	const video = await readVideoFile({
+		file: asset.file,
+		signal,
+		fastMetadata: true,
+	});
+	if (!video.canDecode) {
+		toast.error(
+			localizeClientMessage("Can't preview {v0}", { v0: asset.name }),
+			{
+				description: getUnsupportedVideoDescription({ codec: video.codec }),
+			},
+		);
+	}
+	return {
+		duration: video.duration,
+		width: video.width,
+		height: video.height,
+		fps: Number.isFinite(video.fps) ? Math.round(video.fps) : undefined,
+		hasAudio: video.hasAudio,
+		thumbnailUrl: video.thumbnailUrl ?? undefined,
+	};
 }
 
 export async function processMediaAssets({
@@ -94,7 +150,8 @@ export async function processMediaAssets({
 		}
 
 		if (
-			!isHostedBrowserWorkspace() && mediaStorageDisposition({
+			!isHostedBrowserWorkspace() &&
+			mediaStorageDisposition({
 				size: file.size,
 				hasSourcePath: false,
 				preserveLink: false,
@@ -293,15 +350,17 @@ const getMediaDuration = ({
 	file,
 	url,
 	mimeType,
+	signal,
 }: {
 	file?: File;
 	url?: string;
 	mimeType?: string;
+	signal?: AbortSignal;
 }): Promise<number> => {
 	return new Promise((resolve, reject) => {
 		const element = document.createElement(
 			(file?.type ?? mimeType ?? "").startsWith("video/") ? "video" : "audio",
-		) as HTMLVideoElement;
+		);
 		const objectUrl = file ? URL.createObjectURL(file) : null;
 		const sourceUrl = objectUrl ?? url;
 		if (!sourceUrl) {
@@ -309,17 +368,40 @@ const getMediaDuration = ({
 			return;
 		}
 
-		element.addEventListener("loadedmetadata", () => {
-			resolve(element.duration);
+		const cleanup = () => {
+			signal?.removeEventListener("abort", abort);
 			if (objectUrl) URL.revokeObjectURL(objectUrl);
-			element.remove();
-		});
-
-		element.addEventListener("error", () => {
-			reject(new Error("Could not load media"));
-			if (objectUrl) URL.revokeObjectURL(objectUrl);
-			element.remove();
-		});
+			element.removeAttribute("src");
+			element.load();
+		};
+		const abort = () => {
+			cleanup();
+			reject(signal?.reason);
+		};
+		if (signal?.aborted) {
+			abort();
+			return;
+		}
+		signal?.addEventListener("abort", abort, { once: true });
+		element.addEventListener(
+			"loadedmetadata",
+			() => {
+				const duration = element.duration;
+				if (Number.isFinite(duration) && duration > 0) resolve(duration);
+				else reject(new Error("Could not determine media duration"));
+				cleanup();
+			},
+			{ once: true },
+		);
+		element.addEventListener(
+			"error",
+			() => {
+				reject(new Error("Could not load media"));
+				cleanup();
+			},
+			{ once: true },
+		);
+		element.preload = "metadata";
 
 		element.src = sourceUrl;
 		element.load();

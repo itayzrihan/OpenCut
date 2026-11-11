@@ -564,6 +564,19 @@
       ],
       "timeoutMs": 600000
     },
+    "browser-media-import": {
+      "command": [
+        "node",
+        "classic/scripts/test-web.mjs",
+        "src/core/managers/__tests__/canonical-command-manager.test.ts",
+        "src/services/storage/hosted-media.test.ts",
+        "--jobs=2",
+        "--timeout=180000",
+        "--test-timeout=120000",
+        "--report=.local/browser-media-import/configured"
+      ],
+      "timeoutMs": 240000
+    },
     "web-build-types": {
       "command": [
         "node",

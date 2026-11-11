@@ -6,6 +6,7 @@ import {
 	type CanonicalInvocationOptions,
 } from "@/mcp/canonical-transport";
 import { collectTakeAudioEvidence } from "@/timeline/smart-takes/audio-evidence";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { assertBatchEditable } from "@/batch/read-only";
 import type { EditorCore } from "@/core";
 import type { Command, CommandResult } from "@/commands";
@@ -3657,6 +3658,18 @@ export class CommandManager {
 					mediaAssets: this.captureMediaBindings(),
 				},
 			});
+		if (isHostedBrowserWorkspace()) {
+			// Undo restores edit history. Local file observations may have arrived
+			// after that boundary was created and still describe the same source.
+			const bindings = session.read().mediaAssets.flatMap((saved) => {
+				const observed = this.canonicalMediaHandles.get(saved.id);
+				return observed?.file && observed.size === saved.size && observed.lastModified === saved.lastModified
+					? [observed]
+					: [];
+			});
+			if (bindings.length) session.refreshLocalMediaBindings({ bindings: canonicalMediaBindings(bindings) });
+		}
+
 		this.publishCanonical();
 		const restoreSelection =
 			direction === "undo"

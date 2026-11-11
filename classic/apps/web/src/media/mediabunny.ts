@@ -25,14 +25,24 @@ export type VideoFileData = {
 export async function readVideoFile({
 	file,
 	url,
-}: BrowserMediaSource): Promise<VideoFileData> {
+	signal,
+	fastMetadata = false,
+}: BrowserMediaSource & {
+	signal?: AbortSignal;
+	fastMetadata?: boolean;
+}): Promise<VideoFileData> {
 	const input = new Input({
 		source: createMediaSource({ file, url }),
 		formats: ALL_FORMATS,
 	});
 
+	const abort = () => input.dispose();
+	signal?.addEventListener("abort", abort, { once: true });
 	try {
-		const duration = await input.computeDuration();
+		signal?.throwIfAborted();
+		const duration =
+			(fastMetadata ? await input.getDurationFromMetadata() : null) ??
+			(await input.computeDuration());
 		const videoTrack = await input.getPrimaryVideoTrack();
 
 		if (!videoTrack) {
@@ -40,13 +50,15 @@ export async function readVideoFile({
 		}
 
 		const canDecode = await videoTrack.canDecode();
-		const packetStats = await videoTrack.computePacketStats(100);
+		const packetStats = await videoTrack.computePacketStats(
+			fastMetadata ? 12 : 100,
+		);
 		const audioTrack = await input.getPrimaryAudioTrack();
 
 		let thumbnailUrl: string | null = null;
 		if (canDecode) {
 			const sink = new VideoSampleSink(videoTrack);
-			const frame = await sink.getSample(1);
+			const frame = await sink.getSample(fastMetadata ? 0 : 1);
 			if (frame) {
 				try {
 					thumbnailUrl = renderThumbnailDataUrl({
@@ -73,6 +85,7 @@ export async function readVideoFile({
 			thumbnailUrl,
 		};
 	} finally {
+		signal?.removeEventListener("abort", abort);
 		input.dispose();
 	}
 }

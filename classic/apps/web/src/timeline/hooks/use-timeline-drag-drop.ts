@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useState, type RefObject } from "react";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import { useEditor } from "@/editor/use-editor";
 import { useCommittedRef } from "@/hooks/use-committed-ref";
 import {
@@ -34,6 +35,10 @@ export function useTimelineDragDrop({
 		getActiveProjectId: () =>
 			editor.project.getActiveOrNull()?.metadata.id ?? null,
 		getSceneTracks: () => editor.scenes.getActiveScene().tracks,
+		getActiveSceneId: () => editor.scenes.getActiveSceneOrNull()?.id ?? null,
+		importBrowserFiles: isHostedBrowserWorkspace()
+			? (args) => editor.media.importBrowserFiles(args)
+			: undefined,
 		getCurrentPlayheadTime: () => editor.playback.getCurrentTime(),
 		getMediaAssets: () => editor.media.getAssets(),
 		dragSource: editor.timeline.dragSource,

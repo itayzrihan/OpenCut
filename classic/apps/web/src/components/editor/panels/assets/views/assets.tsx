@@ -56,6 +56,7 @@ import {
 	useEditorProject,
 	useEditorTimelineScenes,
 } from "@/editor/use-editor";
+import type { DroppedFileHandles } from "@/media/browser-file-drop";
 import { useFileUpload } from "@/media/use-file-upload";
 import { invokeAction } from "@/actions";
 import { processLocalDriveMedia, processMediaAssets } from "@/media/processing";
@@ -236,10 +237,34 @@ function MediaViewContent() {
 	const { width: mediaListViewportWidth, height: mediaListViewportHeight } =
 		useContainerSize({ containerRef: mediaListViewportRef });
 
-	const processFiles = async ({ files }: { files: File[] }) => {
+	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
+	const processFiles = async ({
+		files,
+		handles,
+	}: {
+		files: File[];
+		handles?: DroppedFileHandles;
+	}) => {
 		if (!files || files.length === 0) return;
 		if (!activeProject) {
 			toast.error("No active project");
+			return;
+		}
+
+		if (hosted) {
+			try {
+				editor.media.importBrowserFiles({
+					projectId: activeProject.metadata.id,
+					files,
+					handles,
+				});
+			} catch (error) {
+				toast.error(
+					error instanceof Error
+						? error.message
+						: "Failed to import media asset",
+				);
+			}
 			return;
 		}
 
@@ -276,7 +301,6 @@ function MediaViewContent() {
 		}
 	};
 
-	const hosted = useWorkspaceAccount()?.hostedLegitate ?? false;
 	const importFromDrive = async () => {
 		if (!activeProject || isProcessing) return;
 		setIsProcessing(true);
@@ -323,7 +347,7 @@ function MediaViewContent() {
 		useFileUpload({
 			accept: "image/*,video/*,audio/*",
 			multiple: true,
-			onFilesSelected: (files) => processFiles({ files }),
+			onFilesSelected: (files, handles) => processFiles({ files, handles }),
 		});
 
 	const importMedia = hosted ? openFilePicker : () => void importFromDrive();
@@ -772,6 +796,8 @@ function MediaAssetDraggable({
 	const editor = useEditor();
 	if (item.type === "file") return null;
 
+	const preparing = editor.media.isPreparingBrowserMedia(item.id);
+	const canInsert = !item.missing && !preparing;
 	const addElementAtTime = ({
 		asset,
 		startTime,
@@ -800,7 +826,11 @@ function MediaAssetDraggable({
 		<DraggableItem
 			name={item.name}
 			labelExtra={
-				isUnifiedAnglesAsset(item) ? (
+				preparing ? (
+					<span className="text-xs text-muted-foreground">
+						<UiMessage text="Reading media details…" />
+					</span>
+				) : isUnifiedAnglesAsset(item) ? (
 					<UnifiedAnglesSyncBadge item={item} />
 				) : undefined
 			}
@@ -815,8 +845,12 @@ function MediaAssetDraggable({
 				}),
 			}}
 			shouldShowPlusOnDrag={false}
-			onAddToTimeline={({ currentTime }) =>
-				addElementAtTime({ asset: item, startTime: currentTime })
+			isDraggable={canInsert}
+			onAddToTimeline={
+				canInsert
+					? ({ currentTime }) =>
+							addElementAtTime({ asset: item, startTime: currentTime })
+					: undefined
 			}
 			variant={variant}
 			isRounded={isRounded}
@@ -882,8 +916,29 @@ function MediaItemWithContextMenu({
 		<ContextMenu>
 			<ContextMenuTrigger asChild>{children}</ContextMenuTrigger>
 			<ContextMenuContent>
+				{item.missing && item.storageKind === "linked" && !item.sourcePath && (
+					<ContextMenuItem
+						onSelect={() => {
+							const projectId = editor.project.getActiveOrNull()?.metadata.id;
+							if (projectId)
+								void editor.media
+									.reopenBrowserSource({ projectId, id: item.id })
+									.catch((error: unknown) =>
+										toast.error(
+											error instanceof Error ? error.message : String(error),
+										),
+									);
+						}}
+					>
+						<UiMessage text="Reconnect original file" />
+					</ContextMenuItem>
+				)}
 				<ContextMenuItem
-					disabled={item.type === "file"}
+					disabled={
+						item.type === "file" ||
+						item.missing ||
+						editor.media.isPreparingBrowserMedia(item.id)
+					}
 					onClick={() => {
 						if (item.type === "file") return;
 						editor.timeline.insertElement({
@@ -1388,6 +1443,13 @@ function MediaPreview({
 	variant?: "grid" | "compact";
 }) {
 	const shouldShowDurationBadge = variant === "grid";
+
+	if (item.missing)
+		return (
+			<div className="grid size-full place-items-center bg-muted p-1 text-center text-xs text-muted-foreground">
+				<UiMessage text="Original file unavailable" />
+			</div>
+		);
 
 	if (item.type === "image") {
 		return (

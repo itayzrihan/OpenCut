@@ -1,10 +1,12 @@
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
+import { captureFileDrop, type DroppedFileHandles } from "./browser-file-drop";
 import { useState, useRef } from "react";
 import { useEditor } from "@/editor/use-editor";
 
 interface UseFileUploadOptions {
 	accept?: string;
 	multiple?: boolean;
-	onFilesSelected?: (files: File[]) => void;
+	onFilesSelected?: (files: File[], handles?: DroppedFileHandles) => void;
 }
 
 export function useFileUpload({
@@ -75,13 +77,15 @@ export function useFileUpload({
 		dragCounterRef.current = 0;
 
 		if (onFilesSelected && containsFiles(e.dataTransfer)) {
-			const files = Array.from(e.dataTransfer.files);
+			const { files, handles } = isHostedBrowserWorkspace()
+				? captureFileDrop(e.dataTransfer)
+				: { files: Array.from(e.dataTransfer.files), handles: undefined };
 			const shouldUseMultiple = multiple ?? false;
 
 			if (shouldUseMultiple) {
-				onFilesSelected(files);
+				onFilesSelected(files, handles);
 			} else if (files.length > 0) {
-				onFilesSelected([files[0]]);
+				onFilesSelected([files[0]], handles);
 			}
 		}
 	}
