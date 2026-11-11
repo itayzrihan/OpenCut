@@ -8,6 +8,7 @@ import {
 	selectLocalProvider,
 	readLocalProvider,
 } from "@/ai/local-connection";
+import { SettingsInfo } from "./settings-info";
 import { AgentSettingsSection } from "./settings-section";
 import { HostedConnectionSettings } from "./hosted-connection-settings";
 import {
@@ -211,18 +212,20 @@ export function AgentConnectionsSettings({
 						</p>
 					</div>
 				)}
-				{setup}
-				<p className="text-xs text-muted-foreground">
-					<Message text="Continue with ChatGPT in the local Codex profile. Available models and image support depend on your account, CLI version and usage limits." />
-				</p>
-				<a
-					className="text-xs underline"
-					href="https://learn.chatgpt.com/docs/quickstart"
-					target="_blank"
-					rel="noreferrer"
-				>
-					<Message text="Install Codex CLI" />
-				</a>
+				<SettingsInfo label="Setup instructions">
+					{setup}
+					<p className="text-xs text-muted-foreground">
+						<Message text="Continue with ChatGPT in the local Codex profile. Available models and image support depend on your account, CLI version and usage limits." />
+					</p>
+					<a
+						className="text-xs underline"
+						href="https://learn.chatgpt.com/docs/quickstart"
+						target="_blank"
+						rel="noreferrer"
+					>
+						<Message text="Install Codex CLI" />
+					</a>
+				</SettingsInfo>
 				<Button
 					disabled={busy}
 					onClick={() => void connect({ provider: "codex" })}
@@ -274,21 +277,23 @@ export function AgentConnectionsSettings({
 				title="Claude"
 				revealRequest={revealProvider === "claude" ? revealRequest : 0}
 			>
-				{setup}
-				<p className="text-xs text-muted-foreground">
-					<Message text="Sign in directly with the unmodified Claude CLI in this companion profile. POCUT does not collect Claude credentials. Your provider's billing and usage limits apply." />
-				</p>
-				<a
-					className="text-xs underline"
-					href="https://code.claude.com/docs/en/quickstart"
-					target="_blank"
-					rel="noreferrer"
-				>
-					<Message text="Install Claude Code CLI" />
-				</a>
-				<pre className="overflow-x-auto whitespace-pre-wrap rounded border p-2">
-					node pocut-companion.mjs POCUT-AI-Pairing.json --login-claude
-				</pre>
+				<SettingsInfo label="Setup instructions">
+					{setup}
+					<p className="text-xs text-muted-foreground">
+						<Message text="Sign in directly with the unmodified Claude CLI in this companion profile. POCUT does not collect Claude credentials. Your provider's billing and usage limits apply." />
+					</p>
+					<a
+						className="text-xs underline"
+						href="https://code.claude.com/docs/en/quickstart"
+						target="_blank"
+						rel="noreferrer"
+					>
+						<Message text="Install Claude Code CLI" />
+					</a>
+					<pre className="overflow-x-auto whitespace-pre-wrap rounded border p-2">
+						node pocut-companion.mjs POCUT-AI-Pairing.json --login-claude
+					</pre>
+				</SettingsInfo>
 				<Button
 					disabled={busy}
 					onClick={() => void connect({ provider: "claude" })}

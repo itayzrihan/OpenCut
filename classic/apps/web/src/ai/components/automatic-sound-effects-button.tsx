@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticSoundEffects } from "@/ai/automatic-sound-effects";
 
@@ -51,7 +52,7 @@ export function AutomaticSoundEffectsButton({
 		}
 	};
 	return (
-		<div className="mb-4 space-y-2 rounded-md border p-3">
+		<div className="min-w-0 space-y-2 rounded-md border p-2">
 			<Button
 				className="h-auto min-h-9 w-full whitespace-normal"
 				onClick={run}
@@ -60,13 +61,15 @@ export function AutomaticSoundEffectsButton({
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
 				<UiMessage text={"Automatic Sound Effects"} />
 			</Button>
-			<p className="text-muted-foreground text-xs">
-				<UiMessage
-					text={
-						"Earshot sounds directed for the edit, with editable code, pitch, duration and echo."
-					}
-				/>
-			</p>
+			<SettingsInfo>
+				<p className="text-muted-foreground text-xs">
+					<UiMessage
+						text={
+							"Earshot sounds directed for the edit, with editable code, pitch, duration and echo."
+						}
+					/>
+				</p>
+			</SettingsInfo>
 			{status && (
 				<p role="status" className="text-xs">
 					{status}

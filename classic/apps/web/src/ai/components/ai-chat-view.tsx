@@ -359,48 +359,65 @@ export function AiChatView() {
 				</div>
 			)}
 
-			<div className="flex-1 overflow-y-auto p-3">
-				<LocalSubjectFramingButton
-					disabled={isRunning || isApplying || automaticRunning}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<AutomaticZoomButton
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<AutomaticTextTransitionsButton
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<AutomaticWordAnimationButton
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<AutomaticSoundEffectsButton
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<AutomaticMusicButton
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
-				<PodcastControls
-					disabled={
-						isRunning || isApplying || automaticRunning || !status.authenticated
-					}
-					onRunningChange={setAutomaticRunning}
-				/>
+			<div className="@container flex-1 overflow-y-auto p-3">
 				<FullAutoEditButton
+					disabled={
+						isRunning || isApplying || automaticRunning || !status.authenticated
+					}
+					onRunningChange={setAutomaticRunning}
+				/>
+				<div className="mb-4 grid grid-cols-1 gap-2 @min-[300px]:grid-cols-2">
+					<LocalSubjectFramingButton
+						disabled={isRunning || isApplying || automaticRunning}
+						onRunningChange={setAutomaticRunning}
+					/>
+					<AutomaticZoomButton
+						disabled={
+							isRunning ||
+							isApplying ||
+							automaticRunning ||
+							!status.authenticated
+						}
+						onRunningChange={setAutomaticRunning}
+					/>
+					<AutomaticTextTransitionsButton
+						disabled={
+							isRunning ||
+							isApplying ||
+							automaticRunning ||
+							!status.authenticated
+						}
+						onRunningChange={setAutomaticRunning}
+					/>
+					<AutomaticWordAnimationButton
+						disabled={
+							isRunning ||
+							isApplying ||
+							automaticRunning ||
+							!status.authenticated
+						}
+						onRunningChange={setAutomaticRunning}
+					/>
+					<AutomaticSoundEffectsButton
+						disabled={
+							isRunning ||
+							isApplying ||
+							automaticRunning ||
+							!status.authenticated
+						}
+						onRunningChange={setAutomaticRunning}
+					/>
+					<AutomaticMusicButton
+						disabled={
+							isRunning ||
+							isApplying ||
+							automaticRunning ||
+							!status.authenticated
+						}
+						onRunningChange={setAutomaticRunning}
+					/>
+				</div>
+				<PodcastControls
 					disabled={
 						isRunning || isApplying || automaticRunning || !status.authenticated
 					}

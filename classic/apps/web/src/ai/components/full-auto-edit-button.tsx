@@ -6,6 +6,7 @@ import { BrandKitPicker } from "@/brand-kits/picker";
 import { useState } from "react";
 import { Loader2, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
 	Dialog,
@@ -118,13 +119,15 @@ export function FullAutoEditButton({
 				</Button>
 			)}
 			{!hideTrigger && (
-				<p className="text-xs text-muted-foreground">
-					<UiMessage
-						text={
-							"Vertical framing, smart silence removal, Auto Texts and finishing."
-						}
-					/>
-				</p>
+				<SettingsInfo>
+					<p className="text-xs text-muted-foreground">
+						<UiMessage
+							text={
+								"Vertical framing, smart silence removal, Auto Texts and finishing."
+							}
+						/>
+					</p>
+				</SettingsInfo>
 			)}
 			<Dialog
 				open={open}

@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState } from "react";
+import { SettingsInfo } from "./settings-info";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Message as UiMessage } from "@/i18n/message";
@@ -68,11 +69,12 @@ export function HostedConnectionSettings({
 		}
 	}
 	return (
-		<div className="space-y-3 rounded-lg border p-3 text-sm">
-			<h3 className="font-medium">OpenRouter</h3>
-			<p className="text-muted-foreground">
-				<UiMessage text="Connect your own OpenRouter account for browser AI editing. Your API key stays encrypted in your account's PIN vault, shared with Generative." />
-			</p>
+		<div className="space-y-3 text-sm">
+			<SettingsInfo>
+				<p className="text-muted-foreground">
+					<UiMessage text="Connect your own OpenRouter account for browser AI editing. Your API key stays encrypted in your account's PIN vault, shared with Generative." />
+				</p>
+			</SettingsInfo>
 			{connection?.sharing ? (
 				<>
 					<p role="status">
@@ -162,35 +164,37 @@ export function HostedConnectionSettings({
 					{error}
 				</p>
 			)}
-			<p className="flex gap-3">
-				<a
-					href="https://openrouter.ai/settings/keys"
-					target="_blank"
-					rel="noreferrer"
-					className="underline"
-				>
-					<UiMessage text="API keys" />
-				</a>
-				<a
-					href="https://openrouter.ai/models"
-					target="_blank"
-					rel="noreferrer"
-					className="underline"
-				>
-					<UiMessage text="Model prices" />
-				</a>
-				<a
-					href="https://openrouter.ai/activity"
-					target="_blank"
-					rel="noreferrer"
-					className="underline"
-				>
-					<UiMessage text="Usage" />
-				</a>
-			</p>
-			<p className="text-xs text-muted-foreground">
-				<UiMessage text="Media processing and local AI models run in your browser. Prompts and selected review images go to your connected provider. ChatGPT subscription sign-in is available through the local Codex companion on this device." />
-			</p>
+			<SettingsInfo label="Provider details">
+				<p className="flex flex-wrap gap-3">
+					<a
+						href="https://openrouter.ai/settings/keys"
+						target="_blank"
+						rel="noreferrer"
+						className="underline"
+					>
+						<UiMessage text="API keys" />
+					</a>
+					<a
+						href="https://openrouter.ai/models"
+						target="_blank"
+						rel="noreferrer"
+						className="underline"
+					>
+						<UiMessage text="Model prices" />
+					</a>
+					<a
+						href="https://openrouter.ai/activity"
+						target="_blank"
+						rel="noreferrer"
+						className="underline"
+					>
+						<UiMessage text="Usage" />
+					</a>
+				</p>
+				<p className="text-xs text-muted-foreground">
+					<UiMessage text="Media processing and local AI models run in your browser. Prompts and selected review images go to your connected provider. ChatGPT subscription sign-in is available through the local Codex companion on this device." />
+				</p>
+			</SettingsInfo>
 		</div>
 	);
 }

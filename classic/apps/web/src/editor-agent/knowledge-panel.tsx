@@ -1,4 +1,5 @@
 "use client";
+import { SettingsInfo } from "./settings-info";
 import { LocalizedValue as UiValue } from "@/i18n/message";
 import {
 	LocalizedElement as UiLocalized,
@@ -189,9 +190,13 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 			aria-label="Skills and memory"
 		>
 			<div className={styles.knowledgeToolbar}>
-				<strong>
-					<UiMessage text={"Skills & memory"} />
-				</strong>
+				<SettingsInfo>
+					<UiMessage
+						text={
+							"Private to your account. Project versions override matching global knowledge."
+						}
+					/>
+				</SettingsInfo>
 				<Button
 					variant="ghost"
 					size="sm"
@@ -204,13 +209,7 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 					<UiMessage text={"Refresh"} />
 				</Button>
 			</div>
-			<p className={styles.knowledgeHint}>
-				<UiMessage
-					text={
-						"Private to your account. Project versions override matching global knowledge."
-					}
-				/>
-			</p>
+
 			{error && (
 				<p role="alert" className={styles.error}>
 					<UiValue>{error}</UiValue>
@@ -493,7 +492,6 @@ export function KnowledgePanel({ projectId }: { projectId: string }) {
 										""
 									)}
 								</span>
-								<p dir="auto">{item.description}</p>
 							</button>
 							<div className={styles.knowledgeToolbar}>
 								{!item.readOnly && !item.deleted && (

@@ -30,6 +30,7 @@ import {
 	type AudioJob,
 	type AudioStatus,
 } from "./types";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { AgentSettingsSection } from "@/editor-agent/settings-section";
 import type { EditorCore } from "@/core";
 import { audioDraftsSnapshot } from "./panel-snapshot";
@@ -72,9 +73,11 @@ export function ElevenLabsConnectionSettings({
 	}
 	return (
 		<div className="space-y-3 text-sm">
-			<p className="text-muted-foreground">
-				<Message text="Connect ElevenLabs for speech, dialogue, sound effects and music. The API key is encrypted with your PIN. Each generation requires a separate approval." />
-			</p>
+			<SettingsInfo>
+				<p className="text-muted-foreground">
+					<Message text="Connect ElevenLabs for speech, dialogue, sound effects and music. The API key is encrypted with your PIN. Each generation requires a separate approval." />
+				</p>
+			</SettingsInfo>
 			<form
 				onSubmit={(e) => {
 					e.preventDefault();

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Focus, Loader2 } from "lucide-react";
 import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticZoom } from "@/ai/automatic-zoom";
 
@@ -49,16 +50,24 @@ export function AutomaticZoomButton({
 		}
 	};
 	return (
-		<div className="mb-4 space-y-2 rounded-md border p-3">
-			<Button className="w-full" onClick={run} disabled={disabled || running}>
+		<div className="min-w-0 space-y-2 rounded-md border p-2">
+			<Button
+				className="h-auto min-h-9 w-full whitespace-normal"
+				onClick={run}
+				disabled={disabled || running}
+			>
 				{running ? <Loader2 className="animate-spin" /> : <Focus />}{" "}
 				<UiMessage text={"Automatic Zoom"} />
 			</Button>
-			<p className="text-muted-foreground text-xs">
-				<UiMessage
-					text={"Speech-aware zooms across the video, with automatic swishes."}
-				/>
-			</p>
+			<SettingsInfo>
+				<p className="text-muted-foreground text-xs">
+					<UiMessage
+						text={
+							"Speech-aware zooms across the video, with automatic swishes."
+						}
+					/>
+				</p>
+			</SettingsInfo>
 			{status && (
 				<p role="status" className="text-xs">
 					{status}

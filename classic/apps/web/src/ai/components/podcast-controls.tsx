@@ -12,6 +12,7 @@ import {
 	useEditorTimelineScenes,
 } from "@/editor/use-editor";
 import { Button } from "@/components/ui/button";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { Input } from "@/components/ui/input";
 import {
 	Dialog,
@@ -127,20 +128,26 @@ export function PodcastControls({
 					/>
 				)}
 			</p>
-			{modes.map((item) => (
-				<div key={item.mode} className="space-y-1">
-					<Button
-						className="w-full"
-						variant="outline"
-						disabled={disabled || running || unavailable}
-						onClick={() => setMode(item.mode)}
-					>
-						<item.icon className="size-4" />
-						{item.label}
-					</Button>
-					<p className="text-xs text-muted-foreground">{item.description}</p>
-				</div>
-			))}
+			<div className="grid grid-cols-1 gap-2 @min-[300px]:grid-cols-2">
+				{modes.map((item) => (
+					<div key={item.mode} className="space-y-1">
+						<Button
+							className="h-auto min-h-9 w-full whitespace-normal"
+							variant="outline"
+							disabled={disabled || running || unavailable}
+							onClick={() => setMode(item.mode)}
+						>
+							<item.icon className="size-4" />
+							{item.label}
+						</Button>
+						<SettingsInfo>
+							<p className="text-xs text-muted-foreground">
+								{item.description}
+							</p>
+						</SettingsInfo>
+					</div>
+				))}
+			</div>
 			{scene?.podcastExtract && (
 				<div className="space-y-1 rounded border p-2 text-xs" dir="auto">
 					<p className="font-medium">{scene.podcastExtract.title}</p>

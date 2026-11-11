@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/i18n/toast";
 import { Button } from "@/components/ui/button";
+import { SettingsInfo } from "@/editor-agent/settings-info";
 import { useEditor } from "@/editor/use-editor";
 import { runAutomaticMusic } from "@/ai/automatic-music";
 
@@ -49,7 +50,7 @@ export function AutomaticMusicButton({
 		}
 	};
 	return (
-		<div className="mb-4 space-y-2 rounded-md border p-3">
+		<div className="min-w-0 space-y-2 rounded-md border p-2">
 			<Button
 				className="h-auto min-h-9 w-full whitespace-normal"
 				onClick={run}
@@ -58,13 +59,15 @@ export function AutomaticMusicButton({
 				{running ? <Loader2 className="animate-spin" /> : <Sparkles />}{" "}
 				<UiMessage text={"Automatic Music"} />
 			</Button>
-			<p className="text-muted-foreground text-xs">
-				<UiMessage
-					text={
-						"Local Music matched to the video, cut to its full length at −31 dB."
-					}
-				/>
-			</p>
+			<SettingsInfo>
+				<p className="text-muted-foreground text-xs">
+					<UiMessage
+						text={
+							"Local Music matched to the video, cut to its full length at −31 dB."
+						}
+					/>
+				</p>
+			</SettingsInfo>
 			{status && (
 				<p role="status" className="text-xs">
 					{status}
