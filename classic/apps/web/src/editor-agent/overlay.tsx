@@ -5,6 +5,7 @@ import {
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
 import { useWorkspaceAccount } from "@/accounts/gate";
+import type { EditorCore } from "@/core";
 import { readLocalProvider } from "@/ai/local-connection";
 import { AgentConnectionsSettings } from "./agent-connections-settings";
 import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
@@ -1561,7 +1562,7 @@ function resolveProjectAttachment({
 	editor,
 	artifactId,
 }: {
-	editor: ReturnType<typeof useEditor>;
+	editor: EditorCore;
 	artifactId: string;
 }) {
 	try {
