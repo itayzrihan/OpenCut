@@ -1,8 +1,12 @@
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
 import type { SavedExportInfo } from "./library-server";
 export async function projectExportRequest<T = SavedExportInfo>(
 	body: unknown,
 ): Promise<T> {
+	if (isHostedBrowserWorkspace()) {
+		const { browserProjectExportRequest } = await import("./library-browser");
+		return (await browserProjectExportRequest(body)) as T;
+	}
 	const response = await fetch(accountAssetUrl("/api/project-export"), {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },

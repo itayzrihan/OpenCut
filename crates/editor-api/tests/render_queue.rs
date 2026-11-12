@@ -34,6 +34,14 @@ async fn enqueue(r: &OpenCutRuntime, id: &str) -> Value {
     let captured=call(r,"project.classic.export.capture",json!({"projectId":"classic-project","sceneId":"main-scene","expectedRevision":revision(r)})).await;
     call(r,EDIT,request(r,id,json!({"type":"enqueue","snapshot":captured["snapshot"],"sourceRevision":captured["sourceRevision"],"sceneId":"main-scene","options":options()}),1000)).await
 }
+async fn start(r: &OpenCutRuntime, time: u64) {
+    call(
+        r,
+        "render.queue.start",
+        json!({"expectedRevision":revision(r),"nowMs":time}),
+    )
+    .await;
+}
 #[tokio::test]
 async fn frozen_scene_recipe_dependency_graph_survive_edits_and_serialization() {
     let r = setup().await;
@@ -67,6 +75,19 @@ async fn serial_fifo_and_worker_attempt_fences() {
     let r = setup().await;
     enqueue(&r, "first").await;
     enqueue(&r, "second").await;
+    assert!(
+        r.registry()
+            .invoke(
+                EDIT,
+                InvocationContext::default(),
+                request(&r, "first", json!({"type":"claim","attempt":"early"}), 1500)
+            )
+            .await
+            .is_err()
+    );
+    start(&r, 1500).await;
+    enqueue(&r, "added-after-start").await;
+    assert!(!r.snapshot().unwrap().render_queue[2].released);
     assert!(
         r.registry()
             .invoke(
@@ -109,6 +130,7 @@ async fn serial_fifo_and_worker_attempt_fences() {
 async fn cancellation_acknowledgment_and_retry_keep_exact_snapshot() {
     let r = setup().await;
     let original = enqueue(&r, "job").await["job"]["snapshotHash"].clone();
+    start(&r, 1500).await;
     call(
         &r,
         EDIT,
@@ -123,6 +145,8 @@ async fn cancellation_acknowledgment_and_retry_keep_exact_snapshot() {
     assert!(stopped["job"]["outputId"].is_null());
     let retry = call(&r, EDIT, request(&r, "job", json!({"type":"retry"}), 2300)).await;
     assert_eq!(retry["job"]["snapshotHash"], original);
+    assert_eq!(retry["job"]["released"], false);
+    start(&r, 2350).await;
     call(
         &r,
         EDIT,
@@ -136,6 +160,7 @@ async fn disconnect_is_a_failed_boundary_and_late_completion_is_rejected() {
     let r = setup().await;
     enqueue(&r, "first").await;
     enqueue(&r, "second").await;
+    start(&r, 1500).await;
     call(
         &r,
         EDIT,
@@ -237,6 +262,7 @@ async fn direct_exports_require_a_destination_and_do_not_publish_downloads_or_bl
     change["destinationName"] = json!("Podcast.mp4");
     call(&r, EDIT, request(&r, "direct", change, 1000)).await;
     enqueue(&r, "queue").await;
+    start(&r, 1500).await;
     // A waiting direct destination does not block the normal background lane.
     call(
         &r,

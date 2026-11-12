@@ -281,7 +281,7 @@ export function ProjectsExportDialog({
 						);
 					}
 				}
-			} else openRenderQueue();
+			}
 		} catch (e) {
 			if (!(e instanceof DOMException && e.name === "AbortError"))
 				setError(e instanceof Error ? e.message : String(e));
@@ -328,7 +328,9 @@ export function ProjectsExportDialog({
 		if (delivery === "direct" && direct.length) {
 			setEntries(direct);
 			setWorkerIndex(0);
-		} else if (created.length === remaining.length) {
+		} else if (delivery === "queue" && created.length) {
+			openRenderQueue();
+			if (created.length !== remaining.length) return;
 			toast.success(
 				localizeClientMessage("{v0} project{v1} added to Render Queue", {
 					v0: String(created.length),
