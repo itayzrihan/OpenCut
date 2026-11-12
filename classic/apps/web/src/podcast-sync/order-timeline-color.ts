@@ -15,7 +15,10 @@ export async function readPodcastColor({
 	duration: number;
 }): Promise<OrderedPodcastColor | undefined> {
 	const input = new Input({
-		source: createMediaSource(asset),
+		source: createMediaSource({
+			...asset,
+			urlOptions: { maxCacheSize: 8 * 1024 * 1024, parallelism: 1 },
+		}),
 		formats: ALL_FORMATS,
 	});
 	try {

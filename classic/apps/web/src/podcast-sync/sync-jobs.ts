@@ -7,10 +7,65 @@ const envelopeCache = new Map<symbol, Float32Array>();
 let cachedEnvelopeBytes = 0;
 
 export function syncReadConcurrency() {
+	const memory = (navigator as Navigator & { deviceMemory?: number })
+		.deviceMemory;
 	return Math.min(
-		4,
+		memory != null && memory <= 4 ? 2 : 4,
 		Math.max(2, Math.floor((navigator.hardwareConcurrency || 4) / 2)),
 	);
+}
+
+let usedWorkerSlots = 0;
+const workerQueue: Array<() => boolean> = [];
+
+function startQueuedWorkers() {
+	while (workerQueue[0]?.()) workerQueue.shift();
+}
+
+function acquireWorkerSlots({
+	message,
+	signal,
+}: {
+	message: unknown;
+	signal?: AbortSignal;
+}): Promise<() => void> {
+	const job = message as {
+		type?: string;
+		reference?: Float32Array;
+	};
+	const limit = syncReadConcurrency();
+	const heavy =
+		job.type === "align" ||
+		job.type === "align-to-reference" ||
+		job.type === "route" ||
+		(job.type === "independent-probes" &&
+			(job.reference?.length ?? 0) >= 250_000);
+	const slots = heavy ? limit : job.type === "color" ? 2 : 1;
+	return new Promise((resolve, reject) => {
+		const abort = () => {
+			const index = workerQueue.indexOf(start);
+			if (index !== -1) workerQueue.splice(index, 1);
+			reject(signal?.reason ?? new DOMException("Cancelled", "AbortError"));
+			startQueuedWorkers();
+		};
+		const start = () => {
+			if (usedWorkerSlots + slots > limit) return false;
+			signal?.removeEventListener("abort", abort);
+			usedWorkerSlots += slots;
+			resolve(() => {
+				usedWorkerSlots -= slots;
+				startQueuedWorkers();
+			});
+			return true;
+		};
+		if (signal?.aborted) {
+			reject(signal.reason);
+			return;
+		}
+		signal?.addEventListener("abort", abort, { once: true });
+		workerQueue.push(start);
+		startQueuedWorkers();
+	});
 }
 
 export async function readSyncEnvelope({
@@ -101,14 +156,29 @@ export async function mapConcurrent<T, R>({
 		controller.abort();
 	}
 }
-export function runSyncWorker<T>({
+export async function runSyncWorker<T>({
 	message,
 	signal,
 }: {
 	message: unknown;
 	signal?: AbortSignal;
 }): Promise<T> {
-	signal?.throwIfAborted();
+	const release = await acquireWorkerSlots({ message, signal });
+	try {
+		signal?.throwIfAborted();
+		return await runWorker<T>({ message, signal });
+	} finally {
+		release();
+	}
+}
+
+function runWorker<T>({
+	message,
+	signal,
+}: {
+	message: unknown;
+	signal?: AbortSignal;
+}): Promise<T> {
 	return new Promise((resolve, reject) => {
 		// Classic's Webpack build emits a classic worker and loads its WASM
 		// chunks through importScripts.

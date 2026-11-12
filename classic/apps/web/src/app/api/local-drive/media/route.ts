@@ -47,7 +47,11 @@ async function serve(request: Request, includeBody: boolean) {
 	if (!file) return new NextResponse(null, { status: 404 });
 	if (includeBody && url.searchParams.has("syncAudio")) {
 		try {
-			return await serveSyncAudio({ request, source: file, params: url.searchParams });
+			return await serveSyncAudio({
+				request,
+				source: file,
+				params: url.searchParams,
+			});
 		} catch {
 			return new Response(null, {
 				status: 503,

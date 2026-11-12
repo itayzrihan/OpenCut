@@ -7,6 +7,7 @@ import {
 } from "mediabunny";
 import { createMediaSource, type BrowserMediaSource } from "@/media/source";
 const PODCAST_SOURCE_CACHE_BYTES = 8 * 1024 * 1024;
+const MAX_ENVELOPE_WINDOWS = 3_600_000;
 export async function readEnergyEnvelope({
 	asset,
 	windowSeconds,
@@ -52,8 +53,15 @@ export async function readEnergyEnvelope({
 		}
 
 		const sink = new AudioSampleSink(audioTrack);
-		const sums: number[] = [];
-		const counts: number[] = [];
+		const requestedLength =
+			durationSeconds == null
+				? undefined
+				: Math.max(1, Math.ceil(durationSeconds / windowSeconds));
+		if (requestedLength != null && requestedLength > MAX_ENVELOPE_WINDOWS)
+			throw new Error("Recording exceeds the synchronization limit");
+		let sums = new Float32Array(requestedLength ?? 16_384);
+		let counts = new Uint32Array(sums.length);
+		let filled = 0;
 		const endSeconds =
 			durationSeconds != null
 				? startSeconds + Math.max(0, durationSeconds)
@@ -101,7 +109,7 @@ export async function readEnergyEnvelope({
 						chunkTimestamp + sampleStart / sampleRate - startSeconds,
 					);
 					const windowIndex = Math.floor(localStart / windowSeconds);
-					if (windowIndex >= 3_600_000)
+					if (windowIndex >= MAX_ENVELOPE_WINDOWS)
 						throw new Error(
 							"Recording exceeds the ten-hour synchronization limit",
 						);
@@ -121,9 +129,25 @@ export async function readEnergyEnvelope({
 						sum += sampleMode === "waveform" ? mono : mono * mono;
 					}
 
-					sums[windowIndex] = (sums[windowIndex] ?? 0) + sum;
-					counts[windowIndex] =
-						(counts[windowIndex] ?? 0) + sampleEnd - sampleStart;
+					// An exact right-edge sample can round into the next bucket.
+					if (requestedLength == null || windowIndex < requestedLength) {
+						if (windowIndex >= sums.length) {
+							const capacity = Math.min(
+								MAX_ENVELOPE_WINDOWS,
+								Math.max(sums.length * 2, windowIndex + 1),
+							);
+							const grownSums = new Float32Array(capacity);
+							const grownCounts = new Uint32Array(capacity);
+							grownSums.set(sums);
+							grownCounts.set(counts);
+							sums = grownSums;
+							counts = grownCounts;
+						}
+						sums[windowIndex] = sums[windowIndex]! + sum;
+						counts[windowIndex] =
+							counts[windowIndex]! + sampleEnd - sampleStart;
+						filled = Math.max(filled, windowIndex + 1);
+					}
 					sampleStart = sampleEnd;
 				}
 			} finally {
@@ -131,15 +155,12 @@ export async function readEnergyEnvelope({
 			}
 		}
 
-		const expectedLength =
-			durationSeconds != null
-				? Math.max(1, Math.ceil(durationSeconds / windowSeconds))
-				: sums.length;
+		const expectedLength = requestedLength ?? filled;
 		if (expectedLength === 0) {
 			throw new Error(`${asset.name} has no decodable audio`);
 		}
 
-		const envelope = new Float32Array(expectedLength);
+		const envelope = sums.subarray(0, expectedLength);
 		for (let i = 0; i < expectedLength; i++) {
 			const count = counts[i] ?? 0;
 			const mean = count > 0 ? (sums[i] ?? 0) / count : 0;

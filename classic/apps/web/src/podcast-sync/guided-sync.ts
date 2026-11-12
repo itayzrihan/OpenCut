@@ -125,6 +125,67 @@ export async function guideTimelineSync({
 		);
 	report();
 
+	// Recorders often begin within a few seconds of each other. Check the
+	// earliest clip in each unanchored angle against a single shared opening
+	// window before reading the entire microphone recording.
+	const firstByAngle = new Map<number, number>();
+	for (const i of pending) {
+		const { asset, angle } = videos[i]!;
+		if (prediction(i) != null || asset.duration! < 60) continue;
+		const first = firstByAngle.get(angle);
+		if (first == null || (stamps[i] ?? Infinity) < (stamps[first] ?? Infinity))
+			firstByAngle.set(angle, i);
+	}
+	if (firstByAngle.size) {
+		try {
+			const opening = await read({
+				asset: reference,
+				start: 0,
+				length: Math.min(90, reference.duration!),
+				signal,
+			});
+			await mapConcurrent({
+				items: [...firstByAngle.values()],
+				concurrency: syncReadConcurrency(),
+				signal,
+				task: async (index, taskSignal) => {
+					try {
+						const target = videos[index]!.asset;
+						const probes: Array<{ at: number; samples: Float32Array }> = [];
+						for (const at of [10, 34, 62]) {
+							if (at + WINDOW > target.duration!) continue;
+							probes.push({
+								at,
+								samples: await read({
+									asset: target,
+									start: at,
+									length: WINDOW,
+									signal: taskSignal,
+								}),
+							});
+						}
+						const evidence = await matchProbes({
+							reference: opening,
+							probes,
+							origin: 0,
+							signal: taskSignal,
+						});
+						const offset = consensusOffset(evidence);
+						if (offset != null) {
+							offsets[index] = offset;
+							pending.delete(index);
+							report();
+						}
+					} catch {
+						taskSignal.throwIfAborted();
+					}
+				},
+			});
+		} catch {
+			signal.throwIfAborted();
+		}
+	}
+
 	// Existing verified pairs and the longest useful clip per remaining angle
 	// establish clocks. Failed clips never prevent a different anchor.
 	while (
