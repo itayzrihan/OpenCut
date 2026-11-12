@@ -17,7 +17,13 @@ type WorkerRequest =
 			settings: import("opencut-wasm").PodcastMulticamSettings;
 			cameraWindows: import("opencut-wasm").PodcastCameraWindow[];
 	  };
+async function readSyncEnvelope({ asset }: { asset: { name: string } }) {
+	readNames.push(asset.name);
+	return new Float32Array(12001).fill(0.5);
+}
 mock.module("../sync-jobs", () => ({
+	readSyncEnvelope,
+	syncReadConcurrency: () => 2,
 	mapConcurrent: async ({
 		items,
 		task,
@@ -26,10 +32,6 @@ mock.module("../sync-jobs", () => ({
 		task: (a: MediaAsset, s: AbortSignal) => Promise<unknown>;
 	}) => Promise.all(items.map((a) => task(a, new AbortController().signal))),
 	runSyncWorker: async ({ message }: { message: WorkerRequest }) => {
-		if (message.type === "read") {
-			readNames.push(message.asset.name);
-			return new Float32Array(12001).fill(0.5);
-		}
 		if (message.type === "align")
 			return {
 				offsets: externalRecorder ? [50, 20, -100] : [50, 20],
