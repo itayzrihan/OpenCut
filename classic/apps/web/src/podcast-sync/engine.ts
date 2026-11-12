@@ -15,7 +15,12 @@ import {
 } from "opencut-wasm";
 
 import { readEnergyEnvelope } from "./energy-reader";
-import { mapConcurrent, runSyncWorker } from "./sync-jobs";
+import {
+	mapConcurrent,
+	readSyncEnvelope,
+	runSyncWorker,
+	syncReadConcurrency,
+} from "./sync-jobs";
 import type { PodcastSyncCut } from "@/podcast-sync/router";
 const PODCAST_SYNC_RESOLUTION_SECONDS = 0.01;
 
@@ -200,16 +205,10 @@ export async function runPodcastAlignment({
 	});
 	const physicalEnvelopes = await mapConcurrent({
 		items: physicalAssets,
-		concurrency: Math.min(
-			4,
-			Math.max(2, Math.floor((navigator.hardwareConcurrency || 4) / 2)),
-		),
+		concurrency: syncReadConcurrency(),
 		task: async (asset, jobSignal) => {
-			const envelope = await runSyncWorker<Float32Array>({
-				message: {
-					type: "read",
-					asset: { file: asset.file, url: asset.url, name: asset.name },
-				},
+			const envelope = await readSyncEnvelope({
+				asset: { file: asset.file, url: asset.url, name: asset.name },
 				signal: jobSignal,
 			});
 			completed++;
