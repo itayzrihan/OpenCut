@@ -8,6 +8,7 @@ import {
 	ClaudeProvider,
 	decodeGeneratedImage,
 } from "./native-providers";
+import type { SpawnChild } from "./child";
 import { generateJournaledImage } from "./image-journal";
 import { companionHandler } from "./handler";
 import {
@@ -35,9 +36,28 @@ else readline.createInterface({input:process.stdin}).on('line',line=>{const m=JS
 `,
 		{ mode: 0o700 },
 	);
+	const closedChildren: Promise<void>[] = [];
+	const spawnChild = ((file, args, options) => {
+		const child = spawn(file, args, options);
+		closedChildren.push(
+			new Promise((resolve) => child.once("close", () => resolve())),
+		);
+		return child;
+	}) as SpawnChild;
 	return {
 		root,
 		executable,
+		spawnChild,
+		async cleanup() {
+			// Windows keeps the fixture working directory open until the child exits.
+			await Promise.all(closedChildren);
+			await rm(root, {
+				recursive: true,
+				force: true,
+				maxRetries: 3,
+				retryDelay: 50,
+			});
+		},
 		log: async () =>
 			(await readFile(join(root, "calls.jsonl"), "utf8"))
 				.trim()
@@ -51,6 +71,7 @@ test("native Codex uses isolated official protocol, structured proposals and nat
 	const provider = new CodexProvider({
 		root: f.root,
 		executable: f.executable,
+		spawnChild: f.spawnChild,
 	});
 	try {
 		const statuses = await Promise.all([provider.status(), provider.status()]);
@@ -105,19 +126,23 @@ test("native Codex uses isolated official protocol, structured proposals and nat
 		expect(turns[0].params.outputSchema.properties.calls.maxItems).toBe(0);
 	} finally {
 		provider.close();
-		await rm(f.root, { recursive: true, force: true });
+		await f.cleanup();
 	}
 });
 
 test("Codex imports the savedPath image result from its private profile", async () => {
 	const f = await fixture({ imageFile: true });
-	const provider = new CodexProvider({ root: f.root, executable: f.executable });
+	const provider = new CodexProvider({
+		root: f.root,
+		executable: f.executable,
+		spawnChild: f.spawnChild,
+	});
 	try {
 		const image = await provider.image({ request: { projectId: "p", operationId: "file", prompt: "A lighthouse", references: [], confirmed: true }, signal: new AbortController().signal });
 		expect(image).toEqual({ base64: png, mimeType: "image/png" });
 	} finally {
 		provider.close();
-		await rm(f.root, { recursive: true, force: true });
+		await f.cleanup();
 	}
 });
 
@@ -126,6 +151,7 @@ test("legacy Codex turns still use restricted read-only access", async () => {
 	const provider = new CodexProvider({
 		root: f.root,
 		executable: f.executable,
+		spawnChild: f.spawnChild,
 	});
 	try {
 		await provider.respond({
@@ -149,7 +175,7 @@ test("legacy Codex turns still use restricted read-only access", async () => {
 		});
 	} finally {
 		provider.close();
-		await rm(f.root, { recursive: true, force: true });
+		await f.cleanup();
 	}
 });
 
@@ -302,15 +328,10 @@ test("unavailable or unconfirmed images never reach the native provider; model c
 
 test("cancelling a native turn terminates it without a second provider request", async () => {
 	const f = await fixture({ hold: true });
-	const closedChildren: Promise<void>[] = [];
 	const provider = new CodexProvider({
 		root: f.root,
 		executable: f.executable,
-		spawnChild(file, args, options) {
-			const child = spawn(file, args, options);
-			closedChildren.push(new Promise((resolve) => child.once("close", () => resolve())));
-			return child;
-		},
+		spawnChild: f.spawnChild,
 	});
 	const controller = new AbortController();
 	try {
@@ -336,7 +357,6 @@ test("cancelling a native turn terminates it without a second provider request",
 		expect((await provider.status()).installed).toBe(true);
 	} finally {
 		provider.close();
-		await Promise.all(closedChildren);
-		await rm(f.root, { recursive: true, force: true });
+		await f.cleanup();
 	}
 });

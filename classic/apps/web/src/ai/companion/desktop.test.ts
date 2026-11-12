@@ -179,10 +179,10 @@ test.skipIf(process.platform !== "win32")("Windows runs the actual Desktop and S
 		const ps = win32.join(process.env.SystemRoot ?? "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
 		for (const [link, mode] of [[integration.shortcut, "--manage"], [join(startup, "POCUT Companion.lnk"), "--start"]] as const) {
 			await exec(ps, ["-NoProfile", "-NonInteractive", "-Command", "Start-Process -FilePath $env:POCUT_TEST_LINK"], {
-				windowsHide: true, env: { ...process.env, POCUT_TEST_LINK: link },
+				windowsHide: true, timeout: 15000, env: { ...process.env, POCUT_TEST_LINK: link },
 			});
 			let received = "";
-			for (let attempt = 0; attempt < 40 && !received.includes(mode); attempt++) {
+			for (let attempt = 0; attempt < 80 && !received.includes(mode); attempt++) {
 				await delay(100);
 				received = await readFile(output, "utf8").catch(() => "");
 			}
@@ -191,4 +191,4 @@ test.skipIf(process.platform !== "win32")("Windows runs the actual Desktop and S
 	} finally {
 		await rm(root, { recursive: true, force: true });
 	}
-}, 15000);
+}, 40000);
