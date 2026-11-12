@@ -102,6 +102,7 @@ mod audio_production_host;
 pub use audio_production_host::register_audio_production_host;
 pub mod production;
 mod production_video;
+mod source_media_observation;
 pub use production_video::register_production_video;
 
 mod generative_host;

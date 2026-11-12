@@ -84,3 +84,19 @@ connection, provider stream, retry, checkpoint and host-effect suites. Provider
 responses are scripted; this does not spend subscription usage or establish a
 live authenticated model request. Type checking uses the generated WASM and
 content-collections declarations, as the normal Next build does.
+
+## Project media in chat
+
+Drop an image, video or audio asset from Media onto the chat composer, then
+send it with a question. The message links back to the item in Media. Files
+dropped from the computer use the existing project import path for video,
+audio and larger images; small PNG/JPEG/WebP files can still be sent inline.
+
+The message stores a bounded project/media ID reference, never a filesystem
+path or a public link. The active editor resolves it and checks project and
+revision before and after decoding. The connected model receives image
+evidence or sampled video frames, not the full source file. Audio inspection
+returns signal levels and, when requested, local speech recognition for
+ranges of at most 30 seconds. A first transcription can download model
+weights. A transcript does not establish music, tone of voice or audio
+quality. An offline source must be relinked before inspection.

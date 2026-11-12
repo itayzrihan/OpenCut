@@ -5,6 +5,7 @@ import {
 	LocalizedElement as UiLocalized,
 } from "@/i18n/message";
 import { useWorkspaceAccount } from "@/accounts/gate";
+import type { EditorCore } from "@/core";
 import { readLocalProvider } from "@/ai/local-connection";
 import { AgentConnectionsSettings } from "./agent-connections-settings";
 import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
@@ -82,6 +83,14 @@ import {
 import styles from "./overlay.module.css";
 import { z } from "zod";
 import { EDITING_AGENT_DRAFT_EVENT } from "./draft";
+import { getMediaTypeFromFile } from "@/media/media-utils";
+import { localizeClientMessage } from "@/i18n/client-messages";
+import {
+	draggedProjectMedia,
+	mergeAttachments,
+	projectMediaAttachment,
+	readProjectMediaReference,
+} from "./project-media-attachments";
 
 interface Entry {
 	interrupted?: boolean;
@@ -268,22 +277,59 @@ function AgentPanel() {
 		if (!files?.length || attachmentInFlight.current || busy) return;
 		attachmentInFlight.current = true;
 		setAttaching(true);
+		setError("");
 		const projectId = editor.project.getActiveOrNull()?.metadata.id;
 		const accountId = window.__opencutAccountId ?? "local";
+		const check = () => {
+			if (
+				!mounted.current ||
+				!projectId ||
+				editor.project.getActiveOrNull()?.metadata.id !== projectId ||
+				(window.__opencutAccountId ?? "local") !== accountId
+			)
+				throw new Error("Attachment account/project changed");
+			return projectId;
+		};
 		try {
 			if (files.length + attachments.length > 8)
 				throw new Error("Attach at most eight files");
 			const selected: import("@/core/agent-protocol").EditingInputAttachment[] =
 				[];
 			for (const file of Array.from(files)) {
+				// Keep existing inline image inputs for small, supported images.
+				// Audio, video and larger or other images use the project media pipeline.
+				if (
+					getMediaTypeFromFile({ file }) &&
+					!(
+						["image/png", "image/jpeg", "image/webp"].includes(file.type) &&
+						file.size <= 1_000_000
+					)
+				) {
+					const { processMediaAssets } = await import("@/media/processing");
+					const [asset] = await processMediaAssets({ files: [file] });
+					const target = check();
+					if (!asset)
+						throw new Error(
+							"This file could not be imported. Try importing it into Media first.",
+						);
+					const saved = await editor.media.addMediaAsset({
+						projectId: target,
+						asset,
+					});
+					check();
+					if (!saved)
+						throw new Error("Could not attach the file to this project");
+					selected.push(
+						editor.command.storeEditingAttachment(
+							projectMediaAttachment({ projectId: target, asset: saved }),
+						),
+					);
+					continue;
+				}
 				if (file.size > 2_000_000)
 					throw new Error("Attachment exceeds the two-megabyte request budget");
 				const bytes = new Uint8Array(await file.arrayBuffer());
-				if (
-					editor.project.getActiveOrNull()?.metadata.id !== projectId ||
-					(window.__opencutAccountId ?? "local") !== accountId
-				)
-					throw new Error("Attachment account/project changed");
+				check();
 				const mimeType =
 					file.type ||
 					(file.name.toLowerCase().endsWith(".md")
@@ -299,14 +345,54 @@ function AgentPanel() {
 					}),
 				);
 			}
-			setAttachments((previous) => [...previous, ...selected]);
-		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : "Could not attach files",
+			setAttachments(
+				mergeAttachments({ current: attachments, added: selected }),
 			);
+		} catch (cause) {
+			if (mounted.current)
+				setError(
+					cause instanceof Error ? cause.message : "Could not attach files",
+				);
 		} finally {
 			attachmentInFlight.current = false;
 			if (mounted.current) setAttaching(false);
+		}
+	};
+	const attachProjectMedia = (mediaId: string) => {
+		if (busy || attachmentInFlight.current) return;
+		try {
+			const projectId = editor.project.getActiveOrNull()?.metadata.id;
+			const asset = editor.media
+				.getAssets()
+				.find((item) => item.id === mediaId);
+			if (!projectId || !asset)
+				throw new Error("This media is unavailable in the current project");
+			if (
+				attachments.some(
+					({ artifactId }) =>
+						resolveProjectAttachment({ editor, artifactId })?.mediaId ===
+						mediaId,
+				)
+			) {
+				composerInput.current?.focus();
+				return;
+			}
+			if (attachments.length >= 8)
+				throw new Error("Attach at most eight files");
+			const attachment = editor.command.storeEditingAttachment(
+				projectMediaAttachment({ projectId, asset }),
+			);
+			setAttachments(
+				mergeAttachments({ current: attachments, added: [attachment] }),
+			);
+			setError("");
+			composerInput.current?.focus();
+		} catch (cause) {
+			setError(
+				cause instanceof Error
+					? cause.message
+					: "Could not attach project media",
+			);
 		}
 	};
 	const [busy, setBusy] = useState(false);
@@ -590,7 +676,14 @@ function AgentPanel() {
 		};
 	}, [mode, open]);
 	const send = async (resume = false) => {
-		const text = resume ? undefined : draft.trim();
+		const text = resume
+			? undefined
+			: draft.trim() ||
+				(attachments.length
+					? localizeClientMessage(
+							"Describe the attached media using its available content.",
+						)
+					: undefined);
 		if (
 			(!text && !resume) ||
 			changingPolicy ||
@@ -608,8 +701,8 @@ function AgentPanel() {
 		follow.current = true;
 		setFollowing(true);
 		try {
-			const selected = attachments.length ? attachments : undefined;
-			setAttachments([]);
+			const selected = !resume && attachments.length ? attachments : undefined;
+			if (!resume) setAttachments([]);
 			await client.current.run({
 				text,
 				model,
@@ -1034,8 +1127,17 @@ function AgentPanel() {
 					className={`${styles.composer} ${dropActive ? styles.dropActive : ""}`}
 					aria-label="Chat message composer"
 					onDragOver={(event) => {
-						if (event.dataTransfer.types.includes("Files")) {
+						if (
+							event.dataTransfer.types.includes("Files") ||
+							draggedProjectMedia({
+								types: event.dataTransfer.types,
+								active: editor.timeline.dragSource.getActive(),
+							})
+						) {
 							event.preventDefault();
+							event.stopPropagation();
+							event.dataTransfer.dropEffect =
+								busy || attaching ? "none" : "copy";
 							if (!busy && !attaching) setDropActive(true);
 						}
 					}}
@@ -1047,9 +1149,16 @@ function AgentPanel() {
 							setDropActive(false);
 					}}
 					onDrop={(event) => {
+						const mediaId = draggedProjectMedia({
+							types: event.dataTransfer.types,
+							active: editor.timeline.dragSource.getActive(),
+						});
+						if (!mediaId && !event.dataTransfer.types.includes("Files")) return;
 						event.preventDefault();
+						event.stopPropagation();
 						setDropActive(false);
-						void attachFiles(event.dataTransfer.files);
+						if (mediaId) attachProjectMedia(mediaId);
+						else void attachFiles(event.dataTransfer.files);
 					}}
 					onSubmit={(event) => {
 						event.preventDefault();
@@ -1065,7 +1174,7 @@ function AgentPanel() {
 						placeholder={
 							busy
 								? "Add a correction or change direction…"
-								: "Describe your edit…"
+								: "Describe your edit or drop media…"
 						}
 						value={draft}
 						maxLength={100000}
@@ -1128,7 +1237,7 @@ function AgentPanel() {
 							ref={attachmentInput}
 							type="file"
 							multiple
-							accept="image/png,image/jpeg,image/webp,application/pdf,text/plain,text/markdown,.md,.txt"
+							accept="image/*,video/*,audio/*,application/pdf,text/plain,text/markdown,.md,.txt"
 							hidden
 							onChange={(event) => {
 								void attachFiles(event.target.files);
@@ -1236,7 +1345,10 @@ function AgentPanel() {
 							type="submit"
 							size="sm"
 							disabled={
-								attaching || !draft.trim() || !model || !connection?.sharing
+								attaching ||
+								(!draft.trim() && !attachments.length) ||
+								!model ||
+								!connection?.sharing
 							}
 						>
 							{busy ? (
@@ -1446,7 +1558,27 @@ function ComputerOperationView({
 	);
 }
 
+function resolveProjectAttachment({
+	editor,
+	artifactId,
+}: {
+	editor: EditorCore;
+	artifactId: string;
+}) {
+	try {
+		const reference = readProjectMediaReference(
+			editor.command.readEditingConversationArtifact(artifactId),
+		);
+		if (reference?.projectId === editor.project.getActiveOrNull()?.metadata.id)
+			return reference;
+	} catch {
+		// The project or attachment may no longer be available.
+	}
+	return undefined;
+}
+
 function EntryView({ entry }: { entry: Entry }) {
+	const editor = useEditor();
 	const [copied, setCopied] = useState(false);
 	const [copyError, setCopyError] = useState("");
 	useEffect(() => {
@@ -1463,9 +1595,32 @@ function EntryView({ entry }: { entry: Entry }) {
 			)}
 			{entry.attachments?.length ? (
 				<ul>
-					{entry.attachments.map((item) => (
-						<li key={item.artifactId}>{item.filename}</li>
-					))}
+					{entry.attachments.map((item) => {
+						const mediaId = resolveProjectAttachment({
+							editor,
+							artifactId: item.artifactId,
+						})?.mediaId;
+						return (
+							<li key={item.artifactId}>
+								{mediaId &&
+								editor.media
+									.getAssets()
+									.some((asset) => asset.id === mediaId) ? (
+									<button
+										type="button"
+										className="underline underline-offset-2"
+										onClick={() =>
+											useAssetsPanelStore.getState().requestRevealMedia(mediaId)
+										}
+									>
+										<bdi>{item.filename}</bdi>
+									</button>
+								) : (
+									<bdi>{item.filename}</bdi>
+								)}
+							</li>
+						);
+					})}
 				</ul>
 			) : null}
 			{entry.exportUnavailable && (

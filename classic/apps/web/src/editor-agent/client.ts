@@ -527,6 +527,7 @@ export class EditorAgentClient {
 					"storyboardPdf",
 					"subscriptionImage",
 					"productionVideoFrames",
+					"projectMediaObservation",
 				].includes(effect.adapter) && result.type === "rejected"
 			)
 		) {

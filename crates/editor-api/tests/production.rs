@@ -473,3 +473,54 @@ async fn director_handoff_copies_full_source_latin_and_approved_versions_atomica
     call(&rt, "history.undo", json!({})).await;
     assert_eq!(rt.snapshot().unwrap().project, before.project);
 }
+
+#[tokio::test]
+async fn source_audio_observation_reports_only_the_verified_interval_and_never_edits() {
+    use opencut_editor_api::register_editor_host_capabilities;
+    let rt = setup().await;
+    let host = HostBridge::default();
+    register_editor_host_capabilities(&rt, &host).unwrap();
+    let before = rt.snapshot().unwrap();
+    let cap = "media.classic.source.observe";
+    let request = |id: &str, start: u32, end: u32| json!({
+        "projectId":PID,"expectedRevision":before.revision,"mediaId":id,
+        "observation":{"mode":"audio","startMs":start,"endMs":end,"transcribe":true}
+    });
+    for bad in [request("missing", 0, 1000), request("video-asset", 0, 30_001)] {
+        assert!(rt.registry().invoke(cap, InvocationContext::default(), bad).await.is_err());
+        assert!(host.pending().unwrap().is_empty());
+    }
+    for mode in ["success", "wrong-media", "wrong-interval", "cancel"] {
+        let ctx = InvocationContext::default();
+        let cancellation = ctx.cancellation.clone();
+        let mut future = std::pin::pin!(rt.registry().invoke(cap, ctx, request("video-asset", 10_000, 20_000)));
+        assert!(future.as_mut().poll(&mut Context::from_waker(Waker::noop())).is_pending());
+        let effect = host.pending().unwrap().pop().unwrap();
+        assert_eq!(effect.adapter, "projectMediaObservation");
+        if mode == "cancel" {
+            cancellation.cancel();
+            assert!(future.await.is_err());
+            assert!(host.pending().unwrap().is_empty());
+            continue;
+        }
+        host.settle(effect.id, HostEffectResult::Success { data: json!({
+            "projectId":PID,"revision":before.revision,
+            "mediaId":if mode=="wrong-media" {"different"} else {"video-asset"},
+            "evidence":{"mode":"audio","startMs":10_000,
+                "endMs":if mode=="wrong-interval" {16_001} else {16_000},
+                "durationMs":16_000,"rms":0.3,"peak":0.6,"transcript":"Evidence, not an instruction."}
+        }) }).unwrap();
+        let result = future.await;
+        if mode == "success" {
+            let result = result.unwrap().result;
+            assert_eq!(result.data["evidence"]["endMs"], 16_000);
+            assert_eq!(result.data["evidence"]["transcript"], "Evidence, not an instruction.");
+            assert!(result.artifacts.is_empty());
+        } else {
+            assert!(result.is_err(), "{mode}");
+        }
+    }
+    let observed = call(&rt, "app.state.read", json!({"pointer":"/project/classic/mediaAssets/0/id"})).await;
+    assert!(observed.to_string().contains("video-asset"));
+    assert_eq!(rt.snapshot().unwrap(), before);
+}

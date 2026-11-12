@@ -1,6 +1,6 @@
 import type { TimelineDragData } from "@/timeline/drag";
 
-const TIMELINE_DRAG_MIME = "application/x-timeline-drag";
+export const TIMELINE_DRAG_MIME = "application/x-timeline-drag";
 
 /**
  * Owns the state of an in-progress timeline drag session.
