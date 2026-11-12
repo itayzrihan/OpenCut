@@ -48,6 +48,8 @@ pub struct Plan {
     pub resolution: String,
     pub aspect_ratio: String,
     pub chapters: Vec<Chapter>,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub programmatic: bool,
     pub references: Vec<SourceSlot>,
     #[serde(default)]
     pub batch_id: Option<String>,
@@ -69,7 +71,7 @@ impl Plan {
         text(&self.aspect_ratio, 30, true)?;
         if self.version == 0
             || self.chapters.is_empty()
-            || self.chapters.len() > 32
+            || self.chapters.len() > 200
             || self.references.len() > 12
             || (!self.job_ids.is_empty() && self.job_ids.len() != self.chapters.len())
             || self.batch_id.is_some() != !self.job_ids.is_empty()
@@ -128,7 +130,7 @@ impl Plan {
             let row = workspace
                 .script_rows
                 .iter()
-                .find(|r| r.id == c.source.id)
+                .find(|r| r.id == c.source.id && workspace.is_active_script_row(&r.id))
                 .ok_or_else(|| bad("Chapter source row was removed; rebuild the plan"))?;
             if row.current_version != c.source.version
                 || format!(

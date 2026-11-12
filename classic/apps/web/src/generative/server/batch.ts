@@ -18,7 +18,7 @@ const inputSchema = z
 	.object({
 		id: z.string().regex(/^[a-f0-9]{32}$/),
 		kind: z.enum(["chapters", "seamless", "images"]),
-		jobs: z.array(jobRef).min(1).max(32),
+		jobs: z.array(jobRef).min(1).max(200),
 	})
 	.strict();
 const folder = ({ root, id }: { root: string; id: string }) =>

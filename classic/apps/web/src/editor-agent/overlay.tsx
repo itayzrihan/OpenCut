@@ -11,6 +11,10 @@ import { AgentConnectionsSettings } from "./agent-connections-settings";
 import { ElevenLabsConnectionSettings } from "@/audio-production/panel";
 import { ProductionStudioPanel } from "@/production-studio/panel";
 import { readProduction } from "@/production-studio/client";
+import {
+	SCRIPT_ASSET_DRAG,
+	readScriptDrag,
+} from "@/production-studio/script-drag";
 import { animateDirectorHandoff } from "./production-handoff";
 import { productionHandoffSnapshot } from "./production-handoff-snapshot";
 import { canonical as readDirector } from "@/generative/client";
@@ -1126,6 +1130,51 @@ function AgentPanel() {
 					hidden={settingsOpen}
 					className={`${styles.composer} ${dropActive ? styles.dropActive : ""}`}
 					aria-label="Chat message composer"
+					onDragOverCapture={(event) => {
+						if (!event.dataTransfer.types.includes(SCRIPT_ASSET_DRAG)) return;
+						event.preventDefault();
+						event.stopPropagation();
+						event.dataTransfer.dropEffect = busy || attaching ? "none" : "copy";
+						if (!busy && !attaching) setDropActive(true);
+					}}
+					onDropCapture={(event) => {
+						if (!event.dataTransfer.types.includes(SCRIPT_ASSET_DRAG)) return;
+						event.preventDefault();
+						event.stopPropagation();
+						setDropActive(false);
+						if (busy || attachmentInFlight.current) return;
+						try {
+							const reference = readScriptDrag(event.dataTransfer);
+							if (!reference || reference.projectId !== policyScope.projectId)
+								return;
+							const script = readProduction(editor).workspace.scripts?.find(
+								(asset) => asset.id === reference.scriptId,
+							);
+							if (!script) return;
+							if (attachments.length >= 8)
+								throw new Error("Attach at most eight files");
+							const attachment = editor.command.storeEditingAttachment({
+								filename:
+									Array.from(
+										script.title.replace(/[\u0000-\u001f\u007f-\u009f]/g, ""),
+									)
+										.slice(0, 60)
+										.join("") + ".txt",
+								mimeType: "text/plain",
+								bytes: new TextEncoder().encode(
+									`Attached production script asset: ${JSON.stringify(reference)}. Call project.production.read with this projectId and scriptId to read the asset. Its rows may have changed. For revisions, edit this existing asset and its row IDs.`,
+								),
+							});
+							setAttachments((previous) => [...previous, attachment]);
+							composerInput.current?.focus();
+						} catch (cause) {
+							setError(
+								cause instanceof Error
+									? cause.message
+									: "Could not attach script",
+							);
+						}
+					}}
 					onDragOver={(event) => {
 						if (
 							event.dataTransfer.types.includes("Files") ||

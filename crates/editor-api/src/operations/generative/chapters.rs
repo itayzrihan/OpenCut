@@ -18,6 +18,8 @@ struct Build {
     supported_durations: Vec<u32>,
     #[serde(default)]
     row_ids: Vec<String>,
+    #[serde(default)]
+    script_ids: Vec<String>,
 }
 #[derive(Deserialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -72,7 +74,7 @@ pub(super) fn register_chapters(
         crate::CapabilityExecution::Immediate,
         "project.generative.chapters.build",
         "Plan chapter generation",
-        "Derive up to32 video chapters from selected canonical script rows, automatically splitting long rows into live-model-sized time windows. Preserve concatenated source text and supplied Latin transliteration exactly; whole-word distribution across split windows is estimated and must be reviewed before approval. Select the shortest advertised duration fitting each window. Capture approved reference versions for independent parallel generation; continuity is guidance, not guaranteed matching frames. Storyboards optional. No network or paid calls. Atomic revision/undo/dry-run/idempotency.",
+        "Derive up to 200 video chapters from selected scriptIds or rowIds, automatically splitting long rows into live-model-sized time windows. Preserve concatenated source text and supplied Latin transliteration exactly; whole-word distribution across split windows is estimated and must be reviewed before approval. Select the shortest advertised duration fitting each window. Capture approved reference versions for independent parallel generation; continuity is guidance, not guaranteed matching frames. Storyboards optional. No network or paid calls. Atomic revision/undo/dry-run/idempotency.",
         "generative",
         AccessLevel::Write,
         false,
@@ -108,10 +110,18 @@ pub(super) fn register_chapters(
                         {
                             return Err(invalid("Selected script row is missing or duplicated"));
                         }
-                        if let Some(handoff) = &doc.production_handoff {
+                        if !i.script_ids.is_empty() && !i.row_ids.is_empty() {
+                            return Err(invalid("Choose scriptIds or rowIds"));
+                        }
+                        let handoff = doc
+                            .production_handoff
+                            .as_ref()
+                            .filter(|_| i.script_ids.is_empty());
+                        if let Some(handoff) = handoff {
                             if handoff.rows.iter().any(|captured| {
                                 !workspace.script_rows.iter().any(|row| {
                                     row.id == captured.row_id
+                                        && workspace.is_active_script_row(&row.id)
                                         && row.current_version == captured.version
                                         && row.current().content == captured.content
                                 })
@@ -132,28 +142,40 @@ pub(super) fn register_chapters(
                                 ));
                             }
                         }
-                        let mut rows = workspace
-                            .script_rows
-                            .iter()
-                            .filter(|r| {
-                                if i.row_ids.is_empty() {
-                                    doc.production_handoff
-                                        .as_ref()
-                                        .is_none_or(|h| h.rows.iter().any(|row| row.row_id == r.id))
-                                } else {
-                                    i.row_ids.contains(&r.id)
-                                }
-                            })
-                            .collect::<Vec<_>>();
+                        let mut rows = if !i.script_ids.is_empty()
+                            || (i.row_ids.is_empty() && handoff.is_none())
+                        {
+                            workspace
+                                .selected_script_rows(&i.script_ids)
+                                .map_err(|e| invalid(&e.to_string()))?
+                        } else {
+                            workspace
+                                .script_rows
+                                .iter()
+                                .filter(|row| {
+                                    workspace.is_active_script_row(&row.id)
+                                        && if i.row_ids.is_empty() {
+                                            handoff.is_some_and(|h| {
+                                                h.rows.iter().any(|r| r.row_id == row.id)
+                                            })
+                                        } else {
+                                            i.row_ids.contains(&row.id)
+                                        }
+                                })
+                                .collect::<Vec<_>>()
+                        };
                         rows.sort_by_key(|r| r.current().content.start_ms);
-                        if rows.is_empty() || rows.len() > 32 {
-                            return Err(invalid("Select between one and32 script rows"));
+                        if rows.is_empty()
+                            || rows.len() > 200
+                            || (!i.row_ids.is_empty() && rows.len() != i.row_ids.len())
+                        {
+                            return Err(invalid("Choose between one and 200 active script rows"));
                         }
                         let references = workspace
                             .reference_slots
                             .iter()
                             .filter(|slot| {
-                                doc.production_handoff.as_ref().is_none_or(|h| {
+                                handoff.is_none_or(|h| {
                                     h.reference_slots.iter().any(|s| s.slot_id == slot.id)
                                 })
                             })
@@ -172,6 +194,32 @@ pub(super) fn register_chapters(
                                     })
                             })
                             .collect::<Vec<_>>();
+                        let programmatic = workspace.scripts.iter().any(|script| {
+                            script.parent_script_id.is_some()
+                                && rows.iter().any(|row| script.row_ids.contains(&row.id))
+                        });
+                        if programmatic
+                            && rows.windows(2).any(|pair| {
+                                pair[0].current().content.end_ms
+                                    > pair[1].current().content.start_ms
+                            })
+                        {
+                            return Err(invalid(
+                                "Programmatic script assets must not overlap; choose the segments rather than their parent",
+                            ));
+                        }
+                        let direction = if programmatic {
+                            let structured = serde_json::from_str::<Value>(&doc.direction).ok();
+                            structured
+                                .as_ref()
+                                .and_then(|v| v["creative_intent"].as_str())
+                                .unwrap_or(&doc.direction)
+                                .chars()
+                                .take(1500)
+                                .collect::<String>()
+                        } else {
+                            doc.direction.clone()
+                        };
                         let mut chapters = vec![];
                         let mut previous = String::new();
                         let max_duration = *i.supported_durations.iter().max().unwrap();
@@ -184,9 +232,9 @@ pub(super) fn register_chapters(
                                 windows.push((cursor, stop));
                                 cursor = stop;
                             }
-                            if chapters.len() + windows.len() > 32 {
+                            if chapters.len() + windows.len() > 200 {
                                 return Err(invalid(
-                                    "This plan exceeds32 chapters after automatic splitting. Select fewer source rows for this batch.",
+                                    "This plan exceeds 200 chapters after automatic splitting. Select fewer source rows for this batch.",
                                 ));
                             }
                             let spoken = crate::generative::chapters::split_text(
@@ -211,7 +259,7 @@ pub(super) fn register_chapters(
                                     .min()
                                     .unwrap();
                                 let estimated = c.timing_estimated || windows.len() > 1;
-                                let prompt=json!({"task":"Generate this chapter as one video. Speak only the dialogue field of this chapter. globalDirection is context for style and story, not additional dialogue; do not repeat other chapters. Preserve exact source dialogue; do not translate, paraphrase or invent Latin transliteration.","chapter":index+1,"sourceLanguage":c.source_language,"dialogue":spoken[part],"latinTransliteration":latin[part],"speaker":c.speaker,"visualDirection":c.visual_description,"globalDirection":doc.direction,"previousChapterVisualDirection":previous,"continuity":"Preserve subject identity, wardrobe, lighting and style using shared approved references. Chapters are generated independently; exact boundary matching is not guaranteed.","sourceTiming":{"startMs":start,"endMs":stop,"estimated":estimated,"note":if windows.len()>1{"Long source row was split automatically. Word distribution is estimated; review dialogue timing before paid approval."}else{"Canonical source timing"}},"durationSeconds":duration}).to_string();
+                                let prompt=json!({"task":"Generate this chapter as one video. Speak only the dialogue field of this chapter. globalDirection is context for style and story, not additional dialogue; do not repeat other chapters. Preserve exact source dialogue; do not translate, paraphrase or invent Latin transliteration.","chapter":index+1,"sourceLanguage":c.source_language,"dialogue":spoken[part],"latinTransliteration":latin[part],"speaker":c.speaker,"visualDirection":c.visual_description,"globalDirection":direction,"previousChapterVisualDirection":previous,"continuity":"Preserve subject identity, wardrobe, lighting and style using shared approved references. Chapters are generated independently; exact boundary matching is not guaranteed.","sourceTiming":{"startMs":start,"endMs":stop,"estimated":estimated,"note":if windows.len()>1{"Long source row was split automatically. Word distribution is estimated; review dialogue timing before paid approval."}else{"Canonical source timing"}},"durationSeconds":duration}).to_string();
                                 chapters.push(Chapter {
                                     id: format!("chapter-{}", index + 1),
                                     title: format!("Chapter {}", index + 1),
@@ -264,6 +312,7 @@ pub(super) fn register_chapters(
                             resolution: i.resolution.clone(),
                             aspect_ratio: i.aspect_ratio.clone(),
                             chapters,
+                            programmatic,
                             references,
                             batch_id: None,
                             job_ids: vec![],
@@ -398,7 +447,12 @@ pub(super) fn register_chapters(
                         .filter(|s| s.is_finite() && *s > 0.0)
                         .ok_or_else(|| invalid("Chapter media duration is invalid"))?;
                     let source_ticks = (source * 120000.0).round() as i64;
-                    let duration = source_ticks.min(i64::from(c.duration) * 120000);
+                    let expected_ticks = if plan.programmatic {
+                        i64::from(c.source_end_ms - c.source_start_ms) * 120
+                    } else {
+                        i64::from(c.duration) * 120000
+                    };
+                    let duration = source_ticks.min(expected_ticks);
                     if duration <= 0 {
                         return Err(invalid("Chapter video is empty"));
                     }

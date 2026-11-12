@@ -33,6 +33,7 @@ import {
 	productionGenerationId,
 } from "./generation";
 import { requestVideoAnalysis } from "./analysis";
+import { SCRIPT_ASSET_DRAG } from "./script-drag";
 import type {
 	GenerateProductionReference,
 	ReferenceSlot,
@@ -114,6 +115,28 @@ function Workspace({
 	const [language, setLanguage] = useState("und");
 	const [duration, setDuration] = useState("4");
 	const [replace, setReplace] = useState(false);
+	const [scriptId, setScriptId] = useState("");
+	const [newTitle, setNewTitle] = useState("");
+	const [editTitle, setEditTitle] = useState<string | null>(null);
+	const [sendSegments, setSendSegments] = useState(false);
+	const scripts = workspace.scripts ?? [];
+	const currentScript =
+		scripts.find((script) => script.id === scriptId) ?? scripts[0];
+	const segmentScripts = scripts.filter(
+		(script) =>
+			script.parentScriptId === currentScript?.id && script.parentScriptId,
+	);
+	const handoffScripts =
+		sendSegments && segmentScripts.length
+			? segmentScripts
+			: currentScript
+				? [currentScript]
+				: [];
+	const scriptRows = currentScript
+		? currentScript.rowIds.flatMap((id) =>
+				workspace.scriptRows.filter((row) => row.id === id),
+			)
+		: workspace.scriptRows;
 	const [slotLabel, setSlotLabel] = useState("");
 	const [videoId, setVideoId] = useState("");
 	const [handoffRequest, setHandoffRequest] = useState("");
@@ -256,6 +279,7 @@ function Workspace({
 				capabilityId: "project.production.handoff",
 				input: {
 					handoffId,
+					scriptIds: handoffScripts.map((script) => script.id),
 					request: handoffRequest,
 					storyboardRecommended: recommendStoryboard,
 				},
@@ -447,9 +471,19 @@ function Workspace({
 					/>
 					{t("Recommend a storyboard first (optional)")}
 				</label>
+				{segmentScripts.length > 0 && (
+					<label className="flex gap-2">
+						<input
+							type="checkbox"
+							checked={sendSegments}
+							onChange={(event) => setSendSegments(event.target.checked)}
+						/>
+						{t("Send all segments of the selected script")}
+					</label>
+				)}
 				<Button
 					size="sm"
-					disabled={busy || !workspace.scriptRows.length}
+					disabled={busy || !scriptRows.length}
 					onClick={sendToDirector}
 				>
 					{t("Send to Director")}
@@ -487,10 +521,136 @@ function Workspace({
 			)}
 			{tab === "script" && (
 				<>
-					<details className={card} open={workspace.scriptRows.length === 0}>
+					{currentScript && (
+						<div className={card}>
+							<label className="block">
+								{t("Script assets")}
+								<select
+									className={`${selectClass} w-full`}
+									value={currentScript.id}
+									onChange={(event) => {
+										setScriptId(event.target.value);
+										setEditTitle(null);
+										setSendSegments(false);
+									}}
+								>
+									{scripts.map((script) => (
+										<option key={script.id} value={script.id}>
+											{script.title}
+										</option>
+									))}
+								</select>
+							</label>
+							<span
+								draggable
+								className="inline-block cursor-grab rounded border px-2 py-1 text-xs active:cursor-grabbing"
+								onDragStart={(event) => {
+									event.dataTransfer.setData(
+										SCRIPT_ASSET_DRAG,
+										JSON.stringify({ projectId, scriptId: currentScript.id }),
+									);
+									event.dataTransfer.effectAllowed = "copy";
+								}}
+							>
+								{t("Drag script to chat")}
+							</span>
+							<form
+								className="flex items-end gap-2"
+								onSubmit={(event) => {
+									event.preventDefault();
+									if (
+										editTitle?.trim() &&
+										change({
+											type: "renameScriptAsset",
+											scriptId: currentScript.id,
+											expectedScriptVersion:
+												currentScript.versions.at(-1)?.version,
+											title: editTitle.trim(),
+										})
+									)
+										setEditTitle(null);
+								}}
+							>
+								<label className="grow">
+									{t("Script title")}
+									<Input
+										value={editTitle ?? currentScript.title}
+										onChange={(event) => setEditTitle(event.target.value)}
+										maxLength={40}
+									/>
+								</label>
+								<Button size="sm" type="submit" disabled={!editTitle?.trim()}>
+									{t("Rename")}
+								</Button>
+							</form>
+							<details>
+								<summary className="cursor-pointer">
+									{t("Script versions")}
+								</summary>
+								{currentScript.versions.map((version) => (
+									<div
+										key={version.version}
+										className="flex items-center justify-between gap-2"
+									>
+										<span>
+											{version.version} · {version.title}
+										</span>
+										<Button
+											size="sm"
+											variant="ghost"
+											disabled={
+												version.version ===
+												currentScript.versions.at(-1)?.version
+											}
+											onClick={() =>
+												change({
+													type: "restoreScriptAsset",
+													scriptId: currentScript.id,
+													expectedScriptVersion:
+														currentScript.versions.at(-1)?.version,
+													version: version.version,
+												})
+											}
+										>
+											{t("Restore")}
+										</Button>
+									</div>
+								))}
+							</details>
+							{!currentScript.parentScriptId && !segmentScripts.length && (
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={!scriptRows.length}
+									onClick={() =>
+										change({
+											type: "splitScriptAsset",
+											scriptId: currentScript.id,
+											expectedScriptVersion:
+												currentScript.versions.at(-1)?.version,
+										})
+									}
+								>
+									{t("Create 30-second script assets")}
+								</Button>
+							)}
+						</div>
+					)}
+					<details className={card} open={!currentScript}>
 						<summary className="cursor-pointer font-medium">
 							{t("Paste a script or SRT")}
 						</summary>
+						{!replace && (
+							<label className="block space-y-1">
+								<span>{t("New script title")}</span>
+								<Input
+									dir="auto"
+									maxLength={40}
+									value={newTitle}
+									onChange={(event) => setNewTitle(event.target.value)}
+								/>
+							</label>
+						)}
 						<label className="block space-y-1">
 							<span>{t("Original script")}</span>
 							<Textarea
@@ -532,31 +692,44 @@ function Workspace({
 							<input
 								type="checkbox"
 								checked={replace}
+								disabled={!currentScript || !!currentScript.parentScriptId}
 								onChange={(event) => setReplace(event.target.checked)}
 							/>
 							{t("Replace the current script (available in Undo)")}
 						</label>
 						<Button
 							size="sm"
-							disabled={!text.trim()}
+							disabled={!text.trim() || (!replace && !newTitle.trim())}
 							onClick={() => {
+								const target = replace
+									? currentScript?.id
+									: crypto.randomUUID();
+								if (!target) return;
 								if (
 									change({
 										type: "importScript",
+										scriptId: target,
+										...(!replace && { title: newTitle.trim() }),
 										rowIdPrefix: crypto.randomUUID(),
 										text,
 										sourceLanguage: language,
 										defaultDurationMs: Math.round(Number(duration) * 1000),
 										replace,
 									})
-								)
+								) {
 									setText("");
+									setNewTitle("");
+									setReplace(false);
+									setScriptId(target);
+									setEditTitle(null);
+									setSendSegments(false);
+								}
 							}}
 						>
 							{t("Import script")}
 						</Button>
 					</details>
-					{workspace.scriptRows.map((row, index) => (
+					{scriptRows.map((row, index) => (
 						<ScriptRowCard
 							key={row.id}
 							row={row}

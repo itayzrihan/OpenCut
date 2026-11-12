@@ -71,7 +71,7 @@ const operation = z.discriminatedUnion("type", [
 								.passthrough(),
 						)
 						.min(1)
-						.max(32),
+						.max(200),
 					references: z
 						.array(
 							z

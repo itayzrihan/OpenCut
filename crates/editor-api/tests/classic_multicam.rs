@@ -552,3 +552,75 @@ async fn precision_registry_reads_are_revision_checked_and_commit_preserves_subf
     // Source offset is stored in 120kHz ticks, not snapped to a 25fps boundary.
     assert!(serialized.contains("1220798"));
 }
+
+#[tokio::test]
+async fn master_recording_keeps_leader_middle_gap_and_tail_with_restarted_cameras() {
+    let r = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    classic["document"]["settings"]["fps"] = json!({"numerator":25,"denominator":1});
+    classic["mediaAssets"] = json!([
+        {"id":"video-asset","name":"Camera A card 1","type":"video","duration":20.0},
+        {"id":"camera-b","name":"Camera B","type":"video","duration":20.0},
+        {"id":"camera-a2","name":"Camera A card 2","type":"video","duration":20.0},
+        {"id":"master","name":"Continuous master.wav","type":"audio","duration":100.013}
+    ]);
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let grouped =
+        classic_podcast::group_podcast_recordings(classic_podcast::GroupPodcastRecordingsOptions {
+            recordings: vec![classic_podcast::PodcastRecording {
+                media_id: "master".into(),
+                name: "Continuous master.wav".into(),
+                duration: 100.013,
+                binding_revision: 0,
+            }],
+        });
+    assert!(grouped.issues.is_empty());
+    let mic = &grouped.microphones[0].id;
+    let channel = |id: &str, video: &str, delay| {
+        json!({"id":id,"name":id,"videoId":video,"audioId":"master",
+        "videoBindingRevision":0,"audioBindingRevision":0,"videoOffset":0.0,"videoDelay":delay,"audioOffset":0.0,"audioDelay":0.0})
+    };
+    let cut =
+        |id: &str, start, duration| json!({"channelId":id,"timestamp":start,"duration":duration});
+    let gap = classic_podcast::PODCAST_AUDIO_ONLY;
+    let plan = json!({
+        "settings":classic_podcast::podcast_multicam_defaults(classic_podcast::PodcastMulticamDefaultsOptions{quick:true}),
+        "duration":100.013,"channels":[channel("a","video-asset",5.0),channel("b","camera-b",15.0),channel("a2","camera-a2",50.0)],
+        "advanced":{"microphones":grouped.microphones,"starts":{(mic):0.0},"masterMicrophoneId":mic,
+            "routing":{"microphoneIds":[mic],"cameras":[
+                {"channelId":"a","microphoneIds":[mic]},{"channelId":"b","microphoneIds":[mic]},{"channelId":"a2","microphoneIds":[mic]}]}},
+        "cuts":[cut(gap,0.0,5.0),cut("a",5.0,20.0),cut("b",25.0,10.0),cut(gap,35.0,15.0),cut("a2",50.0,20.0),cut(gap,70.0,30.013)],
+    });
+    let before = read(&r).await;
+    call(
+        &r,
+        CREATE,
+        json!({"projectId":"classic-project","expectedRevision":before["revision"],"plan":plan}),
+    )
+    .await;
+    let state = read(&r).await;
+    let scene = &state["project"]["classic"]["document"]["scenes"][2];
+    let cuts = scene["multicam"]["cuts"].as_array().unwrap();
+    assert_eq!(cuts.iter().filter(|c| c["channelId"] == gap).count(), 3);
+    let audio = &scene["tracks"]["audio"][0]["elements"][0];
+    assert_eq!(audio["startTime"], 0);
+    assert_eq!(audio["duration"], 12_001_560);
+    assert_eq!(audio["trimEnd"], 0);
+    for video in scene["tracks"]["overlay"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|track| track["elements"].as_array().unwrap())
+    {
+        let start = video["startTime"].as_u64().unwrap();
+        let end = start + video["duration"].as_u64().unwrap();
+        assert!(start >= 600_000 && end <= 8_400_000);
+        assert!(end <= 4_200_000 || start >= 6_000_000);
+    }
+}

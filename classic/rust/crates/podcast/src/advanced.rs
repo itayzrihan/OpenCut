@@ -139,13 +139,28 @@ pub fn group_podcast_recordings(o: GroupPodcastRecordingsOptions) -> PodcastReco
                 .entry((date, token))
                 .or_default()
                 .push((seq, minute, r));
+        } else if r.name.to_ascii_lowercase().contains("_32float_") {
+            result.issues.push(format!(
+                "Unrecognized segmented recorder filename: {}",
+                r.name
+            ));
         } else {
-            result
-                .issues
-                .push(format!("Unrecognized recorder filename: {}", r.name));
+            result.microphones.push(PodcastMicrophone {
+                id: format!("file:{}", r.media_id),
+                name: r.name.clone(),
+                recorder_token: String::new(),
+                date: String::new(),
+                duration: r.duration,
+                segments: vec![PodcastRecordingSegment {
+                    recording: r,
+                    sequence: 0,
+                    start: 0.0,
+                }],
+            });
         }
     }
-    if groups.len() > 4 {
+    result.microphones.sort_by(|a, b| a.id.cmp(&b.id));
+    if groups.len() + result.microphones.len() > 4 {
         result.issues.push(
             "Advanced Podcast supports at most four microphone streams from one session".into(),
         );
@@ -194,7 +209,12 @@ pub fn group_podcast_recordings(o: GroupPodcastRecordingsOptions) -> PodcastReco
             segments,
         });
     }
-    let dates: HashSet<_> = result.microphones.iter().map(|m| &m.date).collect();
+    let dates: HashSet<_> = result
+        .microphones
+        .iter()
+        .filter(|m| !m.date.is_empty())
+        .map(|m| &m.date)
+        .collect();
     if dates.len() > 1 {
         result
             .issues
@@ -290,7 +310,7 @@ pub struct AdvancedPodcastRouting {
     pub angle_groups: Vec<crate::PodcastAngleGroup>,
 }
 impl AdvancedPodcastRouting {
-    pub fn validate(&self, camera_ids: &[String]) -> bool {
+    pub fn validate_with_master(&self, camera_ids: &[String], master_id: Option<&str>) -> bool {
         let unique: HashSet<_> = self.microphone_ids.iter().collect();
         let mut grouped = HashSet::new();
         let groups_valid = self.angle_groups.len() <= 16
@@ -336,10 +356,10 @@ impl AdvancedPodcastRouting {
                         .iter()
                         .all(|id| self.microphone_ids.contains(id))
             })
-            && self
-                .microphone_ids
-                .iter()
-                .all(|id| self.cameras.iter().any(|c| c.microphone_ids.contains(id)))
+            && self.microphone_ids.iter().all(|id| {
+                Some(id.as_str()) == master_id
+                    || self.cameras.iter().any(|c| c.microphone_ids.contains(id))
+            })
     }
 }
 // Preserve relative local dominance instead of interpreting strong room bleed as
@@ -363,7 +383,22 @@ pub(crate) fn advanced_camera_timeline(
             active[i].max(1e-9)
         })
         .collect();
-    let mut owner = 0;
+    let active_mics: Vec<_> = mapping
+        .microphone_ids
+        .iter()
+        .enumerate()
+        .filter(|(_, id)| {
+            mapping
+                .cameras
+                .iter()
+                .any(|camera| camera.microphone_ids.contains(id))
+        })
+        .map(|(index, _)| index)
+        .collect();
+    let Some(&first) = active_mics.first() else {
+        return vec![];
+    };
+    let mut owner = first;
     (0..frames)
         .map(|frame| {
             let energy: Vec<_> = envelopes
@@ -371,12 +406,11 @@ pub(crate) fn advanced_camera_timeline(
                 .zip(&scales)
                 .map(|(e, s)| e[frame] / s)
                 .collect();
-            let best = energy
+            let best = active_mics
                 .iter()
-                .enumerate()
-                .max_by(|a, b| a.1.total_cmp(b.1))
-                .map(|x| x.0)
-                .unwrap_or(0);
+                .copied()
+                .max_by(|a, b| energy[*a].total_cmp(&energy[*b]))
+                .unwrap_or(first);
             if energy[best] > 0.05 && (energy[owner] < 0.05 || energy[best] > energy[owner] * 1.12)
             {
                 owner = best;
@@ -525,6 +559,7 @@ mod routing_tests {
                 quick: true,
             }),
             camera_windows: vec![],
+            master_microphone_id: None,
             advanced: Some(AdvancedPodcastRouting {
                 microphone_ids,
                 cameras,

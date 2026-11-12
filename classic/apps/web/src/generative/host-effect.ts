@@ -41,7 +41,7 @@ const replySchema = z
 				id: z.string(),
 				planId: z.string(),
 				version: z.number().int(),
-				jobIds: z.array(z.string()).max(32),
+				jobIds: z.array(z.string()).max(200),
 			})
 			.optional(),
 	})

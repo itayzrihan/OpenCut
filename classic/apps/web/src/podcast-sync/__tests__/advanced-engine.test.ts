@@ -111,6 +111,23 @@ test("segmented logical microphones keep all physical bindings and staggered sta
 	const result = await runPodcastMulticam({ channels, settings, alignment });
 	expect(result.advanced).toEqual(alignment.advanced);
 	expect(result.cuts.reduce((sum, c) => sum + c.duration, 0)).toBe(100);
+	const master = grouped.microphones[1]!;
+	const masterAlignment = await runPodcastAlignment({
+		channels,
+		settings,
+		advanced: { ...advanced, masterMicrophoneId: master.id },
+	});
+	expect(masterAlignment.duration).toBe(master.duration);
+	expect(masterAlignment.advanced?.starts[master.id]).toBe(0);
+	const masterResult = await runPodcastMulticam({
+		channels,
+		settings,
+		alignment: masterAlignment,
+	});
+	expect(masterResult.cuts.at(-1)).toMatchObject({ channelId: "@audio-only" });
+	expect(
+		masterResult.cuts.reduce((sum, cut) => sum + cut.duration, 0),
+	).toBeCloseTo(master.duration, 5);
 	recordings[0]!.bindingRevision = 3;
 	await expect(
 		runPodcastAlignment({ channels, settings, advanced }),

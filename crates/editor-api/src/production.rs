@@ -96,6 +96,8 @@ impl ProductionHandoff {
 pub struct ProductionWorkspace {
     #[serde(default)]
     pub script_rows: Vec<ScriptRow>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub scripts: Vec<ScriptAsset>,
     #[serde(default)]
     pub reference_slots: Vec<ReferenceSlot>,
     #[serde(default)]
@@ -138,6 +140,51 @@ impl ScriptRow {
         self.versions.last().expect("validated script row")
     }
 }
+pub const LEGACY_SCRIPT_ID: &str = "legacy-script";
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScriptAsset {
+    pub id: String,
+    pub title: String,
+    pub row_ids: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_script_id: Option<String>,
+    pub versions: Vec<ScriptAssetVersion>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScriptAssetVersion {
+    pub version: u32,
+    pub title: String,
+    pub rows: Vec<ScriptRowRef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ScriptRowRef {
+    pub id: String,
+    pub version: u32,
+}
+
+impl ScriptAsset {
+    pub fn new(
+        id: String,
+        title: String,
+        row_ids: Vec<String>,
+        parent_script_id: Option<String>,
+    ) -> Self {
+        Self {
+            id,
+            title,
+            row_ids,
+            parent_script_id,
+            versions: vec![],
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
 #[serde(rename_all = "lowercase")]
 pub enum ReferenceSource {
@@ -264,15 +311,105 @@ impl ScriptContent {
         {
             return Err(bad("Use a language tag such as he, en or und"));
         }
-        text(&self.source_text, 6000, true)?;
+        text(&self.source_text, 6000, false)?;
         text(&self.latin_transliteration, 6000, false)?;
         text(&self.speaker, 120, false)?;
         text(&self.visual_description, 4000, false)
     }
 }
 impl ProductionWorkspace {
+    pub fn migrate_scripts(&mut self) {
+        if self.scripts.is_empty() && !self.script_rows.is_empty() {
+            self.scripts.push(ScriptAsset::new(
+                LEGACY_SCRIPT_ID.into(),
+                "Existing script".into(),
+                self.script_rows.iter().map(|row| row.id.clone()).collect(),
+                None,
+            ));
+            self.record_script_versions();
+        }
+    }
+
+    pub fn record_script_versions(&mut self) {
+        let rows: std::collections::BTreeMap<_, _> = self
+            .script_rows
+            .iter()
+            .map(|row| (&row.id, row.current_version))
+            .collect();
+        for script in &mut self.scripts {
+            let current = script
+                .row_ids
+                .iter()
+                .filter_map(|id| {
+                    rows.get(id).map(|version| ScriptRowRef {
+                        id: id.clone(),
+                        version: *version,
+                    })
+                })
+                .collect::<Vec<_>>();
+            if script
+                .versions
+                .last()
+                .is_none_or(|v| v.title != script.title || v.rows != current)
+            {
+                script.versions.push(ScriptAssetVersion {
+                    version: script.versions.len() as u32 + 1,
+                    title: script.title.clone(),
+                    rows: current,
+                });
+            }
+        }
+    }
+
+    pub fn is_active_script_row(&self, id: &str) -> bool {
+        self.scripts.is_empty()
+            || self
+                .scripts
+                .iter()
+                .any(|s| s.row_ids.iter().any(|r| r == id))
+    }
+
+    pub fn selected_script_rows(
+        &self,
+        script_ids: &[String],
+    ) -> Result<Vec<&ScriptRow>, ModelError> {
+        let selected = if script_ids.is_empty() {
+            match self.scripts.as_slice() {
+                [] => return Ok(self.script_rows.iter().collect()),
+                [only] => vec![only],
+                _ => return Err(bad("Choose which script assets to use")),
+            }
+        } else {
+            let mut seen = BTreeSet::new();
+            script_ids
+                .iter()
+                .map(|id| {
+                    if !seen.insert(id) {
+                        return Err(bad("Duplicate script selection"));
+                    }
+                    self.scripts
+                        .iter()
+                        .find(|s| &s.id == id)
+                        .ok_or_else(|| bad("Script asset not found"))
+                })
+                .collect::<Result<Vec<_>, _>>()?
+        };
+        let rows: std::collections::BTreeMap<_, _> =
+            self.script_rows.iter().map(|r| (&r.id, r)).collect();
+        selected
+            .iter()
+            .flat_map(|script| &script.row_ids)
+            .map(|id| {
+                rows.get(id)
+                    .copied()
+                    .ok_or_else(|| bad("Script row is missing"))
+            })
+            .collect()
+    }
+
     pub fn validate(&self, project: &Project) -> Result<(), ModelError> {
         if self.script_rows.len() > MAX_ROWS
+            || self.scripts.len() > 64
             || self.reference_slots.len() > 64
             || self.analyses.len() > 32
             || serde_json::to_vec(self)
@@ -302,6 +439,82 @@ impl ProductionWorkspace {
                 timestamp(&v.created_at)?;
                 text(&v.change_note, 500, false)?;
             }
+        }
+        let rows: std::collections::BTreeMap<_, _> =
+            self.script_rows.iter().map(|r| (&r.id, r)).collect();
+        let mut script_ids = BTreeSet::new();
+        let mut ownership = std::collections::BTreeMap::new();
+        for script in &self.scripts {
+            identifier(&script.id)?;
+            text(&script.title, 160, true)?;
+            if !script_ids.insert(&script.id)
+                || script.versions.is_empty()
+                || script.versions.len() > 256
+                || script.parent_script_id.as_ref().is_some_and(|parent| {
+                    parent == &script.id
+                        || !self
+                            .scripts
+                            .iter()
+                            .any(|source| &source.id == parent && source.parent_script_id.is_none())
+                })
+            {
+                return Err(bad("Invalid script asset or version history"));
+            }
+            if script.parent_script_id.is_some() {
+                let anchor = script.versions[0]
+                    .rows
+                    .first()
+                    .and_then(|reference| {
+                        rows.get(&reference.id)?
+                            .versions
+                            .get(reference.version.checked_sub(1)? as usize)
+                    })
+                    .ok_or_else(|| bad("Script segment is missing its original time window"))?;
+                if anchor.content.end_ms - anchor.content.start_ms > 30_000
+                    || script.row_ids.iter().any(|id| {
+                        rows.get(id).is_none_or(|row| {
+                            let current = &row.current().content;
+                            current.start_ms < anchor.content.start_ms
+                                || current.end_ms > anchor.content.end_ms
+                        })
+                    })
+                {
+                    return Err(bad(
+                        "Segment edits must stay inside the original 30-second window",
+                    ));
+                }
+            }
+            let latest = script.versions.last().unwrap();
+            if latest.title != script.title
+                || latest.rows.iter().map(|r| &r.id).ne(script.row_ids.iter())
+            {
+                return Err(bad("Current script differs from its saved version"));
+            }
+            for (i, version) in script.versions.iter().enumerate() {
+                text(&version.title, 160, true)?;
+                let mut unique = BTreeSet::new();
+                if version.version != i as u32 + 1
+                    || version.rows.iter().any(|reference| {
+                        !unique.insert(&reference.id)
+                            || ownership
+                                .insert(&reference.id, &script.id)
+                                .is_some_and(|owner| owner != &script.id)
+                            || rows.get(&reference.id).is_none_or(|row| {
+                                reference.version == 0
+                                    || reference.version > row.current_version
+                                    || (i + 1 == script.versions.len()
+                                        && reference.version != row.current_version)
+                            })
+                    })
+                {
+                    return Err(bad("Invalid script version row binding"));
+                }
+            }
+        }
+        if !self.scripts.is_empty() && ownership.len() != rows.len() {
+            return Err(bad(
+                "Every script row must belong to exactly one script asset",
+            ));
         }
         let references: crate::generative::GenerativeDocument = serde_json::from_value(
             project

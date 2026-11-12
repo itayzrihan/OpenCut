@@ -104,6 +104,9 @@ pub struct PodcastCameraWindow {
     pub start: f64,
     pub end: f64,
 }
+/// Reserved timeline routing marker. It represents audio with no recorded picture.
+pub const PODCAST_AUDIO_ONLY: &str = "@audio-only";
+
 /// Hard coverage boundaries override minimum shot, preroll and reaction rules.
 /// A camera ending never produces a frozen tail or a cut to absent footage.
 pub fn constrain_camera_cuts(
@@ -111,7 +114,16 @@ pub fn constrain_camera_cuts(
     windows: &[PodcastCameraWindow],
     duration: f64,
 ) -> Vec<PodcastMulticamCut> {
-    if windows.is_empty() {
+    constrain_camera_cuts_with_gaps(cuts, windows, duration, false)
+}
+
+pub fn constrain_camera_cuts_with_gaps(
+    cuts: Vec<PodcastMulticamCut>,
+    windows: &[PodcastCameraWindow],
+    duration: f64,
+    allow_audio_only: bool,
+) -> Vec<PodcastMulticamCut> {
+    if windows.is_empty() && !allow_audio_only {
         return cuts;
     }
     if windows
@@ -172,18 +184,20 @@ pub fn constrain_camera_cuts(
                     .filter(available)
                     .max_by(|a, b| (a.end - a.start).total_cmp(&(b.end - b.start)))
             });
-        let Some(selected) = selected else {
-            return vec![];
+        let channel_id = match selected {
+            Some(window) => &window.channel_id,
+            None if allow_audio_only => PODCAST_AUDIO_ONLY,
+            None => return vec![],
         };
         if let Some(last) = result.last_mut()
-            && last.channel_id == selected.channel_id
+            && last.channel_id == channel_id
         {
             last.duration = end - last.timestamp;
         } else {
             result.push(PodcastMulticamCut {
                 timestamp: start,
                 duration: end - start,
-                channel_id: selected.channel_id.clone(),
+                channel_id: channel_id.to_owned(),
             });
         }
     }

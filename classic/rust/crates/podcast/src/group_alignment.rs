@@ -46,7 +46,7 @@ pub fn align_podcast_sources(o: PodcastGroupAlignmentOptions) -> PodcastGroupAli
         || !o.resolution_seconds.is_finite()
         || !(0.001..=1.0).contains(&o.resolution_seconds)
         || !o.max_lag_seconds.is_finite()
-        || !(0.0..=3600.0).contains(&o.max_lag_seconds)
+        || !(0.0..=36000.0).contains(&o.max_lag_seconds)
         || o.envelopes.iter().any(|e| {
             e.len() < 100 || e.len() > 3_600_000 || e.iter().any(|v| !v.is_finite() || *v < 0.0)
         })

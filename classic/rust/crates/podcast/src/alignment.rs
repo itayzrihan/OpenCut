@@ -36,7 +36,7 @@ pub fn estimate_podcast_alignment(o: PodcastAlignmentOptions) -> PodcastAlignmen
         || !o.resolution_seconds.is_finite()
         || !(0.001..=1.0).contains(&o.resolution_seconds)
         || !o.max_lag_seconds.is_finite()
-        || !(0.0..=3600.0).contains(&o.max_lag_seconds)
+        || !(0.0..=36000.0).contains(&o.max_lag_seconds)
         || a.iter().chain(b).any(|x| !x.is_finite() || *x < 0.0)
     {
         return none();

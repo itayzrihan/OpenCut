@@ -475,6 +475,93 @@ async fn director_handoff_copies_full_source_latin_and_approved_versions_atomica
 }
 
 #[tokio::test]
+async fn independent_script_assets_keep_versions_and_split_ten_minutes_into_one_batch() {
+    let rt = setup().await;
+    let content = |start, end, text| {
+        json!({"startMs":start,"endMs":end,"sourceLanguage":"he",
+        "sourceText":text,"latinTransliteration":"shalom olam","visualDescription":"Presenter"})
+    };
+    edit(
+        &rt,
+        json!({"type":"createScriptAsset","scriptId":"film","title":"Main film",
+        "rows":[content(0,600_000,"שלום עולם")]}),
+    )
+    .await;
+    edit(
+        &rt,
+        json!({"type":"createScriptAsset","scriptId":"alternate","title":"Alternate",
+        "rows":[content(0,25_000,"חלופה")]}),
+    )
+    .await;
+    edit(
+        &rt,
+        json!({"type":"editScriptRow","rowId":"film-1","expectedRowVersion":1,
+        "content":content(0,600_000,"שלום עולם חדש")}),
+    )
+    .await;
+    let updated = workspace(&rt).await;
+    assert_eq!(
+        updated["scripts"][0]["versions"][1]["rows"][0]["version"],
+        2
+    );
+    assert_eq!(
+        updated["scripts"][1]["versions"].as_array().unwrap().len(),
+        1
+    );
+    edit(&rt, json!({"type":"restoreScriptAsset","scriptId":"film","expectedScriptVersion":2,"version":1})).await;
+    let restored = workspace(&rt).await;
+    assert_eq!(
+        restored["scriptRows"][0]["versions"][2]["sourceText"],
+        "שלום עולם"
+    );
+    assert_eq!(
+        restored["scriptRows"][1]["versions"][0]["sourceText"],
+        "חלופה"
+    );
+    edit(
+        &rt,
+        json!({"type":"splitScriptAsset","scriptId":"film","expectedScriptVersion":3}),
+    )
+    .await;
+    let after = workspace(&rt).await;
+    let segments = after["scripts"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|script| script["parentScriptId"] == "film")
+        .collect::<Vec<_>>();
+    assert_eq!(segments.len(), 20);
+    let mut dialogue = String::new();
+    for (index, segment) in segments.iter().enumerate() {
+        let row = after["scriptRows"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|row| row["id"] == segment["rowIds"][0])
+            .unwrap();
+        let version = &row["versions"][0];
+        assert_eq!(version["startMs"], index * 30_000);
+        assert_eq!(version["endMs"], (index + 1) * 30_000);
+        dialogue.push_str(version["sourceText"].as_str().unwrap());
+    }
+    assert_eq!(dialogue, "שלום עולם");
+    let plan = call(
+        &rt,
+        "project.generative.chapters.build",
+        json!({
+            "projectId":PID,"expectedRevision":rt.snapshot().unwrap().revision,
+            "id":"feature-film","title":"Feature film","model":"fixture","resolution":"1080p",
+            "aspectRatio":"16:9","supportedDurations":[5,10],
+            "scriptIds":segments.iter().map(|segment| &segment["id"]).collect::<Vec<_>>(),
+        }),
+    )
+    .await;
+    assert_eq!(plan["plan"]["chapters"].as_array().unwrap().len(), 60);
+    assert_eq!(plan["plan"]["chapters"][59]["sourceEndMs"], 600_000);
+    assert_eq!(plan["plan"]["programmatic"], true);
+}
+
+#[tokio::test]
 async fn source_audio_observation_reports_only_the_verified_interval_and_never_edits() {
     use opencut_editor_api::register_editor_host_capabilities;
     let rt = setup().await;

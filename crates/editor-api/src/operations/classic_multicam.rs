@@ -27,6 +27,8 @@ struct AdvancedPlan {
     /// Stream start relative to sequence origin; negative means already recording.
     starts: BTreeMap<String, f64>,
     routing: classic_podcast::AdvancedPodcastRouting,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    master_microphone_id: Option<String>,
 }
 impl AdvancedPlan {
     fn validate(&self, channels: &[Channel]) -> Result<(), String> {
@@ -43,10 +45,10 @@ impl AdvancedPlan {
             return Err("Choose up to four microphone streams and 512 segments".into());
         }
         let ids: Vec<_> = self.microphones.iter().map(|m| m.id.clone()).collect();
-        if !self
-            .routing
-            .validate(&channels.iter().map(|c| c.id.clone()).collect::<Vec<_>>())
-            || ids != self.routing.microphone_ids
+        if !self.routing.validate_with_master(
+            &channels.iter().map(|c| c.id.clone()).collect::<Vec<_>>(),
+            self.master_microphone_id.as_deref(),
+        ) || ids != self.routing.microphone_ids
             || self.starts.len() != ids.len()
             || ids.iter().any(|id| {
                 !self
@@ -169,11 +171,28 @@ impl Plan {
         {
             return Err("Invalid multicam settings, duration or channel count".into());
         }
+        let master = self
+            .advanced
+            .as_ref()
+            .and_then(|a| a.master_microphone_id.as_ref().map(|id| (a, id)));
+        if let Some((advanced, id)) = master {
+            let mic = advanced
+                .microphones
+                .iter()
+                .find(|m| &m.id == id)
+                .ok_or("The master microphone must be an included recording")?;
+            if advanced.starts.get(id) != Some(&0.0) || self.duration > mic.duration + 1e-6 {
+                return Err(
+                    "The master recording must begin at zero and cover the timeline".into(),
+                );
+            }
+        }
         let mut ids = HashSet::new();
         let mut videos = HashSet::new();
         let mut audio = HashSet::new();
         for c in &self.channels {
             if c.id.trim().is_empty()
+                || c.id == classic_podcast::PODCAST_AUDIO_ONLY
                 || c.name.trim().is_empty()
                 || !ids.insert(&c.id)
                 || !videos.insert(&c.video_id)
@@ -194,7 +213,8 @@ impl Plan {
         }
         let mut end = 0.0;
         for cut in &self.cuts {
-            if !ids.contains(&cut.channel_id)
+            if !(ids.contains(&cut.channel_id)
+                || (master.is_some() && cut.channel_id == classic_podcast::PODCAST_AUDIO_ONLY))
                 || !nonnegative(cut.timestamp)
                 || !nonnegative(cut.duration)
                 || cut.duration <= 0.0
@@ -547,7 +567,7 @@ pub(super) fn register_multicam(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.multicam.create",
         "Create a synchronized multicam sequence",
-        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets and continuous camera coverage; when external audio exists, camera audio requires explicit allowCameraAudio=true; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
+        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets and continuous camera coverage unless advanced.masterMicrophoneId selects the complete audio clock. Use the @audio-only routing marker only for spans without a camera when a master is selected; when external audio exists, camera audio requires explicit allowCameraAudio=true; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -585,6 +605,16 @@ pub(super) fn register_multicam(
                         let rate = &classic.document["settings"]["fps"];
                         let fps = rate["numerator"].as_f64().unwrap_or(0.0)
                             / rate["denominator"].as_f64().unwrap_or(1.0);
+                        let master = input.plan.advanced.as_ref().and_then(|a| {
+                            a.master_microphone_id
+                                .as_ref()
+                                .and_then(|id| a.microphones.iter().find(|m| &m.id == id))
+                        });
+                        if master.is_some_and(|m| (m.duration - input.plan.duration).abs() > 1e-6) {
+                            return Err(invalid(
+                                "Use the complete master recording as the sequence duration",
+                            ));
+                        }
                         let mut snapped = snap_plan(input.plan.clone(), fps)?;
                         let mut windows = Vec::new();
                         for c in &input.plan.channels {
@@ -614,10 +644,11 @@ pub(super) fn register_multicam(
                                 });
                             }
                         }
-                        snapped.cuts = classic_podcast::constrain_camera_cuts(
+                        snapped.cuts = classic_podcast::constrain_camera_cuts_with_gaps(
                             snapped.cuts,
                             &windows,
                             snapped.duration,
+                            master.is_some(),
                         );
                         snapped.validate().map_err(|s| invalid(&s))?;
                         let mut occupied = HashSet::new();
@@ -773,8 +804,18 @@ pub(super) fn register_multicam(
                                 for segment in &m.segments {
                                     let position = advanced.starts[&m.id] + segment.start;
                                     let start = position.max(0.0);
-                                    let end =
-                                        (position + segment.recording.duration).min(plan.duration);
+                                    let end = (position + segment.recording.duration).min(
+                                        if plan
+                                            .advanced
+                                            .as_ref()
+                                            .and_then(|a| a.master_microphone_id.as_ref())
+                                            == Some(&m.id)
+                                        {
+                                            m.duration
+                                        } else {
+                                            plan.duration
+                                        },
+                                    );
                                     if end <= start {
                                         continue;
                                     }
@@ -791,7 +832,18 @@ pub(super) fn register_multicam(
                                         "A microphone has no audio on the camera timeline",
                                     ));
                                 }
-                                audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":m.name,"muted":false,"elements":elements}));
+                                // An unassigned master is the playback mix. Keep isolated microphones available on muted tracks.
+                                let muted =
+                                    advanced
+                                        .master_microphone_id
+                                        .as_ref()
+                                        .is_some_and(|master| {
+                                            master != &m.id
+                                                && !advanced.routing.cameras.iter().any(|camera| {
+                                                    camera.microphone_ids.contains(master)
+                                                })
+                                        });
+                                audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":m.name,"muted":muted,"elements":elements}));
                             }
                         }
                         let order: Vec<Value> = overlay

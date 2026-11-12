@@ -60,7 +60,19 @@ export interface VideoAnalysis {
 		byteSize: number;
 	}>;
 }
+export interface ScriptAsset {
+	id: string;
+	title: string;
+	rowIds: string[];
+	parentScriptId?: string;
+	versions: Array<{
+		version: number;
+		title: string;
+		rows: Array<{ id: string; version: number }>;
+	}>;
+}
 export interface ProductionWorkspace {
+	scripts?: ScriptAsset[];
 	scriptRows: ScriptRow[];
 	referenceSlots: ReferenceSlot[];
 	analyses: VideoAnalysis[];
