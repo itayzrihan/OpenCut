@@ -124,3 +124,41 @@ test("a large alignment gets the worker budget and queued cancellation opens the
 		else Reflect.deleteProperty(globalThis, "Worker");
 	}
 });
+
+test("sparse browser reads reuse an unchanged File but not a newly selected one", async () => {
+	const original = Object.getOwnPropertyDescriptor(globalThis, "Worker");
+	let decodes = 0;
+	class TestWorker {
+		onmessage?: (event: { data: { result: Float32Array } }) => void;
+		postMessage() {
+			decodes++;
+			queueMicrotask(() =>
+				this.onmessage?.({ data: { result: Float32Array.of(decodes) } }),
+			);
+		}
+		terminate() {}
+	}
+	Object.defineProperty(globalThis, "Worker", {
+		configurable: true,
+		value: TestWorker,
+	});
+	try {
+		const file = new File(["first"], "camera.mov");
+		const read = (file: File) =>
+			runSyncWorker<Float32Array>({
+				message: {
+					type: "read",
+					asset: { file },
+					range: { startSeconds: 1, durationSeconds: 2 },
+				},
+			});
+		expect(Array.from(await read(file))).toEqual([1]);
+		expect(Array.from(await read(file))).toEqual([1]);
+		expect(Array.from(await read(new File(["second"], file.name)))).toEqual([
+			2,
+		]);
+	} finally {
+		if (original) Object.defineProperty(globalThis, "Worker", original);
+		else Reflect.deleteProperty(globalThis, "Worker");
+	}
+});

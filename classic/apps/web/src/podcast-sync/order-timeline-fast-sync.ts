@@ -181,7 +181,6 @@ export async function tryLongTimelineSync({
 				const end = Math.floor((frames * (index + 1)) / count);
 				const samples = await readRange({
 					asset: reference,
-					preferPcm: true,
 					startSeconds: start / ENVELOPE_RATE,
 					durationSeconds: (end - start) / ENVELOPE_RATE,
 					signal: taskSignal,
@@ -291,10 +290,8 @@ function readRange({
 	startSeconds,
 	durationSeconds,
 	signal,
-	preferPcm,
 }: {
 	asset: MediaAsset;
-	preferPcm?: boolean;
 	startSeconds: number;
 	durationSeconds: number;
 	signal: AbortSignal;
@@ -303,7 +300,6 @@ function readRange({
 		message: {
 			type: "read",
 			asset: mediaSource(asset),
-			preferPcm,
 			range: { startSeconds, durationSeconds },
 		},
 		signal,

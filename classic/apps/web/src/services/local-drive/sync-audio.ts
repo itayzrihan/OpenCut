@@ -292,11 +292,10 @@ async function decodeAudio({
 		if (count && index < samples.length)
 			samples[index++] = Math.sqrt(sum / count);
 		if (!index) throw new Error("No audio samples");
-		return new Uint8Array(
-			samples.buffer,
-			0,
-			(length == null ? index : samples.length) * 4,
-		);
+		// The cache owns these bytes. A view over an oversized decode buffer
+		// would keep its entire backing allocation alive between requests.
+		const finishedSamples = length == null ? samples.slice(0, index) : samples;
+		return new Uint8Array(finishedSamples.buffer);
 	} finally {
 		if (child.exitCode === null && child.signalCode === null) child.kill();
 	}

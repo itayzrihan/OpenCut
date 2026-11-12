@@ -6,6 +6,68 @@ const fileKeys = new WeakMap<Blob, symbol>();
 const envelopeCache = new Map<symbol, Float32Array>();
 let cachedEnvelopeBytes = 0;
 
+const MAX_SPARSE_BYTES = 12 * 1024 * 1024;
+const sparseCache = new Map<string, { result: unknown; bytes: number }>();
+const sparseFileIds = new WeakMap<Blob, number>();
+let nextSparseFileId = 0;
+let sparseBytes = 0;
+
+function sparseKey(message: unknown) {
+	const job = message as {
+		type: string;
+		asset?: BrowserMediaSource;
+		reference?: BrowserMediaSource;
+		target?: BrowserMediaSource;
+		referenceSegments?: unknown[];
+		targetSegments?: unknown[];
+		range?: { startSeconds: number; durationSeconds: number };
+		window?: {
+			referenceStart: number;
+			targetStart: number;
+			durationSeconds: number;
+		};
+	};
+	const id = (file?: Blob) => {
+		if (!file) return undefined;
+		let value = sparseFileIds.get(file);
+		if (value == null) sparseFileIds.set(file, (value = ++nextSparseFileId));
+		return value;
+	};
+	if (job.type === "read" && job.range && job.range.durationSeconds <= 120) {
+		const file = id(job.asset?.file);
+		if (file != null)
+			return `read:${file}:${job.range.startSeconds}:${job.range.durationSeconds}`;
+	}
+	if (job.type === "capture-time") {
+		const file = id(job.asset?.file);
+		if (file != null) return `capture:${file}`;
+	}
+	if (
+		job.type === "precision" &&
+		job.window &&
+		!job.referenceSegments?.length &&
+		!job.targetSegments?.length
+	) {
+		const reference = id(job.reference?.file);
+		const target = id(job.target?.file);
+		if (reference != null && target != null)
+			return `precision:${reference}:${target}:${job.window.referenceStart}:${job.window.targetStart}:${job.window.durationSeconds}`;
+	}
+	return undefined;
+}
+
+function rememberSparse({ key, result }: { key: string; result: unknown }) {
+	const bytes = result instanceof Float32Array ? result.buffer.byteLength : 128;
+	if (bytes > MAX_SPARSE_BYTES || sparseCache.has(key)) return;
+	while (sparseCache.size >= 256 || sparseBytes + bytes > MAX_SPARSE_BYTES) {
+		const oldest = sparseCache.keys().next().value!;
+		sparseBytes -= sparseCache.get(oldest)!.bytes;
+		sparseCache.delete(oldest);
+	}
+	sparseCache.set(key, { result, bytes });
+	sparseBytes += bytes;
+}
+
 export function syncReadConcurrency() {
 	const memory = (navigator as Navigator & { deviceMemory?: number })
 		.deviceMemory;
@@ -97,18 +159,19 @@ export async function readSyncEnvelope({
 	if (
 		key &&
 		!envelopeCache.has(key) &&
-		envelope.byteLength <= MAX_CACHED_ENVELOPE_BYTES
+		envelope.buffer.byteLength <= MAX_CACHED_ENVELOPE_BYTES
 	) {
 		while (
 			envelopeCache.size >= MAX_CACHED_ENVELOPES ||
-			cachedEnvelopeBytes + envelope.byteLength > MAX_CACHED_ENVELOPE_BYTES
+			cachedEnvelopeBytes + envelope.buffer.byteLength >
+				MAX_CACHED_ENVELOPE_BYTES
 		) {
 			const oldest = envelopeCache.keys().next().value!;
-			cachedEnvelopeBytes -= envelopeCache.get(oldest)!.byteLength;
+			cachedEnvelopeBytes -= envelopeCache.get(oldest)!.buffer.byteLength;
 			envelopeCache.delete(oldest);
 		}
 		envelopeCache.set(key, envelope);
-		cachedEnvelopeBytes += envelope.byteLength;
+		cachedEnvelopeBytes += envelope.buffer.byteLength;
 	}
 	return envelope;
 }
@@ -163,10 +226,21 @@ export async function runSyncWorker<T>({
 	message: unknown;
 	signal?: AbortSignal;
 }): Promise<T> {
+	signal?.throwIfAborted();
+	const key = sparseKey(message);
+	const cached = key && sparseCache.get(key);
+	if (key && cached) {
+		sparseCache.delete(key);
+		sparseCache.set(key, cached);
+		return cached.result as T;
+	}
 	const release = await acquireWorkerSlots({ message, signal });
 	try {
 		signal?.throwIfAborted();
-		return await runWorker<T>({ message, signal });
+		const result = await runWorker<T>({ message, signal });
+		signal?.throwIfAborted();
+		if (key) rememberSparse({ key, result });
+		return result;
 	} finally {
 		release();
 	}
