@@ -1,4 +1,5 @@
 import { readNativeSyncAudio } from "./native-audio";
+import { readPcmWaveEnvelope } from "./pcm-wave-envelope";
 import {
 	ALL_FORMATS,
 	AudioSampleSink,
@@ -24,6 +25,21 @@ export async function readEnergyEnvelope({
 	signal?: AbortSignal;
 }): Promise<Float32Array> {
 	signal?.throwIfAborted();
+	if (
+		asset.file &&
+		durationSeconds != null &&
+		windowSeconds === (sampleMode === "waveform" ? 1 / 16000 : 0.01)
+	) {
+		const pcm = await readPcmWaveEnvelope({
+			file: asset.file,
+			startSeconds,
+			durationSeconds,
+			mode: sampleMode,
+			signal,
+		});
+		signal?.throwIfAborted();
+		if (pcm) return pcm;
+	}
 	const native = await readNativeSyncAudio({
 		asset,
 		startSeconds,

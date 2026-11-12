@@ -3,12 +3,12 @@ import {
 	buildLandmarkIndex,
 	rankLandmarkOffsets,
 } from "./audio-landmarks";
+import { readMovieCaptureTime } from "./movie-capture-time";
 import { readNativeSyncAudio } from "./native-audio";
 import { ALL_FORMATS, Input } from "mediabunny";
 import { createMediaSource } from "@/media/source";
 import type { PodcastGroupAlignment } from "opencut-wasm";
 import type { PodcastSyncSettings } from "./engine";
-import { readPcm16Envelope } from "./pcm16-envelope";
 import { readEnergyEnvelope } from "./energy-reader";
 import type { BrowserMediaSource } from "@/media/source";
 type Segment = {
@@ -43,7 +43,6 @@ type Request =
 			type: "read";
 			asset: BrowserMediaSource & { name: string };
 			range?: { startSeconds: number; durationSeconds: number };
-			preferPcm?: boolean;
 	  }
 	| {
 			type: "precision";
@@ -102,6 +101,18 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 				}),
 			});
 		} else if (message.type === "capture-time") {
+			const file = message.asset.file;
+			if (
+				file &&
+				(/(?:mp4|quicktime)/i.test(file.type) ||
+					(file instanceof File && /\.(?:mov|mp4|m4v)$/i.test(file.name)))
+			) {
+				const time = await readMovieCaptureTime(file);
+				if (time != null) {
+					self.postMessage({ result: time });
+					return;
+				}
+			}
 			const input = new Input({
 				formats: ALL_FORMATS,
 				source: createMediaSource(message.asset),
@@ -133,18 +144,12 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 			});
 			self.postMessage({ result });
 		} else if (message.type === "read") {
-			const { asset, range, preferPcm } = message;
-			const pcm =
-				preferPcm && asset.file && range
-					? await readPcm16Envelope({ file: asset.file, ...range })
-					: null;
-			const result =
-				pcm ??
-				(await readEnergyEnvelope({
-					asset,
-					...range,
-					windowSeconds: 0.01,
-				}));
+			const { asset, range } = message;
+			const result = await readEnergyEnvelope({
+				asset,
+				...range,
+				windowSeconds: 0.01,
+			});
 			self.postMessage({ result }, { transfer: [result.buffer] });
 		} else if (message.type === "color") {
 			const { readPodcastColor } = await import("./order-timeline-color");

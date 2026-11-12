@@ -15,6 +15,17 @@ export function readPcm16WaveLayout({
 	buffer: ArrayBuffer;
 	fileSize?: number;
 }): Pcm16WaveLayout | null {
+	const layout = readIntegerPcmWaveLayout({ buffer, fileSize });
+	return layout?.bitsPerSample === 16 ? layout : null;
+}
+
+export function readIntegerPcmWaveLayout({
+	buffer,
+	fileSize = buffer.byteLength,
+}: {
+	buffer: ArrayBuffer;
+	fileSize?: number;
+}): (Pcm16WaveLayout & { bitsPerSample: 16 | 24 }) | null {
 	if (buffer.byteLength < 44) return null;
 	const view = new DataView(buffer);
 	if (
@@ -58,10 +69,10 @@ export function readPcm16WaveLayout({
 
 	if (
 		audioFormat !== 1 ||
-		bitsPerSample !== 16 ||
+		(bitsPerSample !== 16 && bitsPerSample !== 24) ||
 		channels < 1 ||
 		sampleRate < 1 ||
-		blockAlign < channels * 2 ||
+		blockAlign < (channels * bitsPerSample) / 8 ||
 		dataOffset < 0 ||
 		dataSize <= 0
 	) {
@@ -70,6 +81,7 @@ export function readPcm16WaveLayout({
 
 	const frameCount = Math.floor(dataSize / blockAlign);
 	return {
+		bitsPerSample,
 		channels,
 		sampleRate,
 		blockAlign,
