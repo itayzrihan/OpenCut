@@ -57,7 +57,7 @@ function sparseKey(message: unknown) {
 }
 
 function rememberSparse({ key, result }: { key: string; result: unknown }) {
-	const bytes = result instanceof Float32Array ? result.byteLength : 128;
+	const bytes = result instanceof Float32Array ? result.buffer.byteLength : 128;
 	if (bytes > MAX_SPARSE_BYTES || sparseCache.has(key)) return;
 	while (sparseCache.size >= 256 || sparseBytes + bytes > MAX_SPARSE_BYTES) {
 		const oldest = sparseCache.keys().next().value!;
@@ -159,18 +159,19 @@ export async function readSyncEnvelope({
 	if (
 		key &&
 		!envelopeCache.has(key) &&
-		envelope.byteLength <= MAX_CACHED_ENVELOPE_BYTES
+		envelope.buffer.byteLength <= MAX_CACHED_ENVELOPE_BYTES
 	) {
 		while (
 			envelopeCache.size >= MAX_CACHED_ENVELOPES ||
-			cachedEnvelopeBytes + envelope.byteLength > MAX_CACHED_ENVELOPE_BYTES
+			cachedEnvelopeBytes + envelope.buffer.byteLength >
+				MAX_CACHED_ENVELOPE_BYTES
 		) {
 			const oldest = envelopeCache.keys().next().value!;
-			cachedEnvelopeBytes -= envelopeCache.get(oldest)!.byteLength;
+			cachedEnvelopeBytes -= envelopeCache.get(oldest)!.buffer.byteLength;
 			envelopeCache.delete(oldest);
 		}
 		envelopeCache.set(key, envelope);
-		cachedEnvelopeBytes += envelope.byteLength;
+		cachedEnvelopeBytes += envelope.buffer.byteLength;
 	}
 	return envelope;
 }
