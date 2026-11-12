@@ -1,3 +1,4 @@
+import { readPcm16WaveLayout, type Pcm16WaveLayout } from "@/media/pcm16-wave";
 import type { TranscriptionResult, TranscriptionWord } from "./types";
 
 const RECOVERY_OVERLAP_SECONDS = 0.8;
@@ -6,16 +7,7 @@ const MIN_RECOVERY_PROGRESS_SECONDS = 0.25;
 const TRAILING_AUDIO_RMS_THRESHOLD = 0.002;
 const DEFAULT_MAX_RECOVERY_PASSES = 3;
 
-interface Pcm16Wav {
-	buffer: ArrayBuffer;
-	channels: number;
-	sampleRate: number;
-	blockAlign: number;
-	dataOffset: number;
-	dataSize: number;
-	frameCount: number;
-	durationSeconds: number;
-}
+type Pcm16Wav = Pcm16WaveLayout & { buffer: ArrayBuffer };
 
 export async function recoverEarlyStoppedTranscription({
 	audioBlob,
@@ -42,10 +34,7 @@ export async function recoverEarlyStoppedTranscription({
 			break;
 		}
 
-		const offsetSeconds = Math.max(
-			0,
-			previousEnd - RECOVERY_OVERLAP_SECONDS,
-		);
+		const offsetSeconds = Math.max(0, previousEnd - RECOVERY_OVERLAP_SECONDS);
 		const recoveryBlob = slicePcm16Wav({ wav, startSeconds: offsetSeconds });
 		const recovered = offsetTranscriptionResult({
 			result: await transcribe({ audioBlob: recoveryBlob }),
@@ -82,66 +71,8 @@ async function readPcm16Wav({
 	audioBlob: Blob;
 }): Promise<Pcm16Wav | null> {
 	const buffer = await audioBlob.arrayBuffer();
-	if (buffer.byteLength < 44) return null;
-	const view = new DataView(buffer);
-	if (
-		readAscii({ view, offset: 0, length: 4 }) !== "RIFF" ||
-		readAscii({ view, offset: 8, length: 4 }) !== "WAVE"
-	) {
-		return null;
-	}
-
-	let channels = 0;
-	let sampleRate = 0;
-	let blockAlign = 0;
-	let bitsPerSample = 0;
-	let audioFormat = 0;
-	let dataOffset = -1;
-	let dataSize = 0;
-	let offset = 12;
-
-	while (offset + 8 <= buffer.byteLength) {
-		const chunkId = readAscii({ view, offset, length: 4 });
-		const chunkSize = view.getUint32(offset + 4, true);
-		const chunkOffset = offset + 8;
-		if (chunkId === "fmt " && chunkOffset + 16 <= buffer.byteLength) {
-			audioFormat = view.getUint16(chunkOffset, true);
-			channels = view.getUint16(chunkOffset + 2, true);
-			sampleRate = view.getUint32(chunkOffset + 4, true);
-			blockAlign = view.getUint16(chunkOffset + 12, true);
-			bitsPerSample = view.getUint16(chunkOffset + 14, true);
-		}
-		if (chunkId === "data") {
-			dataOffset = chunkOffset;
-			dataSize = Math.min(chunkSize, buffer.byteLength - chunkOffset);
-			break;
-		}
-		offset = chunkOffset + chunkSize + (chunkSize % 2);
-	}
-
-	if (
-		audioFormat !== 1 ||
-		bitsPerSample !== 16 ||
-		channels < 1 ||
-		sampleRate < 1 ||
-		blockAlign < channels * 2 ||
-		dataOffset < 0 ||
-		dataSize <= 0
-	) {
-		return null;
-	}
-
-	const frameCount = Math.floor(dataSize / blockAlign);
-	return {
-		buffer,
-		channels,
-		sampleRate,
-		blockAlign,
-		dataOffset,
-		dataSize,
-		frameCount,
-		durationSeconds: frameCount / sampleRate,
-	};
+	const layout = readPcm16WaveLayout({ buffer });
+	return layout && { buffer, ...layout };
 }
 
 function getPcmRms({
@@ -161,8 +92,7 @@ function getPcmRms({
 
 	for (let frame = startFrame; frame < wav.frameCount; frame += 1) {
 		for (let channel = 0; channel < wav.channels; channel += 1) {
-			const offset =
-				wav.dataOffset + frame * wav.blockAlign + channel * 2;
+			const offset = wav.dataOffset + frame * wav.blockAlign + channel * 2;
 			const sample = view.getInt16(offset, true) / 32768;
 			squareSum += sample * sample;
 			sampleCount += 1;
@@ -301,20 +231,6 @@ function appendMonotonicWords({
 
 function normalizeWord({ text }: { text: string }): string {
 	return text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
-}
-
-function readAscii({
-	view,
-	offset,
-	length,
-}: {
-	view: DataView;
-	offset: number;
-	length: number;
-}): string {
-	return Array.from({ length }, (_, index) =>
-		String.fromCharCode(view.getUint8(offset + index)),
-	).join("");
 }
 
 function writeAscii({

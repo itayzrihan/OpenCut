@@ -3,11 +3,8 @@ import type { MediaAsset } from "@/media/types";
 import {
 	normalizePodcastMulticamSettings,
 	orderPodcastClock,
-	planPodcastPrecision,
 	podcastMulticamDefaults,
-	resolvePodcastPrecision,
 	type PodcastGroupAlignment,
-	type PodcastPrecisionEstimate,
 } from "opencut-wasm";
 import {
 	mapConcurrent,
@@ -15,6 +12,10 @@ import {
 	runSyncWorker,
 	syncReadConcurrency,
 } from "./sync-jobs";
+import {
+	tryLongTimelineSync,
+	verifyTimelineGroup,
+} from "./order-timeline-fast-sync";
 import type { OrderedPodcastColor } from "./order-timeline-color";
 
 export type OrderedAudioPlacement = {
@@ -82,135 +83,127 @@ export async function orderPodcastTimeline({
 			),
 		);
 
-	let completed = 0;
-	const reportRead = () =>
-		onProgress(
-			localizeClientMessage("Reading source audio ({v0}/{v1})…", {
-				v0: String(completed),
-				v1: String(assets.length),
-			}),
-		);
-	reportRead();
-	const envelopes = await mapConcurrent({
-		items: assets,
-		concurrency: syncReadConcurrency(),
-		signal,
-		task: async (asset, taskSignal) => {
-			try {
-				const envelope = await readSyncEnvelope({
-					asset: { file: asset.file, url: asset.url, name: asset.name },
-					signal: taskSignal,
-				});
-				completed++;
-				reportRead();
-				return envelope;
-			} catch (error) {
-				taskSignal.throwIfAborted();
-				throw new Error(
-					localizeClientMessage("Could not read sync audio from {v0}.", {
-						v0: asset.name,
-					}),
-					{ cause: error },
-				);
-			}
-		},
-	});
-	onProgress("Matching recordings on a shared timeline…");
-	const components = durations.map(() => -1);
-	const offsets = durations.map(() => 0);
-	let remaining = assets.map((_, index) => index);
-	let tryReferenceFirst = audio.length === 1 && videos.length > 1;
-	while (remaining.length) {
-		signal.throwIfAborted();
-		const searchable = remaining.filter(
-			(index) => envelopes[index]!.length >= 100,
-		);
-		const maxLagSeconds = Math.max(
-			...searchable.map((index) => durations[index]!),
-		);
-		const directAlignment =
-			tryReferenceFirst && searchable.length === assets.length
-				? await runSyncWorker<PodcastGroupAlignment | null>({
-						message: {
-							type: "align-to-reference",
-							envelopes,
-							maxLagSeconds,
-						},
-						signal,
-					})
-				: undefined;
-		tryReferenceFirst = false;
-		const alignment =
-			directAlignment ??
-			(searchable.length > 1
-				? await runSyncWorker<PodcastGroupAlignment>({
-						message: {
-							type: "align",
-							envelopes: searchable.map((index) => envelopes[index]),
-							maxLagSeconds,
-						},
-						signal,
-					})
-				: undefined);
-		const slots = searchable.flatMap((_, slot) =>
-			alignment?.offsets[slot] != null &&
-			(alignment.confidence[slot] ?? 0) >= 0.24
-				? [slot]
-				: [],
-		);
-		const matched = slots.map((slot) => searchable[slot]!);
-		const component = matched[0] ?? remaining[0]!;
-		if (!alignment || matched.length < 2) {
-			components[component] = component;
-		} else {
-			const group: PodcastGroupAlignment = {
-				offsets: slots.map((slot) => alignment.offsets[slot]),
-				confidence: slots.map((slot) => alignment.confidence[slot]!),
-				parents: slots.map((slot) => {
-					const parent = alignment.parents[slot];
-					return parent == null ? undefined : slots.indexOf(parent);
+	const fastOffsets =
+		audio.length === 1
+			? await tryLongTimelineSync({
+					reference: audio[0]!.asset,
+					videos: videos.map(({ asset }) => asset),
+					signal,
+					onProgress,
+				})
+			: null;
+	const components: number[] = durations.map(() => (fastOffsets ? 0 : -1));
+	const offsets = fastOffsets ? [0, ...fastOffsets] : durations.map(() => 0);
+	if (!fastOffsets) {
+		let completed = 0;
+		const reportRead = () =>
+			onProgress(
+				localizeClientMessage("Reading source audio ({v0}/{v1})…", {
+					v0: String(completed),
+					v1: String(assets.length),
 				}),
-				referenceIndex: slots.indexOf(alignment.referenceIndex),
-			};
-			const windows = planPodcastPrecision({
-				alignment: group,
-				durations: matched.map((index) => durations[index]!),
-			});
-			const estimates = await mapConcurrent({
-				items: windows,
-				concurrency: 2,
-				signal,
-				task: (window, taskSignal) =>
-					runSyncWorker<PodcastPrecisionEstimate>({
-						message: {
-							type: "precision",
-							reference: source(matched[window.referenceIndex]!),
-							target: source(matched[window.targetIndex]!),
-							window,
-						},
+			);
+		reportRead();
+		const envelopes = await mapConcurrent({
+			items: assets,
+			concurrency: syncReadConcurrency(),
+			signal,
+			task: async (asset, taskSignal) => {
+				try {
+					const envelope = await readSyncEnvelope({
+						asset: { file: asset.file, url: asset.url, name: asset.name },
 						signal: taskSignal,
+					});
+					completed++;
+					reportRead();
+					return envelope;
+				} catch (error) {
+					taskSignal.throwIfAborted();
+					throw new Error(
+						localizeClientMessage("Could not read sync audio from {v0}.", {
+							v0: asset.name,
+						}),
+						{ cause: error },
+					);
+				}
+			},
+		});
+		onProgress("Matching recordings on a shared timeline…");
+		let remaining = assets.map((_, index) => index);
+		let tryReferenceFirst = audio.length === 1 && videos.length > 1;
+		while (remaining.length) {
+			signal.throwIfAborted();
+			const searchable = remaining.filter(
+				(index) => envelopes[index]!.length >= 100,
+			);
+			const maxLagSeconds = Math.max(
+				...searchable.map((index) => durations[index]!),
+			);
+			const directAlignment =
+				tryReferenceFirst && searchable.length === assets.length
+					? await runSyncWorker<PodcastGroupAlignment | null>({
+							message: {
+								type: "align-to-reference",
+								envelopes,
+								maxLagSeconds,
+							},
+							signal,
+						})
+					: undefined;
+			tryReferenceFirst = false;
+			const alignment =
+				directAlignment ??
+				(searchable.length > 1
+					? await runSyncWorker<PodcastGroupAlignment>({
+							message: {
+								type: "align",
+								envelopes: searchable.map((index) => envelopes[index]),
+								maxLagSeconds,
+							},
+							signal,
+						})
+					: undefined);
+			const slots = searchable.flatMap((_, slot) =>
+				alignment?.offsets[slot] != null &&
+				(alignment.confidence[slot] ?? 0) >= 0.24
+					? [slot]
+					: [],
+			);
+			const matched = slots.map((slot) => searchable[slot]!);
+			const component = matched[0] ?? remaining[0]!;
+			if (!alignment || matched.length < 2) {
+				components[component] = component;
+			} else {
+				const group: PodcastGroupAlignment = {
+					offsets: slots.map((slot) => alignment.offsets[slot]),
+					confidence: slots.map((slot) => alignment.confidence[slot]!),
+					parents: slots.map((slot) => {
+						const parent = alignment.parents[slot];
+						return parent == null ? undefined : slots.indexOf(parent);
 					}),
-			});
-			const precise = resolvePodcastPrecision({
-				alignment: group,
-				windows,
-				estimates,
-			});
-			if (
-				precise.drifting.length ||
-				precise.offsets.some((offset) => offset == null)
-			) {
-				if (directAlignment) continue;
-				throw new Error(
-					"Some sources have inconsistent timing. Check the selected recordings and try again.",
-				);
+					referenceIndex: slots.indexOf(alignment.referenceIndex),
+				};
+				const precise = await verifyTimelineGroup({
+					alignment: group,
+					assets: matched.map((index) => assets[index]!),
+					signal,
+				});
+				if (
+					precise.drifting.length ||
+					precise.offsets.some((offset) => offset == null)
+				) {
+					if (directAlignment) continue;
+					throw new Error(
+						"Some sources have inconsistent timing. Check the selected recordings and try again.",
+					);
+				}
+				matched.forEach((index, slot) => {
+					components[index] = component;
+					offsets[index] = precise.offsets[slot]!;
+				});
 			}
-			matched.forEach((index, slot) => {
-				components[index] = component;
-				offsets[index] = precise.offsets[slot]!;
-			});
+			remaining = remaining.filter((index) => components[index] === -1);
 		}
-		remaining = remaining.filter((index) => components[index] === -1);
 	}
 
 	const audioComponents = new Set(components.slice(0, audio.length));
@@ -293,9 +286,4 @@ export async function orderPodcastTimeline({
 		cuts: [],
 	};
 	return { plan, missingColor };
-
-	function source(index: number) {
-		const { file, url, name } = assets[index]!;
-		return { file, url, name };
-	}
 }
