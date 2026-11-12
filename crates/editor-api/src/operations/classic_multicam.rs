@@ -19,6 +19,26 @@ struct Channel {
     video_delay: f64,
     audio_offset: f64,
     audio_delay: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    angle: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    color: Option<OrderedColor>,
+}
+#[derive(Clone, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct OrderedColor {
+    exposure: f64,
+    temperature: f64,
+    tint: f64,
+}
+
+#[derive(Clone, Deserialize, Serialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct OrderedAudio {
+    media_id: String,
+    binding_revision: u64,
+    start: f64,
+    duration: f64,
 }
 #[derive(Clone, Deserialize, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -130,11 +150,13 @@ impl AdvancedPlan {
 struct Plan {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     advanced: Option<AdvancedPlan>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ordered_audio: Option<Vec<OrderedAudio>>,
     settings: PodcastMulticamSettings,
     #[schemars(length(min = 1, max = 32))]
     channels: Vec<Channel>,
     duration: f64,
-    #[schemars(length(min = 1, max = 100000))]
+    #[schemars(length(max = 100000))]
     cuts: Vec<PodcastMulticamCut>,
 }
 #[derive(Deserialize, JsonSchema)]
@@ -162,7 +184,7 @@ impl Plan {
     fn validate(&self) -> Result<(), String> {
         if self.channels.is_empty()
             || self.channels.len() > classic_podcast::MAX_PODCAST_CHANNELS
-            || self.cuts.is_empty()
+            || (self.cuts.is_empty() && self.ordered_audio.is_none())
             || self.cuts.len() > 100000
             || !nonnegative(self.duration)
             || self.duration <= 0.0
@@ -187,6 +209,30 @@ impl Plan {
                 );
             }
         }
+        if let Some(ordered) = &self.ordered_audio {
+            if self.advanced.is_some() || ordered.is_empty() || ordered.len() > 32 {
+                return Err("Choose 1 to 32 ordered audio recordings".into());
+            }
+            let mut end = 0.0;
+            let mut recordings = HashSet::new();
+            for (index, recording) in ordered.iter().enumerate() {
+                if recording.media_id.trim().is_empty()
+                    || !recordings.insert(&recording.media_id)
+                    || !nonnegative(recording.start)
+                    || !nonnegative(recording.duration)
+                    || recording.duration <= 0.0
+                    || recording.start < end - 1e-6
+                    || (index == 0 && recording.start != 0.0)
+                {
+                    return Err("Ordered audio must start at zero and contain distinct, non-overlapping recordings".into());
+                }
+                end = recording.start + recording.duration;
+            }
+            // Scene cuts are frame-quantized. Original audio stays sample-accurate.
+            if self.duration > end + 1e-6 || end - self.duration >= 1.0 {
+                return Err("Ordered audio must define the full timeline duration".into());
+            }
+        }
         let mut ids = HashSet::new();
         let mut videos = HashSet::new();
         let mut audio = HashSet::new();
@@ -196,7 +242,22 @@ impl Plan {
                 || c.name.trim().is_empty()
                 || !ids.insert(&c.id)
                 || !videos.insert(&c.video_id)
-                || (self.advanced.is_none() && !audio.insert(&c.audio_id))
+                || (self.advanced.is_none()
+                    && self.ordered_audio.is_none()
+                    && !audio.insert(&c.audio_id))
+                || match &self.ordered_audio {
+                    Some(ordered) => {
+                        c.angle.is_none_or(|angle| !(1..=32).contains(&angle))
+                            || c.audio_id != ordered[0].media_id
+                            || c.audio_binding_revision != ordered[0].binding_revision
+                            || c.color.as_ref().is_some_and(|color| {
+                                !(-0.75..=0.75).contains(&color.exposure)
+                                    || !(-20.0..=20.0).contains(&color.temperature)
+                                    || !(-20.0..=20.0).contains(&color.tint)
+                            })
+                    }
+                    None => c.angle.is_some() || c.color.is_some(),
+                }
                 || !nonnegative(c.video_delay)
                 || c.video_delay >= self.duration
                 || (c.video_offset > 0.0 && c.video_delay > 0.0)
@@ -211,10 +272,14 @@ impl Plan {
         if let Some(a) = &self.advanced {
             a.validate(&self.channels)?;
         }
+        if self.cuts.is_empty() {
+            return Ok(());
+        }
         let mut end = 0.0;
         for cut in &self.cuts {
             if !(ids.contains(&cut.channel_id)
-                || (master.is_some() && cut.channel_id == classic_podcast::PODCAST_AUDIO_ONLY))
+                || ((master.is_some() || self.ordered_audio.is_some())
+                    && cut.channel_id == classic_podcast::PODCAST_AUDIO_ONLY))
                 || !nonnegative(cut.timestamp)
                 || !nonnegative(cut.duration)
                 || cut.duration <= 0.0
@@ -244,6 +309,14 @@ pub(crate) fn validate_scene(scene: &Value, asset_ids: &HashSet<&str>) -> Result
                     }
                 }
             }
+        }
+        if plan.ordered_audio.as_ref().is_some_and(|audio| {
+            plan.cuts.is_empty()
+                || audio
+                    .iter()
+                    .any(|segment| !asset_ids.contains(segment.media_id.as_str()))
+        }) {
+            return Err("Ordered podcast requires bound audio and resolved cuts".into());
         }
         for c in &plan.channels {
             if !asset_ids.contains(c.video_id.as_str()) || !asset_ids.contains(c.audio_id.as_str())
@@ -567,7 +640,7 @@ pub(super) fn register_multicam(
         crate::CapabilityExecution::Immediate,
         "timeline.classic.multicam.create",
         "Create a synchronized multicam sequence",
-        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets and continuous camera coverage unless advanced.masterMicrophoneId selects the complete audio clock. Use the @audio-only routing marker only for spans without a camera when a master is selected; when external audio exists, camera audio requires explicit allowCameraAudio=true; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
+        "Atomically create an editable Classic multicam scene from an audio-derived plan. Channel offsets/delays and cuts are seconds. Requires bound video/audio assets. orderedAudio uses one chronological audio track with measured gaps, angle tracks, and optional editable color correction. Continuous camera coverage is required unless a master audio clock is selected. Use the @audio-only routing marker only for spans without a camera when a master is selected; when external audio exists, camera audio requires explicit allowCameraAudio=true; source bounds validated. Camera microphones are muted by default, external microphones remain continuous, each camera remains on one continuous cut track with inactive clips disabled (enabled=false). Stores settings/alignment/cuts at scene.multicam. Optional finishPodcast=true applies the canonical full podcast finishing preset (+15 dB volume, -1 dB gain, limiter -1 dB, noise reduction 100%, Sharpen 15%) in the same undoable creation. Analysis uses the shared Classic Rust podcast router; this commit performs no file or network IO. Explicit project and revision, dry run, cancellation, idempotency, undo/redo and atomic transactions. Bridged Classic capability.",
         "timeline",
         AccessLevel::Write,
         false,
@@ -615,7 +688,43 @@ pub(super) fn register_multicam(
                                 "Use the complete master recording as the sequence duration",
                             ));
                         }
-                        let mut snapped = snap_plan(input.plan.clone(), fps)?;
+                        let mut source_plan = input.plan.clone();
+                        if let Some(ordered) = &source_plan.ordered_audio {
+                            let end = ordered.last().unwrap();
+                            if (source_plan.duration - end.start - end.duration).abs() > 1e-6 {
+                                return Err(invalid("Use the complete ordered audio duration"));
+                            }
+                            for recording in ordered {
+                                let asset = assets
+                                    .iter()
+                                    .find(|asset| {
+                                        asset["id"] == recording.media_id
+                                            && asset["type"] == "audio"
+                                            && asset.get("missing") != Some(&Value::Bool(true))
+                                    })
+                                    .ok_or_else(|| {
+                                        invalid("Ordered audio recording unavailable")
+                                    })?;
+                                if asset.get("duration").and_then(Value::as_f64)
+                                    != Some(recording.duration)
+                                    || asset
+                                        .get("bindingRevision")
+                                        .and_then(Value::as_u64)
+                                        .unwrap_or(0)
+                                        != recording.binding_revision
+                                {
+                                    return Err(CapabilityError::Conflict(
+                                        "Ordered audio changed during synchronization".into(),
+                                    ));
+                                }
+                            }
+                            source_plan.cuts = vec![PodcastMulticamCut {
+                                timestamp: 0.0,
+                                duration: source_plan.duration,
+                                channel_id: classic_podcast::PODCAST_AUDIO_ONLY.into(),
+                            }];
+                        }
+                        let mut snapped = snap_plan(source_plan, fps)?;
                         let mut windows = Vec::new();
                         for c in &input.plan.channels {
                             let duration = assets
@@ -648,7 +757,7 @@ pub(super) fn register_multicam(
                             snapped.cuts,
                             &windows,
                             snapped.duration,
-                            master.is_some(),
+                            master.is_some() || snapped.ordered_audio.is_some(),
                         );
                         snapped.validate().map_err(|s| invalid(&s))?;
                         let mut occupied = HashSet::new();
@@ -660,6 +769,7 @@ pub(super) fn register_multicam(
                         let main_id = fresh("multicam-track");
                         let mut overlay = Vec::new();
                         let mut audio = Vec::new();
+                        let mut angle_tracks: BTreeMap<u8, Vec<Value>> = BTreeMap::new();
                         let plan = &snapped;
                         let ticks = |v: f64| (v * 120000.0).round() as i64;
                         let find = |id: &str, video: bool| -> Result<Value, CapabilityError> {
@@ -682,7 +792,11 @@ pub(super) fn register_multicam(
                             }
                             Ok(Value::Object(asset.clone()))
                         };
-                        for (index, c) in plan.channels.iter().enumerate() {
+                        let mut channels: Vec<_> = plan.channels.iter().collect();
+                        if plan.ordered_audio.is_some() {
+                            channels.sort_by(|a, b| a.video_delay.total_cmp(&b.video_delay));
+                        }
+                        for (index, c) in channels.into_iter().enumerate() {
                             if context.cancellation.is_cancelled() {
                                 return Err(CapabilityError::Failed(
                                     "operation was cancelled".into(),
@@ -779,15 +893,48 @@ pub(super) fn register_multicam(
                                     continue;
                                 }
                                 let source_start = c.video_offset + start - c.video_delay;
-                                let e = json!({"id":fresh("multicam-clip"),"type":"video","mediaId":c.video_id,"name":video["name"],
+                                let mut e = json!({"id":fresh("multicam-clip"),"type":"video","mediaId":c.video_id,"name":video["name"],
                             "startTime":ticks(start),"duration":ticks(end)-ticks(start),
                             "trimStart":ticks(source_start),"trimEnd":ticks((vd-source_start-(end-start)).max(0.0)),
                             "sourceDuration":ticks(vd),"isSourceAudioEnabled":plan.settings.keep_camera_mics,"enabled":active,
                             "params":{"transform.scaleX":1,"transform.scaleY":1,"opacity":1,"volume":1}});
+                                if let Some(color) = &c.color {
+                                    e["effects"] = json!([{
+                                        "id":fresh("podcast-color"),"type":"color-correction","enabled":true,
+                                        "params":{"exposure":color.exposure,"temperature":color.temperature,"tint":color.tint,"saturation":100}
+                                    }]);
+                                }
                                 routed.push(e);
                             }
-                            overlay.push(json!({"id":fresh("multicam-track"),"type":"video","name":format!("Routed {} - {}",index+1,c.name),"hidden":false,"muted":!plan.settings.keep_camera_mics,"elements":routed}));
-                            if plan.advanced.is_some() {
+                            if let Some(angle) = c.angle {
+                                if routed.is_empty() {
+                                    return Err(invalid(
+                                        "A selected video has no complete frame within the audio timeline",
+                                    ));
+                                }
+                                let tracks = angle_tracks.entry(angle).or_default();
+                                let start = routed[0]["startTime"].as_i64().unwrap();
+                                let lane = tracks.iter_mut().find(|track| {
+                                    let last =
+                                        track["elements"].as_array().unwrap().last().unwrap();
+                                    last["startTime"].as_i64().unwrap()
+                                        + last["duration"].as_i64().unwrap()
+                                        <= start
+                                });
+                                if let Some(lane) = lane {
+                                    lane["elements"].as_array_mut().unwrap().extend(routed);
+                                } else {
+                                    let name = if tracks.is_empty() {
+                                        format!("Angle {angle}")
+                                    } else {
+                                        format!("Angle {angle} — Track {}", tracks.len() + 1)
+                                    };
+                                    tracks.push(json!({"id":fresh("multicam-track"),"type":"video","name":name,"hidden":false,"muted":true,"elements":routed}));
+                                }
+                            } else {
+                                overlay.push(json!({"id":fresh("multicam-track"),"type":"video","name":format!("Routed {} - {}",index+1,c.name),"hidden":false,"muted":!plan.settings.keep_camera_mics,"elements":routed}));
+                            }
+                            if plan.advanced.is_some() || plan.ordered_audio.is_some() {
                                 continue;
                             }
                             let duration = (plan.duration - c.audio_delay).min(ad - c.audio_offset);
@@ -797,6 +944,18 @@ pub(super) fn register_multicam(
                             audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":format!("Podcast audio {} - {}",index+1,c.name),"muted":false,"elements":[{
                         "id":fresh("multicam-audio"),"type":"audio","sourceType":"upload","mediaId":c.audio_id,"name":mic["name"],
                         "startTime":ticks(c.audio_delay),"duration":ticks(c.audio_delay+duration)-ticks(c.audio_delay),"trimStart":ticks(c.audio_offset),"trimEnd":ticks((ad-c.audio_offset-duration).max(0.0)),"sourceDuration":ticks(ad),"params":{"volume":1}}]}));
+                        }
+                        overlay.extend(angle_tracks.into_values().flatten());
+                        if let Some(recordings) = &plan.ordered_audio {
+                            let elements = recordings.iter().map(|r| {
+                                let start = ticks(r.start);
+                                let duration = ticks(r.duration);
+                                json!({"id":fresh("multicam-audio"),"type":"audio","sourceType":"upload",
+                                    "mediaId":r.media_id,"name":assets.iter().find(|a| a["id"]==r.media_id).unwrap()["name"],
+                                    "startTime":start,"duration":duration,"trimStart":0,"trimEnd":0,
+                                    "sourceDuration":duration,"params":{"volume":1}})
+                            }).collect::<Vec<_>>();
+                            audio.push(json!({"id":fresh("multicam-track"),"type":"audio","name":"Master audio","muted":false,"elements":elements}));
                         }
                         if let Some(advanced) = &plan.advanced {
                             for m in &advanced.microphones {

@@ -939,6 +939,7 @@ export class CommandManager {
 	}: {
 		plan: {
 			advanced?: import("@/podcast-sync/engine").AdvancedPodcastPlan;
+			orderedAudio?: import("@/podcast-sync/order-timeline").OrderedAudioPlacement[];
 			settings: import("@/podcast-sync/engine").PodcastSyncSettings;
 			channels: Array<{
 				id: string;
@@ -951,6 +952,8 @@ export class CommandManager {
 				videoDelay?: number;
 				audioOffset: number;
 				audioDelay: number;
+				angle?: number;
+				color?: import("@/podcast-sync/order-timeline-color").OrderedPodcastColor;
 			}>;
 			duration: number;
 			cuts: import("@/podcast-sync/router").PodcastSyncCut[];

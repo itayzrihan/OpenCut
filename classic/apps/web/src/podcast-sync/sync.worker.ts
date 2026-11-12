@@ -7,6 +7,7 @@ type Segment = {
 	duration: number;
 };
 type Request =
+	| { type: "color"; asset: BrowserMediaSource; duration: number }
 	| { type: "read"; asset: BrowserMediaSource & { name: string } }
 	| {
 			type: "precision";
@@ -36,6 +37,9 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 				windowSeconds: 0.01,
 			});
 			self.postMessage({ result }, { transfer: [result.buffer] });
+		} else if (message.type === "color") {
+			const { readPodcastColor } = await import("./order-timeline-color");
+			self.postMessage({ result: await readPodcastColor(message) });
 		} else if (message.type === "precision") {
 			const { estimatePodcastPrecision } = await import("opencut-wasm");
 			const read = async ({

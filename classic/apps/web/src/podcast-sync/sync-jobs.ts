@@ -50,9 +50,9 @@ export function runSyncWorker<T>({
 }): Promise<T> {
 	signal?.throwIfAborted();
 	return new Promise((resolve, reject) => {
-		const worker = new Worker(new URL("./sync.worker.ts", import.meta.url), {
-			type: "module",
-		});
+		// Classic's Webpack build emits a classic worker and loads its WASM
+		// chunks through importScripts.
+		const worker = new Worker(new URL("./sync.worker.ts", import.meta.url));
 		const cleanup = () => {
 			signal?.removeEventListener("abort", abort);
 			worker.terminate();
@@ -73,6 +73,10 @@ export function runSyncWorker<T>({
 		worker.onerror = (event) => {
 			cleanup();
 			reject(new Error(event.message || "Synchronization worker failed"));
+		};
+		worker.onmessageerror = () => {
+			cleanup();
+			reject(new Error("Could not read the synchronization result"));
 		};
 		try {
 			worker.postMessage(message);

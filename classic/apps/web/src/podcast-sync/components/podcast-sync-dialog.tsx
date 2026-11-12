@@ -60,6 +60,8 @@ import {
 } from "@/podcast-sync/engine";
 import { cn } from "@/utils/ui";
 import { PodcastFinishPanel } from "./podcast-finish-panel";
+import { OrderTimelinePanel } from "./order-timeline-panel";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ChannelDraft {
 	id: string;
@@ -230,7 +232,8 @@ export function PodcastSyncDialog({
 		MAX_CHANNELS,
 		Math.max(1, videoAssets.length || 2),
 	);
-	const [masterMicrophoneId, setMasterMicrophoneId] = useState("");
+	const [tab, setTab] = useState("podcast");
+	const [ordering, setOrdering] = useState(false);
 	const [mode, setMode] = useState<WizardMode>("quick");
 	const [step, setStep] = useState<WizardStep>("media");
 	const [channels, setChannels] = useState<ChannelDraft[]>(() =>
@@ -379,9 +382,6 @@ export function PodcastSyncDialog({
 		);
 	};
 
-	const effectiveMaster = recordingGroups.microphones.find(
-		(mic) => mic.id === masterMicrophoneId,
-	)?.id;
 	const routedMics = (channel: ChannelDraft) =>
 		recordingGroups.microphones.length === 1
 			? [recordingGroups.microphones[0]!.id]
@@ -399,9 +399,7 @@ export function PodcastSyncDialog({
 			(recordingGroups.issues.length ||
 				channels.some((c) => !routedMics(c).length) ||
 				recordingGroups.microphones.some(
-					(m) =>
-						m.id !== effectiveMaster &&
-						!channels.some((c) => routedMics(c).includes(m.id)),
+					(m) => !channels.some((c) => routedMics(c).includes(m.id)),
 				))
 		) {
 			toast.error(
@@ -578,7 +576,6 @@ export function PodcastSyncDialog({
 					mode === "advanced"
 						? {
 								microphones: recordingGroups.microphones,
-								masterMicrophoneId: effectiveMaster,
 								routing: {
 									microphoneIds: recordingGroups.microphones.map((m) => m.id),
 									angleGroups: angleDrafts.map((g, i) => ({
@@ -738,304 +735,300 @@ export function PodcastSyncDialog({
 	return (
 		<Dialog
 			open={open}
-			onOpenChange={(next) => !isRunning && !isImporting && onOpenChange(next)}
+			onOpenChange={(next) =>
+				!isRunning && !isImporting && !ordering && onOpenChange(next)
+			}
 		>
-			<DialogContent className="max-h-[92vh] max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
-				<DialogHeader>
-					<DialogTitle>
-						<UiMessage text={"Podcast Multicam"} />
-					</DialogTitle>
-					<DialogDescription>
-						<UiMessage
-							text={
-								"Sync all cameras and microphones together, detect the active speaker, then apply microphone gain, limiting, noise reduction and Sharpen automatically."
-							}
-						/>
-					</DialogDescription>
-					<WizardSteps currentIndex={currentStepIndex} />
-				</DialogHeader>
+			<Tabs value={tab} onValueChange={setTab}>
+				<DialogContent className="max-h-[92vh] max-w-5xl grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
+					<DialogHeader>
+						<DialogTitle>
+							<UiMessage text={"Podcast Multicam"} />
+						</DialogTitle>
+						<DialogDescription>
+							<UiMessage
+								text={
+									"Sync all cameras and microphones together, detect the active speaker, then apply microphone gain, limiting, noise reduction and Sharpen automatically."
+								}
+							/>
+						</DialogDescription>
+						<TabsList className="justify-self-start">
+							<TabsTrigger value="podcast" disabled={ordering}>
+								<UiMessage text="Podcast Multicam" />
+							</TabsTrigger>
+							<TabsTrigger value="order" disabled={isRunning || isImporting}>
+								<UiMessage text="Order on Time Line" />
+							</TabsTrigger>
+						</TabsList>
+						{tab === "podcast" && (
+							<WizardSteps currentIndex={currentStepIndex} />
+						)}
+					</DialogHeader>
 
-				<DialogBody className="min-h-0 overflow-y-auto">
-					{step === "media" ? <PodcastFinishPanel /> : null}
-					{step === "media" ? (
-						<details className="mb-4 rounded-lg border p-3">
-							<summary className="cursor-pointer text-sm font-medium">
-								<UiMessage text={"Add linked camera / microphone paths"} />
-							</summary>
-							<p className="my-2 text-xs text-muted-foreground">
-								<UiMessage
-									text={
-										"One absolute file path per line. Recordings stay on their original disk or memory card."
+					<DialogBody className="min-h-0 overflow-y-auto">
+						<TabsContent value="order">
+							<OrderTimelinePanel
+								onBusyChange={setOrdering}
+								onClose={() => onOpenChange(false)}
+							/>
+						</TabsContent>
+						<TabsContent value="podcast">
+							{step === "media" ? <PodcastFinishPanel /> : null}
+							{step === "media" ? (
+								<details className="mb-4 rounded-lg border p-3">
+									<summary className="cursor-pointer text-sm font-medium">
+										<UiMessage text={"Add linked camera / microphone paths"} />
+									</summary>
+									<p className="my-2 text-xs text-muted-foreground">
+										<UiMessage
+											text={
+												"One absolute file path per line. Recordings stay on their original disk or memory card."
+											}
+										/>
+									</p>
+									<UiLocalized<typeof Textarea>
+										element={Textarea}
+										messageProps={["aria-label"]}
+										aria-label="Linked source paths"
+										value={sourcePaths}
+										onChange={(e) => setSourcePaths(e.target.value)}
+										disabled={isImporting}
+									/>
+									<Button
+										className="mt-2"
+										variant="outline"
+										disabled={isImporting || !sourcePaths.trim()}
+										onClick={() => void importLinkedSources()}
+									>
+										{isImporting ? (
+											<UiMessage text={"Linking sources…"} />
+										) : (
+											<UiMessage text={"Link sources without copying"} />
+										)}
+									</Button>
+								</details>
+							) : null}
+							{step === "media" ? (
+								<MediaStep
+									mode={mode}
+									onModeChange={(next) => {
+										if (
+											next === "advanced" &&
+											videoAssets.length &&
+											channels.every((c) => !c.microphoneIds?.length)
+										)
+											applySourceSuggestions();
+										setMode(next);
+										setAlignment(null);
+										setResult(null);
+										setSequenceCreated(false);
+									}}
+									channels={channels}
+									settings={settings}
+									videoAssets={videoAssets}
+									audioAssets={audioAssets}
+									suggestions={suggestions}
+									onChannelCountChange={setChannelCount}
+									onChannelChange={updateChannel}
+									onSequenceNameChange={(sequenceName) =>
+										setSettings((current) => ({ ...current, sequenceName }))
+									}
+									onKeepCameraMicsChange={(keepCameraMics) =>
+										setSettings((current) => ({ ...current, keepCameraMics }))
 									}
 								/>
-							</p>
-							<UiLocalized<typeof Textarea>
-								element={Textarea}
-								messageProps={["aria-label"]}
-								aria-label="Linked source paths"
-								value={sourcePaths}
-								onChange={(e) => setSourcePaths(e.target.value)}
-								disabled={isImporting}
-							/>
-							<Button
-								className="mt-2"
-								variant="outline"
-								disabled={isImporting || !sourcePaths.trim()}
-								onClick={() => void importLinkedSources()}
-							>
-								{isImporting ? (
-									<UiMessage text={"Linking sources…"} />
-								) : (
-									<UiMessage text={"Link sources without copying"} />
-								)}
-							</Button>
-						</details>
-					) : null}
-					{step === "media" ? (
-						<MediaStep
-							mode={mode}
-							onModeChange={(next) => {
-								if (
-									next === "advanced" &&
-									videoAssets.length &&
-									channels.every((c) => !c.microphoneIds?.length)
-								)
-									applySourceSuggestions();
-								setMode(next);
-								setAlignment(null);
-								setResult(null);
-								setSequenceCreated(false);
-							}}
-							channels={channels}
-							settings={settings}
-							videoAssets={videoAssets}
-							audioAssets={audioAssets}
-							suggestions={suggestions}
-							onChannelCountChange={setChannelCount}
-							onChannelChange={updateChannel}
-							onSequenceNameChange={(sequenceName) =>
-								setSettings((current) => ({ ...current, sequenceName }))
-							}
-							onKeepCameraMicsChange={(keepCameraMics) =>
-								setSettings((current) => ({ ...current, keepCameraMics }))
-							}
-						/>
-					) : null}
-					{step === "media" && mode === "advanced" ? (
-						<PodcastAngleFields
-							videos={videoAssets.filter((a) => !a.unifiedAngles)}
-							groups={angleDrafts}
-							suggestions={cameraSuggestions.groups}
-							onSuggest={() => applySourceSuggestions()}
-							onChange={(groups) => {
-								setAngleOverrides(groups);
-								setAlignment(null);
-								setResult(null);
-								setSequenceCreated(false);
-							}}
-						/>
-					) : null}
-					{step === "media" && mode === "advanced" ? (
-						<label className="flex flex-col gap-1 text-sm">
-							<UiMessage text="Master audio recording" />
-							<select
-								className="rounded border bg-background p-2"
-								value={
-									recordingGroups.microphones.some(
-										(mic) => mic.id === masterMicrophoneId,
-									)
-										? masterMicrophoneId
-										: ""
-								}
-								onChange={(event) => {
-									setMasterMicrophoneId(event.target.value);
-									setAlignment(null);
-									setResult(null);
-									setSequenceCreated(false);
-								}}
-							>
-								<option value="">
-									{localizeClientMessage("Use camera timeline")}
-								</option>
-								{recordingGroups.microphones.map((mic) => (
-									<option key={mic.id} value={mic.id}>
-										{mic.name}
-									</option>
-								))}
-							</select>
-							<span className="text-muted-foreground">
-								<UiMessage text="Choose the continuous recording to keep its full audio and leave picture gaps where no camera was recording." />
-							</span>
-						</label>
-					) : null}
-					{step === "media" && mode === "advanced" ? (
-						<AdvancedMicrophoneFields
-							assets={audioAssets}
-							selected={recordingIds}
-							groups={recordingGroups}
-							channels={channels}
-							onSelection={(ids) => {
-								setRecordingSelection(ids);
-								setAlignment(null);
-								setResult(null);
-								setSequenceCreated(false);
-							}}
-							onMapping={({ id, microphoneIds }) =>
-								updateChannel({ channelId: id, patch: { microphoneIds } })
-							}
-						/>
-					) : null}
-					{step === "sync" ? (
-						<SyncStep
-							microphones={
-								mode === "advanced" ? recordingGroups.microphones : undefined
-							}
-							channels={channels}
-							assetById={assetById}
-							alignment={alignment}
-							isRunning={isRunning}
-							progress={progress}
-							auto={mode !== "guided"}
-							onRun={handleRunAlignment}
-						/>
-					) : null}
-					{step === "multicam" ? (
-						<MulticamStep
-							settings={settings}
-							result={result}
-							channels={channels}
-							isRunning={isRunning}
-							progress={progress}
-							auto={mode !== "guided"}
-							onSettingsChange={setSettings}
-							onRun={() => handleRunMulticam()}
-						/>
-					) : null}
-					{step === "sequence" ? (
-						<SequenceStep
-							result={result}
-							channelCount={channels.length}
-							sequenceName={settings.sequenceName}
-							created={sequenceCreated}
-						/>
-					) : null}
-				</DialogBody>
+							) : null}
+							{step === "media" && mode === "advanced" ? (
+								<PodcastAngleFields
+									videos={videoAssets.filter((a) => !a.unifiedAngles)}
+									groups={angleDrafts}
+									suggestions={cameraSuggestions.groups}
+									onSuggest={() => applySourceSuggestions()}
+									onChange={(groups) => {
+										setAngleOverrides(groups);
+										setAlignment(null);
+										setResult(null);
+										setSequenceCreated(false);
+									}}
+								/>
+							) : null}
+							{step === "media" && mode === "advanced" ? (
+								<AdvancedMicrophoneFields
+									assets={audioAssets}
+									selected={recordingIds}
+									groups={recordingGroups}
+									channels={channels}
+									onSelection={(ids) => {
+										setRecordingSelection(ids);
+										setAlignment(null);
+										setResult(null);
+										setSequenceCreated(false);
+									}}
+									onMapping={({ id, microphoneIds }) =>
+										updateChannel({ channelId: id, patch: { microphoneIds } })
+									}
+								/>
+							) : null}
+							{step === "sync" ? (
+								<SyncStep
+									microphones={
+										mode === "advanced"
+											? recordingGroups.microphones
+											: undefined
+									}
+									channels={channels}
+									assetById={assetById}
+									alignment={alignment}
+									isRunning={isRunning}
+									progress={progress}
+									auto={mode !== "guided"}
+									onRun={handleRunAlignment}
+								/>
+							) : null}
+							{step === "multicam" ? (
+								<MulticamStep
+									settings={settings}
+									result={result}
+									channels={channels}
+									isRunning={isRunning}
+									progress={progress}
+									auto={mode !== "guided"}
+									onSettingsChange={setSettings}
+									onRun={() => handleRunMulticam()}
+								/>
+							) : null}
+							{step === "sequence" ? (
+								<SequenceStep
+									result={result}
+									channelCount={channels.length}
+									sequenceName={settings.sequenceName}
+									created={sequenceCreated}
+								/>
+							) : null}
+						</TabsContent>
+					</DialogBody>
 
-				<DialogFooter>
-					{isRunning ? (
-						<Button
-							variant="outline"
-							onClick={() => {
-								analysisAbort.current?.abort();
-								setStep("media");
-								setAlignment(null);
-								setResult(null);
-							}}
-						>
-							<UiMessage text={"Cancel analysis"} />
-						</Button>
-					) : null}
-					{step === "media" ? (
-						<>
-							<Button variant="outline" onClick={() => onOpenChange(false)}>
-								<UiMessage text={"Cancel"} />
-							</Button>
-							<Button
-								onClick={() => {
-									if (!resolveChannels()) return;
-									if (mode !== "guided") void handleAutoEdit();
-									else setStep("sync");
-								}}
-							>
-								{mode !== "guided" ? (
-									<>
-										<WandSparkles className="size-4" />{" "}
-										<UiMessage text={"Auto Edit"} />
-									</>
-								) : (
-									<>
-										<UiMessage text={"Continue to Sync"} />{" "}
-										<ChevronRight className="size-4" />
-									</>
-								)}
-							</Button>
-						</>
-					) : null}
-					{step === "sync" && mode === "guided" ? (
-						<>
-							<Button
-								variant="outline"
-								onClick={() => setStep("media")}
-								disabled={isRunning}
-							>
-								<ChevronLeft className="size-4" /> <UiMessage text={"Back"} />
-							</Button>
-							{alignment ? (
+					{tab === "podcast" && (
+						<DialogFooter>
+							{isRunning ? (
 								<Button
-									disabled={isRunning}
-									onClick={() => setStep("multicam")}
+									variant="outline"
+									onClick={() => {
+										analysisAbort.current?.abort();
+										setStep("media");
+										setAlignment(null);
+										setResult(null);
+									}}
 								>
-									<UiMessage text={"Continue to Multicam"} />{" "}
-									<ChevronRight className="size-4" />
-								</Button>
-							) : (
-								<Button
-									onClick={() => void handleRunAlignment()}
-									disabled={isRunning}
-								>
-									<Play className="size-4" /> <UiMessage text={"Start Sync"} />
-								</Button>
-							)}
-						</>
-					) : null}
-					{step === "multicam" && mode === "guided" ? (
-						<>
-							<Button
-								variant="outline"
-								onClick={() => setStep("sync")}
-								disabled={isRunning}
-							>
-								<ChevronLeft className="size-4" /> <UiMessage text={"Back"} />
-							</Button>
-							{result ? (
-								<Button
-									disabled={isRunning}
-									onClick={() => setStep("sequence")}
-								>
-									<UiMessage text={"Continue"} />{" "}
-									<ChevronRight className="size-4" />
-								</Button>
-							) : (
-								<Button
-									onClick={() => void handleRunMulticam()}
-									disabled={isRunning}
-								>
-									<Clapperboard className="size-4" />{" "}
-									<UiMessage text={"Analyze & Route Cameras"} />
-								</Button>
-							)}
-						</>
-					) : null}
-					{step === "sequence" ? (
-						<>
-							{mode === "guided" && !sequenceCreated ? (
-								<Button
-									onClick={() => void handleCreateGuidedSequence()}
-									disabled={isRunning || !result}
-								>
-									<Clapperboard className="size-4" />{" "}
-									<UiMessage text={"Create Editable Sequence"} />
+									<UiMessage text={"Cancel analysis"} />
 								</Button>
 							) : null}
-							{sequenceCreated ? (
-								<Button onClick={() => onOpenChange(false)}>
-									<UiMessage text={"Open in Editor"} />
-								</Button>
+							{step === "media" ? (
+								<>
+									<Button variant="outline" onClick={() => onOpenChange(false)}>
+										<UiMessage text={"Cancel"} />
+									</Button>
+									<Button
+										onClick={() => {
+											if (!resolveChannels()) return;
+											if (mode !== "guided") void handleAutoEdit();
+											else setStep("sync");
+										}}
+									>
+										{mode !== "guided" ? (
+											<>
+												<WandSparkles className="size-4" />{" "}
+												<UiMessage text={"Auto Edit"} />
+											</>
+										) : (
+											<>
+												<UiMessage text={"Continue to Sync"} />{" "}
+												<ChevronRight className="size-4" />
+											</>
+										)}
+									</Button>
+								</>
 							) : null}
-						</>
-					) : null}
-				</DialogFooter>
-			</DialogContent>
+							{step === "sync" && mode === "guided" ? (
+								<>
+									<Button
+										variant="outline"
+										onClick={() => setStep("media")}
+										disabled={isRunning}
+									>
+										<ChevronLeft className="size-4" />{" "}
+										<UiMessage text={"Back"} />
+									</Button>
+									{alignment ? (
+										<Button
+											disabled={isRunning}
+											onClick={() => setStep("multicam")}
+										>
+											<UiMessage text={"Continue to Multicam"} />{" "}
+											<ChevronRight className="size-4" />
+										</Button>
+									) : (
+										<Button
+											onClick={() => void handleRunAlignment()}
+											disabled={isRunning}
+										>
+											<Play className="size-4" />{" "}
+											<UiMessage text={"Start Sync"} />
+										</Button>
+									)}
+								</>
+							) : null}
+							{step === "multicam" && mode === "guided" ? (
+								<>
+									<Button
+										variant="outline"
+										onClick={() => setStep("sync")}
+										disabled={isRunning}
+									>
+										<ChevronLeft className="size-4" />{" "}
+										<UiMessage text={"Back"} />
+									</Button>
+									{result ? (
+										<Button
+											disabled={isRunning}
+											onClick={() => setStep("sequence")}
+										>
+											<UiMessage text={"Continue"} />{" "}
+											<ChevronRight className="size-4" />
+										</Button>
+									) : (
+										<Button
+											onClick={() => void handleRunMulticam()}
+											disabled={isRunning}
+										>
+											<Clapperboard className="size-4" />{" "}
+											<UiMessage text={"Analyze & Route Cameras"} />
+										</Button>
+									)}
+								</>
+							) : null}
+							{step === "sequence" ? (
+								<>
+									{mode === "guided" && !sequenceCreated ? (
+										<Button
+											onClick={() => void handleCreateGuidedSequence()}
+											disabled={isRunning || !result}
+										>
+											<Clapperboard className="size-4" />{" "}
+											<UiMessage text={"Create Editable Sequence"} />
+										</Button>
+									) : null}
+									{sequenceCreated ? (
+										<Button onClick={() => onOpenChange(false)}>
+											<UiMessage text={"Open in Editor"} />
+										</Button>
+									) : null}
+								</>
+							) : null}
+						</DialogFooter>
+					)}
+				</DialogContent>
+			</Tabs>
 		</Dialog>
 	);
 }
