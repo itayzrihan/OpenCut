@@ -23,6 +23,27 @@ pocut.vxu.me {
 	}
 	@entry path /
 	redir @entry /projects 302
+	@hostedRenderWorker {
+		path /render-worker
+		query hosted=1
+	}
+	handle @hostedRenderWorker {
+		route {
+			forward_auth 127.0.0.1:3211 {
+				uri /api/local-drive
+				header_up Host pocut.vxu.me
+				header_up X-Forwarded-Host pocut.vxu.me
+				header_up X-Forwarded-Proto https
+				header_up X-OpenCut-Account {http.request.uri.query.account}
+				header_up -Forwarded
+				@anonymous status 401
+				handle_response @anonymous {
+					respond 404
+				}
+			}
+			import pocut-backend
+		}
+	}
 	@hostTools path /batch-worker /render-worker /transcription-check
 	handle @hostTools {
 		respond 404
