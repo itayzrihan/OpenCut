@@ -936,6 +936,7 @@ export class CommandManager {
 	createMulticam({
 		plan,
 		allowCameraAudio = false,
+		recoveredDurations,
 	}: {
 		plan: {
 			advanced?: import("@/podcast-sync/engine").AdvancedPodcastPlan;
@@ -959,6 +960,11 @@ export class CommandManager {
 			cuts: import("@/podcast-sync/router").PodcastSyncCut[];
 		};
 		allowCameraAudio?: boolean;
+		recoveredDurations?: Array<{
+			mediaId: string;
+			bindingRevision: number;
+			duration: number;
+		}>;
 	}): void {
 		if (!this.canonical)
 			throw new Error("Open the canonical editor before creating multicam");
@@ -967,7 +973,12 @@ export class CommandManager {
 				this.synchronizeCanonicalViews();
 				this.canonical!.invokeControl({
 					capabilityId: "timeline.classic.multicam.create",
-					input: { plan, finishPodcast: true, allowCameraAudio },
+					input: {
+						plan,
+						finishPodcast: true,
+						allowCameraAudio,
+						...(recoveredDurations?.length && { recoveredDurations }),
+					},
 				});
 				this.publishCanonical();
 			},

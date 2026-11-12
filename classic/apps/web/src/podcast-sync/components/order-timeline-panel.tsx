@@ -220,9 +220,24 @@ export function OrderTimelinePanel({
 		setBusy(true);
 		onBusyChange(true);
 		try {
+			setProgress(t("Checking source file durations…"));
+			const { assets: sources, durations } =
+				await editor.media.prepareMediaDurations({
+					projectId,
+					mediaIds: [...selectedAudio, ...selectedVideos].map(
+						({ asset }) => asset.id,
+					),
+					signal: abort.signal,
+				});
 			const { plan, missingColor } = await orderPodcastTimeline({
-				audio: selectedAudio,
-				videos: selectedVideos,
+				audio: selectedAudio.map((item) => ({
+					...item,
+					asset: sources.get(item.asset.id)!,
+				})),
+				videos: selectedVideos.map((item) => ({
+					...item,
+					asset: sources.get(item.asset.id)!,
+				})),
 				name: name.trim() || localizeClientMessage("Ordered podcast"),
 				onProgress: setProgress,
 				signal: abort.signal,
@@ -230,8 +245,12 @@ export function OrderTimelinePanel({
 			abort.signal.throwIfAborted();
 			if (editor.project.getActiveOrNull()?.metadata.id !== projectId)
 				throw new Error("The active project changed during synchronization.");
-			editor.command.createMulticam({ plan });
+			editor.command.createMulticam({ plan, recoveredDurations: durations });
 			setCreated(true);
+			await editor.media.persistRecoveredMediaDurations({
+				projectId,
+				durations,
+			});
 			await editor.save.flush();
 			if (missingColor.length)
 				toast.warning(

@@ -104,6 +104,150 @@ export class MediaManager {
 		return this.browserImports.has(id);
 	}
 
+	/** Resolve timing before an edit uses it, including older imports with no duration. */
+	async prepareMediaDurations({
+		projectId,
+		mediaIds,
+		signal,
+	}: {
+		projectId: string;
+		mediaIds: string[];
+		signal: AbortSignal;
+	}) {
+		const scope = captureLocalDriveWriteScope({ projectId });
+		const assertScope = () => {
+			signal.throwIfAborted();
+			assertLocalDriveWriteScope({ projectId, scope });
+			if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+				throw new Error("The active project changed during synchronization.");
+		};
+		const getSource = (id: string) => {
+			assertScope();
+			const asset = this.assets.find((item) => item.id === id);
+			if (!asset || asset.missing || (!asset.file && !asset.url))
+				throw new Error(
+					localizeClientMessage("Reconnect {v0} before synchronizing.", {
+						v0: asset?.name ?? id,
+					}),
+				);
+			return asset;
+		};
+		const hasDuration = (asset: MediaAsset) =>
+			typeof asset.duration === "number" &&
+			Number.isFinite(asset.duration) &&
+			asset.duration > 0;
+		const recovered = new Map<
+			string,
+			{ asset: MediaAsset; duration: number }
+		>();
+		for (const id of new Set(mediaIds)) {
+			const source = getSource(id);
+			if (hasDuration(source)) continue;
+			const pending = this.browserImports.get(id);
+			if (pending) {
+				await new Promise<void>((resolve, reject) => {
+					const cancel = () => reject(signal.reason);
+					signal.addEventListener("abort", cancel, { once: true });
+					const done = () => {
+						signal.removeEventListener("abort", cancel);
+						resolve();
+					};
+					void pending.then(done, done);
+				});
+			}
+			const asset = getSource(id);
+			if (hasDuration(asset)) continue;
+			try {
+				const { readSourceDuration } = await import("@/media/mediabunny");
+				const duration = await readSourceDuration({
+					file: asset.file,
+					url: asset.url,
+					signal: AbortSignal.any([signal, AbortSignal.timeout(20_000)]),
+				});
+				recovered.set(id, { asset, duration });
+			} catch (error) {
+				signal.throwIfAborted();
+				throw new Error(
+					localizeClientMessage(
+						"Could not read the duration of {v0}. Reconnect the original file and try again.",
+						{
+							v0: asset.name,
+						},
+					),
+					{ cause: error },
+				);
+			}
+		}
+		for (const [id, { asset }] of recovered) {
+			const current = getSource(id);
+			if (
+				current.file !== asset.file ||
+				current.url !== asset.url ||
+				current.bindingRevision !== asset.bindingRevision
+			)
+				throw new Error(
+					localizeClientMessage("The source file changed: {v0}. Try again.", {
+						v0: asset.name,
+					}),
+				);
+			if (hasDuration(current)) recovered.delete(id);
+		}
+		return {
+			assets: new Map(
+				mediaIds.map((id) => {
+					const asset = getSource(id);
+					const timing = recovered.get(id);
+					return [id, timing ? { ...asset, duration: timing.duration } : asset];
+				}),
+			),
+			durations: [...recovered].map(([mediaId, { asset, duration }]) => ({
+				mediaId,
+				bindingRevision: asset.bindingRevision ?? 0,
+				duration,
+			})),
+		};
+	}
+
+	async persistRecoveredMediaDurations({
+		projectId,
+		durations,
+	}: {
+		projectId: string;
+		durations: Array<{
+			mediaId: string;
+			bindingRevision: number;
+			duration: number;
+		}>;
+	}) {
+		if (!isHostedBrowserWorkspace()) return;
+		const scope = captureLocalDriveWriteScope({ projectId });
+		for (const { mediaId, bindingRevision, duration } of durations) {
+			if (this.editor.project.getActiveOrNull()?.metadata.id !== projectId)
+				return;
+			const asset = this.assets.find((item) => item.id === mediaId);
+			if (
+				!asset ||
+				asset.missing ||
+				(asset.bindingRevision ?? 0) !== bindingRevision ||
+				asset.duration !== duration
+			)
+				continue;
+			try {
+				await storageService.updateBrowserMediaMetadata({
+					projectId,
+					id: mediaId,
+					metadata: { duration },
+					scope,
+				});
+			} catch (error) {
+				console.warn(
+					"Could not persist recovered browser media duration:",
+					error,
+				);
+			}
+		}
+	}
+
 	/** Publish the file references in one canonical Undo entry before reading bytes. */
 	importBrowserFiles({
 		projectId,

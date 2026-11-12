@@ -1,3 +1,4 @@
+import { localizeClientMessage } from "@/i18n/client-messages";
 import type { MediaAsset } from "@/media/types";
 import {
 	normalizePodcastMulticamSettings,
@@ -37,34 +38,69 @@ export async function orderPodcastTimeline({
 		!audio.length ||
 		audio.length > 32 ||
 		!videos.length ||
-		videos.length > 32 ||
-		durations.some(
-			(duration) =>
-				!Number.isFinite(duration) || duration <= 0 || duration > 36_000,
-		) ||
+		videos.length > 32
+	) {
+		throw new Error(
+			localizeClientMessage(
+				"This job has {v0} video files and {v1} audio files. Select 1–32 of each.",
+				{ v0: String(videos.length), v1: String(audio.length) },
+			),
+		);
+	}
+	const invalidDuration = assets.findIndex(
+		(_, index) => !Number.isFinite(durations[index]) || durations[index]! <= 0,
+	);
+	if (invalidDuration >= 0)
+		throw new Error(
+			localizeClientMessage(
+				"Could not read the duration of {v0}. Reconnect the original file and try again.",
+				{ v0: assets[invalidDuration]!.name },
+			),
+		);
+	const longSource = assets.findIndex((_, index) => durations[index]! > 36_000);
+	if (longSource >= 0)
+		throw new Error(
+			localizeClientMessage(
+				"{v0} exceeds the 10-hour limit for one source. Split the file before synchronizing.",
+				{ v0: assets[longSource]!.name },
+			),
+		);
+	if (
 		durations.reduce(
 			(total, duration) => total + Math.ceil(duration * 100),
 			0,
 		) > 32_000_000
-	) {
+	)
 		throw new Error(
-			"Choose 1 to 32 readable video files and 1 to 32 readable audio files within the synchronization limits.",
+			localizeClientMessage(
+				"The selected recordings exceed the combined synchronization limit. Select fewer or shorter files.",
+			),
 		);
-	}
 
 	onProgress("Reading source audio…");
 	const envelopes = await mapConcurrent({
 		items: assets,
 		concurrency: 3,
 		signal,
-		task: (asset, taskSignal) =>
-			runSyncWorker<Float32Array>({
-				message: {
-					type: "read",
-					asset: { file: asset.file, url: asset.url, name: asset.name },
-				},
-				signal: taskSignal,
-			}),
+		task: async (asset, taskSignal) => {
+			try {
+				return await runSyncWorker<Float32Array>({
+					message: {
+						type: "read",
+						asset: { file: asset.file, url: asset.url, name: asset.name },
+					},
+					signal: taskSignal,
+				});
+			} catch (error) {
+				taskSignal.throwIfAborted();
+				throw new Error(
+					localizeClientMessage("Could not read sync audio from {v0}.", {
+						v0: asset.name,
+					}),
+					{ cause: error },
+				);
+			}
+		},
 	});
 	onProgress("Matching recordings on a shared timeline…");
 	const components = durations.map(() => -1);

@@ -633,10 +633,10 @@ async fn ordered_timeline_keeps_audio_gap_camera_coverage_and_editable_finishing
     classic["document"]["settings"]["fps"] = json!({"numerator":25,"denominator":1});
     classic["mediaAssets"] = json!([
         {"id":"video-asset","name":"First card","type":"video","duration":4.0},
-        {"id":"second-card","name":"Second card","type":"video","duration":6.0},
+        {"id":"second-card","name":"Second card","type":"video"},
         {"id":"wide","name":"Wide","type":"video","duration":2.0},
         {"id":"audio-first","name":"First.wav","type":"audio","duration":6.0},
-        {"id":"audio-last","name":"Last.wav","type":"audio","duration":5.013}
+        {"id":"audio-last","name":"Last.wav","type":"audio","duration":0.0}
     ]);
     call(
         &r,
@@ -663,9 +663,13 @@ async fn ordered_timeline_keeps_audio_gap_camera_coverage_and_editable_finishing
         "channels":[camera("second-card",1,4.0),camera("video-asset",1,0.0),camera("wide",2,5.0)],
         "cuts":[]
     });
-    let input = json!({"projectId":"classic-project","expectedRevision":before["revision"],"plan":plan,"finishPodcast":true});
+    let input = json!({"projectId":"classic-project","expectedRevision":before["revision"],"plan":plan,"finishPodcast":true,
+    "recoveredDurations":[
+        {"mediaId":"second-card","bindingRevision":0,"duration":6.0},
+        {"mediaId":"audio-last","bindingRevision":0,"duration":5.013}
+    ]});
     let mut stale = input.clone();
-    stale["plan"]["orderedAudio"][1]["bindingRevision"] = json!(1);
+    stale["recoveredDurations"][1]["bindingRevision"] = json!(1);
     assert!(
         r.registry()
             .invoke(CREATE, InvocationContext::default(), stale)
@@ -675,6 +679,15 @@ async fn ordered_timeline_keeps_audio_gap_camera_coverage_and_editable_finishing
     assert_eq!(read(&r).await, before);
     call(&r, CREATE, input).await;
     let after = read(&r).await;
+    let assets = after["project"]["classic"]["mediaAssets"]
+        .as_array()
+        .unwrap();
+    for (id, duration) in [("second-card", 6.0), ("audio-last", 5.013)] {
+        assert_eq!(
+            assets.iter().find(|asset| asset["id"] == id).unwrap()["duration"],
+            json!(duration)
+        );
+    }
     let scene = &after["project"]["classic"]["document"]["scenes"][2];
     let audio = scene["tracks"]["audio"].as_array().unwrap();
     assert_eq!(audio.len(), 1);
