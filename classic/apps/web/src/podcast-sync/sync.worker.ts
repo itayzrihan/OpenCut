@@ -145,15 +145,30 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 				if (probes.length === 0) return null;
 				const offsets: number[] = [];
 				for (const { startSeconds, samples } of probes) {
+					// The first probe searches the whole clock. Later probes seek
+					// independently in a small neighborhood of that predicted lag.
+					const prediction = offsets[0];
+					const start =
+						prediction == null
+							? 0
+							: Math.max(
+									0,
+									Math.round((prediction + startSeconds) * 100) - 200,
+								);
+					const end =
+						prediction == null
+							? reference.length
+							: start + samples.length + 400;
 					const estimate = estimatePodcastAlignment({
-						reference,
+						reference:
+							prediction == null ? reference : reference.slice(start, end),
 						target: Array.from(samples),
 						resolutionSeconds: 0.01,
-						maxLagSeconds: message.maxLagSeconds,
+						maxLagSeconds: prediction == null ? message.maxLagSeconds : 4,
 					});
 					const minimumConfidence = probes.length === 1 ? 0.65 : 0.55;
 					if (estimate.confidence < minimumConfidence) return null;
-					offsets.push(estimate.offsetSeconds - startSeconds);
+					offsets.push(estimate.offsetSeconds + start / 100 - startSeconds);
 				}
 				// Independent source regions must agree before a sampled offset can
 				// be used if fine waveform verification finds too little evidence.

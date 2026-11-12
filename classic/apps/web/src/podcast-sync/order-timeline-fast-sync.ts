@@ -102,17 +102,39 @@ export async function tryLongTimelineSync({
 		});
 		const indices = videos.map((_, index) => index);
 		const offsets = await match(candidates);
-		const verified = await verify({ indices, offsets });
-		const missing = indices.filter((index) => verified[index] == null);
+		const missing = indices.filter((index) => offsets[index] == null);
 		if (missing.length) {
+			const retried = await readAndMatchFull(missing);
+			missing.forEach((index, slot) => {
+				offsets[index] = retried[slot]!;
+			});
+		}
+		const verified = await verify({ indices, offsets });
+		const drifting = indices.filter(
+			(index) =>
+				offsets[index] != null &&
+				verified[index] == null &&
+				!missing.includes(index) &&
+				candidates[index]!.length > 1,
+		);
+		if (drifting.length) {
+			const retried = await verify({
+				indices: drifting,
+				offsets: await readAndMatchFull(drifting),
+			});
+			for (const index of drifting) verified[index] = retried[index];
+		}
+		return verified.every((offset) => offset != null) ? verified : null;
+
+		async function readAndMatchFull(indices: number[]) {
 			onProgress(
 				localizeClientMessage(
 					"Reading full audio for {v0} remaining cameras…",
-					{ v0: String(missing.length) },
+					{ v0: String(indices.length) },
 				),
 			);
 			const full = await mapConcurrent({
-				items: missing,
+				items: indices,
 				concurrency: syncReadConcurrency(),
 				signal,
 				task: async (index, taskSignal) => [
@@ -125,15 +147,8 @@ export async function tryLongTimelineSync({
 					},
 				],
 			});
-			const retried = await verify({
-				indices: missing,
-				offsets: await match(full),
-			});
-			for (const index of missing) verified[index] = retried[index];
+			return match(full);
 		}
-		return verified.every((offset) => offset != null)
-			? (verified as number[])
-			: null;
 
 		function match(probes: typeof candidates) {
 			onProgress(
