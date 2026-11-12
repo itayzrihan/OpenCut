@@ -2,7 +2,7 @@
 import { EditorCore } from "@/core";
 import { initializeGpuRenderer } from "@/services/renderer/gpu-renderer";
 import { loadProjectFont } from "@/fonts/custom-fonts";
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
 import { renderQueueRequest } from "./client";
 import type { RenderJob } from "./types";
 export async function executeQueuedRender(
@@ -71,6 +71,13 @@ export async function executeQueuedRender(
 		}
 	});
 	let dispose: (() => Promise<void>) | undefined;
+	const browserUrls: string[] = [];
+	const hosted = isHostedBrowserWorkspace();
+	const objectUrl = (file: Blob) => {
+		const url = URL.createObjectURL(file);
+		browserUrls.push(url);
+		return url;
+	};
 	try {
 		await report();
 		await initializeGpuRenderer();
@@ -78,16 +85,32 @@ export async function executeQueuedRender(
 			accountAssetUrl(
 				`/api/render-queue/file?job=${encodeURIComponent(job.id)}&id=${encodeURIComponent(id)}&kind=${kind}`,
 			);
+		const browser = hosted ? await import("./browser") : undefined;
+		const frozen = await browser?.readBrowserRenderSources(job.id);
 		for (const font of job.snapshot.document.customFonts ?? []) {
-			await loadProjectFont({
-				font: { ...font, url: fileUrl(font.id, "font") },
-			});
+			const source = frozen?.fonts[font.id];
+			if (!frozen || source)
+				await loadProjectFont({
+					font: {
+						...font,
+						url: source ? objectUrl(source) : fileUrl(font.id, "font"),
+					},
+				});
 		}
-		const assets = job.snapshot.mediaAssets.map((asset) => ({
-			...asset,
-			url: asset.unifiedAngles ? undefined : fileUrl(asset.id, "media"),
-			missing: false,
-		}));
+		const assets = job.snapshot.mediaAssets.map((asset) => {
+			const source = frozen?.media[asset.id];
+			if (frozen && !asset.unifiedAngles && !source)
+				throw Error(`Missing frozen source: ${asset.name}`);
+			return {
+				...asset,
+				url: asset.unifiedAngles
+					? undefined
+					: source
+						? objectUrl(source)
+						: fileUrl(asset.id, "media"),
+				missing: false,
+			};
+		});
 		await editor.project.loadRenderSnapshot({
 			snapshot: job.snapshot,
 			sceneId: job.sceneId,
@@ -126,6 +149,14 @@ export async function executeQueuedRender(
 			await report("cancelled", "Cancelled");
 			return;
 		}
+		if (browser) {
+			const status = await browser.publishBrowserRender({
+				job,
+				file: result.file,
+			});
+			onProgress(status === "cancelled" ? "Cancelled" : "Complete");
+			return;
+		}
 		const response = await fetch(
 			accountAssetUrl(
 				`/api/render-queue/file?job=${encodeURIComponent(job.id)}&attempt=${encodeURIComponent(attempt)}`,
@@ -155,5 +186,6 @@ export async function executeQueuedRender(
 		unsubscribe();
 		await reporting;
 		await dispose?.();
+		for (const url of browserUrls) URL.revokeObjectURL(url);
 	}
 }

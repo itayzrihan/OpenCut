@@ -9,8 +9,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { changeQueuedRender } from "@/export/queue/actions";
-import { accountAssetUrl } from "@/accounts/browser";
-import { renderQueueRequest } from "@/export/queue/client";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
+import { renderQueueRequest, startQueuedRenders } from "@/export/queue/client";
+import { hasReleasedRenders } from "./runtime";
 import type { ExportOptions } from "@/export";
 import type {
 	RenderJobView,
@@ -23,12 +24,34 @@ export default function RenderQueue() {
 		jobs: [],
 	});
 	const [error, setError] = useState<string | null>(null);
+	const [starting, setStarting] = useState(false);
+	const hosted = isHostedBrowserWorkspace();
+	const waiting = state.jobs.some(
+		(job) =>
+			job.delivery === "queue" && job.status === "queued" && !job.released,
+	);
+	const active = hasReleasedRenders(state);
+	const setLatest = (next: RenderQueueView) =>
+		setState((previous) =>
+			next.revision >= previous.revision ? next : previous,
+		);
+	async function start() {
+		setStarting(true);
+		try {
+			setLatest(await startQueuedRenders());
+			setError(null);
+		} catch (error) {
+			setError(error instanceof Error ? error.message : String(error));
+		} finally {
+			setStarting(false);
+		}
+	}
 	useEffect(() => {
 		let stopped = false;
 		const refresh = async () => {
 			try {
 				const next = await renderQueueRequest();
-				if (!stopped) setState(next);
+				if (!stopped) setLatest(next);
 			} catch (e) {
 				if (!stopped) setError(String(e));
 			}
@@ -46,7 +69,7 @@ export default function RenderQueue() {
 		action: "cancel" | "retry",
 	) {
 		try {
-			setState(await changeQueuedRender({ action, id, projectId, state }));
+			setLatest(await changeQueuedRender({ action, id, projectId, state }));
 			setError(null);
 		} catch (e) {
 			setError(String(e));
@@ -64,16 +87,28 @@ export default function RenderQueue() {
 				<p className="mt-2 text-sm text-muted-foreground">
 					<UiMessage
 						text={
-							"You can close this view and continue editing. The background renderer processes each job’s saved scene snapshot."
+							"Add your projects, then start the queue to export their saved scenes one at a time."
 						}
 					/>
 				</p>
 			</div>
-			<p role="status" className="text-sm">
-				{state.worker?.message ?? (
-					<UiMessage text={"Background render queue"} />
-				)}
-			</p>
+			<div className="flex flex-wrap items-center gap-3">
+				<Button
+					onClick={() => void start()}
+					disabled={starting || (!waiting && !(hosted && active))}
+				>
+					<UiMessage text="Start queued exports" />
+				</Button>
+				<p role="status" className="text-sm">
+					{waiting ? (
+						<UiMessage text="New exports are waiting for you to start the queue." />
+					) : hosted && active ? (
+						<UiMessage text="Keep the render tab open while the queue runs." />
+					) : (
+						state.worker?.message && <UiValue>{state.worker.message}</UiValue>
+					)}
+				</p>
+			</div>
 			{error && (
 				<p role="alert" className="text-destructive text-sm">
 					<UiValue>{error}</UiValue>
@@ -106,7 +141,13 @@ export default function RenderQueue() {
 								</p>
 							</div>
 							<span className="capitalize text-sm font-medium">
-								{job.status}
+								{job.status === "queued" && job.delivery === "queue" ? (
+									<UiMessage
+										text={job.released ? "Ready to render" : "Waiting to start"}
+									/>
+								) : (
+									<UiValue>{job.status}</UiValue>
+								)}
 							</span>
 						</div>
 						<p className="text-sm text-muted-foreground">
@@ -140,7 +181,7 @@ export default function RenderQueue() {
 							/>
 						)}
 						<p className="text-xs text-muted-foreground">
-							{job.message}
+							<UiValue>{job.message}</UiValue>
 							{job.status === "rendering"
 								? ` · ${Math.round(job.progress * 100)}%`
 								: ""}
@@ -170,24 +211,41 @@ export default function RenderQueue() {
 										<UiMessage text={"Retry saved snapshot"} />
 									</Button>
 								)}
-							{job.status === "completed" && job.outputId && (
-								<a
-									className="text-sm text-primary underline"
-									href={accountAssetUrl(
-										`/api/render-queue/file?job=${encodeURIComponent(job.id)}`,
-									)}
-									download
-								>
-									<UiMessage text={"Download"} />{" "}
-									{job.options.format.toUpperCase()}
-								</a>
-							)}
+							{job.status === "completed" &&
+								job.outputId &&
+								(hosted ? (
+									<Button
+										size="sm"
+										variant="outline"
+										onClick={() => {
+											void import("./browser")
+												.then(({ downloadBrowserRender }) =>
+													downloadBrowserRender(job),
+												)
+												.catch((error) => setError(String(error)));
+										}}
+									>
+										<UiMessage text="Download" />{" "}
+										{job.options.format.toUpperCase()}
+									</Button>
+								) : (
+									<a
+										className="text-sm text-primary underline"
+										href={accountAssetUrl(
+											`/api/render-queue/file?job=${encodeURIComponent(job.id)}`,
+										)}
+										download
+									>
+										<UiMessage text={"Download"} />{" "}
+										{job.options.format.toUpperCase()}
+									</a>
+								))}
 						</div>
 						{job.status === "queued" && job.delivery !== "direct" && (
 							<JobSettings
 								job={job}
 								revision={state.revision}
-								onSave={setState}
+								onSave={setLatest}
 								onError={setError}
 							/>
 						)}

@@ -14,6 +14,7 @@ import lockfile from "proper-lockfile";
 import { accountDataRoot, requireAccount } from "@/accounts/server";
 import { readRenderQueue } from "./server";
 import type { RenderQueueView } from "./types";
+import { hasReleasedRenders } from "./runtime";
 const launches = new Map<string, Promise<RenderQueueView["worker"]>>();
 const failures = new Map<string, { at: number; message: string }>();
 async function executable() {
@@ -50,22 +51,19 @@ async function executable() {
 export function ensureRenderWorker(
 	origin: string,
 ): Promise<RenderQueueView["worker"]> {
+	if (process.env.OPENCUT_LEGITATE_HOSTED === "true")
+		return Promise.resolve({
+			status: "idle",
+			message: "Start the queue from the hosted workspace.",
+		});
 	const account = requireAccount();
 	const key = account.id;
 	const pending = launches.get(key);
 	if (pending) return pending;
 	const launch = (async () => {
 		const queue = await readRenderQueue();
-		if (
-			!queue.jobs.some(
-				(j) =>
-					j.delivery !== "direct" && ["queued", "rendering"].includes(j.status),
-			)
-		)
-			return {
-				status: "idle" as const,
-				message: "Queue complete. You can close this view.",
-			};
+		if (!hasReleasedRenders(queue))
+			return { status: "idle" as const, message: "No exports running." };
 		const root = join(accountDataRoot(), "render-queue");
 		await mkdir(root, { recursive: true, mode: 0o700 });
 		// proper-lockfile keys ownership by target, even with a custom lockfilePath.
