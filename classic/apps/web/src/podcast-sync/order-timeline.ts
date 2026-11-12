@@ -97,10 +97,10 @@ export async function orderPodcastTimeline({
 		signal,
 		task: async (asset, taskSignal) => {
 			try {
-				const envelope = await readSyncEnvelope(
-					{ file: asset.file, url: asset.url, name: asset.name },
-					taskSignal,
-				);
+				const envelope = await readSyncEnvelope({
+					asset: { file: asset.file, url: asset.url, name: asset.name },
+					signal: taskSignal,
+				});
 				completed++;
 				reportRead();
 				return envelope;

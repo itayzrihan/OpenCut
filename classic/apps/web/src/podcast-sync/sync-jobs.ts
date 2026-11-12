@@ -13,10 +13,13 @@ export function syncReadConcurrency() {
 	);
 }
 
-export async function readSyncEnvelope(
-	asset: BrowserMediaSource & { name: string },
-	signal: AbortSignal,
-) {
+export async function readSyncEnvelope({
+	asset,
+	signal,
+}: {
+	asset: BrowserMediaSource & { name: string };
+	signal: AbortSignal;
+}) {
 	signal.throwIfAborted();
 	// A different File object is a different source, even after relinking to the same name.
 	const file = asset.file;

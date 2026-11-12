@@ -76,11 +76,11 @@ export async function readEnergyEnvelope({
 				);
 				if (lastSampleExclusive <= firstSample) continue;
 
-				const first = copyPlane(0, sample, firstPlane);
+				const first = copyPlane({ planeIndex: 0, sample, scratch: firstPlane });
 				firstPlane = first;
 				const second =
 					sample.numberOfChannels > 1
-						? copyPlane(1, sample, secondPlane)
+						? copyPlane({ planeIndex: 1, sample, scratch: secondPlane })
 						: undefined;
 				if (second) secondPlane = second;
 
@@ -142,11 +142,15 @@ export async function readEnergyEnvelope({
 	}
 }
 
-function copyPlane(
-	planeIndex: number,
-	sample: AudioSample,
-	scratch: Float32Array<ArrayBuffer>,
-) {
+function copyPlane({
+	planeIndex,
+	sample,
+	scratch,
+}: {
+	planeIndex: number;
+	sample: AudioSample;
+	scratch: Float32Array<ArrayBuffer>;
+}) {
 	const data =
 		scratch.length >= sample.numberOfFrames
 			? scratch

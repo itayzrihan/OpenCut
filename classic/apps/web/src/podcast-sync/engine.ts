@@ -207,10 +207,10 @@ export async function runPodcastAlignment({
 		items: physicalAssets,
 		concurrency: syncReadConcurrency(),
 		task: async (asset, jobSignal) => {
-			const envelope = await readSyncEnvelope(
-				{ file: asset.file, url: asset.url, name: asset.name },
-				jobSignal,
-			);
+			const envelope = await readSyncEnvelope({
+				asset: { file: asset.file, url: asset.url, name: asset.name },
+				signal: jobSignal,
+			});
 			completed++;
 			report({
 				onProgress,
