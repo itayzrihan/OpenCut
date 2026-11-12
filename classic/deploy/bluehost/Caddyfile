@@ -29,7 +29,10 @@ pocut.vxu.me {
 	}
 	handle @hostedRenderWorker {
 		route {
-			header >Cache-Control "private, no-store"
+			header {
+				Cache-Control "private, no-store"
+				defer
+			}
 			forward_auth 127.0.0.1:3211 {
 				uri /api/local-drive
 				header_up Host pocut.vxu.me
