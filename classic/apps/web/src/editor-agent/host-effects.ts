@@ -47,6 +47,21 @@ export async function performHostEffect({
 	editor?: EditorCore;
 }): Promise<EditingAgentHostResult> {
 	signal.throwIfAborted();
+	if (effect.adapter === "projectMediaObservation") {
+		if (!editor)
+			return {
+				type: "rejected",
+				message: "The source observation editor is unavailable",
+			};
+		const { performProjectMediaObservation } =
+			await import("./source-media-observation");
+		return performProjectMediaObservation({
+			effect,
+			editor,
+			accountId,
+			signal,
+		});
+	}
 	if (effect.adapter === "productionVideoFrames") {
 		if (!editor)
 			return {

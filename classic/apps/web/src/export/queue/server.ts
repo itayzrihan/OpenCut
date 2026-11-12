@@ -21,10 +21,10 @@ import {
 	getProject,
 } from "@/services/local-drive/server";
 import type { CanonicalEditorRuntime } from "opencut-editor-runtime-wasm";
-import type { RenderJob, RenderQueueView } from "./types";
+import type { RenderJob } from "./types";
+import { edit, view, releaseQueue, nextRender, type State } from "./runtime";
 import type { CanonicalClassicSnapshot } from "@/core/canonical-classic-session";
 import type { ExportOptions } from "@/export";
-type State = { revision: number; renderQueue: RenderJob[] };
 type Source = {
 	id: string;
 	path: string;
@@ -143,33 +143,6 @@ async function lockedTransaction<T>(
 	} finally {
 		await release();
 	}
-}
-function edit(
-	r: CanonicalEditorRuntime,
-	s: State,
-	id: string,
-	projectId: string,
-	change: Record<string, unknown>,
-	requestId?: string,
-): RenderJob {
-	const result = r.invokeSync(
-		"render.queue.edit",
-		{ projectId, expectedRevision: s.revision, id, nowMs: Date.now(), change },
-		{ metadata: requestId ? { "opencut/idempotencyKey": requestId } : {} },
-	) as { result: { data: { job: RenderJob } } };
-	return result.result.data.job;
-}
-function view(s: State): RenderQueueView {
-	return {
-		revision: s.revision,
-		jobs: s.renderQueue.map(({ snapshot, attempt: _attempt, ...j }) => ({
-			...j,
-			projectName: snapshot.document.metadata.name,
-			sceneName:
-				snapshot.document.scenes.find((s) => s.id === j.sceneId)?.name ??
-				"Scene",
-		})),
-	};
 }
 export async function readRenderQueue() {
 	return transaction((_r, s) => view(s));
@@ -291,39 +264,24 @@ export async function changeRender(input: {
 		return view(r.snapshot() as State);
 	});
 }
+export async function startRenderQueue() {
+	return transaction(releaseQueue);
+}
 export async function claimRender(
 	attempt: string,
 	jobId?: string,
 ): Promise<RenderJob | null> {
 	valid(attempt);
-	return transaction(async (r, s) => {
-		const active = s.renderQueue.find((j) => j.status === "rendering");
-		if (active && Date.now() - active.updatedAtMs <= 120000) return null;
-		if (active) {
-			edit(r, s, active.id, active.projectId, {
-				type: "report",
-				attempt: active.attempt,
-				progress: active.progress,
-				message: "Renderer disconnected; retry uses the original snapshot",
-				status: active.cancelRequested ? "cancelled" : "failed",
-			});
-			s = r.snapshot() as State;
-		}
-		// If the renderer disappeared, claim the same job after an explicit failed
-		// boundary, never silently retry a potentially completed side effect.
-		const next = jobId
-			? s.renderQueue.find(
-					(j) =>
-						j.id === valid(jobId) &&
-						j.delivery === "direct" &&
-						j.status === "queued",
-				)
-			: s.renderQueue.find(
-					(j) => j.status === "queued" && j.delivery !== "direct",
-				);
+	if (jobId) valid(jobId);
+	return transaction(async (runtime, state) => {
+		const next = nextRender({ runtime, state, jobId });
 		if (!next) return null;
-		if (next.delivery !== "direct") await renderOutputDirectory(next.id);
-		return edit(r, s, next.id, next.projectId, { type: "claim", attempt });
+		if (next.job.delivery !== "direct")
+			await renderOutputDirectory(next.job.id);
+		return edit(runtime, next.state, next.job.id, next.job.projectId, {
+			type: "claim",
+			attempt,
+		});
 	});
 }
 export async function reportRender(input: {

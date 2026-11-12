@@ -86,6 +86,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ProjectsExportDialog } from "@/export/projects-export-dialog";
+import { openRenderQueue } from "@/export/queue/client";
 import { DeleteProjectDialog } from "@/project/components/delete-project-dialog";
 import { ProjectInfoDialog } from "@/project/components/project-info-dialog";
 import { RenameProjectDialog } from "@/project/components/rename-project-dialog";
@@ -320,6 +321,9 @@ function ProjectsHeader({ storageBusy }: { storageBusy: boolean }) {
 						<NewProjectButton />
 						<ImportProjectButton />
 						<BatchEditButton />
+						<Button variant="outline" onClick={openRenderQueue}>
+							<UiMessage text="Render Queue" />
+						</Button>
 					</div>
 				)}
 			</div>

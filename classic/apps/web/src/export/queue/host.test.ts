@@ -13,6 +13,7 @@ const account = {
 	displayName: "Fixture",
 	login: "fixture",
 };
+let released = false;
 let count = 0,
 	boot: any,
 	child: any;
@@ -23,7 +24,7 @@ mock.module("@/accounts/server", () => ({
 mock.module("./server", () => ({
 	readRenderQueue: async () => ({
 		revision: 1,
-		jobs: [{ status: "queued", delivery: "queue" }],
+		jobs: [{ status: "queued", delivery: "queue", released }],
 	}),
 }));
 mock.module("node:child_process", () => ({
@@ -62,6 +63,11 @@ afterAll(async () => {
 	await rm(root, { recursive: true, force: true });
 });
 test("one host process serves concurrent queue opens and survives viewer closure", async () => {
+	expect((await ensureRenderWorker("http://localhost:3211"))?.status).toBe(
+		"idle",
+	);
+	expect(count).toBe(0);
+	released = true;
 	const results = await Promise.all([
 		ensureRenderWorker("http://localhost:3211"),
 		ensureRenderWorker("http://localhost:3211"),

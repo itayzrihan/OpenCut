@@ -10,6 +10,7 @@ export type RenderJob = {
 	options: Required<ExportOptions>;
 	delivery: "queue" | "direct";
 	destinationName: string | null;
+	released: boolean;
 	status: "queued" | "rendering" | "completed" | "failed" | "cancelled";
 	createdAtMs: number;
 	updatedAtMs: number;

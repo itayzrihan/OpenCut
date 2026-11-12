@@ -10,6 +10,7 @@ import {
 	changeRender,
 	claimRender,
 	reportRender,
+	startRenderQueue,
 } from "@/export/queue/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,6 +21,7 @@ const projectIdentity = z
 	.max(160)
 	.regex(/^[A-Za-z0-9_-]+$/);
 const requestSchema = z.discriminatedUnion("action", [
+	z.object({ action: z.literal("start") }).strict(),
 	z
 		.object({
 			action: z.literal("enqueue"),
@@ -88,12 +90,16 @@ async function post(request: Request) {
 				),
 			),
 		);
+		if (body.action === "start") {
+			const state = await startRenderQueue();
+			const worker = await ensureRenderWorker(localRequestOrigin(request));
+			return NextResponse.json({ ...state, worker });
+		}
 		if (body.action === "enqueue") {
 			const state = await enqueueRender(
 				body as Parameters<typeof enqueueRender>[0],
 			);
-			const worker = await ensureRenderWorker(localRequestOrigin(request));
-			return NextResponse.json({ ...state, worker });
+			return NextResponse.json(state);
 		}
 		if (body.action === "claim")
 			return NextResponse.json(await claimRender(body.attempt, body.jobId));
@@ -112,8 +118,7 @@ async function post(request: Request) {
 			...body,
 			type: body.action,
 		} as Parameters<typeof changeRender>[0]);
-		const worker = await ensureRenderWorker(localRequestOrigin(request));
-		return NextResponse.json({ ...state, worker });
+		return NextResponse.json(state);
 	} catch (e) {
 		return NextResponse.json(
 			{ error: e instanceof Error ? e.message : String(e) },

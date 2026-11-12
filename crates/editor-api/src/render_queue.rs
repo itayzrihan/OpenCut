@@ -76,6 +76,8 @@ pub struct QueuedRender {
     #[serde(default)]
     pub destination_name: Option<String>,
     pub status: QueueStatus,
+    #[serde(default)]
+    pub released: bool,
     pub created_at_ms: u64,
     pub updated_at_ms: u64,
     pub progress: f64,
