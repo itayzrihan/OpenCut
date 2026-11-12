@@ -19,6 +19,14 @@ import { localizeClientMessage } from "@/i18n/client-messages";
 import { UnifiedAnglesSyncTasks } from "@/media/unified-sync-task";
 import { isUnifiedAnglesAsset } from "@/media/unified-angles";
 
+function hasMediaDuration(asset: MediaAsset): boolean {
+	return (
+		typeof asset.duration === "number" &&
+		Number.isFinite(asset.duration) &&
+		asset.duration > 0
+	);
+}
+
 export class MediaManager {
 	private assetViews: MediaAsset[] = [];
 	private get assets(): MediaAsset[] {
@@ -132,17 +140,13 @@ export class MediaManager {
 				);
 			return asset;
 		};
-		const hasDuration = (asset: MediaAsset) =>
-			typeof asset.duration === "number" &&
-			Number.isFinite(asset.duration) &&
-			asset.duration > 0;
 		const recovered = new Map<
 			string,
 			{ asset: MediaAsset; duration: number }
 		>();
 		for (const id of new Set(mediaIds)) {
 			const source = getSource(id);
-			if (hasDuration(source)) continue;
+			if (hasMediaDuration(source)) continue;
 			const pending = this.browserImports.get(id);
 			if (pending) {
 				await new Promise<void>((resolve, reject) => {
@@ -156,7 +160,7 @@ export class MediaManager {
 				});
 			}
 			const asset = getSource(id);
-			if (hasDuration(asset)) continue;
+			if (hasMediaDuration(asset)) continue;
 			try {
 				const { readSourceDuration } = await import("@/media/mediabunny");
 				const duration = await readSourceDuration({
@@ -190,7 +194,7 @@ export class MediaManager {
 						v0: asset.name,
 					}),
 				);
-			if (hasDuration(current)) recovered.delete(id);
+			if (hasMediaDuration(current)) recovered.delete(id);
 		}
 		return {
 			assets: new Map(
@@ -622,10 +626,63 @@ export class MediaManager {
 		this.notify();
 
 		try {
+			const scope = captureLocalDriveWriteScope({ projectId });
 			const mediaAssets = await storageService.loadAllMediaAssets({
 				projectId,
 			});
-			this.assets = mediaAssets;
+			const missing = mediaAssets.filter(
+				(asset) =>
+					(asset.type === "audio" || asset.type === "video") &&
+					!asset.missing &&
+					(asset.file || asset.url) &&
+					!hasMediaDuration(asset),
+			);
+			if (missing.length === 0) {
+				this.assets = mediaAssets;
+			} else {
+				// Resolve older bindings before attaching the editor. Bound the
+				// entire pass so a slow source cannot delay project startup indefinitely.
+				const signal = AbortSignal.timeout(8_000);
+				const { readSourceDuration } = await import("@/media/mediabunny");
+				const { mapConcurrent } = await import("@/podcast-sync/sync-jobs");
+				const repaired = new Map<string, number>();
+				await mapConcurrent({
+					items: missing,
+					concurrency: 3,
+					signal,
+					task: async (asset, taskSignal) => {
+						try {
+							const duration = await readSourceDuration({
+								file: asset.file,
+								url: asset.url,
+								signal: taskSignal,
+							});
+							repaired.set(asset.id, duration);
+						} catch {
+							// The consuming workflow can retry an unreadable source.
+						}
+					},
+				}).catch((error: unknown) => {
+					if (!signal.aborted) throw error;
+				});
+				assertLocalDriveWriteScope({ projectId, scope });
+				this.assets = mediaAssets.map((asset) => {
+					const duration = repaired.get(asset.id);
+					return duration === undefined ? asset : { ...asset, duration };
+				});
+				if (isHostedBrowserWorkspace()) {
+					await Promise.allSettled(
+						[...repaired].map(([id, duration]) =>
+							storageService.updateBrowserMediaMetadata({
+								projectId,
+								id,
+								metadata: { duration },
+								scope,
+							}),
+						),
+					);
+				}
+			}
 			this.notify();
 		} catch (error) {
 			console.error("Failed to load media assets:", error);
