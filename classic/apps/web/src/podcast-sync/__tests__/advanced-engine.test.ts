@@ -8,20 +8,22 @@ import {
 import type { MediaAsset } from "@/media/types";
 const reads: string[] = [];
 const precisionSegments: Array<Array<{ start: number; duration: number }>> = [];
+async function readSyncEnvelope({ asset }: { asset: { name: string } }) {
+	reads.push(asset.name);
+	return new Float32Array(
+		asset.name.startsWith("Camera")
+			? 10000
+			: asset.name.includes("1705")
+				? 10000
+				: 180015,
+	).fill(0.5);
+}
 mock.module("../sync-jobs", () => ({
+	readSyncEnvelope,
+	syncReadConcurrency: () => 2,
 	mapConcurrent: async ({ items, task, signal }: any) =>
 		Promise.all(items.map((item: any) => task(item, signal))),
 	runSyncWorker: async ({ message }: any) => {
-		if (message.type === "read") {
-			reads.push(message.asset.name);
-			return new Float32Array(
-				message.asset.name.startsWith("Camera")
-					? 10000
-					: message.asset.name.includes("1705")
-						? 10000
-						: 180015,
-			).fill(0.5);
-		}
 		if (message.type === "align") {
 			expect(message.envelopes.map((e: Float32Array) => e.length)).toEqual([
 				10000, 10000, 190015, 190015,
