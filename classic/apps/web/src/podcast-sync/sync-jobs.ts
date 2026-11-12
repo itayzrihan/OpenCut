@@ -16,9 +16,11 @@ export function syncReadConcurrency() {
 export async function readSyncEnvelope({
 	asset,
 	signal,
+	read,
 }: {
 	asset: BrowserMediaSource & { name: string };
 	signal: AbortSignal;
+	read?: () => Promise<Float32Array>;
 }) {
 	signal.throwIfAborted();
 	// A different File object is a different source, even after relinking to the same name.
@@ -31,6 +33,7 @@ export async function readSyncEnvelope({
 		envelopeCache.set(key, cached);
 		return cached;
 	}
+	if (read) return read();
 	const envelope = await runSyncWorker<Float32Array>({
 		message: { type: "read", asset },
 		signal,

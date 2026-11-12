@@ -1,5 +1,6 @@
 import type { PodcastGroupAlignment } from "opencut-wasm";
 import type { PodcastSyncSettings } from "./engine";
+import { readPcm16Envelope } from "./pcm16-envelope";
 import { readEnergyEnvelope } from "./energy-reader";
 import type { BrowserMediaSource } from "@/media/source";
 type Segment = {
@@ -7,9 +8,22 @@ type Segment = {
 	start: number;
 	duration: number;
 };
+type TimedEnvelope = { startSeconds: number; samples: Float32Array };
+
 type Request =
 	| { type: "color"; asset: BrowserMediaSource; duration: number }
-	| { type: "read"; asset: BrowserMediaSource & { name: string } }
+	| {
+			type: "read";
+			asset: BrowserMediaSource & { name: string };
+			range?: { startSeconds: number; durationSeconds: number };
+			preferPcm?: boolean;
+	  }
+	| {
+			type: "probe-offsets";
+			reference: Float32Array;
+			probes: TimedEnvelope[][];
+			maxLagSeconds: number;
+	  }
 	| {
 			type: "precision";
 			referenceSegments?: Segment[];
@@ -37,10 +51,18 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 	try {
 		const message = event.data;
 		if (message.type === "read") {
-			const result = await readEnergyEnvelope({
-				asset: message.asset,
-				windowSeconds: 0.01,
-			});
+			const { asset, range, preferPcm } = message;
+			const pcm =
+				preferPcm && asset.file && range
+					? await readPcm16Envelope({ file: asset.file, ...range })
+					: null;
+			const result =
+				pcm ??
+				(await readEnergyEnvelope({
+					asset,
+					...range,
+					windowSeconds: 0.01,
+				}));
 			self.postMessage({ result }, { transfer: [result.buffer] });
 		} else if (message.type === "color") {
 			const { readPodcastColor } = await import("./order-timeline-color");
@@ -114,6 +136,31 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 			const result = analyzePodcastMulticam({
 				...message,
 				envelopes: message.envelopes.map((e) => Array.from(e)),
+			});
+			self.postMessage({ result });
+		} else if (message.type === "probe-offsets") {
+			const { estimatePodcastAlignment } = await import("opencut-wasm");
+			const reference = Array.from(message.reference);
+			const result = message.probes.map((probes) => {
+				if (probes.length === 0) return null;
+				const offsets: number[] = [];
+				for (const { startSeconds, samples } of probes) {
+					const estimate = estimatePodcastAlignment({
+						reference,
+						target: Array.from(samples),
+						resolutionSeconds: 0.01,
+						maxLagSeconds: message.maxLagSeconds,
+					});
+					const minimumConfidence = probes.length === 1 ? 0.65 : 0.55;
+					if (estimate.confidence < minimumConfidence) return null;
+					offsets.push(estimate.offsetSeconds - startSeconds);
+				}
+				// Independent source regions must agree before a sampled offset can
+				// be used if fine waveform verification finds too little evidence.
+				if (Math.max(...offsets) - Math.min(...offsets) > 0.03) return null;
+				return (
+					offsets.reduce((sum, offset) => sum + offset, 0) / offsets.length
+				);
 			});
 			self.postMessage({ result });
 		} else if (message.type === "align-to-reference") {

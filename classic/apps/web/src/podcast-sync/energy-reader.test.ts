@@ -1,5 +1,6 @@
 import { expect, test } from "bun:test";
 import { readEnergyEnvelope } from "./energy-reader";
+import { readPcm16Envelope } from "./pcm16-envelope";
 function wav() {
 	const frames = 48000;
 	const bytes = new ArrayBuffer(44 + frames * 2),
@@ -55,4 +56,27 @@ test("bounded waveform windows preserve signed amplitude and fractional source o
 	expect(result.length).toBe(8000);
 	expect(result[100]).toBeCloseTo(0.25, 4);
 	expect(result[7000]).toBeCloseTo(0.5, 4);
+});
+
+test("local PCM range reads preserve timeline origin and zero-pad beyond the last frame", async () => {
+	const result = await readPcm16Envelope({
+		file: wav(),
+		startSeconds: 0.4,
+		durationSeconds: 0.8,
+	});
+	expect(result?.length).toBe(80);
+	expect(result?.[9]).toBe(0.25);
+	expect(result?.[10]).toBe(0.5);
+	expect(result?.[59]).toBe(0.5);
+	expect(result?.[60]).toBe(0);
+});
+
+test("non-WAV ranges remain eligible for the general audio decoder", async () => {
+	expect(
+		await readPcm16Envelope({
+			file: new Blob(["not a WAV"]),
+			startSeconds: 0,
+			durationSeconds: 1,
+		}),
+	).toBeNull();
 });
