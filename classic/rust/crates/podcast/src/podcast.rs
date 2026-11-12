@@ -14,6 +14,8 @@ mod noise_reduction;
 pub use noise_reduction::*;
 mod group_alignment;
 pub use group_alignment::*;
+mod ordered;
+pub use ordered::*;
 mod energy;
 pub use energy::*;
 mod alignment;

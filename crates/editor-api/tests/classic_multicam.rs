@@ -624,3 +624,83 @@ async fn master_recording_keeps_leader_middle_gap_and_tail_with_restarted_camera
         assert!(end <= 4_200_000 || start >= 6_000_000);
     }
 }
+
+#[tokio::test]
+async fn ordered_timeline_keeps_audio_gap_camera_coverage_and_editable_finishing() {
+    let r = OpenCutRuntime::default();
+    let mut classic: Value =
+        serde_json::from_str(include_str!("fixtures/classic-project.json")).unwrap();
+    classic["document"]["settings"]["fps"] = json!({"numerator":25,"denominator":1});
+    classic["mediaAssets"] = json!([
+        {"id":"video-asset","name":"First card","type":"video","duration":4.0},
+        {"id":"second-card","name":"Second card","type":"video","duration":6.0},
+        {"id":"wide","name":"Wide","type":"video","duration":2.0},
+        {"id":"audio-first","name":"First.wav","type":"audio","duration":6.0},
+        {"id":"audio-last","name":"Last.wav","type":"audio","duration":5.013}
+    ]);
+    call(
+        &r,
+        "project.classic.session.attach",
+        json!({"projectId":"classic-project","expectedRevision":0,"classic":classic}),
+    )
+    .await;
+    let before = read(&r).await;
+    let camera = |id: &str, angle, delay| {
+        json!({
+            "id":id,"name":id,"videoId":id,"audioId":"audio-first","angle":angle,
+            "videoBindingRevision":0,"audioBindingRevision":0,"videoOffset":0.0,
+            "videoDelay":delay,"audioOffset":0.0,"audioDelay":0.0,
+            "color":{"exposure":0.3,"temperature":4.0,"tint":-2.0}
+        })
+    };
+    let plan = json!({
+        "settings":classic_podcast::podcast_multicam_defaults(classic_podcast::PodcastMulticamDefaultsOptions{quick:true}),
+        "duration":13.013,
+        "orderedAudio":[
+            {"mediaId":"audio-first","bindingRevision":0,"start":0.0,"duration":6.0},
+            {"mediaId":"audio-last","bindingRevision":0,"start":8.0,"duration":5.013}
+        ],
+        "channels":[camera("second-card",1,4.0),camera("video-asset",1,0.0),camera("wide",2,5.0)],
+        "cuts":[]
+    });
+    let input = json!({"projectId":"classic-project","expectedRevision":before["revision"],"plan":plan,"finishPodcast":true});
+    let mut stale = input.clone();
+    stale["plan"]["orderedAudio"][1]["bindingRevision"] = json!(1);
+    assert!(
+        r.registry()
+            .invoke(CREATE, InvocationContext::default(), stale)
+            .await
+            .is_err()
+    );
+    assert_eq!(read(&r).await, before);
+    call(&r, CREATE, input).await;
+    let after = read(&r).await;
+    let scene = &after["project"]["classic"]["document"]["scenes"][2];
+    let audio = scene["tracks"]["audio"].as_array().unwrap();
+    assert_eq!(audio.len(), 1);
+    assert_eq!(audio[0]["elements"][0]["duration"], 720_000);
+    assert_eq!(audio[0]["elements"][1]["startTime"], 960_000);
+    assert_eq!(audio[0]["elements"][1]["duration"], 601_560);
+    assert_eq!(audio[0]["elements"][1]["params"]["noiseReduction"], 100);
+    assert_eq!(
+        scene["tracks"]["overlay"][0]["elements"][0]["effectType"],
+        "sharpen"
+    );
+    let tracks = scene["tracks"]["overlay"].as_array().unwrap();
+    assert_eq!(tracks.len(), 3);
+    assert_eq!(tracks[1]["name"], "Angle 1");
+    assert_eq!(tracks[2]["name"], "Angle 2");
+    let primary = tracks[1]["elements"].as_array().unwrap();
+    assert!(primary.iter().any(|clip| clip["mediaId"] == "video-asset"));
+    let across_gap = primary
+        .iter()
+        .find(|clip| clip["mediaId"] == "second-card")
+        .unwrap();
+    assert_eq!(across_gap["startTime"], 480_000);
+    assert_eq!(across_gap["duration"], 720_000);
+    assert_eq!(across_gap["isSourceAudioEnabled"], false);
+    assert_eq!(across_gap["effects"][0]["type"], "color-correction");
+    assert_eq!(across_gap["effects"][0]["params"]["exposure"], 0.3);
+    call(&r, "history.undo", json!({})).await;
+    assert_eq!(read(&r).await["project"], before["project"]);
+}
