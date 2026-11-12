@@ -170,6 +170,75 @@ struct Input {
     /// Explicit caller choice; automatic runs must never silently discard imported microphones.
     #[serde(default)]
     allow_camera_audio: bool,
+    #[serde(default)]
+    #[schemars(length(max = 64))]
+    recovered_durations: Vec<RecoveredDuration>,
+}
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct RecoveredDuration {
+    media_id: String,
+    binding_revision: u64,
+    duration: f64,
+}
+impl Input {
+    fn recover_durations(
+        &self,
+        classic: &mut crate::ClassicProject,
+    ) -> Result<(), CapabilityError> {
+        if self.recovered_durations.is_empty() {
+            return Ok(());
+        }
+        let ordered = self
+            .plan
+            .ordered_audio
+            .as_ref()
+            .ok_or_else(|| invalid("Recovered durations require ordered podcast media"))?;
+        if self.recovered_durations.len() > 64 {
+            return Err(invalid("Too many recovered source durations"));
+        }
+        let mut seen = HashSet::new();
+        for recovered in &self.recovered_durations {
+            let id = &recovered.media_id;
+            if !seen.insert(id)
+                || !recovered.duration.is_finite()
+                || !(0.0..=36_000.0).contains(&recovered.duration)
+                || recovered.duration == 0.0
+                || !(ordered.iter().any(|segment| segment.media_id == *id)
+                    || self
+                        .plan
+                        .channels
+                        .iter()
+                        .any(|channel| channel.video_id == *id))
+            {
+                return Err(invalid("Invalid recovered podcast source duration"));
+            }
+            let asset = classic
+                .media_assets
+                .iter_mut()
+                .find(|asset| {
+                    asset.get("id").and_then(Value::as_str) == Some(id.as_str())
+                        && asset.get("missing") != Some(&Value::Bool(true))
+                })
+                .ok_or_else(|| invalid("Recovered podcast media is unavailable"))?;
+            if asset
+                .get("bindingRevision")
+                .and_then(Value::as_u64)
+                .unwrap_or(0)
+                != recovered.binding_revision
+                || asset
+                    .get("duration")
+                    .and_then(Value::as_f64)
+                    .is_some_and(|existing| existing > 0.0 && existing != recovered.duration)
+            {
+                return Err(CapabilityError::Conflict(
+                    "A source file changed during duration recovery".into(),
+                ));
+            }
+            asset.insert("duration".into(), json!(recovered.duration));
+        }
+        Ok(())
+    }
 }
 fn invalid(message: &str) -> CapabilityError {
     CapabilityError::InvalidInput(message.into())
@@ -659,6 +728,7 @@ pub(super) fn register_multicam(
                     |document| {
                         input.plan.validate().map_err(|e| invalid(&e))?;
                         let classic = classic_target(document, &input.project_id)?;
+                        input.recover_durations(classic)?;
                         let assets = classic.media_assets.clone();
                         if let Some(a) = &input.plan.advanced {
                             a.validate_assets(&assets)?;

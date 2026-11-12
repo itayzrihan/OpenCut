@@ -11,6 +11,35 @@ import { TICKS_PER_SECOND } from "@/wasm";
 import { renderThumbnailDataUrl } from "./thumbnail";
 import { createMediaSource, type BrowserMediaSource } from "./source";
 
+/** Read source timing without creating a thumbnail or decoding frames. */
+export async function readSourceDuration({
+	file,
+	url,
+	signal,
+}: BrowserMediaSource & { signal: AbortSignal }): Promise<number> {
+	signal.throwIfAborted();
+	const input = new Input({
+		source: createMediaSource({ file, url }),
+		formats: ALL_FORMATS,
+	});
+	const abort = () => input.dispose();
+	signal.addEventListener("abort", abort, { once: true });
+	try {
+		const metadata = await input.getDurationFromMetadata();
+		const duration =
+			metadata != null && Number.isFinite(metadata) && metadata > 0
+				? metadata
+				: await input.computeDuration();
+		signal.throwIfAborted();
+		if (!Number.isFinite(duration) || duration <= 0)
+			throw new Error("Could not determine media duration");
+		return duration;
+	} finally {
+		signal.removeEventListener("abort", abort);
+		input.dispose();
+	}
+}
+
 export type VideoFileData = {
 	duration: number;
 	width: number;
