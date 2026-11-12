@@ -746,11 +746,11 @@ export function PodcastSyncDialog({
 							<UiMessage text={"Podcast Multicam"} />
 						</DialogTitle>
 						<DialogDescription>
-							<UiMessage
-								text={
-									"Sync all cameras and microphones together, detect the active speaker, then apply microphone gain, limiting, noise reduction and Sharpen automatically."
-								}
-							/>
+							{tab === "order" ? (
+								<UiMessage text="Arrange one person's camera clips against one or more audio recordings." />
+							) : (
+								<UiMessage text="Sync all cameras and microphones together, detect the active speaker, then apply microphone gain, limiting, noise reduction and Sharpen automatically." />
+							)}
 						</DialogDescription>
 						<TabsList className="justify-self-start">
 							<TabsTrigger value="podcast" disabled={ordering}>
