@@ -9,7 +9,12 @@ import {
 	type PodcastGroupAlignment,
 	type PodcastPrecisionEstimate,
 } from "opencut-wasm";
-import { mapConcurrent, runSyncWorker } from "./sync-jobs";
+import {
+	mapConcurrent,
+	readSyncEnvelope,
+	runSyncWorker,
+	syncReadConcurrency,
+} from "./sync-jobs";
 import type { OrderedPodcastColor } from "./order-timeline-color";
 
 export type OrderedAudioPlacement = {
@@ -77,20 +82,28 @@ export async function orderPodcastTimeline({
 			),
 		);
 
-	onProgress("Reading source audio…");
+	let completed = 0;
+	const reportRead = () =>
+		onProgress(
+			localizeClientMessage("Reading source audio ({v0}/{v1})…", {
+				v0: String(completed),
+				v1: String(assets.length),
+			}),
+		);
+	reportRead();
 	const envelopes = await mapConcurrent({
 		items: assets,
-		concurrency: 3,
+		concurrency: syncReadConcurrency(),
 		signal,
 		task: async (asset, taskSignal) => {
 			try {
-				return await runSyncWorker<Float32Array>({
-					message: {
-						type: "read",
-						asset: { file: asset.file, url: asset.url, name: asset.name },
-					},
-					signal: taskSignal,
-				});
+				const envelope = await readSyncEnvelope(
+					{ file: asset.file, url: asset.url, name: asset.name },
+					taskSignal,
+				);
+				completed++;
+				reportRead();
+				return envelope;
 			} catch (error) {
 				taskSignal.throwIfAborted();
 				throw new Error(
@@ -106,24 +119,39 @@ export async function orderPodcastTimeline({
 	const components = durations.map(() => -1);
 	const offsets = durations.map(() => 0);
 	let remaining = assets.map((_, index) => index);
+	let tryReferenceFirst = audio.length === 1 && videos.length > 1;
 	while (remaining.length) {
 		signal.throwIfAborted();
 		const searchable = remaining.filter(
 			(index) => envelopes[index]!.length >= 100,
 		);
-		const alignment =
-			searchable.length > 1
-				? await runSyncWorker<PodcastGroupAlignment>({
+		const maxLagSeconds = Math.max(
+			...searchable.map((index) => durations[index]!),
+		);
+		const directAlignment =
+			tryReferenceFirst && searchable.length === assets.length
+				? await runSyncWorker<PodcastGroupAlignment | null>({
 						message: {
-							type: "align",
-							envelopes: searchable.map((index) => envelopes[index]),
-							maxLagSeconds: Math.max(
-								...searchable.map((index) => durations[index]!),
-							),
+							type: "align-to-reference",
+							envelopes,
+							maxLagSeconds,
 						},
 						signal,
 					})
 				: undefined;
+		tryReferenceFirst = false;
+		const alignment =
+			directAlignment ??
+			(searchable.length > 1
+				? await runSyncWorker<PodcastGroupAlignment>({
+						message: {
+							type: "align",
+							envelopes: searchable.map((index) => envelopes[index]),
+							maxLagSeconds,
+						},
+						signal,
+					})
+				: undefined);
 		const slots = searchable.flatMap((_, slot) =>
 			alignment?.offsets[slot] != null &&
 			(alignment.confidence[slot] ?? 0) >= 0.24
@@ -171,10 +199,12 @@ export async function orderPodcastTimeline({
 			if (
 				precise.drifting.length ||
 				precise.offsets.some((offset) => offset == null)
-			)
+			) {
+				if (directAlignment) continue;
 				throw new Error(
 					"Some sources have inconsistent timing. Check the selected recordings and try again.",
 				);
+			}
 			matched.forEach((index, slot) => {
 				components[index] = component;
 				offsets[index] = precise.offsets[slot]!;

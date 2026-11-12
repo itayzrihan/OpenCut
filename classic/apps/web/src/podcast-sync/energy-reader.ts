@@ -1,4 +1,9 @@
-import { ALL_FORMATS, AudioSampleSink, Input } from "mediabunny";
+import {
+	ALL_FORMATS,
+	AudioSampleSink,
+	Input,
+	type AudioSample,
+} from "mediabunny";
 import { createMediaSource, type BrowserMediaSource } from "@/media/source";
 const PODCAST_SOURCE_CACHE_BYTES = 8 * 1024 * 1024;
 export async function readEnergyEnvelope({
@@ -37,31 +42,6 @@ export async function readEnergyEnvelope({
 		}
 
 		const sink = new AudioSampleSink(audioTrack);
-		async function* buffers() {
-			for await (const sample of sink.samples(startSeconds)) {
-				try {
-					const channels = Array.from(
-						{ length: Math.min(2, sample.numberOfChannels) },
-						(_, planeIndex) => {
-							const data = new Float32Array(sample.numberOfFrames);
-							sample.copyTo(data, { planeIndex, format: "f32-planar" });
-							return data;
-						},
-					);
-					yield {
-						timestamp: sample.timestamp,
-						buffer: {
-							sampleRate: sample.sampleRate,
-							length: sample.numberOfFrames,
-							numberOfChannels: channels.length,
-							getChannelData: (channel: number) => channels[channel]!,
-						},
-					};
-				} finally {
-					sample.close();
-				}
-			}
-		}
 		const sums: number[] = [];
 		const counts: number[] = [];
 		const endSeconds =
@@ -70,68 +50,74 @@ export async function readEnergyEnvelope({
 				: Number.POSITIVE_INFINITY;
 		let fallbackTimestamp = startSeconds;
 
-		for await (const { buffer, timestamp } of buffers()) {
-			signal?.throwIfAborted();
-			const sampleRate = buffer.sampleRate;
-			const chunkTimestamp =
-				typeof timestamp === "number" && Number.isFinite(timestamp)
-					? timestamp
+		let firstPlane = new Float32Array(0);
+		let secondPlane = new Float32Array(0);
+
+		for await (const sample of sink.samples(startSeconds, endSeconds)) {
+			try {
+				signal?.throwIfAborted();
+				const sampleRate = sample.sampleRate;
+				const chunkTimestamp = Number.isFinite(sample.timestamp)
+					? sample.timestamp
 					: fallbackTimestamp;
-			fallbackTimestamp = chunkTimestamp + buffer.length / sampleRate;
+				fallbackTimestamp = chunkTimestamp + sample.numberOfFrames / sampleRate;
 
-			if (chunkTimestamp >= endSeconds) break;
+				if (chunkTimestamp >= endSeconds) break;
 
-			const firstSample = Math.max(
-				0,
-				Math.floor((startSeconds - chunkTimestamp) * sampleRate),
-			);
-			const lastSampleExclusive = Math.min(
-				buffer.length,
-				Number.isFinite(endSeconds)
-					? Math.ceil((endSeconds - chunkTimestamp) * sampleRate)
-					: buffer.length,
-			);
-			if (lastSampleExclusive <= firstSample) continue;
-
-			const channelCount = Math.max(1, Math.min(2, buffer.numberOfChannels));
-			const channels = Array.from({ length: channelCount }, (_, channel) =>
-				buffer.getChannelData(channel),
-			);
-
-			let sampleStart = firstSample;
-			while (sampleStart < lastSampleExclusive) {
-				const localStart = Math.max(
+				const firstSample = Math.max(
 					0,
-					chunkTimestamp + sampleStart / sampleRate - startSeconds,
+					Math.floor((startSeconds - chunkTimestamp) * sampleRate),
 				);
-				const windowIndex = Math.floor(localStart / windowSeconds);
-				if (windowIndex >= 3_600_000)
-					throw new Error(
-						"Recording exceeds the ten-hour synchronization limit",
+				const lastSampleExclusive = Math.min(
+					sample.numberOfFrames,
+					Number.isFinite(endSeconds)
+						? Math.ceil((endSeconds - chunkTimestamp) * sampleRate)
+						: sample.numberOfFrames,
+				);
+				if (lastSampleExclusive <= firstSample) continue;
+
+				const first = copyPlane(0, sample, firstPlane);
+				firstPlane = first;
+				const second =
+					sample.numberOfChannels > 1
+						? copyPlane(1, sample, secondPlane)
+						: undefined;
+				if (second) secondPlane = second;
+
+				let sampleStart = firstSample;
+				while (sampleStart < lastSampleExclusive) {
+					const localStart = Math.max(
+						0,
+						chunkTimestamp + sampleStart / sampleRate - startSeconds,
 					);
-				const windowEndSeconds =
-					startSeconds + (windowIndex + 1) * windowSeconds;
-				const sampleEnd = Math.min(
-					lastSampleExclusive,
-					Math.max(
-						sampleStart + 1,
-						Math.ceil((windowEndSeconds - chunkTimestamp) * sampleRate),
-					),
-				);
+					const windowIndex = Math.floor(localStart / windowSeconds);
+					if (windowIndex >= 3_600_000)
+						throw new Error(
+							"Recording exceeds the ten-hour synchronization limit",
+						);
+					const windowEndSeconds =
+						startSeconds + (windowIndex + 1) * windowSeconds;
+					const sampleEnd = Math.min(
+						lastSampleExclusive,
+						Math.max(
+							sampleStart + 1,
+							Math.ceil((windowEndSeconds - chunkTimestamp) * sampleRate),
+						),
+					);
 
-				let sum = 0;
-				let count = 0;
-				for (let i = sampleStart; i < sampleEnd; i++) {
-					let mono = 0;
-					for (const data of channels) mono += data[i] ?? 0;
-					mono /= channelCount;
-					sum += sampleMode === "waveform" ? mono : mono * mono;
-					count++;
+					let sum = 0;
+					for (let i = sampleStart; i < sampleEnd; i++) {
+						const mono = second ? (first[i]! + second[i]!) * 0.5 : first[i]!;
+						sum += sampleMode === "waveform" ? mono : mono * mono;
+					}
+
+					sums[windowIndex] = (sums[windowIndex] ?? 0) + sum;
+					counts[windowIndex] =
+						(counts[windowIndex] ?? 0) + sampleEnd - sampleStart;
+					sampleStart = sampleEnd;
 				}
-
-				sums[windowIndex] = (sums[windowIndex] ?? 0) + sum;
-				counts[windowIndex] = (counts[windowIndex] ?? 0) + count;
-				sampleStart = sampleEnd;
+			} finally {
+				sample.close();
 			}
 		}
 
@@ -154,4 +140,17 @@ export async function readEnergyEnvelope({
 		signal?.removeEventListener("abort", abort);
 		input.dispose();
 	}
+}
+
+function copyPlane(
+	planeIndex: number,
+	sample: AudioSample,
+	scratch: Float32Array<ArrayBuffer>,
+) {
+	const data =
+		scratch.length >= sample.numberOfFrames
+			? scratch
+			: new Float32Array(sample.numberOfFrames);
+	sample.copyTo(data, { planeIndex, format: "f32-planar" });
+	return data;
 }

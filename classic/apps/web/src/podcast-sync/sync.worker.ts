@@ -1,3 +1,4 @@
+import type { PodcastGroupAlignment } from "opencut-wasm";
 import type { PodcastSyncSettings } from "./engine";
 import { readEnergyEnvelope } from "./energy-reader";
 import type { BrowserMediaSource } from "@/media/source";
@@ -17,7 +18,11 @@ type Request =
 			target: BrowserMediaSource & { name: string };
 			window: import("opencut-wasm").PodcastPrecisionWindow;
 	  }
-	| { type: "align"; envelopes: Float32Array[]; maxLagSeconds: number }
+	| {
+			type: "align" | "align-to-reference";
+			envelopes: Float32Array[];
+			maxLagSeconds: number;
+	  }
 	| {
 			type: "route";
 			advanced?: import("opencut-wasm").AdvancedPodcastRouting;
@@ -110,6 +115,33 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 				...message,
 				envelopes: message.envelopes.map((e) => Array.from(e)),
 			});
+			self.postMessage({ result });
+		} else if (message.type === "align-to-reference") {
+			const { estimatePodcastAlignment } = await import("opencut-wasm");
+			const [first, ...targets] = message.envelopes;
+			const reference = Array.from(first!);
+			const result: PodcastGroupAlignment = {
+				offsets: [0],
+				confidence: [1],
+				parents: [undefined],
+				referenceIndex: 0,
+			};
+			for (const target of targets) {
+				const estimate = estimatePodcastAlignment({
+					reference,
+					target: Array.from(target),
+					resolutionSeconds: 0.01,
+					maxLagSeconds: message.maxLagSeconds,
+				});
+				// Preserve the shared-clock search when a camera needs an indirect match.
+				if (estimate.confidence < 0.65) {
+					self.postMessage({ result: null });
+					return;
+				}
+				result.offsets.push(estimate.offsetSeconds);
+				result.confidence.push(estimate.confidence);
+				result.parents.push(0);
+			}
 			self.postMessage({ result });
 		} else {
 			const { alignPodcastSources } = await import("opencut-wasm");

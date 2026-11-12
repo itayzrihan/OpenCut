@@ -1,3 +1,57 @@
+import type { BrowserMediaSource } from "@/media/source";
+
+const MAX_CACHED_ENVELOPE_BYTES = 64 * 1024 * 1024;
+const MAX_CACHED_ENVELOPES = 64;
+const fileKeys = new WeakMap<Blob, symbol>();
+const envelopeCache = new Map<symbol, Float32Array>();
+let cachedEnvelopeBytes = 0;
+
+export function syncReadConcurrency() {
+	return Math.min(
+		4,
+		Math.max(2, Math.floor((navigator.hardwareConcurrency || 4) / 2)),
+	);
+}
+
+export async function readSyncEnvelope(
+	asset: BrowserMediaSource & { name: string },
+	signal: AbortSignal,
+) {
+	signal.throwIfAborted();
+	// A different File object is a different source, even after relinking to the same name.
+	const file = asset.file;
+	const key = file ? (fileKeys.get(file) ?? Symbol()) : undefined;
+	if (file && key) fileKeys.set(file, key);
+	const cached = key && envelopeCache.get(key);
+	if (key && cached) {
+		envelopeCache.delete(key);
+		envelopeCache.set(key, cached);
+		return cached;
+	}
+	const envelope = await runSyncWorker<Float32Array>({
+		message: { type: "read", asset },
+		signal,
+	});
+	signal.throwIfAborted();
+	if (
+		key &&
+		!envelopeCache.has(key) &&
+		envelope.byteLength <= MAX_CACHED_ENVELOPE_BYTES
+	) {
+		while (
+			envelopeCache.size >= MAX_CACHED_ENVELOPES ||
+			cachedEnvelopeBytes + envelope.byteLength > MAX_CACHED_ENVELOPE_BYTES
+		) {
+			const oldest = envelopeCache.keys().next().value!;
+			cachedEnvelopeBytes -= envelopeCache.get(oldest)!.byteLength;
+			envelopeCache.delete(oldest);
+		}
+		envelopeCache.set(key, envelope);
+		cachedEnvelopeBytes += envelope.byteLength;
+	}
+	return envelope;
+}
+
 // Host scheduling only. Signal estimation and common-clock solving live in Rust.
 export async function mapConcurrent<T, R>({
 	items,
