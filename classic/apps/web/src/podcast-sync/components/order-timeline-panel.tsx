@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { savedPodcastAnchors } from "../saved-sync-anchors";
 import { useEditor, useEditorMedia } from "@/editor/use-editor";
 import {
 	Message as UiMessage,
@@ -238,6 +239,14 @@ export function OrderTimelinePanel({
 					...item,
 					asset: sources.get(item.asset.id)!,
 				})),
+				known:
+					selectedAudio.length === 1
+						? savedPodcastAnchors({
+								assets,
+								referenceId: selectedAudio[0]!.asset.id,
+								videoIds: new Set(selectedVideos.map(({ asset }) => asset.id)),
+							})
+						: undefined,
 				name: name.trim() || localizeClientMessage("Ordered podcast"),
 				onProgress: setProgress,
 				signal: abort.signal,

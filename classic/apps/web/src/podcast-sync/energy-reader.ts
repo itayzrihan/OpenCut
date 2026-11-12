@@ -1,3 +1,4 @@
+import { readNativeSyncAudio } from "./native-audio";
 import {
 	ALL_FORMATS,
 	AudioSampleSink,
@@ -22,6 +23,15 @@ export async function readEnergyEnvelope({
 	signal?: AbortSignal;
 }): Promise<Float32Array> {
 	signal?.throwIfAborted();
+	const native = await readNativeSyncAudio({
+		asset,
+		startSeconds,
+		durationSeconds,
+		waveform: sampleMode === "waveform",
+		signal,
+	});
+	signal?.throwIfAborted();
+	if (native) return native;
 	const input = new Input({
 		source: createMediaSource({
 			...asset,

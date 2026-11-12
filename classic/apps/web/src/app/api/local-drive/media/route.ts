@@ -3,6 +3,7 @@ import { withProjectWriteRequest } from "@/editor-agent/server/project-write";
 /* eslint-disable opencut/prefer-object-params -- HTTP range helpers mirror protocol parameters. */
 import { NextResponse } from "next/server";
 import { createCancellationSafeFileStream } from "@/services/local-drive/file-stream";
+import { serveSyncAudio } from "@/services/local-drive/sync-audio";
 import { mediaRangeEnd } from "@/services/local-drive/media-range";
 import {
 	assertLocalDriveRequest,
@@ -44,6 +45,16 @@ async function serve(request: Request, includeBody: boolean) {
 	const mediaId = required(url.searchParams, "id");
 	const file = await getMediaFile(projectId, mediaId);
 	if (!file) return new NextResponse(null, { status: 404 });
+	if (includeBody && url.searchParams.has("syncAudio")) {
+		try {
+			return await serveSyncAudio({ request, source: file, params: url.searchParams });
+		} catch {
+			return new Response(null, {
+				status: 503,
+				headers: { "Cache-Control": "private, no-store" },
+			});
+		}
+	}
 
 	const range = parseRange(request.headers.get("range"), file.stat.size);
 	if (range?.invalid) {

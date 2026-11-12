@@ -28,12 +28,14 @@ export type OrderedAudioPlacement = {
 export async function orderPodcastTimeline({
 	audio,
 	videos,
+	known = new Map(),
 	name,
 	signal,
 	onProgress,
 }: {
 	audio: Array<{ asset: MediaAsset; gap: number }>;
 	videos: Array<{ asset: MediaAsset; angle: number }>;
+	known?: ReadonlyMap<string, number>;
 	name: string;
 	signal: AbortSignal;
 	onProgress: (message: string) => void;
@@ -87,7 +89,8 @@ export async function orderPodcastTimeline({
 		audio.length === 1
 			? await tryLongTimelineSync({
 					reference: audio[0]!.asset,
-					videos: videos.map(({ asset }) => asset),
+					videos,
+					known,
 					signal,
 					onProgress,
 				})

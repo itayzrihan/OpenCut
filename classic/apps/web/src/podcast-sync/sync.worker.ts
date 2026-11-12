@@ -1,3 +1,11 @@
+import {
+	AudioLandmarks,
+	buildLandmarkIndex,
+	rankLandmarkOffsets,
+} from "./audio-landmarks";
+import { readNativeSyncAudio } from "./native-audio";
+import { ALL_FORMATS, Input } from "mediabunny";
+import { createMediaSource } from "@/media/source";
 import type { PodcastGroupAlignment } from "opencut-wasm";
 import type { PodcastSyncSettings } from "./engine";
 import { readPcm16Envelope } from "./pcm16-envelope";
@@ -8,21 +16,34 @@ type Segment = {
 	start: number;
 	duration: number;
 };
-type TimedEnvelope = { startSeconds: number; samples: Float32Array };
 
 type Request =
+	| {
+			type: "fingerprint";
+			asset: BrowserMediaSource & { name: string };
+			start: number;
+			length: number;
+			full?: boolean;
+	  }
+	| {
+			type: "rank-landmarks";
+			reference: Float32Array;
+			probes: { at: number; landmarks: Float32Array }[];
+	  }
+	| { type: "capture-time"; asset: BrowserMediaSource }
+	| {
+			type: "independent-probes";
+			reference: Float32Array;
+			probes: { at: number; samples: Float32Array }[];
+			origin: number;
+			full?: boolean;
+	  }
 	| { type: "color"; asset: BrowserMediaSource; duration: number }
 	| {
 			type: "read";
 			asset: BrowserMediaSource & { name: string };
 			range?: { startSeconds: number; durationSeconds: number };
 			preferPcm?: boolean;
-	  }
-	| {
-			type: "probe-offsets";
-			reference: Float32Array;
-			probes: TimedEnvelope[][];
-			maxLagSeconds: number;
 	  }
 	| {
 			type: "precision";
@@ -50,7 +71,68 @@ type Request =
 self.onmessage = async (event: MessageEvent<Request>) => {
 	try {
 		const message = event.data;
-		if (message.type === "read") {
+		if (message.type === "fingerprint") {
+			const { asset, start, length, full } = message;
+			const native = await readNativeSyncAudio({
+				asset,
+				fingerprint: true,
+				startSeconds: start,
+				durationSeconds: full ? undefined : length,
+			});
+			const builder = native ? null : new AudioLandmarks();
+			if (builder) {
+				for (let at = 0; at < length; at += 60) {
+					const pcm = await readEnergyEnvelope({
+						asset,
+						startSeconds: start + at,
+						durationSeconds: Math.min(60, length - at),
+						windowSeconds: 1 / 16000,
+						sampleMode: "waveform",
+					});
+					for (const sample of pcm) builder.push(sample);
+				}
+			}
+			const result = native ?? builder!.finish();
+			self.postMessage({ result }, { transfer: [result.buffer] });
+		} else if (message.type === "rank-landmarks") {
+			self.postMessage({
+				result: rankLandmarkOffsets({
+					index: buildLandmarkIndex(message.reference),
+					probes: message.probes,
+				}),
+			});
+		} else if (message.type === "capture-time") {
+			const input = new Input({
+				formats: ALL_FORMATS,
+				source: createMediaSource(message.asset),
+			});
+			try {
+				const time = (await input.getMetadataTags()).date?.getTime();
+				self.postMessage({ result: Number.isFinite(time) ? time : null });
+			} finally {
+				input.dispose();
+			}
+		} else if (message.type === "independent-probes") {
+			const { estimatePodcastAlignment } = await import("opencut-wasm");
+			const reference = Array.from(message.reference);
+			const result = message.probes.map(({ at, samples }) => {
+				const estimate = estimatePodcastAlignment({
+					reference,
+					target: Array.from(samples),
+					resolutionSeconds: 0.01,
+					maxLagSeconds: reference.length / 100,
+				});
+				return {
+					at,
+					offset: message.origin + estimate.offsetSeconds - at,
+					confidence:
+						message.full || estimate.overlapSeconds >= samples.length * 0.006
+							? estimate.confidence
+							: 0,
+				};
+			});
+			self.postMessage({ result });
+		} else if (message.type === "read") {
 			const { asset, range, preferPcm } = message;
 			const pcm =
 				preferPcm && asset.file && range
@@ -136,46 +218,6 @@ self.onmessage = async (event: MessageEvent<Request>) => {
 			const result = analyzePodcastMulticam({
 				...message,
 				envelopes: message.envelopes.map((e) => Array.from(e)),
-			});
-			self.postMessage({ result });
-		} else if (message.type === "probe-offsets") {
-			const { estimatePodcastAlignment } = await import("opencut-wasm");
-			const reference = Array.from(message.reference);
-			const result = message.probes.map((probes) => {
-				if (probes.length === 0) return null;
-				const offsets: number[] = [];
-				for (const { startSeconds, samples } of probes) {
-					// The first probe searches the whole clock. Later probes seek
-					// independently in a small neighborhood of that predicted lag.
-					const prediction = offsets[0];
-					const start =
-						prediction == null
-							? 0
-							: Math.max(
-									0,
-									Math.round((prediction + startSeconds) * 100) - 200,
-								);
-					const end =
-						prediction == null
-							? reference.length
-							: start + samples.length + 400;
-					const estimate = estimatePodcastAlignment({
-						reference:
-							prediction == null ? reference : reference.slice(start, end),
-						target: Array.from(samples),
-						resolutionSeconds: 0.01,
-						maxLagSeconds: prediction == null ? message.maxLagSeconds : 4,
-					});
-					const minimumConfidence = probes.length === 1 ? 0.65 : 0.55;
-					if (estimate.confidence < minimumConfidence) return null;
-					offsets.push(estimate.offsetSeconds + start / 100 - startSeconds);
-				}
-				// Independent source regions must agree before a sampled offset can
-				// be used if fine waveform verification finds too little evidence.
-				if (Math.max(...offsets) - Math.min(...offsets) > 0.03) return null;
-				return (
-					offsets.reduce((sum, offset) => sum + offset, 0) / offsets.length
-				);
 			});
 			self.postMessage({ result });
 		} else if (message.type === "align-to-reference") {
