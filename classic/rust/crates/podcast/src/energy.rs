@@ -15,6 +15,8 @@ pub struct AnalyzePodcastOptions {
     #[serde(default)]
     pub camera_windows: Vec<PodcastCameraWindow>,
     #[serde(default)]
+    pub master_microphone_id: Option<String>,
+    #[serde(default)]
     pub advanced: Option<AdvancedPodcastRouting>,
 }
 fn percentile(values: &[f32], p: f64) -> f32 {
@@ -111,10 +113,15 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
             .collect::<std::collections::HashSet<_>>()
             .len()
             != o.camera_windows.len()
+        || o.master_microphone_id.as_ref().is_some_and(|id| {
+            o.advanced
+                .as_ref()
+                .is_none_or(|a| !a.microphone_ids.contains(id))
+        })
         || o.envelopes.len() != o.advanced.as_ref().map_or(n, |a| a.microphone_ids.len())
-        || o.advanced
-            .as_ref()
-            .is_some_and(|a| !a.validate(&o.channel_ids))
+        || o.advanced.as_ref().is_some_and(|a| {
+            !a.validate_with_master(&o.channel_ids, o.master_microphone_id.as_deref())
+        })
         || !o.duration.is_finite()
         || !(0.0..=36000.0).contains(&o.duration)
     {
@@ -144,7 +151,12 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
             },
             &mapping.angle_groups,
         );
-        return constrain_camera_cuts(cuts, &o.camera_windows, o.duration);
+        return constrain_camera_cuts_with_gaps(
+            cuts,
+            &o.camera_windows,
+            o.duration,
+            o.master_microphone_id.is_some(),
+        );
     }
     let mut channels: Vec<_> = o
         .envelopes
@@ -213,7 +225,12 @@ pub fn analyze_podcast_multicam(o: AnalyzePodcastOptions) -> Vec<PodcastMulticam
         duration: o.duration,
         settings: o.settings,
     });
-    constrain_camera_cuts(cuts, &o.camera_windows, o.duration)
+    constrain_camera_cuts_with_gaps(
+        cuts,
+        &o.camera_windows,
+        o.duration,
+        o.master_microphone_id.is_some(),
+    )
 }
 #[cfg(test)]
 mod tests {

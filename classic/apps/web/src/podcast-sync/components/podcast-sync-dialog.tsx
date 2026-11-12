@@ -230,6 +230,7 @@ export function PodcastSyncDialog({
 		MAX_CHANNELS,
 		Math.max(1, videoAssets.length || 2),
 	);
+	const [masterMicrophoneId, setMasterMicrophoneId] = useState("");
 	const [mode, setMode] = useState<WizardMode>("quick");
 	const [step, setStep] = useState<WizardStep>("media");
 	const [channels, setChannels] = useState<ChannelDraft[]>(() =>
@@ -378,6 +379,13 @@ export function PodcastSyncDialog({
 		);
 	};
 
+	const effectiveMaster = recordingGroups.microphones.find(
+		(mic) => mic.id === masterMicrophoneId,
+	)?.id;
+	const routedMics = (channel: ChannelDraft) =>
+		recordingGroups.microphones.length === 1
+			? [recordingGroups.microphones[0]!.id]
+			: (channel.microphoneIds ?? []);
 	const resolveChannels = (): PodcastSyncChannel[] | null => {
 		if (!activeProject) {
 			toast.error("No active project");
@@ -389,9 +397,11 @@ export function PodcastSyncDialog({
 		if (
 			mode === "advanced" &&
 			(recordingGroups.issues.length ||
-				channels.some((c) => !c.microphoneIds?.length) ||
+				channels.some((c) => !routedMics(c).length) ||
 				recordingGroups.microphones.some(
-					(m) => !channels.some((c) => c.microphoneIds?.includes(m.id)),
+					(m) =>
+						m.id !== effectiveMaster &&
+						!channels.some((c) => routedMics(c).includes(m.id)),
 				))
 		) {
 			toast.error(
@@ -419,7 +429,7 @@ export function PodcastSyncDialog({
 			const selectedMic =
 				mode === "advanced"
 					? recordingGroups.microphones.find((m) =>
-							draft.microphoneIds?.includes(m.id),
+							routedMics(draft).includes(m.id),
 						)
 					: undefined;
 			const audio = assetById.get(
@@ -568,6 +578,7 @@ export function PodcastSyncDialog({
 					mode === "advanced"
 						? {
 								microphones: recordingGroups.microphones,
+								masterMicrophoneId: effectiveMaster,
 								routing: {
 									microphoneIds: recordingGroups.microphones.map((m) => m.id),
 									angleGroups: angleDrafts.map((g, i) => ({
@@ -581,7 +592,7 @@ export function PodcastSyncDialog({
 									})),
 									cameras: channels.map((c) => ({
 										channelId: c.id,
-										microphoneIds: c.microphoneIds ?? [],
+										microphoneIds: routedMics(c),
 									})),
 								},
 								assets: editor.media.getAssets(),
@@ -823,6 +834,39 @@ export function PodcastSyncDialog({
 								setSequenceCreated(false);
 							}}
 						/>
+					) : null}
+					{step === "media" && mode === "advanced" ? (
+						<label className="flex flex-col gap-1 text-sm">
+							<UiMessage text="Master audio recording" />
+							<select
+								className="rounded border bg-background p-2"
+								value={
+									recordingGroups.microphones.some(
+										(mic) => mic.id === masterMicrophoneId,
+									)
+										? masterMicrophoneId
+										: ""
+								}
+								onChange={(event) => {
+									setMasterMicrophoneId(event.target.value);
+									setAlignment(null);
+									setResult(null);
+									setSequenceCreated(false);
+								}}
+							>
+								<option value="">
+									{localizeClientMessage("Use camera timeline")}
+								</option>
+								{recordingGroups.microphones.map((mic) => (
+									<option key={mic.id} value={mic.id}>
+										{mic.name}
+									</option>
+								))}
+							</select>
+							<span className="text-muted-foreground">
+								<UiMessage text="Choose the continuous recording to keep its full audio and leave picture gaps where no camera was recording." />
+							</span>
+						</label>
 					) : null}
 					{step === "media" && mode === "advanced" ? (
 						<AdvancedMicrophoneFields
@@ -1691,13 +1735,15 @@ function CutTimeline({
 				{result.cuts.map((cut, index) => (
 					<div
 						key={`${cut.timestamp}-${index}`}
-						title={`${cut.channelId} @ ${cut.timestamp.toFixed(1)}s (${cut.duration.toFixed(1)}s)`}
+						title={`${channels.find((channel) => channel.id === cut.channelId)?.name ?? localizeClientMessage("Audio only")} @ ${cut.timestamp.toFixed(1)}s (${cut.duration.toFixed(1)}s)`}
 						style={{
 							width: `${(cut.duration / result.duration) * 100}%`,
-							backgroundColor:
-								CHANNEL_COLORS[
-									(channelIndex.get(cut.channelId) ?? 0) % CHANNEL_COLORS.length
-								],
+							backgroundColor: channelIndex.has(cut.channelId)
+								? CHANNEL_COLORS[
+										(channelIndex.get(cut.channelId) ?? 0) %
+											CHANNEL_COLORS.length
+									]
+								: "transparent",
 						}}
 					/>
 				))}

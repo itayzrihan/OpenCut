@@ -71,7 +71,20 @@ async function fixture(count = 7) {
 		jobs.push(
 			await provider.prepare({
 				root,
-				raw: { ...input, prompt: `${input.prompt} ${i}` },
+				raw: {
+					...input,
+					prompt: `${input.prompt} ${i}`,
+					...(count > 32 && {
+						chapter: {
+							planId: "long-film",
+							planVersion: 1,
+							chapterId: `chapter-${i + 1}`,
+							index: i,
+							total: count,
+							title: `Chapter ${i + 1}`,
+						},
+					}),
+				},
 				referenceUrl: async () => "",
 				net,
 			}),
@@ -353,4 +366,12 @@ test("live image catalog supports a selected image model and one PIN for its bat
 		}),
 	).rejects.toThrow("Selected image model");
 	expect(paid).toBe(2);
+});
+
+test("a long programmatic film prepares one frozen batch past chapter 32 without submitting", async () => {
+	const { batch, jobs, stats } = await fixture(60);
+	expect(batch.status).toBe("review");
+	expect(batch.jobs).toHaveLength(60);
+	expect(jobs[59]?.chapter).toMatchObject({ index: 59, total: 60 });
+	expect(stats().posts).toBe(0);
 });

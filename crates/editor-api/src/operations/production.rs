@@ -8,6 +8,8 @@ struct ReadInput {
     project_id: String,
     #[serde(default)]
     expected_revision: Option<u64>,
+    #[serde(default)]
+    script_id: Option<String>,
 }
 #[derive(Debug, Serialize, JsonSchema)]
 #[serde(rename_all = "camelCase")]
@@ -32,7 +34,31 @@ struct EditInput {
     deny_unknown_fields
 )]
 enum Change {
+    CreateScriptAsset {
+        script_id: String,
+        title: String,
+        #[serde(default)]
+        rows: Vec<ScriptContent>,
+    },
+    RenameScriptAsset {
+        script_id: String,
+        expected_script_version: u32,
+        title: String,
+    },
+    RestoreScriptAsset {
+        script_id: String,
+        expected_script_version: u32,
+        version: u32,
+    },
+    SplitScriptAsset {
+        script_id: String,
+        expected_script_version: u32,
+    },
     ImportScript {
+        #[serde(default)]
+        script_id: Option<String>,
+        #[serde(default)]
+        title: Option<String>,
         row_id_prefix: String,
         text: String,
         source_language: String,
@@ -41,6 +67,8 @@ enum Change {
         replace: bool,
     },
     CreateScriptRow {
+        #[serde(default)]
+        script_id: Option<String>,
         row_id: String,
         content: ScriptContent,
     },
@@ -109,20 +137,215 @@ fn invalid(error: impl ToString) -> CapabilityError {
     CapabilityError::InvalidInput(error.to_string())
 }
 fn read(project: &Project) -> Result<ProductionWorkspace, CapabilityError> {
-    serde_json::from_value(
+    let mut workspace: ProductionWorkspace = serde_json::from_value(
         project
             .extensions
             .get(KEY)
             .cloned()
             .unwrap_or_else(|| serde_json::json!({})),
     )
-    .map_err(invalid)
+    .map_err(invalid)?;
+    workspace.migrate_scripts();
+    Ok(workspace)
 }
+
+fn add_script_row(
+    workspace: &mut ProductionWorkspace,
+    id: String,
+    content: ScriptContent,
+    now: &str,
+) -> Result<String, CapabilityError> {
+    identifier(&id).map_err(invalid)?;
+    if workspace.script_rows.iter().any(|r| r.id == id) {
+        return Err(CapabilityError::Conflict(
+            "Script row ID already exists".into(),
+        ));
+    }
+    workspace.script_rows.push(ScriptRow {
+        id: id.clone(),
+        current_version: 1,
+        versions: vec![ScriptVersion {
+            version: 1,
+            created_at: now.into(),
+            change_note: "Created row".into(),
+            content,
+        }],
+    });
+    Ok(id)
+}
+
+fn script_index(
+    workspace: &ProductionWorkspace,
+    id: &str,
+    expected: Option<u32>,
+) -> Result<usize, CapabilityError> {
+    let index = workspace
+        .scripts
+        .iter()
+        .position(|script| script.id == id)
+        .ok_or_else(|| invalid("Script asset not found"))?;
+    if expected.is_some_and(|version| {
+        workspace.scripts[index].versions.last().map(|v| v.version) != Some(version)
+    }) {
+        return Err(CapabilityError::Conflict(
+            "Script asset changed; read its current version".into(),
+        ));
+    }
+    Ok(index)
+}
+
+fn add_script(
+    workspace: &mut ProductionWorkspace,
+    id: String,
+    title: String,
+    rows: Vec<ScriptContent>,
+    parent: Option<String>,
+    now: &str,
+) -> Result<(), CapabilityError> {
+    identifier(&id).map_err(invalid)?;
+    if workspace.scripts.iter().any(|script| script.id == id) {
+        return Err(CapabilityError::Conflict(
+            "Script asset already exists; edit the existing asset".into(),
+        ));
+    }
+    let row_ids = rows
+        .into_iter()
+        .enumerate()
+        .map(|(i, content)| add_script_row(workspace, format!("{id}-{}", i + 1), content, now))
+        .collect::<Result<_, _>>()?;
+    workspace
+        .scripts
+        .push(ScriptAsset::new(id, title, row_ids, parent));
+    Ok(())
+}
+
+fn split_script(
+    workspace: &mut ProductionWorkspace,
+    script_id: &str,
+    version: u32,
+    now: &str,
+) -> Result<(), CapabilityError> {
+    use crate::generative::chapters::split_text;
+    use sha2::{Digest, Sha256};
+    let script = &workspace.scripts[script_index(workspace, script_id, Some(version))?];
+    if script.parent_script_id.is_some()
+        || workspace
+            .scripts
+            .iter()
+            .any(|s| s.parent_script_id.as_deref() == Some(script_id))
+    {
+        return Err(invalid(
+            "This script already has segments or is itself a segment; edit the existing segment assets",
+        ));
+    }
+    let mut rows = workspace
+        .selected_script_rows(&[script_id.to_owned()])
+        .map_err(invalid)?;
+    rows.sort_by_key(|r| r.current().content.start_ms);
+    let origin = rows
+        .first()
+        .ok_or_else(|| invalid("Add script rows before splitting"))?
+        .current()
+        .content
+        .start_ms;
+    let end = rows
+        .iter()
+        .map(|r| r.current().content.end_ms)
+        .max()
+        .unwrap();
+    if end - origin > 600_000 {
+        return Err(invalid("Split a script of at most ten minutes"));
+    }
+    let windows = (origin..end)
+        .step_by(30_000)
+        .map(|start| (start, (start + 30_000).min(end)))
+        .collect::<Vec<_>>();
+    let mut segments = windows
+        .iter()
+        .map(|&(start_ms, end_ms)| ScriptContent {
+            start_ms,
+            end_ms,
+            source_language: "und".into(),
+            source_text: String::new(),
+            latin_transliteration: String::new(),
+            speaker: String::new(),
+            visual_description: String::new(),
+            timing_estimated: false,
+        })
+        .collect::<Vec<_>>();
+    for row in rows {
+        let c = &row.current().content;
+        let parts = windows
+            .iter()
+            .enumerate()
+            .filter_map(|(index, &(start, end))| {
+                let range = (start.max(c.start_ms), end.min(c.end_ms));
+                (range.0 < range.1).then_some((index, range))
+            })
+            .collect::<Vec<_>>();
+        let ranges = parts.iter().map(|(_, range)| *range).collect::<Vec<_>>();
+        let words = split_text(&c.source_text, &ranges, c.start_ms, c.end_ms);
+        let latin = split_text(&c.latin_transliteration, &ranges, c.start_ms, c.end_ms);
+        for (position, ((index, _), (spoken, transliteration))) in parts
+            .into_iter()
+            .zip(words.into_iter().zip(latin))
+            .enumerate()
+        {
+            let segment = &mut segments[index];
+            if segment.source_language == "und" {
+                segment.source_language = c.source_language.clone();
+            } else if segment.source_language != c.source_language {
+                segment.source_language = "mul".into();
+            }
+            if position == 0 && !segment.source_text.is_empty() && !spoken.is_empty() {
+                segment.source_text.push('\n');
+            }
+            segment.source_text.push_str(&spoken);
+            if position == 0
+                && !segment.latin_transliteration.is_empty()
+                && !transliteration.is_empty()
+            {
+                segment.latin_transliteration.push('\n');
+            }
+            segment.latin_transliteration.push_str(&transliteration);
+            if !c.speaker.is_empty() || !c.visual_description.is_empty() {
+                if !segment.visual_description.is_empty() {
+                    segment.visual_description.push('\n');
+                }
+                if !c.speaker.is_empty() {
+                    segment.visual_description.push_str(&c.speaker);
+                    segment.visual_description.push_str(": ");
+                }
+                segment.visual_description.push_str(&c.visual_description);
+            }
+            segment.timing_estimated |= c.timing_estimated || ranges.len() > 1;
+        }
+    }
+    let title: String = script.title.chars().take(36).collect();
+    let digest = format!("{:x}", Sha256::digest(script_id.as_bytes()));
+    for (i, segment) in segments.into_iter().enumerate() {
+        add_script(
+            workspace,
+            format!("segment-{}-{}", &digest[..24], i + 1),
+            format!("{title} · {:02}", i + 1),
+            vec![segment],
+            Some(script_id.into()),
+            now,
+        )?;
+    }
+    Ok(())
+}
+
 fn row<'a>(
     workspace: &'a mut ProductionWorkspace,
     id: &str,
     version: u32,
 ) -> Result<&'a mut ScriptRow, CapabilityError> {
+    if !workspace.is_active_script_row(id) {
+        return Err(invalid(
+            "Script row is archived; restore its script version first",
+        ));
+    }
     let row = workspace
         .script_rows
         .iter_mut()
@@ -187,7 +410,7 @@ pub(super) fn register_production(
         crate::CapabilityExecution::Immediate,
         "project.production.read",
         "Read the production script, reference board and analysis guide",
-        "Read the canonical production workspace and instructions. Script rows have stable IDs, original-language text, Latin transliteration, millisecond timing and immutable per-row revisions. Reference slots retain their image versions and separate current creative approval. Video-analysis observations identify reviewed ranges and actual artifact evidence; interpretations are not automatically verified. Never infer approval or paid authorization from a draft. Project/revision scoped, no IO.",
+        "Read the canonical production workspace and instructions. Optionally pass scriptId to read only one script and its history. Script rows have stable IDs, original-language text, Latin transliteration, millisecond timing and immutable per-row revisions. Reference slots retain their image versions and separate current creative approval. Video-analysis observations identify reviewed ranges and actual artifact evidence; interpretations are not automatically verified. Never infer approval or paid authorization from a draft. Project/revision scoped, no IO.",
         "production",
         AccessLevel::Read,
         false,
@@ -218,10 +441,24 @@ pub(super) fn register_production(
                     .project
                     .as_ref()
                     .ok_or_else(|| invalid("Open a project"))?;
+                let mut workspace = read(project)?;
+                if let Some(id) = input.script_id {
+                    let index = script_index(&workspace, &id, None)?;
+                    let selected = workspace.scripts.swap_remove(index);
+                    let rows = selected
+                        .versions
+                        .iter()
+                        .flat_map(|version| version.rows.iter().map(|r| &r.id))
+                        .collect::<std::collections::BTreeSet<_>>();
+                    workspace.script_rows.retain(|row| rows.contains(&row.id));
+                    workspace.scripts = vec![selected];
+                    workspace.reference_slots.clear();
+                    workspace.analyses.clear();
+                }
                 Ok(OperationSuccess::new(ReadOutput {
                     project_id: project.id.clone(),
                     revision: store.document.revision,
-                    workspace: read(project)?,
+                    workspace,
                     instructions: INSTRUCTIONS.into(),
                 }))
             }
@@ -233,7 +470,7 @@ pub(super) fn register_production(
         crate::CapabilityExecution::Immediate,
         "project.production.edit",
         "Edit a production script row, image slot or evidence report",
-        "Typed canonical production changes: import SRT or pasted lines; create/edit/restore/remove stable script rows; create/edit reference slots, add/select one image version and record creative approval; record evidence-backed video analysis. Every edit is scoped to project/expectedRevision, atomic, undoable, dry-run and registry-idempotency safe. Row/slot optimistic versions prevent overwriting concurrent drafts. Restoring a script version appends history; selecting/replacing an image clears approval and does not regenerate other slots. Reference files must already be canonical owned images. Evidence reports require real ArtifactStore IDs and reviewed ranges; no analysis or generation is fabricated by this operation. No paid calls, provider/file IO, approval of payment, or publication. Read project.production.read instructions first.",
+        "Typed canonical production changes: createScriptAsset creates an independent named asset; edit existing rows by stable rowId, add rows with scriptId, rename or restore an asset with expectedScriptVersion, and splitScriptAsset creates linked 30-second scripts for up to ten minutes. importScript supports legacy SRT/pasted lines; create/edit reference slots, add/select one image version and record creative approval; record evidence-backed video analysis. Every edit is scoped to project/expectedRevision, atomic, undoable, dry-run and registry-idempotency safe. Row/slot optimistic versions prevent overwriting concurrent drafts. Restoring a script version appends history; selecting/replacing an image clears approval and does not regenerate other slots. Reference files must already be canonical owned images. Evidence reports require real ArtifactStore IDs and reviewed ranges; no analysis or generation is fabricated by this operation. No paid calls, provider/file IO, approval of payment, or publication. Read project.production.read instructions first.",
         "production",
         AccessLevel::Write,
         false,
@@ -266,7 +503,90 @@ pub(super) fn register_production(
                         let mut workspace = read(project)?;
                         workspace.validate(project).map_err(invalid)?;
                         let changed_id = match input.change {
+                            Change::CreateScriptAsset {
+                                script_id,
+                                title,
+                                rows,
+                            } => {
+                                add_script(
+                                    &mut workspace,
+                                    script_id.clone(),
+                                    title,
+                                    rows,
+                                    None,
+                                    &now,
+                                )?;
+                                script_id
+                            }
+                            Change::RenameScriptAsset {
+                                script_id,
+                                expected_script_version,
+                                title,
+                            } => {
+                                let index = script_index(
+                                    &workspace,
+                                    &script_id,
+                                    Some(expected_script_version),
+                                )?;
+                                workspace.scripts[index].title = title;
+                                script_id
+                            }
+                            Change::RestoreScriptAsset {
+                                script_id,
+                                expected_script_version,
+                                version,
+                            } => {
+                                let index = script_index(
+                                    &workspace,
+                                    &script_id,
+                                    Some(expected_script_version),
+                                )?;
+                                let saved = workspace.scripts[index]
+                                    .versions
+                                    .iter()
+                                    .find(|v| v.version == version)
+                                    .cloned()
+                                    .ok_or_else(|| invalid("Script version not found"))?;
+                                for reference in &saved.rows {
+                                    let row = workspace
+                                        .script_rows
+                                        .iter_mut()
+                                        .find(|r| r.id == reference.id)
+                                        .ok_or_else(|| {
+                                            invalid("Historical script row not found")
+                                        })?;
+                                    let content = row.versions[(reference.version - 1) as usize]
+                                        .content
+                                        .clone();
+                                    if row.current().content != content {
+                                        revision(
+                                            row,
+                                            content,
+                                            format!("Restored script version {version}"),
+                                            &now,
+                                        )?;
+                                    }
+                                }
+                                workspace.scripts[index].title = saved.title;
+                                workspace.scripts[index].row_ids =
+                                    saved.rows.into_iter().map(|r| r.id).collect();
+                                script_id
+                            }
+                            Change::SplitScriptAsset {
+                                script_id,
+                                expected_script_version,
+                            } => {
+                                split_script(
+                                    &mut workspace,
+                                    &script_id,
+                                    expected_script_version,
+                                    &now,
+                                )?;
+                                script_id
+                            }
                             Change::ImportScript {
+                                script_id,
+                                title,
                                 row_id_prefix,
                                 text,
                                 source_language,
@@ -277,45 +597,85 @@ pub(super) fn register_production(
                                 let contents =
                                     parse_script(&text, &source_language, default_duration_ms)
                                         .map_err(invalid)?;
+                                let target = script_id.as_deref().unwrap_or(LEGACY_SCRIPT_ID);
+                                if !workspace.scripts.iter().any(|s| s.id == target) {
+                                    let label = match (title, script_id.as_ref()) {
+                                        (Some(title), _) => title,
+                                        (None, None) => "Existing script".into(),
+                                        (None, Some(_)) => {
+                                            return Err(invalid("Give the new script a title"));
+                                        }
+                                    };
+                                    identifier(target).map_err(invalid)?;
+                                    workspace.scripts.push(ScriptAsset::new(
+                                        target.into(),
+                                        label,
+                                        vec![],
+                                        None,
+                                    ));
+                                }
+                                let index = script_index(&workspace, target, None)?;
                                 if replace {
-                                    workspace.script_rows.clear();
+                                    workspace.scripts[index].row_ids.clear();
                                 }
                                 for (i, content) in contents.into_iter().enumerate() {
-                                    let id = format!("{row_id_prefix}-{}", i + 1);
-                                    if workspace.script_rows.iter().any(|r| r.id == id) {
-                                        return Err(CapabilityError::Conflict(
-                                            "Imported row IDs already exist".into(),
-                                        ));
-                                    }
-                                    workspace.script_rows.push(ScriptRow {
-                                        id,
-                                        current_version: 1,
-                                        versions: vec![ScriptVersion {
-                                            version: 1,
-                                            created_at: now.clone(),
-                                            change_note: "Imported script".into(),
-                                            content,
-                                        }],
-                                    });
+                                    let id = add_script_row(
+                                        &mut workspace,
+                                        format!("{row_id_prefix}-{}", i + 1),
+                                        content,
+                                        &now,
+                                    )?;
+                                    workspace.scripts[index].row_ids.push(id);
                                 }
                                 row_id_prefix
                             }
-                            Change::CreateScriptRow { row_id, content } => {
-                                if workspace.script_rows.iter().any(|r| r.id == row_id) {
-                                    return Err(CapabilityError::Conflict(
-                                        "Script row already exists".into(),
-                                    ));
-                                }
-                                workspace.script_rows.push(ScriptRow {
-                                    id: row_id.clone(),
-                                    current_version: 1,
-                                    versions: vec![ScriptVersion {
-                                        version: 1,
-                                        created_at: now.clone(),
-                                        change_note: "Created row".into(),
+                            Change::CreateScriptRow {
+                                script_id,
+                                row_id,
+                                content,
+                            } => {
+                                let script_id = match script_id {
+                                    Some(id) => id,
+                                    None if workspace.scripts.len() == 1 => {
+                                        workspace.scripts[0].id.clone()
+                                    }
+                                    None if workspace.scripts.is_empty() => {
+                                        workspace.scripts.push(ScriptAsset::new(
+                                            LEGACY_SCRIPT_ID.into(),
+                                            "Existing script".into(),
+                                            vec![],
+                                            None,
+                                        ));
+                                        LEGACY_SCRIPT_ID.into()
+                                    }
+                                    None => {
+                                        return Err(invalid(
+                                            "Choose a scriptId when the project has multiple scripts",
+                                        ));
+                                    }
+                                };
+                                let index = script_index(&workspace, &script_id, None)?;
+                                let restorable = !workspace.is_active_script_row(&row_id)
+                                    && workspace.scripts[index]
+                                        .versions
+                                        .iter()
+                                        .any(|version| version.rows.iter().any(|r| r.id == row_id));
+                                if restorable {
+                                    let row = workspace
+                                        .script_rows
+                                        .iter_mut()
+                                        .find(|r| r.id == row_id)
+                                        .ok_or_else(|| invalid("Archived script row is missing"))?;
+                                    revision(
+                                        row,
                                         content,
-                                    }],
-                                });
+                                        "Reintroduced archived row".into(),
+                                        &now,
+                                    )?;
+                                } else {
+                                    add_script_row(&mut workspace, row_id.clone(), content, &now)?;
+                                }
+                                workspace.scripts[index].row_ids.push(row_id.clone());
                                 row_id
                             }
                             Change::EditScriptRow {
@@ -356,7 +716,9 @@ pub(super) fn register_production(
                                 expected_row_version,
                             } => {
                                 row(&mut workspace, &row_id, expected_row_version)?;
-                                workspace.script_rows.retain(|r| r.id != row_id);
+                                for script in &mut workspace.scripts {
+                                    script.row_ids.retain(|id| id != &row_id);
+                                }
                                 row_id
                             }
                             Change::CreateReferenceSlot {
@@ -525,6 +887,7 @@ pub(super) fn register_production(
                                 analysis_id
                             }
                         };
+                        workspace.record_script_versions();
                         workspace.validate(project).map_err(invalid)?;
                         project.extensions.insert(
                             KEY.into(),
@@ -546,6 +909,8 @@ struct HandoffInput {
     expected_revision: u64,
     handoff_id: String,
     #[serde(default)]
+    script_ids: Vec<String>,
+    #[serde(default)]
     request: String,
     /// Omit to choose every currently approved slot. An empty list chooses none.
     #[serde(default)]
@@ -564,7 +929,7 @@ fn register_handoff(
         crate::CapabilityExecution::Immediate,
         "project.production.handoff",
         "Send the exact production script and approved references to Director",
-        "Atomically snapshot all current script rows with source-language text, Latin transliteration, timing, visuals and immutable version IDs into generative.productionHandoff. Copy source text to Director transcript and full structured instructions to direction. approvedSlotIds omitted selects all currently approved slots; explicit slots must still be selected and approved. Preserve every existing reference/version and storyboard. Duration is the latest script end in milliseconds; storyboardRecommended is optional guidance, never a prerequisite or paid action. Does not generate, approve payment or publish. Source changes invalidate captured chapter plans; create a new handoffId to send a revised script. Undo, dry-run, project revision and registry idempotency supported.",
+        "Atomically snapshot current rows of the selected scriptIds; omit scriptIds only when there is one script with source-language text, Latin transliteration, timing, visuals and immutable version IDs into generative.productionHandoff. Copy source text to Director transcript and full structured instructions to direction. approvedSlotIds omitted selects all currently approved slots; explicit slots must still be selected and approved. Preserve every existing reference/version and storyboard. Duration is the latest script end in milliseconds; storyboardRecommended is optional guidance, never a prerequisite or paid action. Does not generate, approve payment or publish. Source changes invalidate captured chapter plans; create a new handoffId to send a revised script. Undo, dry-run, project revision and registry idempotency supported.",
         "production",
         AccessLevel::Write,
         false,
@@ -586,7 +951,10 @@ fn register_handoff(
                         let project = project_mut(document)?;
                         let workspace = read(project)?;
                         workspace.validate(project).map_err(invalid)?;
-                        if workspace.script_rows.is_empty() {
+                        let script_rows = workspace
+                            .selected_script_rows(&input.script_ids)
+                            .map_err(invalid)?;
+                        if script_rows.is_empty() {
                             return Err(invalid("Add a script before sending it to Director"));
                         }
                         let mut director: crate::generative::GenerativeDocument =
@@ -651,8 +1019,7 @@ fn register_handoff(
                                 reference_id: image.reference_id.clone(),
                             });
                         }
-                        let rows: Vec<HandoffRow> = workspace
-                            .script_rows
+                        let rows: Vec<HandoffRow> = script_rows
                             .iter()
                             .map(|row| HandoffRow {
                                 row_id: row.id.clone(),

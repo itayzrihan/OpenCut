@@ -21,6 +21,7 @@ const PODCAST_SYNC_RESOLUTION_SECONDS = 0.01;
 
 const DEFAULT_MAX_LAG_SECONDS = 1200;
 export interface AdvancedPodcastPlan {
+	masterMicrophoneId?: string;
 	microphones: import("opencut-wasm").PodcastMicrophone[];
 	starts: Record<string, number>;
 	routing: import("opencut-wasm").AdvancedPodcastRouting;
@@ -258,7 +259,12 @@ export async function runPodcastAlignment({
 		message: {
 			type: "align",
 			envelopes,
-			maxLagSeconds: settings.maxLagSeconds || DEFAULT_MAX_LAG_SECONDS,
+			maxLagSeconds: advanced?.masterMicrophoneId
+				? Math.min(
+						36_000,
+						Math.max(...assets.map((asset) => asset.duration ?? 0)),
+					)
+				: settings.maxLagSeconds || DEFAULT_MAX_LAG_SECONDS,
 		},
 		signal,
 	});
@@ -348,17 +354,24 @@ export async function runPodcastAlignment({
 		start: offsets.get(a.id)!,
 		bindingRevision: a.bindingRevision ?? 0,
 	}));
-	const clock = advanced
-		? advancedPodcastCameraClock({
-				sources: cameraSources,
-				microphones: advanced.microphones.map((m) => ({
-					id: m.id,
-					duration: m.duration,
-					start: offsets.get(m.id)!,
-					bindingRevision: 0,
-				})),
-			})
-		: podcastCameraClock({ sources: cameraSources });
+	const master = advanced?.masterMicrophoneId
+		? advanced.microphones.find((mic) => mic.id === advanced.masterMicrophoneId)
+		: undefined;
+	if (advanced?.masterMicrophoneId && !master)
+		throw new Error("Select an available master recording");
+	const clock = master
+		? { origin: offsets.get(master.id)!, duration: master.duration }
+		: advanced
+			? advancedPodcastCameraClock({
+					sources: cameraSources,
+					microphones: advanced.microphones.map((m) => ({
+						id: m.id,
+						duration: m.duration,
+						start: offsets.get(m.id)!,
+						bindingRevision: 0,
+					})),
+				})
+			: podcastCameraClock({ sources: cameraSources });
 	if (!clock) throw new Error("Cannot determine the longest camera recording");
 	const { origin, duration } = clock;
 	const videoOffsets: Record<string, number> = {};
@@ -409,6 +422,7 @@ export async function runPodcastAlignment({
 		advanced: advanced
 			? {
 					microphones: advanced.microphones,
+					...(master && { masterMicrophoneId: master.id }),
 					routing: advanced.routing,
 					starts: Object.fromEntries(
 						advanced.microphones.map((m) => [
@@ -528,6 +542,7 @@ export async function runPodcastMulticam({
 			advanced: alignment.advanced?.routing,
 			channelIds,
 			cameraWindows: alignment.cameraWindows,
+			masterMicrophoneId: alignment.advanced?.masterMicrophoneId,
 			duration,
 			settings,
 		},

@@ -5,6 +5,7 @@ import { Message } from "@/i18n/message";
 import { Button } from "@/components/ui/button";
 import type { EditorCore } from "@/core";
 import { useEditor } from "@/editor/use-editor";
+import { readProduction } from "@/production-studio/client";
 import { useInterfaceLanguage } from "@/i18n/provider";
 import { api, canonical, scope } from "../client";
 import type {
@@ -36,6 +37,17 @@ export function ChapterPlans({
 }) {
 	const editor = useEditor();
 	const { t } = useInterfaceLanguage();
+	const [selection, setSelection] = useState("");
+	const scripts = editor.project.getActiveOrNull()
+		? (readProduction(editor).workspace.scripts ?? [])
+		: [];
+	const chosen = scripts.find((script) => script.id === selection);
+	const segments = scripts.filter(
+		(script) =>
+			script.parentScriptId &&
+			`segments:${script.parentScriptId}` === selection,
+	);
+	const scriptIds = chosen ? [chosen.id] : segments.map((script) => script.id);
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState("");
 	const abort = useRef<AbortController | null>(null);
@@ -48,7 +60,12 @@ export function ChapterPlans({
 				capabilityId: "project.generative.chapters.build",
 				input: {
 					id: crypto.randomUUID(),
-					title: t("Chapter collection"),
+					title:
+						chosen?.title ??
+						scripts.find((script) => `segments:${script.id}` === selection)
+							?.title ??
+						t("Chapter collection"),
+					scriptIds,
 					model: model.id,
 					resolution,
 					aspectRatio,
@@ -163,7 +180,46 @@ export function ChapterPlans({
 					"Generate videos from the canonical script and approved references. Long rows split automatically to fit the live model. Review estimated dialogue timing before approval. Storyboards are optional.",
 				)}
 			</p>
-			<Button variant="outline" disabled={busy || !model} onClick={build}>
+			{scripts.length > 0 && (
+				<label className="block text-sm">
+					{t("Script for generation")}
+					<select
+						className="ml-2 rounded border bg-background p-1"
+						value={selection}
+						onChange={(event) => setSelection(event.target.value)}
+					>
+						<option value="">{t("Current Director script")}</option>
+						{scripts.map((script) => (
+							<option key={script.id} value={script.id}>
+								{script.title}
+							</option>
+						))}
+						{scripts
+							.filter((script) =>
+								scripts.some((segment) => segment.parentScriptId === script.id),
+							)
+							.map((script) => (
+								<option
+									key={`segments:${script.id}`}
+									value={`segments:${script.id}`}
+								>
+									{t("All segments")} · {script.title}
+								</option>
+							))}
+					</select>
+				</label>
+			)}
+			<Button
+				variant="outline"
+				disabled={
+					busy ||
+					!model ||
+					(!scriptIds.length &&
+						scripts.length > 1 &&
+						!document.productionHandoff)
+				}
+				onClick={build}
+			>
 				{t("Build chapter plan from script")}
 			</Button>
 			{error && (

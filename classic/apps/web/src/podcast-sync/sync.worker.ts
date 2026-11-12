@@ -22,6 +22,7 @@ type Request =
 			advanced?: import("opencut-wasm").AdvancedPodcastRouting;
 			envelopes: Float32Array[];
 			channelIds: string[];
+			masterMicrophoneId?: string;
 			cameraWindows: import("opencut-wasm").PodcastCameraWindow[];
 			duration: number;
 			settings: PodcastSyncSettings;

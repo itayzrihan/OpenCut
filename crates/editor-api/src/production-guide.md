@@ -1,5 +1,18 @@
 # Production workspace and evidence-led video analysis
 
+
+## Script assets
+
+Each independent script has its own stable ID, title and revision history.
+Use `createScriptAsset` for a new script and read the project before revising one.
+For revisions, edit the existing row IDs with `editScriptRow` and use its scriptId
+when adding rows. Use `restoreScriptAsset` to restore an earlier whole-script
+version. For a programmatic video up to ten minutes, `splitScriptAsset` creates
+linked scripts in 30-second windows, with a shorter final window when needed.
+Review estimated timing and edit the segment assets directly. Select their IDs
+for Director handoff or chapter planning. Model-specific subclips form one
+reviewable generation batch and can be inserted in order as editable clips.
+
 Read `project.production.read` before preparing production work. The canonical
 workspace is shared with the user's docked Production panel. Use
 `project.production.edit` typed changes; never create a private script or board in
