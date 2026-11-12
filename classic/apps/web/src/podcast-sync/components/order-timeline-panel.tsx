@@ -55,8 +55,10 @@ export function OrderTimelinePanel({
 	const [assignments, setAssignments] = useState<Record<string, number>>({});
 	const [recordings, setRecordings] = useState<Recording[]>([]);
 	const [name, setName] = useState("");
-	const [selected, setSelected] = useState<string | null>(null);
-	const [dragging, setDragging] = useState<string | null>(null);
+	const [selected, setSelected] = useState<string[]>([]);
+	const selectionAnchor = useRef<string | null>(null);
+	const [dragging, setDragging] = useState<string[]>([]);
+	const activeDrag = useRef<string[]>([]);
 	const [dropTarget, setDropTarget] = useState<string | null>(null);
 	const [progress, setProgress] = useState("");
 	const [busy, setBusy] = useState(false);
@@ -113,59 +115,118 @@ export function OrderTimelinePanel({
 		return t("Angle {v0}", { v0: String(angle) });
 	}
 
-	function canPlace(id: string | null, destination: Destination) {
-		const asset = id ? sourceById.get(id) : undefined;
-		if (busy || !asset || asset.missing) return false;
-		if (destination === "audio")
-			return (
-				asset.type === "audio" &&
-				(recordings.length < MAX_SOURCES ||
-					recordings.some((item) => item.id === id))
-			);
-		return (
-			asset.type === "video" &&
-			destination >= 1 &&
-			destination <= angleCount &&
-			(selectedVideos.length < MAX_SOURCES || Boolean(assignments[asset.id]))
+	function selectedOfType(type: "audio" | "video") {
+		return selected.filter((id) => {
+			const asset = sourceById.get(id);
+			return asset?.type === type && !asset.missing;
+		});
+	}
+
+	function selectAsset(id: string, range: boolean) {
+		const anchor = sourceAssets.findIndex(
+			(asset) => asset.id === selectionAnchor.current,
+		);
+		const index = sourceAssets.findIndex((asset) => asset.id === id);
+		if (range && anchor >= 0 && index >= 0) {
+			const ids = sourceAssets
+				.slice(Math.min(anchor, index), Math.max(anchor, index) + 1)
+				.filter((asset) => !asset.missing)
+				.map((asset) => asset.id);
+			setSelected((current) => [...new Set([...current, ...ids])]);
+			return;
+		}
+		selectionAnchor.current = id;
+		setSelected((current) =>
+			current.includes(id)
+				? current.filter((item) => item !== id)
+				: [...current, id],
 		);
 	}
 
-	function placeAsset(id: string, destination: Destination, before?: string) {
-		if (!canPlace(id, destination)) return;
+	const selectedAudioIds = selectedOfType("audio");
+	const selectedVideoIds = selectedOfType("video");
+	const selectedCount = selectedAudioIds.length + selectedVideoIds.length;
+
+	function canPlace(ids: readonly string[], destination: Destination) {
+		const type = destination === "audio" ? "audio" : "video";
+		if (
+			busy ||
+			!ids.length ||
+			ids.some((id) => {
+				const asset = sourceById.get(id);
+				return asset?.type !== type || asset.missing;
+			})
+		)
+			return false;
+		if (destination === "audio")
+			return (
+				recordings.length +
+					ids.filter((id) => !recordings.some((item) => item.id === id))
+						.length <=
+				MAX_SOURCES
+			);
+		return (
+			destination >= 1 &&
+			destination <= angleCount &&
+			selectedVideos.length + ids.filter((id) => !assignments[id]).length <=
+				MAX_SOURCES
+		);
+	}
+
+	function placeAssets(
+		ids: readonly string[],
+		destination: Destination,
+		before?: string,
+	) {
+		if (!canPlace(ids, destination)) return;
+		const placed = new Set(ids);
 		if (destination === "audio") {
-			if (id === before) return;
+			if (before && placed.has(before)) return;
 			setRecordings((current) => {
-				const item = current.find((recording) => recording.id === id) ?? {
-					id,
-					gap: "",
-				};
-				const next = current.filter((recording) => recording.id !== id);
-				const index = next.findIndex((recording) => recording.id === before);
-				next.splice(index === -1 ? next.length : index, 0, item);
+				const existing = new Map(current.map((item) => [item.id, item]));
+				const next = current.filter((item) => !placed.has(item.id));
+				const index = next.findIndex((item) => item.id === before);
+				next.splice(
+					index === -1 ? next.length : index,
+					0,
+					...ids.map((id) => existing.get(id) ?? { id, gap: "" }),
+				);
 				return keepGapsForUnchangedNeighbors(current, next);
 			});
 		} else {
-			setAssignments((current) => ({ ...current, [id]: destination }));
+			setAssignments((current) => ({
+				...current,
+				...Object.fromEntries(ids.map((id) => [id, destination])),
+			}));
 		}
-		setSelected(null);
+		setSelected((current) => current.filter((id) => !placed.has(id)));
 	}
 
 	function dragEnd() {
-		setDragging(null);
+		activeDrag.current = [];
+		setDragging([]);
 		setDropTarget(null);
 	}
 
-	function dragProps(id: string) {
+	function dragProps(id: string, fromLibrary = false) {
 		return {
 			draggable: !busy && !sourceById.get(id)?.missing,
 			onDragStart: (event: DragEvent<HTMLElement>) => {
-				if (busy || sourceById.get(id)?.missing) {
+				const asset = sourceById.get(id);
+				if (busy || !asset || asset.missing) {
 					event.preventDefault();
 					return;
 				}
-				event.dataTransfer.setData(DRAG_TYPE, id);
+				const ids =
+					fromLibrary && selected.includes(id)
+						? asset.type === "audio"
+							? selectedAudioIds
+							: selectedVideoIds
+						: [id];
+				activeDrag.current = ids;
+				event.dataTransfer.setData(DRAG_TYPE, JSON.stringify(ids));
 				event.dataTransfer.effectAllowed = "copyMove";
-				setDragging(id);
+				setDragging(ids);
 			},
 			onDragEnd: dragEnd,
 		};
@@ -177,7 +238,7 @@ export function OrderTimelinePanel({
 			onDragOver: (event: DragEvent<HTMLElement>) => {
 				if (
 					!event.dataTransfer.types.includes(DRAG_TYPE) ||
-					!canPlace(dragging, destination)
+					!canPlace(activeDrag.current, destination)
 				)
 					return;
 				event.preventDefault();
@@ -196,8 +257,9 @@ export function OrderTimelinePanel({
 				if (!event.dataTransfer.types.includes(DRAG_TYPE)) return;
 				event.preventDefault();
 				event.stopPropagation();
-				const id = event.dataTransfer.getData(DRAG_TYPE);
-				if (id === dragging) placeAsset(id, destination, before);
+				const ids = activeDrag.current;
+				if (event.dataTransfer.getData(DRAG_TYPE) === JSON.stringify(ids))
+					placeAssets(ids, destination, before);
 				dragEnd();
 			},
 		};
@@ -329,11 +391,28 @@ export function OrderTimelinePanel({
 						aria-label={t("Assets")}
 						className="min-w-0 rounded-xl border bg-muted/20 p-3"
 					>
-						<h3 className="font-medium">
-							<UiMessage text="Assets" />
-						</h3>
+						<div className="flex items-center justify-between gap-2">
+							<h3 className="font-medium">
+								<UiMessage text="Assets" />
+							</h3>
+							{selectedCount > 0 && (
+								<button
+									type="button"
+									className="text-xs text-muted-foreground underline hover:text-foreground"
+									onClick={() => {
+										setSelected([]);
+										selectionAnchor.current = null;
+									}}
+								>
+									<UiMessage
+										text="Clear selection ({v0})"
+										values={{ v0: String(selectedCount) }}
+									/>
+								</button>
+							)}
+						</div>
 						<p className="mb-3 mt-1 text-xs text-muted-foreground">
-							<UiMessage text="Drag a file to a panel, or select it and use the Add button." />
+							<UiMessage text="Select files, then drag a selected file or use Add. Each drop moves files of the same type." />
 						</p>
 						{sourceAssets.length === 0 && (
 							<p className="text-sm text-muted-foreground">
@@ -350,16 +429,15 @@ export function OrderTimelinePanel({
 										<button
 											type="button"
 											data-order-asset={asset.id}
-											{...dragProps(asset.id)}
+											{...dragProps(asset.id, true)}
 											disabled={asset.missing}
-											aria-pressed={selected === asset.id}
-											onClick={() =>
-												setSelected(selected === asset.id ? null : asset.id)
-											}
+											aria-pressed={selected.includes(asset.id)}
+											onClick={(event) => selectAsset(asset.id, event.shiftKey)}
 											className={cn(
 												tileClass,
 												"cursor-grab hover:border-primary/50 focus-visible:outline-2 focus-visible:outline-primary disabled:cursor-not-allowed disabled:opacity-50",
-												selected === asset.id && "border-primary bg-primary/10",
+												selected.includes(asset.id) &&
+													"border-primary bg-primary/10",
 											)}
 										>
 											<GripVertical
@@ -408,11 +486,11 @@ export function OrderTimelinePanel({
 									<AudioLines aria-hidden className="size-4 text-primary" />
 									<UiMessage text="Master audio recordings" />
 								</h3>
-								{selected && canPlace(selected, "audio") && (
+								{canPlace(selectedAudioIds, "audio") && (
 									<Button
 										size="sm"
 										variant="outline"
-										onClick={() => placeAsset(selected, "audio")}
+										onClick={() => placeAssets(selectedAudioIds, "audio")}
 									>
 										<Plus />
 										<UiMessage text="Add to audio" />
@@ -420,7 +498,7 @@ export function OrderTimelinePanel({
 								)}
 							</div>
 							<p className="mb-3 text-xs text-muted-foreground">
-								<UiMessage text="Drag recordings into the order they were made." />
+								<UiMessage text="Recordings are added in selection order. Drag them to adjust the order." />
 							</p>
 							<ol className="space-y-2">
 								{recordings.map(({ id, gap }, index) => (
@@ -554,14 +632,14 @@ export function OrderTimelinePanel({
 												<Film aria-hidden className="size-4 text-primary" />
 												{angleLabel(angle)}
 											</h3>
-											{selected && canPlace(selected, angle) && (
+											{canPlace(selectedVideoIds, angle) && (
 												<Button
 													size="sm"
 													variant="outline"
 													aria-label={t("Add to {v0}", {
 														v0: angleLabel(angle),
 													})}
-													onClick={() => placeAsset(selected, angle)}
+													onClick={() => placeAssets(selectedVideoIds, angle)}
 												>
 													<Plus />
 													<UiMessage text="Add" />
