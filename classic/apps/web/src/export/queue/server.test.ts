@@ -40,6 +40,7 @@ mock.module("@/services/local-drive/server", () => ({
 const {
 	enqueueRender,
 	readRenderQueue,
+	startRenderQueue,
 	claimRender,
 	reportRender,
 	changeRender,
@@ -87,6 +88,8 @@ test("durable canonical host queue deduplicates concurrent submissions and isola
 	let state = await readRenderQueue();
 	expect(state.jobs).toHaveLength(2);
 	expect(state.jobs.map((j) => j.status)).toEqual(["queued", "queued"]);
+	expect(await claimRender("before-start")).toBeNull();
+	await startRenderQueue();
 	const [a, b] = await Promise.all([
 		claimRender("attempt-a"),
 		claimRender("attempt-b"),
@@ -95,6 +98,8 @@ test("durable canonical host queue deduplicates concurrent submissions and isola
 	expect(job).not.toBeNull();
 	expect([a, b].filter(Boolean)).toHaveLength(1);
 	if (!job?.attempt) throw Error("Missing claimed worker");
+	await submit("later");
+	expect((await readRenderJob("later")).released).toBe(false);
 	const originalHash = job.snapshotHash;
 	const changed = join(root, "relinked.mp4");
 	await writeFile(changed, "different source");

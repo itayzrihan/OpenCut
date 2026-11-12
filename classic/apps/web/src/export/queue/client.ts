@@ -1,10 +1,14 @@
-import { accountAssetUrl } from "@/accounts/browser";
+import { accountAssetUrl, isHostedBrowserWorkspace } from "@/accounts/browser";
 import type { EditorCore } from "@/core";
 import type { ExportOptions } from "@/export";
 import type { RenderQueueView } from "./types";
 export async function renderQueueRequest<T = RenderQueueView>(
 	body?: unknown,
 ): Promise<T> {
+	if (isHostedBrowserWorkspace()) {
+		const { browserRenderRequest } = await import("./browser");
+		return (await browserRenderRequest(body)) as T;
+	}
 	const response = await fetch(
 		accountAssetUrl("/api/render-queue"),
 		body
@@ -52,4 +56,30 @@ export async function enqueueCurrentRender({
 			includeAudio: options.includeAudio ?? true,
 		},
 	});
+}
+
+/** Open an isolated browser tab only from the Start button's user gesture. */
+export async function startQueuedRenders() {
+	const account = window.__opencutAccountId;
+	const hosted = isHostedBrowserWorkspace();
+	let popup: Window | null = null;
+	if (hosted) {
+		if (!account || !navigator.locks)
+			throw Error("Open the export queue in a supported browser");
+		popup = window.open(
+			`/render-worker?hosted=1&account=${encodeURIComponent(account)}`,
+			"_blank",
+		);
+		if (!popup)
+			throw Error(
+				"Allow POCUT to open a render tab, then start the queue again",
+			);
+		popup.opener = null;
+	}
+	try {
+		return await renderQueueRequest({ action: "start" });
+	} catch (error) {
+		popup?.close();
+		throw error;
+	}
 }

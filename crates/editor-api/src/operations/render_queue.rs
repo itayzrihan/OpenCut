@@ -61,6 +61,12 @@ struct Output {
     mutation: MutationOutput,
     job: QueuedRender,
 }
+#[derive(Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct Start {
+    expected_revision: u64,
+    now_ms: u64,
+}
 pub(super) fn register_queue(
     registry: &CapabilityRegistry,
     state: Arc<RwLock<EditorStore>>,
@@ -111,13 +117,57 @@ pub(super) fn register_queue(
             }
         },
     )?;
+    let start_state = state.clone();
+    let start_events = events.clone();
+    register::<Start, MutationOutput, _, _>(
+        registry,
+        DocumentSupport::Both,
+        crate::CapabilityExecution::Immediate,
+        "render.queue.start",
+        "Release the current render queue",
+        "Release only the background jobs already waiting in this account queue. Jobs added or retried later wait for another start. Rendering proceeds serially in the original FIFO order. Direct exports use their explicit destination workflow. Atomic, revision scoped, dry run and undo supported; no renderer IO.",
+        "export",
+        AccessLevel::Write,
+        false,
+        false,
+        &["render", "queue", "start"],
+        move |context, input| {
+            let state = start_state.clone();
+            let events = start_events.clone();
+            async move {
+                let result = mutate(
+                    &state,
+                    &events,
+                    &context,
+                    "Start render queue",
+                    Some(input.expected_revision),
+                    |doc| {
+                        let mut released = vec![];
+                        for job in &mut doc.render_queue {
+                            if job.delivery == RenderDelivery::Queue
+                                && job.status == QueueStatus::Queued
+                                && !job.released
+                            {
+                                job.released = true;
+                                job.updated_at_ms = job.updated_at_ms.max(input.now_ms);
+                                job.message = "Ready to render".into();
+                                released.push(job.id.clone());
+                            }
+                        }
+                        Ok(released)
+                    },
+                )?;
+                Ok(OperationSuccess::new(result))
+            }
+        },
+    )?;
     register::<Edit, Output, _, _>(
         registry,
         DocumentSupport::Both,
         crate::CapabilityExecution::Immediate,
         "render.queue.edit",
         "Manage frozen background render jobs",
-        "Canonical durable queue transitions: enqueue a validated frozen Classic snapshot and export recipe; claim one serial worker with an attempt fence; report monotonic progress/completion/failure; cancel; retry the identical snapshot. Explicit project, queue revision and idempotency metadata. Cancellation requests are acknowledged by workers. A claim after 120 seconds without a heartbeat marks the old attempt failed; late reports cannot publish. Queued jobs use FIFO; direct jobs are claimed explicitly; one renderer runs at a time. Direct jobs require a user-selected destination filename and publish no host download. Pure in-memory, atomic, dry-run and undo supported; host persists runtime bytes and owns external compositor/file IO separately. Queue is readable via app.state.read /renderQueue; outputId names a host export, never an arbitrary path. Classic-only render payloads, shared runtime queue.",
+        "Canonical durable queue transitions: enqueue a held, frozen Classic snapshot and export recipe; render.queue.start releases pending background jobs; claim one serial worker with an attempt fence; report monotonic progress/completion/failure; cancel; retry the identical snapshot. Explicit project, queue revision and idempotency metadata. Cancellation requests are acknowledged by workers. A claim after 120 seconds without a heartbeat marks the old attempt failed; late reports cannot publish. Queued jobs use FIFO; direct jobs are claimed explicitly; one renderer runs at a time. Direct jobs require a user-selected destination filename and publish no host download. Pure in-memory, atomic, dry-run and undo supported; host persists runtime bytes and owns external compositor/file IO separately. Queue is readable via app.state.read /renderQueue; outputId names a host export, never an arbitrary path. Classic-only render payloads, shared runtime queue.",
         "export",
         AccessLevel::Write,
         false,
@@ -176,6 +226,7 @@ pub(super) fn register_queue(
                                 delivery,
                                 destination_name,
                                 status: QueueStatus::Queued,
+                                released: false,
                                 created_at_ms: input.now_ms,
                                 updated_at_ms: input.now_ms,
                                 progress: 0.0,
@@ -216,6 +267,7 @@ pub(super) fn register_queue(
                                     .iter()
                                     .find(|j| {
                                         j.status == QueueStatus::Queued
+                                            && j.released
                                             && doc
                                                 .render_queue
                                                 .iter()
@@ -245,6 +297,7 @@ pub(super) fn register_queue(
                             match input.change {
                                 Change::Claim { attempt } => {
                                     if job.status != QueueStatus::Queued
+                                        || (job.delivery == RenderDelivery::Queue && !job.released)
                                         || attempt.is_empty()
                                         || attempt.len() > 160
                                     {
@@ -334,6 +387,7 @@ pub(super) fn register_queue(
                                         ));
                                     }
                                     job.status = QueueStatus::Queued;
+                                    job.released = false;
                                     job.progress = 0.0;
                                     job.message = "Queued again · original snapshot".into();
                                     job.attempt = None;
