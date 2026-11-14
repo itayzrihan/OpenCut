@@ -754,6 +754,92 @@ test(
 );
 
 test(
+	"hosted project restore keeps browser-only media offline until reconnected and preserves known remote URLs",
+	async () => {
+		const original = createHost();
+		const [camera] = original.media();
+		const microphone = {
+			id: "local-mic",
+			name: "mic.wav",
+			type: "audio" as const,
+			storageKind: "copied" as const,
+			size: 3,
+			lastModified: 1,
+			missing: false,
+		};
+		original.editor.media.setAssets({ assets: [camera, microphone] });
+		let savedBundle: EditorSessionBundle | undefined;
+		await original.manager.enableCanonical({
+			runtime: await createCanonicalTestRuntime(),
+			persistSession: async (capture) => {
+				const { archive } = capture();
+				savedBundle = { archive };
+			},
+		});
+		await original.manager.persistEditingSession();
+		original.manager.detachCanonical();
+		const windowBefore = globalThis.window;
+		globalThis.window = {
+			...windowBefore,
+			location:
+				windowBefore?.location ??
+				(new URL("https://pocut.example") as unknown as Location),
+			__opencutAccountId: "media-restore-qa",
+			__opencutHostedLegitate: true,
+		} as Window & typeof globalThis;
+		const remoteCamera = { ...camera, url: "/api/local-drive/media?remote" };
+		const reopened = createHost({
+			project: original.project(),
+			media: [remoteCamera],
+		});
+		try {
+			await reopened.manager.enableCanonical({
+				runtime: await createCanonicalTestRuntime(),
+				atomicBundle: savedBundle!,
+				localMediaBindings: canonicalMediaBindings([remoteCamera]),
+				persistSession: async () => {},
+			});
+			expect(reopened.media().find(({ id }) => id === camera.id)?.url).toBe(
+				remoteCamera.url,
+			);
+			expect(
+				reopened.media().find(({ id }) => id === microphone.id),
+			).toMatchObject({
+				missing: true,
+				url: undefined,
+				file: undefined,
+			});
+			const file = new File(["wav"], microphone.name, {
+				lastModified: microphone.lastModified,
+			});
+			reopened.editor.media.setAssets({
+				assets: [
+					remoteCamera,
+					{ ...microphone, file, url: "blob:reconnected-mic" },
+				],
+			});
+			reopened.manager.renameClassicMedia({
+				projectId: "classic-project",
+				mediaId: microphone.id,
+				name: "Studio microphone",
+			});
+			expect(
+				reopened.media().find(({ id }) => id === microphone.id),
+			).toMatchObject({
+				name: "Studio microphone",
+				missing: false,
+				url: "blob:reconnected-mic",
+				file,
+			});
+		} finally {
+			reopened.manager.detachCanonical();
+			globalThis.window = windowBefore;
+		}
+	},
+	INTEGRATION_TIMEOUT,
+);
+
+test(
 	"media removal uses one canonical transaction across scenes and reopens with durable Undo handles",
 	async () => {
 		const { MediaManager } = await import("@/core/managers/media-manager");
@@ -1623,7 +1709,7 @@ test(
 		const initial = structuredClone(host.project());
 		const playheadTime = element.startTime + 50;
 		Object.assign(host.editor, {
-			playback: { getCurrentTime: () => playheadTime },
+			playback: { ...host.editor.playback, getCurrentTime: () => playheadTime },
 		});
 		await host.manager.enableCanonical({
 			runtime: await createCanonicalTestRuntime(),
@@ -1783,7 +1869,10 @@ test(
 		const timeline = new TimelineManager(host.editor);
 		Object.assign(host.editor, {
 			timeline,
-			playback: { getCurrentTime: () => mediaTime({ ticks: 300 }) },
+			playback: {
+				...host.editor.playback,
+				getCurrentTime: () => mediaTime({ ticks: 300 }),
+			},
 		});
 		Object.assign(host.editor.selection, {
 			getSelectedElements: () => host.selection().selectedElements,

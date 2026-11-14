@@ -22,7 +22,7 @@ mock.module("../sync-jobs", () => ({
 	readSyncEnvelope,
 	syncReadConcurrency: () => 2,
 	mapConcurrent: async ({ items, task, signal }: any) =>
-		Promise.all(items.map((item: any) => task(item, signal))),
+		Promise.all(items.map((item: any) => task(item, signal ?? new AbortController().signal))),
 	runSyncWorker: async ({ message }: any) => {
 		if (message.type === "align") {
 			expect(message.envelopes.map((e: Float32Array) => e.length)).toEqual([
@@ -56,6 +56,7 @@ test("segmented logical microphones keep all physical bindings and staggered sta
 		id: `v${i}`,
 		name: `Camera ${i}`,
 		type: "video",
+		url: `blob:camera-${i}`,
 		duration: 100,
 		hasAudio: true,
 	}));
@@ -64,6 +65,7 @@ test("segmented logical microphones keep all physical bindings and staggered sta
 			id: `${token}-${i}`,
 			name: `20260720_${i ? "1705" : "1635"}_${i ? "0006" : "0005"}_32Float_${token}.wav`,
 			type: "audio" as const,
+			url: `blob:recorder-${token}-${i}`,
 			duration: i ? 100 : 1800.15,
 			bindingRevision: 2,
 		})),

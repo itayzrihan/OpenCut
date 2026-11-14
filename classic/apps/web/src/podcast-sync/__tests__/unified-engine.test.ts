@@ -5,6 +5,7 @@ import type { MediaAsset } from "@/media/types";
 import { createUnifiedAnglesAsset } from "@/media/unified-angles";
 const readNames: string[] = [];
 let externalRecorder = false;
+let failRead = false;
 type WorkerRequest =
 	| { type: "read"; asset: MediaAsset }
 	| { type: "align" }
@@ -19,6 +20,7 @@ type WorkerRequest =
 	  };
 async function readSyncEnvelope({ asset }: { asset: { name: string } }) {
 	readNames.push(asset.name);
+	if (failRead) throw new Error("Error fetching media: 404");
 	return new Float32Array(12001).fill(0.5);
 }
 mock.module("../sync-jobs", () => ({
@@ -49,10 +51,61 @@ mock.module("../sync-jobs", () => ({
 	},
 }));
 const {
+	PodcastSourceError,
 	resolvePodcastChannelSources,
 	runPodcastAlignment,
 	runPodcastMulticam,
 } = await import("../engine");
+
+test("multicam reports the exact unavailable source before spinning up any readers", async () => {
+	const camera: MediaAsset = {
+		id: "camera",
+		type: "video",
+		name: "camera.mp4",
+		url: "blob:camera",
+	};
+	const microphone: MediaAsset = { id: "mic", type: "audio", name: "mic.wav" };
+	const input = {
+		channels: [
+			{ id: "speaker", name: "Speaker", video: camera, audio: microphone },
+		],
+		settings: podcastMulticamDefaults({ quick: true }),
+	};
+	readNames.length = 0;
+	const error = await runPodcastAlignment(input).catch(
+		(cause: unknown) => cause,
+	);
+	expect(error).toBeInstanceOf(PodcastSourceError);
+	expect(error).toMatchObject({
+		mediaId: "mic",
+		message: "Reconnect mic.wav before synchronizing.",
+	});
+	expect(readNames).toEqual([]);
+});
+
+test("a reader failure identifies the recording while retaining the underlying error", async () => {
+	const video: MediaAsset = {
+		id: "camera",
+		type: "video",
+		name: "camera.mp4",
+		url: "blob:camera",
+	};
+	failRead = true;
+	try {
+		const error = await runPodcastAlignment({
+			channels: [{ id: "speaker", name: "Speaker", video, audio: video }],
+			settings: podcastMulticamDefaults({ quick: true }),
+		}).catch((cause: unknown) => cause);
+		expect(error).toBeInstanceOf(PodcastSourceError);
+		expect(error).toMatchObject({
+			mediaId: "camera",
+			cause: { message: "Error fetching media: 404" },
+		});
+	} finally {
+		failRead = false;
+		readNames.length = 0;
+	}
+});
 test("Unified podcast decodes physical cameras once, keeps the longest clock and persists all sound offsets", async () => {
 	const video = ({
 		id,
