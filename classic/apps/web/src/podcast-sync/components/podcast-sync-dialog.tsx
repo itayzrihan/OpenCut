@@ -48,8 +48,10 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useEditor, useEditorProject } from "@/editor/use-editor";
+import { isHostedBrowserWorkspace } from "@/accounts/browser";
 import type { MediaAsset } from "@/media/types";
 import {
+	PodcastSourceError,
 	runPodcastAlignment,
 	resolvePodcastChannelSources,
 	runPodcastMulticam,
@@ -248,6 +250,9 @@ export function PodcastSyncDialog({
 	const [sequenceCreated, setSequenceCreated] = useState(false);
 	const [isRunning, setIsRunning] = useState(false);
 	const [progress, setProgress] = useState({ step: "", value: 0 });
+	const [failure, setFailure] = useState<Error | null>(null);
+	const [isReconnecting, setIsReconnecting] = useState(false);
+	const [reconnectError, setReconnectError] = useState("");
 	const analysisAbort = useRef<AbortController | null>(null);
 	const analysisProject = useRef<string | null>(null);
 	useEffect(() => () => analysisAbort.current?.abort(), []);
@@ -256,6 +261,35 @@ export function PodcastSyncDialog({
 		editor.media.getAssets().map((asset) => [asset.id, asset]),
 	);
 	const currentStepIndex = STEPS.findIndex((item) => item.id === step);
+	const failedSource =
+		failure instanceof PodcastSourceError
+			? assetById.get(failure.mediaId)
+			: undefined;
+	const reconnectSource = async (file?: File) => {
+		if (!activeProject || !failedSource) return;
+		setIsReconnecting(true);
+		setReconnectError("");
+		try {
+			await editor.media.reopenBrowserSource({
+				projectId: activeProject.metadata.id,
+				id: failedSource.id,
+				file,
+			});
+			setFailure(null);
+			setAlignment(null);
+			setResult(null);
+			setStep("media");
+		} catch (error) {
+			setReconnectError(error instanceof Error ? error.message : String(error));
+		} finally {
+			setIsReconnecting(false);
+		}
+	};
+
+	const showFailure = (error: unknown) => {
+		setFailure(error instanceof Error ? error : new Error(String(error)));
+		setReconnectError("");
+	};
 
 	const applySourceSuggestions = ({
 		videos = videoAssets,
@@ -561,8 +595,25 @@ export function PodcastSyncDialog({
 	};
 
 	const handleRunAlignment = async () => {
+		// Advanced grouping rejects offline recordings before it returns segments.
+		// Surface the original file here so the user can reconnect it in the wizard.
+		if (mode === "advanced") {
+			const missingRecording = recordingIds
+				.map((id) => assetById.get(id))
+				.find((asset) => asset?.missing);
+			if (missingRecording) {
+				setStep("sync");
+				showFailure(new PodcastSourceError({ asset: missingRecording }));
+				return null;
+			}
+		}
 		const resolvedChannels = resolveChannels();
 		if (!resolvedChannels) return null;
+		setStep("sync");
+		setFailure(null);
+		setAlignment(null);
+		setResult(null);
+		setSequenceCreated(false);
 		const resolvedSettings = normalizedSettings(mode !== "guided");
 		setSettings(resolvedSettings);
 		setIsRunning(true);
@@ -621,9 +672,7 @@ export function PodcastSyncDialog({
 		} catch (error) {
 			if (analysisAbort.current?.signal.aborted) return null;
 			console.error("Podcast synchronization failed:", error);
-			toast.error("Podcast synchronization failed", {
-				description: error instanceof Error ? error.message : undefined,
-			});
+			showFailure(error);
 			return null;
 		} finally {
 			setIsRunning(false);
@@ -657,6 +706,7 @@ export function PodcastSyncDialog({
 		}
 		const resolvedSettings = normalizedSettings(quick);
 		setSettings(resolvedSettings);
+		setFailure(null);
 		setIsRunning(true);
 		setProgress({ step: "Starting multicam analysis", value: 0 });
 		analysisAbort.current?.abort();
@@ -675,9 +725,7 @@ export function PodcastSyncDialog({
 		} catch (error) {
 			if (analysisAbort.current?.signal.aborted) return null;
 			console.error("Podcast multicam analysis failed:", error);
-			toast.error("Podcast multicam analysis failed", {
-				description: error instanceof Error ? error.message : undefined,
-			});
+			showFailure(error);
 			return null;
 		} finally {
 			setIsRunning(false);
@@ -685,7 +733,6 @@ export function PodcastSyncDialog({
 	};
 
 	const handleAutoEdit = async () => {
-		setStep("sync");
 		const syncRun = await handleRunAlignment();
 		if (!syncRun || analysisAbort.current?.signal.aborted) return;
 		setStep("multicam");
@@ -707,7 +754,7 @@ export function PodcastSyncDialog({
 			});
 		} catch (error) {
 			console.error("Failed to create podcast sequence:", error);
-			toast.error("Failed to create podcast sequence");
+			showFailure(error);
 		} finally {
 			setIsRunning(false);
 		}
@@ -736,7 +783,11 @@ export function PodcastSyncDialog({
 		<Dialog
 			open={open}
 			onOpenChange={(next) =>
-				!isRunning && !isImporting && !ordering && onOpenChange(next)
+				!isRunning &&
+				!isImporting &&
+				!ordering &&
+				!isReconnecting &&
+				onOpenChange(next)
 			}
 		>
 			<Tabs value={tab} onValueChange={setTab}>
@@ -869,6 +920,40 @@ export function PodcastSyncDialog({
 									}
 								/>
 							) : null}
+							{failure && step !== "media" ? (
+								<div className="space-y-2 rounded-md border border-destructive/40 p-3 text-sm">
+									<p role="alert">{failure.message}</p>
+									{failedSource && isHostedBrowserWorkspace() ? (
+										<div className="flex flex-wrap gap-3">
+											{failedSource.storageKind === "linked" &&
+											!failedSource.sourcePath ? (
+												<Button
+													size="sm"
+													variant="outline"
+													disabled={isReconnecting}
+													onClick={() => void reconnectSource()}
+												>
+													<UiMessage text="Reconnect original file" />
+												</Button>
+											) : null}
+											<label className="inline-flex cursor-pointer items-center underline focus-within:outline">
+												<UiMessage text="Choose original file" />
+												<input
+													type="file"
+													className="sr-only"
+													disabled={isReconnecting}
+													onChange={(event) => {
+														const file = event.currentTarget.files?.[0];
+														event.currentTarget.value = "";
+														if (file) void reconnectSource(file);
+													}}
+												/>
+											</label>
+										</div>
+									) : null}
+									{reconnectError ? <p role="alert">{reconnectError}</p> : null}
+								</div>
+							) : null}
 							{step === "sync" ? (
 								<SyncStep
 									microphones={
@@ -929,10 +1014,10 @@ export function PodcastSyncDialog({
 										<UiMessage text={"Cancel"} />
 									</Button>
 									<Button
+										disabled={isRunning || isReconnecting}
 										onClick={() => {
-											if (!resolveChannels()) return;
 											if (mode !== "guided") void handleAutoEdit();
-											else setStep("sync");
+											else if (resolveChannels()) setStep("sync");
 										}}
 									>
 										{mode !== "guided" ? (
@@ -949,19 +1034,42 @@ export function PodcastSyncDialog({
 									</Button>
 								</>
 							) : null}
+							{failure && step !== "media" && mode !== "guided" ? (
+								<>
+									<Button
+										variant="outline"
+										disabled={isRunning || isReconnecting}
+										onClick={() => {
+											setFailure(null);
+											setStep("media");
+										}}
+									>
+										<UiMessage text="Back to files" />
+									</Button>
+									<Button
+										disabled={isRunning || isReconnecting}
+										onClick={() => void handleAutoEdit()}
+									>
+										<UiMessage text="Try again" />
+									</Button>
+								</>
+							) : null}
 							{step === "sync" && mode === "guided" ? (
 								<>
 									<Button
 										variant="outline"
-										onClick={() => setStep("media")}
-										disabled={isRunning}
+										onClick={() => {
+											setFailure(null);
+											setStep("media");
+										}}
+										disabled={isRunning || isReconnecting}
 									>
 										<ChevronLeft className="size-4" />{" "}
 										<UiMessage text={"Back"} />
 									</Button>
 									{alignment ? (
 										<Button
-											disabled={isRunning}
+											disabled={isRunning || isReconnecting}
 											onClick={() => setStep("multicam")}
 										>
 											<UiMessage text={"Continue to Multicam"} />{" "}
@@ -970,7 +1078,7 @@ export function PodcastSyncDialog({
 									) : (
 										<Button
 											onClick={() => void handleRunAlignment()}
-											disabled={isRunning}
+											disabled={isRunning || isReconnecting}
 										>
 											<Play className="size-4" />{" "}
 											<UiMessage text={"Start Sync"} />
@@ -982,7 +1090,10 @@ export function PodcastSyncDialog({
 								<>
 									<Button
 										variant="outline"
-										onClick={() => setStep("sync")}
+										onClick={() => {
+											setFailure(null);
+											setStep("sync");
+										}}
 										disabled={isRunning}
 									>
 										<ChevronLeft className="size-4" />{" "}
@@ -1414,7 +1525,7 @@ function SyncStep({
 					/>
 				</p>
 			</div>
-			{isRunning || auto ? <ProgressPanel progress={progress} /> : null}
+			{isRunning ? <ProgressPanel progress={progress} /> : null}
 			<div className="overflow-hidden rounded-lg border">
 				<div className="grid grid-cols-[1fr_1.5fr_1.5fr] gap-3 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
 					<span>
@@ -1586,7 +1697,7 @@ function MulticamStep({
 					/>
 				</p>
 			</div>
-			{isRunning || auto ? <ProgressPanel progress={progress} /> : null}
+			{isRunning ? <ProgressPanel progress={progress} /> : null}
 			{!auto ? (
 				<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-5">
 					<UiLocalized<typeof NumberSetting>

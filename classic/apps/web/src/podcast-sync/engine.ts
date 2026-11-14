@@ -3,6 +3,7 @@ import {
 	resolveUnifiedAnglesAudioAsset,
 } from "@/media/unified-angles";
 import type { MediaAsset } from "@/media/types";
+import { localizeClientMessage } from "@/i18n/client-messages";
 import {
 	podcastCameraClock,
 	advancedPodcastCameraClock,
@@ -83,6 +84,23 @@ export interface PodcastSyncResult {
 
 type ProgressCallback = (progress: { step: string; progress: number }) => void;
 
+export class PodcastSourceError extends Error {
+	readonly mediaId: string;
+
+	constructor({ asset, cause }: { asset: MediaAsset; cause?: unknown }) {
+		super(
+			localizeClientMessage(
+				cause === undefined
+					? "Reconnect {v0} before synchronizing."
+					: "Couldn't read {v0}. Check that the original file is accessible and try again.",
+				{ v0: asset.name },
+			),
+			{ cause },
+		);
+		this.mediaId = asset.id;
+	}
+}
+
 function report({
 	onProgress,
 	step,
@@ -146,7 +164,6 @@ export async function runPodcastAlignment({
 							);
 							if (
 								!a ||
-								a.missing ||
 								a.duration !== s.recording.duration ||
 								(a.bindingRevision ?? 0) !== s.recording.bindingRevision
 							)
@@ -158,6 +175,10 @@ export async function runPodcastAlignment({
 				.map((a) => [a.id, a]),
 		).values(),
 	];
+	for (const asset of physicalAssets) {
+		if (asset.missing || (!asset.file && !asset.url))
+			throw new PodcastSourceError({ asset });
+	}
 	const segments = new Map<
 		string,
 		Array<{ asset: MediaAsset; start: number; duration: number }>
@@ -210,6 +231,9 @@ export async function runPodcastAlignment({
 			const envelope = await readSyncEnvelope({
 				asset: { file: asset.file, url: asset.url, name: asset.name },
 				signal: jobSignal,
+			}).catch((cause: unknown) => {
+				jobSignal.throwIfAborted();
+				throw new PodcastSourceError({ asset, cause });
 			});
 			completed++;
 			report({
@@ -637,12 +661,11 @@ export function resolvePodcastChannelSources({
 			const longest = sources.find((a) => a.id === clock?.referenceId);
 			if (longest && longest.hasAudio !== false) audio = longest;
 		}
-		if (!audio || audio.missing)
-			throw new Error(`${channel.name}: audio source is missing`);
+		if (!audio) throw new Error(`${channel.name}: audio source is missing`);
 		const angles = isUnifiedAnglesAsset(video)
 			? video.unifiedAngles.angleAssetIds.map((id) => {
 					const a = map.get(id);
-					if (!a || a.missing || isUnifiedAnglesAsset(a))
+					if (!a || isUnifiedAnglesAsset(a))
 						throw new Error(`${channel.name}: camera source is missing`);
 					return a;
 				})

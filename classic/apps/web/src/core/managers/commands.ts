@@ -3668,16 +3668,26 @@ export class CommandManager {
 				}
 			}
 			this.editor.media.setAssets({
-				assets: state.mediaAssets.map((asset) => ({
-					...asset,
-					file: handles.get(asset.id)?.file,
-					url:
-						handles.get(asset.id)?.url ??
-						(!asset.missing && asset.storageKind
+				assets: state.mediaAssets.map((asset) => {
+					const handle = handles.get(asset.id);
+					const url =
+						handle?.url ??
+						(!browserScope && !asset.missing && asset.storageKind
 							? localMediaUrl({ projectId, id: asset.id })
-							: undefined),
-					thumbnailUrl: handles.get(asset.id)?.thumbnailUrl,
-				})),
+							: undefined);
+					return {
+						...asset,
+						file: handle?.file,
+						url,
+						// A hosted archive contains metadata only. Remote sources get a
+						// URL from the media index; browser sources need local bytes.
+						missing:
+							browserScope && !asset.unifiedAngles
+								? handle?.missing === true || (!handle?.file && !url)
+								: asset.missing,
+						thumbnailUrl: handle?.thumbnailUrl,
+					};
+				}),
 			});
 		} finally {
 			this.isProjectingCanonical = false;
